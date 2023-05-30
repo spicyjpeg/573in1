@@ -1,0 +1,30 @@
+{
+	"version": 6,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 25,
+		"patch": 0
+	},
+	"configurePresets": [
+		{
+			"name":        "debug",
+			"displayName": "Debug build",
+			"description": "Build the project with -Og and assertions enabled.",
+			"generator":   "Ninja",
+			"binaryDir":   "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name":        "release",
+			"displayName": "Release build",
+			"description": "Build the project with -O2 and assertions disabled.",
+			"generator":   "Ninja",
+			"binaryDir":   "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		}
+	]
+}

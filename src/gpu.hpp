@@ -1,0 +1,199 @@
+
+#pragma once
+
+#include <stddef.h>
+#include <stdint.h>
+#include "ps1/gpucmd.h"
+#include "ps1/registers.h"
+#include "util.hpp"
+
+namespace gpu {
+
+/* Types */
+
+using Color      = uint32_t;
+using BlendMode  = GP0BlendMode;
+using ColorDepth = GP0ColorDepth;
+using VideoMode  = GP1VideoMode;
+
+struct Rect {
+public:
+	int16_t x1, y1, x2, y2;
+};
+
+struct RectWH {
+public:
+	int16_t x, y, w, h;
+};
+
+struct RectRB {
+public:
+	int16_t x, y, r, b;
+};
+
+/* Basic API */
+
+static inline void init(void) {
+	GPU_GP1 = gp1_resetGPU();
+	GPU_GP1 = gp1_resetFIFO();
+
+	TIMER_CTRL(0) = TIMER_CTRL_EXT_CLOCK;
+	TIMER_CTRL(1) = TIMER_CTRL_EXT_CLOCK;
+}
+
+static inline void enableDisplay(bool enable) {
+	GPU_GP1 = gp1_dispBlank(!enable);
+}
+
+size_t upload(const RectWH &rect, const void *data, bool wait);
+
+/* Rendering context */
+
+static constexpr size_t DISPLAY_LIST_SIZE = 0x4000;
+static constexpr size_t LAYER_STACK_SIZE  = 16;
+
+struct Buffer {
+public:
+	Rect     clip;
+	uint32_t displayList[DISPLAY_LIST_SIZE];
+
+	volatile util::RingBuffer<uint32_t *volatile, LAYER_STACK_SIZE> layers;
+};
+
+class Context {
+private:
+	Buffer   _buffers[2];
+	uint32_t *_currentListPtr, *_lastListPtr;
+	int      _currentBuffer;
+
+	uint32_t _lastTexpage;
+
+	inline Buffer &_drawBuffer(void) {
+		return _buffers[_currentBuffer];
+	}
+	inline Buffer &_dispBuffer(void) {
+		return _buffers[_currentBuffer ^ 1];
+	}
+
+	void _flushLayer(void);
+	void _applyResolution(VideoMode mode, int shiftX = 0, int shiftY = 0) const;
+
+public:
+	int width, height, refreshRate;
+
+	inline Context(
+		VideoMode mode, int width, int height, bool sideBySide = false
+	) : _lastTexpage(0) {
+		setResolution(mode, width, height, sideBySide);
+	}
+	inline void newLayer(int x, int y) {
+		newLayer(x, y, width, height);
+	}
+
+	inline void drawRect(RectWH &rect, Color color, bool blend = false) {
+		drawRect(rect.x, rect.y, rect.w, rect.h, color, blend);
+	}
+	inline void drawGradientRectH(
+		RectWH &rect, Color left, Color right, bool blend = false
+	) {
+		drawGradientRectH(rect.x, rect.y, rect.w, rect.h, left, right, blend);
+	}
+	inline void drawGradientRectV(
+		RectWH &rect, Color top, Color bottom, bool blend = false
+	) {
+		drawGradientRectV(rect.x, rect.y, rect.w, rect.h, top, bottom, blend);
+	}
+	inline void drawGradientRectD(
+		RectWH &rect, Color top, Color middle, Color bottom, bool blend = false
+	) {
+		drawGradientRectD(
+			rect.x, rect.y, rect.w, rect.h, top, middle, bottom, blend
+		);
+	}
+
+	void setResolution(
+		VideoMode mode, int width, int height, bool sideBySide = false
+	);
+	void drawNextLayer(void);
+	void flip(void);
+
+	uint32_t *newPacket(size_t length);
+	void newLayer(int x, int y, int drawWidth, int drawHeight);
+	void setTexturePage(uint16_t page, bool dither = false);
+	void setBlendMode(BlendMode blendMode, bool dither = false);
+
+	void drawRect(
+		int x, int y, int width, int height, Color color, bool blend = false
+	);
+	void drawGradientRectH(
+		int x, int y, int width, int height, Color left, Color right,
+		bool blend = false
+	);
+	void drawGradientRectV(
+		int x, int y, int width, int height, Color top, Color bottom,
+		bool blend = false
+	);
+	void drawGradientRectD(
+		int x, int y, int width, int height, Color top, Color middle,
+		Color bottom, bool blend = false
+	);
+	void drawBackdrop(Color color, BlendMode blendMode);
+};
+
+/* Image and font classes */
+
+struct [[gnu::packed]] TIMHeader {
+public:
+	uint32_t magic, flags;
+};
+
+struct [[gnu::packed]] TIMSectionHeader {
+public:
+	uint32_t length;
+	RectWH   vram;
+};
+
+class Image {
+public:
+	uint16_t u, v, width, height;
+	uint16_t texpage, palette;
+
+	inline Image(void)
+	: width(0), height(0) {}
+
+	void initFromVRAMRect(
+		const RectWH &rect, ColorDepth colorDepth,
+		BlendMode blendMode = GP0_BLEND_SEMITRANS
+	);
+	bool initFromTIMHeader(
+		const TIMHeader *header, BlendMode blendMode = GP0_BLEND_SEMITRANS
+	);
+	void drawScaled(
+		Context &ctx, int x, int y, int w, int h, bool blend = false
+	) const;
+	void draw(Context &ctx, int x, int y, bool blend = false) const;
+};
+
+static constexpr int FONT_CHAR_OFFSET = ' ';
+static constexpr int FONT_CHAR_COUNT  = 120;
+static constexpr int FONT_SPACE_WIDTH = 4;
+static constexpr int FONT_TAB_WIDTH   = 32;
+static constexpr int FONT_LINE_HEIGHT = 10;
+
+class Font {
+public:
+	Image    image;
+	uint32_t metrics[FONT_CHAR_COUNT];
+
+	void draw(
+		Context &ctx, const char *str, const Rect &rect, Color color = 0x808080,
+		bool wordWrap = false
+	) const;
+	void draw(
+		Context &ctx, const char *str, const RectWH &rect,
+		Color color = 0x808080, bool wordWrap = false
+	) const;
+	int getStringWidth(const char *str, bool breakOnSpace = false) const;
+};
+
+}
