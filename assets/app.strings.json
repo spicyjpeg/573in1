@@ -1,0 +1,149 @@
+{
+	"App": {
+		"cartDetectWorker": {
+			"readDigitalIO": "Retrieving digital I/O board ID...",
+			"identifyCart":  "Identifying security cartridge...",
+			"readCart":      "Reading security cartridge...",
+			"identifyGame":  "Attempting to identify game..."
+		},
+		"cartUnlockWorker": {
+			"read":     "Dumping cartridge...",
+			"identify": "Attempting to identify game..."
+		},
+		"qrCodeWorker": {
+			"compress": "Compressing cartridge dump...",
+			"generate": "Generating QR code..."
+		}
+	},
+
+	"ButtonMappingScreen": {
+		"title":      "{CART_ICON} Select button mapping",
+		"prompt":     "Use {START_BUTTON} or the Test button to select a mapping preset suitable for your cabinet or JAMMA setup. Other buttons will be enabled once a mapping is selected.",
+		"itemPrompt": "{RIGHT_ARROW} Press and hold {START_BUTTON} or Test to confirm",
+
+		"joystick":   "JAMMA supergun or joystick/buttons",
+		"ddrCab":     "Dance Dance Revolution (2-player) cabinet",
+		"ddrSoloCab": "Dance Dance Revolution Solo cabinet",
+		"dmCab":      "DrumMania or PercussionFreaks cabinet",
+		"dmxCab":     "Dance Maniax cabinet"
+	},
+
+	"CartActionsScreen": {
+		"title":      "{CART_ICON} Cartridge options",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
+
+		"qrDump": {
+			"name":   "Dump cartridge as QR code",
+			"prompt": "Generate a QR code encoding the contents of the cartridge's EEPROM in compressed format. The code can be scanned and decoded to a raw dump."
+		},
+		"hexdump": {
+			"name":   "View cartridge hexdump",
+			"prompt": "Display the raw contents of the cartridge's EEPROM."
+		},
+		"resetSystemID": {
+			"name":   "Reset system identifier (unpair cartridge)",
+			"prompt": "Delete any previously saved system identifier, allowing the cartridge to be used to reinstall the game on any system."
+		},
+		"editSystemID": {
+			"name":   "Edit system identifier (pair to another 573)",
+			"prompt": "Edit the saved system identifier to allow the cartridge to be used on a specific system without having to reinstall the game first."
+		},
+		"reflash": {
+			"name":   "Erase and reflash cartridge",
+			"prompt": "Wipe all data and flash the cartridge with another game's identifiers. All cartridges can be converted for use with any other game that uses the same cartridge type."
+		},
+		"erase": {
+			"name":   "Erase cartridge",
+			"prompt": "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by this tool using a master calendar."
+		}
+	},
+
+	"CartInfoScreen": {
+		"title":          "{CART_ICON} Cartridge information",
+		"digitalIOInfo":  "Digital I/O ID:\t%s\nDigital I/O SN:\t%s\n\n",
+		"cartInfo":       "Cartridge type:\t%s\nUnlock status:\t%s\nDS2401 identifier:\t%s\nZS01 identifier:\t%s\n\n",
+
+		"id": {
+			"error":      "read failure",
+			"noSystemID": "no digital I/O board",
+			"noCartID":   "cartridge has no DS2401",
+			"noZSID":     "not a ZS01 cartridge"
+		},
+		"unlockStatus": {
+			"locked":   "{CLOSED_LOCK} locked, game key required",
+			"unlocked": "{OPEN_LOCK} unlocked"
+		},
+		"description": {
+			"noCart":    "No supported cartridge has been found.\n\nTurn off the system and insert a security cartridge in order to continue. DO NOT HOTPLUG CARTRIDGES; hotplugging may damage both the 573 and the cartridge.\n\nIf a cartridge is inserted but not detected, try cleaning its pins as well as the system's security cartridge connector.",
+			"initError": "Failed to initialize and read unprotected data from this cartridge.\n\nTurn off the system and make sure the cartridge is inserted correctly. If this issue persists, try using another cartridge of the same type.",
+
+			"locked": {
+				"unidentified": "This cartridge contains data for an unsupported game.\n\nAs the cartridge is currently locked, you will have to manually select which game it belongs to in order to dump its contents or reflash it for use with a supported game, as each game has a different unlocking key.",
+				"identified":   "This cartridge has been identified as:\n  %s\n\nIf this is correct, you may proceed to unlock the cartridge using the appropriate key for this game in order to access and modify its contents.",
+				"unknown":      "This cartridge cannot be identified without unlocking it first.\n\nYou will have to manually select which game it belongs to in order to dump its contents or reflash it for use with a supported game, as each game has a different unlocking key."
+			},
+			"unlocked": {
+				"unidentified": "This cartridge contains data for an unsupported game.\n\nThe system identifier (if any) cannot be reset or edited, however you may still dump the cartridge's contents or reflash it for use with a supported game.",
+				"identified":   "This cartridge has been identified as:\n  %s\n\nYou may now proceed to reset the system identifier, edit it or erase and reflash the cartridge for use with another game.",
+				"blank":        "This cartridge has been previously erased and is now blank.\n\nIt must be flashed and optionally initialized with a system identifier in order to be used with a supported game."
+			}
+		},
+		"prompt": {
+			"locked":   "Press {START_BUTTON} to proceed to unlock the cartridge.",
+			"unlocked": "Press {START_BUTTON} to continue.",
+			"error":    "Press the Test button to view debug logs."
+		},
+
+		"x76f041": {
+			"name":    "{CHIP_ICON} Xicor X76F041",
+			"warning": "X76F041 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, they will lock out any further access and thus become PERMANENTLY BRICKED, with no way to restore access.\n\nAre you sure the game/key is correct?"
+		},
+		"x76f100": {
+			"name":    "{CHIP_ICON} Xicor X76F100",
+			"warning": "X76F100 and ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the game/key is correct?"
+		},
+		"zs01": {
+			"name":    "{CHIP_ICON} Konami ZS01 (PIC16CE625)",
+			"desc":    null,
+			"warning": "X76F100 and ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the game/key is correct?"
+		}
+	},
+
+	"QRCodeScreen": {
+		"title":  "{CART_ICON} Cartridge dump",
+		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
+	},
+
+	"UnlockConfirmScreen": {
+		"title": "Warning",
+		"no":    "No, go back",
+		"yes":   "Yes, continue"
+	},
+
+	"UnlockErrorScreen": {
+		"title": "Error",
+		"ok":    "{START_BUTTON} Continue"
+	},
+
+	"UnlockKeyScreen": {
+		"title":      "{CART_ICON} Select unlocking key",
+		"prompt":     "If the cartridge has been converted before, select the game it was last converted to.",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
+
+		"autoUnlock": "Use identified game key",
+		"customKey":  "Enter key manually...",
+		"nullKey":    "Use null key (00-00-00-00-00-00-00-00)"
+	},
+
+	"WarningScreen": {
+		"title": "Warning",
+		"body":  "This tool is experimental and provided with no warranty whatsoever. It is not guaranteed to work and improper usage may PERMANENTLY BRICK your System 573 security cartridges.\n\nUse this tool at your own risk. Do not proceed if you do not know what you are doing.",
+
+		"cooldown": "Wait... (%ds)",
+		"ok":       "{START_BUTTON} Continue"
+	},
+
+	"WorkerStatusScreen": {
+		"title": "Working..."
+	}
+}
