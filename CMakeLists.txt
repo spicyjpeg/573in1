@@ -17,8 +17,8 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 add_executable(
 	cart_tool
 	src/asset.cpp
-	src/cart.cpp
-	src/cartdb.cpp
+	src/cartdata.cpp
+	src/cartio.cpp
 	src/gpu.cpp
 	src/io.cpp
 	src/main.cpp

@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 namespace zs01 {
 
@@ -59,14 +58,14 @@ class Packet {
 public:
 	uint8_t command, address, data[8], crc[2];
 
-	inline void copyDataFrom(const uint8_t *source) {
-		memcpy(data, source, sizeof(data));
+	inline void copyFrom(const uint8_t *source) {
+		__builtin_memcpy(data, source, sizeof(data));
 	}
-	inline void copyDataTo(uint8_t *dest) const {
-		memcpy(dest, data, sizeof(data));
+	inline void copyTo(uint8_t *dest) const {
+		__builtin_memcpy(dest, data, sizeof(data));
 	}
-	inline void clearData(void) {
-		memset(data, 0, sizeof(data));
+	inline void clear(void) {
+		__builtin_memset(data, 0, sizeof(data));
 	}
 
 	void updateCRC(void);

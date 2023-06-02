@@ -1,96 +1,64 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 #include "ps1/system.h"
 #include "vendor/miniz.h"
-#include "cart.hpp"
+#include "cartio.hpp"
 #include "io.hpp"
 #include "util.hpp"
 #include "zs01.hpp"
 
 namespace cart {
 
-/* Common functions */
+/* Common data structures */
 
-enum ChipID : uint32_t {
-	_ID_X76F041 = 0x55aa5519,
-	_ID_X76F100 = 0x55aa0019,
-	_ID_ZS01    = 0x5a530001
-};
+void Identifier::updateChecksum(void) {
+	data[7] = (util::sum(data, 7) & 0xff) ^ 0xff;
+}
 
-static const size_t _DATA_LENGTHS[NUM_CHIP_TYPES]{ 0, 512, 112, 112 };
+bool Identifier::validateChecksum(void) const {
+	uint8_t value = (util::sum(data, 7) & 0xff) ^ 0xff;
 
-static constexpr int _X76_MAX_ACK_POLLS = 5;
-static constexpr int _X76_WRITE_DELAY   = 10000;
-static constexpr int _ZS01_PACKET_DELAY = 30000;
-
-static bool _validateID(const uint8_t *id) {
-	if (!id[0] || (id[0] == 0xff)) {
-		LOG("invalid device type 0x%02x", id[0]);
-		return false;
-	}
-
-	uint8_t crc = util::dsCRC8(id, 7);
-	if (crc != id[7]) {
-		LOG("CRC mismatch, exp=0x%02x, got=0x%02x", crc, id[7]);
+	if (value != data[7]) {
+		LOG("checksum mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
 		return false;
 	}
 
 	return true;
 }
 
-size_t getDataLength(ChipType type) {
-	return _DATA_LENGTHS[type];
+void Identifier::updateDSCRC(void) {
+	data[7] = util::dsCRC8(data, 7);
 }
 
-Cart *createCart(void) {
-	if (!io::getCartInsertionStatus()) {
-		LOG("DSR not asserted");
-		return new Cart();
+bool Identifier::validateDSCRC(void) const {
+	uint8_t value = util::dsCRC8(data, 7);
+
+	if (value != data[7]) {
+		LOG("CRC mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
+		return false;
 	}
 
-	uint32_t id1 = io::i2cResetX76();
-	LOG("id1=0x%08x", id1);
-
-	switch (id1) {
-		case _ID_X76F041:
-			return new X76F041Cart();
-
-		//case _ID_X76F100:
-			//return new X76F100Cart();
-
-		default:
-			uint32_t id2 = io::i2cResetZS01();
-			LOG("id2=0x%08x", id2);
-
-			if (id2 == _ID_ZS01)
-				return new ZS01Cart();
-
-			return new Cart();
-	}
+	return true;
 }
 
-/* Base cart class */
+/* Dump structure and utilities */
 
-Cart::Cart(void) {
-	memset(&version, 0, 44);
+const ChipSize CHIP_SIZES[NUM_CHIP_TYPES]{
+	{ .dataLength =   0, .publicDataOffset =   0, .publicDataLength =   0 },
+	{ .dataLength = 512, .publicDataOffset = 384, .publicDataLength = 128 },
+	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =   0 },
+	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =  32 }
+};
 
-	version  = DUMP_VERSION;
-	chipType = TYPE_NONE;
-	flags    = 0;
-}
-
-size_t Cart::toQRString(char *output) {
+size_t Dump::toQRString(char *output) const {
 	uint8_t compressed[MAX_QR_STRING_LENGTH];
 	size_t  uncompLength = getDumpLength();
 	size_t  compLength   = MAX_QR_STRING_LENGTH;
 
 	int error = mz_compress2(
-		compressed,
-		reinterpret_cast<mz_ulong *>(&compLength),
-		&version,
-		uncompLength,
+		compressed, reinterpret_cast<mz_ulong *>(&compLength),
+		reinterpret_cast<const uint8_t *>(this), uncompLength,
 		MZ_BEST_COMPRESSION
 	);
 
@@ -104,15 +72,20 @@ size_t Cart::toQRString(char *output) {
 	);
 
 	compLength = util::encodeBase45(&output[5], compressed, compLength);
-	memcpy(&output[0], "573::", 5);
-	memcpy(&output[compLength + 5], "::", 3);
+	__builtin_memcpy(&output[0], "573::", 5);
+	__builtin_memcpy(&output[compLength + 5], "::", 3);
 
 	return compLength + 7;
 }
 
-Error Cart::readSystemID(void) {
-	uint8_t id[8];
-	auto    mask = setInterruptMask(0);
+/* Functions common to all cartridge drivers */
+
+static constexpr int _X76_MAX_ACK_POLLS = 5;
+static constexpr int _X76_WRITE_DELAY   = 10000;
+static constexpr int _ZS01_PACKET_DELAY = 30000;
+
+CartError Cart::readSystemID(void) {
+	auto mask = setInterruptMask(0);
 
 	if (!io::dsDIOReset()) {
 		if (mask)
@@ -122,26 +95,23 @@ Error Cart::readSystemID(void) {
 		return DS2401_NO_RESP;
 	}
 
-	flags |= HAS_DIGITAL_IO;
+	_dump.flags |= DUMP_HAS_SYSTEM_ID;
 
 	io::dsDIOWriteByte(0x33);
 	for (int i = 0; i < 8; i++)
-		id[i] = io::dsDIOReadByte();
+		_dump.systemID.data[i] = io::dsDIOReadByte();
 
 	if (mask)
 		setInterruptMask(mask);
-	if (!_validateID(id))
+	if (!_dump.systemID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
-	memcpy(systemID, id, sizeof(id));
-
-	flags |= SYSTEM_ID_OK;
+	_dump.flags |= DUMP_SYSTEM_ID_OK;
 	return NO_ERROR;
 }
 
-Error X76Cart::readCartID(void) {
-	uint8_t id[8];
-	auto    mask = setInterruptMask(0);
+CartError X76Cart::readCartID(void) {
+	auto mask = setInterruptMask(0);
 
 	if (!io::dsCartReset()) {
 		if (mask)
@@ -151,29 +121,27 @@ Error X76Cart::readCartID(void) {
 		return DS2401_NO_RESP;
 	}
 
-	flags |= HAS_DS2401;
+	_dump.flags |= DUMP_HAS_CART_ID;
 
 	io::dsCartWriteByte(0x33);
 	for (int i = 0; i < 8; i++)
-		id[i] = io::dsCartReadByte();
+		_dump.cartID.data[i] = io::dsCartReadByte();
 
 	if (mask)
 		setInterruptMask(mask);
-	if (!_validateID(id))
+	if (!_dump.cartID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
-	memcpy(cartID, id, sizeof(id));
-
-	flags |= CART_ID_OK;
+	_dump.flags |= DUMP_CART_ID_OK;
 	return NO_ERROR;
 }
 
-Error X76Cart::_x76Command(
-	uint8_t command, uint8_t param, uint8_t pollByte
+CartError X76Cart::_x76Command(
+	uint8_t cmd, uint8_t param, uint8_t pollByte
 ) const {
 	io::i2cStartWithCS();
 
-	io::i2cWriteByte(command);
+	io::i2cWriteByte(cmd);
 	if (!io::i2cGetACK()) {
 		io::i2cStopWithCS();
 		LOG("NACK while sending command");
@@ -187,7 +155,7 @@ Error X76Cart::_x76Command(
 		return X76_NACK;
 	}
 
-	if (!io::i2cWriteBytes(dataKey, sizeof(dataKey))) {
+	if (!io::i2cWriteBytes(_dump.dataKey, sizeof(_dump.dataKey))) {
 		io::i2cStopWithCS();
 		LOG("NACK while sending data key");
 		return X76_NACK;
@@ -222,17 +190,11 @@ enum X76F041ConfigOp : uint8_t {
 	_X76F041_CFG_ERASE        = 0x70
 };
 
-X76F041Cart::X76F041Cart(void) {
-	Cart();
-
-	chipType = TYPE_X76F041;
-}
-
-Error X76F041Cart::readPrivateData(void) {
+CartError X76F041Cart::readPrivateData(void) {
 	// Reads can be done with any block size, but a single read operation can't
 	// cross 128-byte block boundaries.
 	for (int i = 0; i < 512; i += 128) {
-		Error error = _x76Command(
+		auto error = _x76Command(
 			_X76F041_READ | (i >> 8), i & 0xff, _X76F041_ACK_POLL
 		);
 		if (error)
@@ -247,23 +209,23 @@ Error X76F041Cart::readPrivateData(void) {
 			return X76_NACK;
 		}
 
-		io::i2cReadBytes(&data[i], 128);
+		io::i2cReadBytes(&_dump.data[i], 128);
 		io::i2cStopWithCS();
 	}
 
 	return NO_ERROR;
 }
 
-Error X76F041Cart::writeData(void) {
+CartError X76F041Cart::writeData(void) {
 	// Writes can only be done in 8-byte blocks.
 	for (int i = 0; i < 512; i += 8) {
-		Error error = _x76Command(
+		auto error = _x76Command(
 			_X76F041_WRITE | (i >> 8), i & 0xff, _X76F041_ACK_POLL
 		);
 		if (error)
 			return error;
 
-		if (!io::i2cWriteBytes(&data[i], 8)) {
+		if (!io::i2cWriteBytes(&_dump.data[i], 8)) {
 			LOG("NACK while sending data bytes");
 			return X76_NACK;
 		}
@@ -274,8 +236,8 @@ Error X76F041Cart::writeData(void) {
 	return NO_ERROR;
 }
 
-Error X76F041Cart::erase(void) {
-	Error error = _x76Command(
+CartError X76F041Cart::erase(void) {
+	auto error = _x76Command(
 		_X76F041_CONFIG, _X76F041_CFG_ERASE, _X76F041_ACK_POLL
 	);
 	if (error)
@@ -285,8 +247,8 @@ Error X76F041Cart::erase(void) {
 	return NO_ERROR;
 }
 
-Error X76F041Cart::setDataKey(const uint8_t *newKey) {
-	Error error = _x76Command(
+CartError X76F041Cart::setDataKey(const uint8_t *key) {
+	auto error = _x76Command(
 		_X76F041_CONFIG, _X76F041_CFG_SET_DATA_KEY, _X76F041_ACK_POLL
 	);
 	if (error)
@@ -295,7 +257,7 @@ Error X76F041Cart::setDataKey(const uint8_t *newKey) {
 	// The X76F041 requires the key to be sent twice as a way of ensuring it
 	// gets received correctly.
 	for (int i = 2; i; i--) {
-		if (!io::i2cWriteBytes(newKey, sizeof(dataKey))) {
+		if (!io::i2cWriteBytes(key, sizeof(_dump.dataKey))) {
 			io::i2cStopWithCS();
 			LOG("NACK while setting new data key");
 			return X76_NACK;
@@ -304,8 +266,8 @@ Error X76F041Cart::setDataKey(const uint8_t *newKey) {
 
 	io::i2cStopWithCS(_X76_WRITE_DELAY);
 
-	// Update the data key stored in the class.
-	memcpy(dataKey, newKey, sizeof(dataKey));
+	// Update the data key stored in the dump.
+	__builtin_memcpy(_dump.dataKey, key, sizeof(_dump.dataKey));
 	return NO_ERROR;
 }
 
@@ -319,25 +281,29 @@ enum X76F100Command : uint8_t {
 	_X76F100_ACK_POLL      = 0x55
 };
 
-X76F100Cart::X76F100Cart(void) {
-	Cart();
+// TODO: actually implement this (even though no X76F100 carts were ever made)
 
-	chipType = TYPE_X76F100;
+CartError X76F100Cart::readPrivateData(void) {
+	return UNSUPPORTED_OP;
 }
 
-// TODO: actually implement this (even though no X76F100 carts were ever made)
+CartError X76F100Cart::writeData(void) {
+	return UNSUPPORTED_OP;
+}
+
+CartError X76F100Cart::erase(void) {
+	return UNSUPPORTED_OP;
+}
+
+CartError X76F100Cart::setDataKey(const uint8_t *key) {
+	return UNSUPPORTED_OP;
+}
 
 /* ZS01 driver */
 
-ZS01Cart::ZS01Cart(void) {
-	Cart();
-
-	chipType = TYPE_ZS01;
-	flags    = HAS_DS2401;
-}
-
-Error ZS01Cart::_transact(zs01::Packet &request, zs01::Packet &response) {
+CartError ZS01Cart::_transact(zs01::Packet &request, zs01::Packet &response) {
 	io::i2cStart();
+	
 	if (!io::i2cWriteBytes(
 		&request.command, sizeof(zs01::Packet), _ZS01_PACKET_DELAY
 	)) {
@@ -352,7 +318,8 @@ Error ZS01Cart::_transact(zs01::Packet &request, zs01::Packet &response) {
 	if (!response.decodeResponse())
 		return ZS01_CRC_MISMATCH;
 
-	_state = response.address;
+	_encoderState = response.address;
+
 	if (response.command != zs01::RESP_NO_ERROR) {
 		LOG("ZS01 error, code=0x%02x", response.command);
 		return ZS01_ERROR;
@@ -361,9 +328,9 @@ Error ZS01Cart::_transact(zs01::Packet &request, zs01::Packet &response) {
 	return NO_ERROR;
 }
 
-Error ZS01Cart::readCartID(void) {
+CartError ZS01Cart::readCartID(void) {
 	zs01::Packet request, response;
-	Error        error;
+	CartError    error;
 
 	request.address = zs01::ADDR_ZS01_ID;
 	request.encodeReadRequest();
@@ -371,12 +338,12 @@ Error ZS01Cart::readCartID(void) {
 	error = _transact(request, response);
 	if (error)
 		return error;
-	if (!_validateID(response.data))
+
+	response.copyTo(_dump.zsID.data);
+	if (!_dump.zsID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
-	response.copyDataTo(zsID);
-
-	flags |= ZS_ID_OK;
+	_dump.flags |= DUMP_ZS_ID_OK;
 
 	request.address = zs01::ADDR_DS2401_ID;
 	request.encodeReadRequest();
@@ -384,114 +351,153 @@ Error ZS01Cart::readCartID(void) {
 	error = _transact(request, response);
 	if (error)
 		return error;
-	if (!_validateID(response.data))
+
+	response.copyTo(_dump.cartID.data);
+	if (!_dump.cartID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
-	response.copyDataTo(cartID);
-
-	flags |= CART_ID_OK;
+	_dump.flags |= DUMP_CART_ID_OK;
 	return NO_ERROR;
 }
 
-Error ZS01Cart::readPublicData(void) {
+CartError ZS01Cart::readPublicData(void) {
 	zs01::Packet request, response;
 
 	for (int i = zs01::ADDR_PUBLIC; i < zs01::ADDR_PUBLIC_END; i++) {
 		request.address = i;
 		request.encodeReadRequest();
 
-		Error error = _transact(request, response);
+		CartError error = _transact(request, response);
 		if (error)
 			return error;
 
-		response.copyDataTo(&data[i * sizeof(response.data)]);
+		response.copyTo(&_dump.data[i * sizeof(response.data)]);
 	}
 
-	flags |= PUBLIC_DATA_OK;
+	_dump.flags |= DUMP_PUBLIC_DATA_OK;
 	return NO_ERROR;
 }
 
-Error ZS01Cart::readPrivateData(void) {
+CartError ZS01Cart::readPrivateData(void) {
 	zs01::Packet request, response;
 	zs01::Key    key;
-	key.unpackFrom(dataKey);
+
+	key.unpackFrom(_dump.dataKey);
 
 	for (int i = zs01::ADDR_PRIVATE; i < zs01::ADDR_PRIVATE_END; i++) {
 		request.address = i;
-		request.encodeReadRequest(key, _state);
+		request.encodeReadRequest(key, _encoderState);
 
-		Error error = _transact(request, response);
+		CartError error = _transact(request, response);
 		if (error)
 			return error;
 
-		response.copyDataTo(&data[i * sizeof(response.data)]);
+		response.copyTo(&_dump.data[i * sizeof(response.data)]);
 	}
 
-	flags |= PRIVATE_DATA_OK;
+	_dump.flags |= DUMP_PRIVATE_DATA_OK;
 
 	request.address = zs01::ADDR_CONFIG;
-	request.encodeReadRequest(key, _state);
+	request.encodeReadRequest(key, _encoderState);
 
-	Error error = _transact(request, response);
+	CartError error = _transact(request, response);
 	if (error)
 		return error;
 
-	response.copyDataTo(config);
+	response.copyTo(_dump.config);
 
-	flags |= CONFIG_OK;
+	_dump.flags |= DUMP_CONFIG_OK;
 	return NO_ERROR;
 }
 
-Error ZS01Cart::writeData(void) {
+CartError ZS01Cart::writeData(void) {
 	zs01::Packet request, response;
 	zs01::Key    key;
-	key.unpackFrom(dataKey);
+
+	key.unpackFrom(_dump.dataKey);
 
 	for (int i = zs01::ADDR_PUBLIC; i < zs01::ADDR_PRIVATE_END; i++) {
 		request.address = i;
-		request.copyDataFrom(&data[i * sizeof(request.data)]);
-		request.encodeWriteRequest(key, _state);
+		request.copyFrom(&_dump.data[i * sizeof(request.data)]);
+		request.encodeWriteRequest(key, _encoderState);
 
-		Error error = _transact(request, response);
+		CartError error = _transact(request, response);
 		if (error)
 			return error;
 	}
 
 	request.address = zs01::ADDR_CONFIG;
-	request.copyDataFrom(config);
-	request.encodeWriteRequest(key, _state);
+	request.copyFrom(_dump.config);
+	request.encodeWriteRequest(key, _encoderState);
 
 	return _transact(request, response);
 }
 
-Error ZS01Cart::erase(void) {
+CartError ZS01Cart::erase(void) {
 	zs01::Packet request, response;
 	zs01::Key    key;
-	key.unpackFrom(dataKey);
 
-	memset(request.data, 0, sizeof(request.data));
+	key.unpackFrom(_dump.dataKey);
+
+	__builtin_memset(request.data, 0, sizeof(request.data));
 	request.address = zs01::ADDR_ERASE;
-	request.encodeWriteRequest(key, _state);
+	request.encodeWriteRequest(key, _encoderState);
 
 	return _transact(request, response);
 }
 
-Error ZS01Cart::setDataKey(const uint8_t *newKey) {
+CartError ZS01Cart::setDataKey(const uint8_t *key) {
 	zs01::Packet request, response;
-	zs01::Key    key;
-	key.unpackFrom(dataKey);
+	zs01::Key    newKey;
+
+	newKey.unpackFrom(_dump.dataKey);
 
 	request.address = zs01::ADDR_DATA_KEY;
-	request.copyDataFrom(newKey);
-	request.encodeWriteRequest(key, _state);
+	request.copyFrom(key);
+	request.encodeWriteRequest(newKey, _encoderState);
 
-	Error error = _transact(request, response);
+	CartError error = _transact(request, response);
 	if (error)
 		return error;
 
-	// Update the data key stored in the class.
-	memcpy(dataKey, newKey, sizeof(dataKey));
+	// Update the data key stored in the dump.
+	__builtin_memcpy(_dump.dataKey, key, sizeof(_dump.dataKey));
 	return NO_ERROR;
+}
+
+/* Cartridge identification */
+
+enum ChipIdentifier : uint32_t {
+	_ID_X76F041 = 0x55aa5519,
+	_ID_X76F100 = 0x55aa0019,
+	_ID_ZS01    = 0x5a530001
+};
+
+Cart *createCart(Dump &dump) {
+	if (!io::getCartInsertionStatus()) {
+		LOG("DSR not asserted");
+		return new Cart(dump);
+	}
+
+	uint32_t id1 = io::i2cResetZS01();
+	LOG("id1=0x%08x", id1);
+
+	if (id1 == _ID_ZS01)
+		return new ZS01Cart(dump);
+
+	uint32_t id2 = io::i2cResetX76();
+	LOG("id2=0x%08x", id2);
+
+	switch (id2) {
+		case _ID_X76F041:
+			return new X76F041Cart(dump);
+
+		//case _ID_X76F100:
+			//return new X76F100Cart(dump);
+
+		default:
+			return new Cart(dump);
+	}
 }
 
 }

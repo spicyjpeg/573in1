@@ -7,8 +7,8 @@
 #include "app/unlock.hpp"
 #include "ps1/system.h"
 #include "asset.hpp"
-#include "cart.hpp"
-#include "cartdb.hpp"
+#include "cartdata.hpp"
+#include "cartio.hpp"
 #include "uibase.hpp"
 
 /* Worker status class */
@@ -85,15 +85,15 @@ private:
 	asset::AssetLoader *_loader;
 	asset::StringTable *_strings;
 
-	cartdb::CartDB _db;
-	Thread         _workerThread;
-	WorkerStatus   _workerStatus;
+	cart::Dump   _dump;
+	cart::CartDB _db;
+	Thread       _workerThread;
+	WorkerStatus _workerStatus;
 
-	uint8_t       *_workerStack;
-	cart::Cart    *_cart;
-
-	cartdb::Entry          *_identified;
-	cartdb::IdentifyResult _identifyResult;
+	uint8_t        *_workerStack;
+	cart::Cart     *_cart;
+	cart::CartData *_cartData;
+	cart::DBEntry  *_identified;
 
 	void _setupWorker(void (App::* func)(void));
 	void _setupInterrupts(void);

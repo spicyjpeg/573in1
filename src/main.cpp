@@ -99,7 +99,7 @@ int main(int argc, const char **argv) {
 		!loader.loadTIM(background.tile,    "assets/textures/background.tim") ||
 		!loader.loadTIM(uiCtx.font.image,   "assets/textures/font.tim") ||
 		!loader.loadFontMetrics(uiCtx.font, "assets/textures/font.metrics") ||
-		!loader.loadAsset(strings.data,     "assets/app.strings")
+		!loader.loadAsset(strings,          "assets/app.strings")
 	) {
 		LOG("required assets not found, exiting");
 		return 1;

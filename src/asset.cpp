@@ -159,12 +159,12 @@ size_t AssetLoader::loadFontMetrics(gpu::Font &output, const char *path) {
 
 /* String table manager */
 
-const char *StringTable::get(util::Hash id) {
-	if (!data.ptr)
+const char *StringTable::get(util::Hash id) const {
+	if (!ptr)
 		return "missingno";
 
-	auto blob  = reinterpret_cast<const char *>(data.ptr);
-	auto table = reinterpret_cast<const StringTableEntry *>(data.ptr);
+	auto blob  = reinterpret_cast<const char *>(ptr);
+	auto table = reinterpret_cast<const StringTableEntry *>(ptr);
 
 	auto entry = &table[id % TABLE_BUCKET_COUNT];
 
@@ -181,7 +181,9 @@ const char *StringTable::get(util::Hash id) {
 	return "missingno";
 }
 
-size_t StringTable::format(char *buffer, size_t length, util::Hash id, ...) {
+size_t StringTable::format(
+	char *buffer, size_t length, util::Hash id, ...
+) const {
 	va_list ap;
 
 	va_start(ap, id);

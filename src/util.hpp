@@ -9,6 +9,15 @@ namespace util {
 
 /* Misc. template utilities */
 
+template<typename T> static inline uint32_t sum(const T *data, size_t length) {
+	uint32_t value = 0;
+
+	for (; length; length--)
+		value += uint32_t(*(data++));
+
+	return value;
+}
+
 template<typename T> static inline T min(T a, T b) {
 	return (a < b) ? a : b;
 }
