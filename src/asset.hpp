@@ -66,16 +66,14 @@ public:
 	uint16_t offset, chained;
 };
 
-class StringTable {
+class StringTable : public Asset {
 public:
-	Asset data;
-
-	inline const char *operator[](util::Hash id) {
+	inline const char *operator[](util::Hash id) const {
 		return get(id);
 	}
 
-	const char *get(util::Hash id);
-	size_t format(char *buffer, size_t length, util::Hash id, ...);
+	const char *get(util::Hash id) const;
+	size_t format(char *buffer, size_t length, util::Hash id, ...) const;
 };
 
 /* QR code encoder */

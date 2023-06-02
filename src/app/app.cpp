@@ -4,8 +4,8 @@
 #include "app/app.hpp"
 #include "ps1/system.h"
 #include "asset.hpp"
-#include "cart.hpp"
-#include "cartdb.hpp"
+#include "cartdata.hpp"
+#include "cartio.hpp"
 #include "io.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
@@ -13,7 +13,7 @@
 /* App class */
 
 App::App(void)
-: _cart(nullptr), _identified(nullptr), _identifyResult(cartdb::UNIDENTIFIED) {
+: _cart(nullptr), _cartData(nullptr), _identified(nullptr) {
 	_workerStack = new uint8_t[WORKER_STACK_SIZE];
 }
 
@@ -59,31 +59,36 @@ static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 void App::_cartDetectWorker(void) {
 	_workerStatus.update(0, 4, WSTR("App.cartDetectWorker.identifyCart"));
 
-	_db.data.unload();
-	_cart = cart::createCart();
+	_db.unload();
+	if (_cart)
+		delete _cart;
+	if (_cartData)
+		delete _cartData;
 
-	if (_cart->chipType) {
-		LOG("cart object @ 0x%08x", _cart);
+	_cart       = cart::createCart(_dump);
+	_cartData   = nullptr;
+	_identified = nullptr;
+
+	if (_dump.chipType) {
+		LOG("dump @ 0x%08x, cart object @ 0x%08x", &_dump, _cart);
 		_workerStatus.update(1, 4, WSTR("App.cartDetectWorker.readCart"));
 
 		_cart->readCartID();
-		_cart->readPublicData();
-
-		if (!_loader->loadAsset(_db.data, _CARTDB_PATHS[_cart->chipType])) {
-			LOG("failed to load cartdb, type=%d", _cart->chipType);
+		if (!_cart->readPublicData())
+			_cartData = cart::createCartData(_dump);
+		if (!_cartData)
 			goto _cartInitDone;
-		}
-		if (!_db.init()) {
-			_db.data.unload();
-			goto _cartInitDone;
-		}
 
+		LOG("cart data object @ 0x%08x", _cartData);
 		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
 
-		if (_cart->flags & cart::PUBLIC_DATA_OK)
-			_identifyResult = _db.identifyCart(*_cart);
-		else
-			LOG("no public data available");
+		if (!_loader->loadAsset(_db, _CARTDB_PATHS[_dump.chipType])) {
+			LOG("failed to load %s", _CARTDB_PATHS[_dump.chipType]);
+			goto _cartInitDone;
+		}
+
+		// TODO
+		//_identified = _db.lookupEntry(code, region);
 	}
 
 _cartInitDone:
@@ -125,8 +130,8 @@ void App::_cartUnlockWorker(void) {
 
 	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identify"));
 
-	if (_cart->flags & cart::PRIVATE_DATA_OK)
-		_identifyResult = _db.identifyCart(*_cart);
+	//if (_dump.flags & cart::DUMP_PRIVATE_DATA_OK)
+		//_identifyResult = _db.identifyCart(*_cart);
 
 	_workerStatus.finish(_cartInfoScreen, true);
 	_dummyWorker();
@@ -136,7 +141,7 @@ void App::_qrCodeWorker(void) {
 	char qrString[cart::MAX_QR_STRING_LENGTH];
 
 	_workerStatus.update(0, 2, WSTR("App.qrCodeWorker.compress"));
-	_cart->toQRString(qrString);
+	_dump.toQRString(qrString);
 
 	_workerStatus.update(1, 2, WSTR("App.qrCodeWorker.generate"));
 	_qrCodeScreen.generateCode(qrString);
