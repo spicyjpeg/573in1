@@ -1,82 +1,12 @@
 
-#include <stddef.h>
 #include <stdint.h>
 #include "ps1/system.h"
-#include "vendor/miniz.h"
+#include "cart.hpp"
 #include "cartio.hpp"
 #include "io.hpp"
-#include "util.hpp"
 #include "zs01.hpp"
 
 namespace cart {
-
-/* Common data structures */
-
-void Identifier::updateChecksum(void) {
-	data[7] = (util::sum(data, 7) & 0xff) ^ 0xff;
-}
-
-bool Identifier::validateChecksum(void) const {
-	uint8_t value = (util::sum(data, 7) & 0xff) ^ 0xff;
-
-	if (value != data[7]) {
-		LOG("checksum mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
-		return false;
-	}
-
-	return true;
-}
-
-void Identifier::updateDSCRC(void) {
-	data[7] = util::dsCRC8(data, 7);
-}
-
-bool Identifier::validateDSCRC(void) const {
-	uint8_t value = util::dsCRC8(data, 7);
-
-	if (value != data[7]) {
-		LOG("CRC mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
-		return false;
-	}
-
-	return true;
-}
-
-/* Dump structure and utilities */
-
-const ChipSize CHIP_SIZES[NUM_CHIP_TYPES]{
-	{ .dataLength =   0, .publicDataOffset =   0, .publicDataLength =   0 },
-	{ .dataLength = 512, .publicDataOffset = 384, .publicDataLength = 128 },
-	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =   0 },
-	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =  32 }
-};
-
-size_t Dump::toQRString(char *output) const {
-	uint8_t compressed[MAX_QR_STRING_LENGTH];
-	size_t  uncompLength = getDumpLength();
-	size_t  compLength   = MAX_QR_STRING_LENGTH;
-
-	int error = mz_compress2(
-		compressed, reinterpret_cast<mz_ulong *>(&compLength),
-		reinterpret_cast<const uint8_t *>(this), uncompLength,
-		MZ_BEST_COMPRESSION
-	);
-
-	if (error != MZ_OK) {
-		LOG("compression error, code=%d", error);
-		return 0;
-	}
-	LOG(
-		"dump compressed, size=%d, ratio=%d%%", compLength,
-		compLength * 100 / uncompLength
-	);
-
-	compLength = util::encodeBase45(&output[5], compressed, compLength);
-	__builtin_memcpy(&output[0], "573::", 5);
-	__builtin_memcpy(&output[compLength + 5], "::", 3);
-
-	return compLength + 7;
-}
 
 /* Functions common to all cartridge drivers */
 
@@ -84,7 +14,7 @@ static constexpr int _X76_MAX_ACK_POLLS = 5;
 static constexpr int _X76_WRITE_DELAY   = 10000;
 static constexpr int _ZS01_PACKET_DELAY = 30000;
 
-CartError Cart::readSystemID(void) {
+DriverError Driver::readSystemID(void) {
 	auto mask = setInterruptMask(0);
 
 	if (!io::dsDIOReset()) {
@@ -110,7 +40,7 @@ CartError Cart::readSystemID(void) {
 	return NO_ERROR;
 }
 
-CartError X76Cart::readCartID(void) {
+DriverError X76Driver::readCartID(void) {
 	auto mask = setInterruptMask(0);
 
 	if (!io::dsCartReset()) {
@@ -136,7 +66,7 @@ CartError X76Cart::readCartID(void) {
 	return NO_ERROR;
 }
 
-CartError X76Cart::_x76Command(
+DriverError X76Driver::_x76Command(
 	uint8_t cmd, uint8_t param, uint8_t pollByte
 ) const {
 	io::i2cStartWithCS();
@@ -190,7 +120,7 @@ enum X76F041ConfigOp : uint8_t {
 	_X76F041_CFG_ERASE        = 0x70
 };
 
-CartError X76F041Cart::readPrivateData(void) {
+DriverError X76F041Driver::readPrivateData(void) {
 	// Reads can be done with any block size, but a single read operation can't
 	// cross 128-byte block boundaries.
 	for (int i = 0; i < 512; i += 128) {
@@ -216,7 +146,7 @@ CartError X76F041Cart::readPrivateData(void) {
 	return NO_ERROR;
 }
 
-CartError X76F041Cart::writeData(void) {
+DriverError X76F041Driver::writeData(void) {
 	// Writes can only be done in 8-byte blocks.
 	for (int i = 0; i < 512; i += 8) {
 		auto error = _x76Command(
@@ -236,7 +166,7 @@ CartError X76F041Cart::writeData(void) {
 	return NO_ERROR;
 }
 
-CartError X76F041Cart::erase(void) {
+DriverError X76F041Driver::erase(void) {
 	auto error = _x76Command(
 		_X76F041_CONFIG, _X76F041_CFG_ERASE, _X76F041_ACK_POLL
 	);
@@ -247,7 +177,7 @@ CartError X76F041Cart::erase(void) {
 	return NO_ERROR;
 }
 
-CartError X76F041Cart::setDataKey(const uint8_t *key) {
+DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 	auto error = _x76Command(
 		_X76F041_CONFIG, _X76F041_CFG_SET_DATA_KEY, _X76F041_ACK_POLL
 	);
@@ -283,25 +213,27 @@ enum X76F100Command : uint8_t {
 
 // TODO: actually implement this (even though no X76F100 carts were ever made)
 
-CartError X76F100Cart::readPrivateData(void) {
+DriverError X76F100Driver::readPrivateData(void) {
 	return UNSUPPORTED_OP;
 }
 
-CartError X76F100Cart::writeData(void) {
+DriverError X76F100Driver::writeData(void) {
 	return UNSUPPORTED_OP;
 }
 
-CartError X76F100Cart::erase(void) {
+DriverError X76F100Driver::erase(void) {
 	return UNSUPPORTED_OP;
 }
 
-CartError X76F100Cart::setDataKey(const uint8_t *key) {
+DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 	return UNSUPPORTED_OP;
 }
 
 /* ZS01 driver */
 
-CartError ZS01Cart::_transact(zs01::Packet &request, zs01::Packet &response) {
+DriverError ZS01Driver::_transact(
+	zs01::Packet &request, zs01::Packet &response
+) {
 	io::i2cStart();
 	
 	if (!io::i2cWriteBytes(
@@ -328,9 +260,9 @@ CartError ZS01Cart::_transact(zs01::Packet &request, zs01::Packet &response) {
 	return NO_ERROR;
 }
 
-CartError ZS01Cart::readCartID(void) {
+DriverError ZS01Driver::readCartID(void) {
 	zs01::Packet request, response;
-	CartError    error;
+	DriverError  error;
 
 	request.address = zs01::ADDR_ZS01_ID;
 	request.encodeReadRequest();
@@ -360,14 +292,14 @@ CartError ZS01Cart::readCartID(void) {
 	return NO_ERROR;
 }
 
-CartError ZS01Cart::readPublicData(void) {
+DriverError ZS01Driver::readPublicData(void) {
 	zs01::Packet request, response;
 
 	for (int i = zs01::ADDR_PUBLIC; i < zs01::ADDR_PUBLIC_END; i++) {
 		request.address = i;
 		request.encodeReadRequest();
 
-		CartError error = _transact(request, response);
+		DriverError error = _transact(request, response);
 		if (error)
 			return error;
 
@@ -378,7 +310,7 @@ CartError ZS01Cart::readPublicData(void) {
 	return NO_ERROR;
 }
 
-CartError ZS01Cart::readPrivateData(void) {
+DriverError ZS01Driver::readPrivateData(void) {
 	zs01::Packet request, response;
 	zs01::Key    key;
 
@@ -388,7 +320,7 @@ CartError ZS01Cart::readPrivateData(void) {
 		request.address = i;
 		request.encodeReadRequest(key, _encoderState);
 
-		CartError error = _transact(request, response);
+		DriverError error = _transact(request, response);
 		if (error)
 			return error;
 
@@ -400,7 +332,7 @@ CartError ZS01Cart::readPrivateData(void) {
 	request.address = zs01::ADDR_CONFIG;
 	request.encodeReadRequest(key, _encoderState);
 
-	CartError error = _transact(request, response);
+	DriverError error = _transact(request, response);
 	if (error)
 		return error;
 
@@ -410,7 +342,7 @@ CartError ZS01Cart::readPrivateData(void) {
 	return NO_ERROR;
 }
 
-CartError ZS01Cart::writeData(void) {
+DriverError ZS01Driver::writeData(void) {
 	zs01::Packet request, response;
 	zs01::Key    key;
 
@@ -421,7 +353,7 @@ CartError ZS01Cart::writeData(void) {
 		request.copyFrom(&_dump.data[i * sizeof(request.data)]);
 		request.encodeWriteRequest(key, _encoderState);
 
-		CartError error = _transact(request, response);
+		DriverError error = _transact(request, response);
 		if (error)
 			return error;
 	}
@@ -433,7 +365,7 @@ CartError ZS01Cart::writeData(void) {
 	return _transact(request, response);
 }
 
-CartError ZS01Cart::erase(void) {
+DriverError ZS01Driver::erase(void) {
 	zs01::Packet request, response;
 	zs01::Key    key;
 
@@ -446,7 +378,7 @@ CartError ZS01Cart::erase(void) {
 	return _transact(request, response);
 }
 
-CartError ZS01Cart::setDataKey(const uint8_t *key) {
+DriverError ZS01Driver::setDataKey(const uint8_t *key) {
 	zs01::Packet request, response;
 	zs01::Key    newKey;
 
@@ -456,7 +388,7 @@ CartError ZS01Cart::setDataKey(const uint8_t *key) {
 	request.copyFrom(key);
 	request.encodeWriteRequest(newKey, _encoderState);
 
-	CartError error = _transact(request, response);
+	DriverError error = _transact(request, response);
 	if (error)
 		return error;
 
@@ -473,30 +405,30 @@ enum ChipIdentifier : uint32_t {
 	_ID_ZS01    = 0x5a530001
 };
 
-Cart *createCart(Dump &dump) {
+Driver *newCartDriver(Dump &dump) {
 	if (!io::getCartInsertionStatus()) {
 		LOG("DSR not asserted");
-		return new Cart(dump);
+		return new Driver(dump);
 	}
 
 	uint32_t id1 = io::i2cResetZS01();
-	LOG("id1=0x%08x", id1);
+	LOG("detecting ZS01, id1=0x%08x", id1);
 
 	if (id1 == _ID_ZS01)
-		return new ZS01Cart(dump);
+		return new ZS01Driver(dump);
 
 	uint32_t id2 = io::i2cResetX76();
-	LOG("id2=0x%08x", id2);
+	LOG("detecting X76, id2=0x%08x", id2);
 
 	switch (id2) {
 		case _ID_X76F041:
-			return new X76F041Cart(dump);
+			return new X76F041Driver(dump);
 
 		//case _ID_X76F100:
-			//return new X76F100Cart(dump);
+			//return new X76F100Driver(dump);
 
 		default:
-			return new Cart(dump);
+			return new Driver(dump);
 	}
 }
 

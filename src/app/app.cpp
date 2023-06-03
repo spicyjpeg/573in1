@@ -4,6 +4,7 @@
 #include "app/app.hpp"
 #include "ps1/system.h"
 #include "asset.hpp"
+#include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
 #include "io.hpp"
@@ -12,17 +13,18 @@
 
 /* App class */
 
-App::App(void)
-: _cart(nullptr), _cartData(nullptr), _identified(nullptr) {
-	_workerStack = new uint8_t[WORKER_STACK_SIZE];
-}
+void App::_unloadCartData(void) {
+	if (_driver) {
+		delete _driver;
+		_driver = nullptr;
+	}
+	if (_parser) {
+		delete _parser;
+		_parser = nullptr;
+	}
 
-App::~App(void) {
-	//_dbFile.unload();
-	delete[] _workerStack;
-
-	if (_cart)
-		delete _cart;
+	_db.unload();
+	_identified = nullptr;
 }
 
 void App::_setupWorker(void (App::* func)(void)) {
@@ -41,7 +43,7 @@ void App::_setupInterrupts(void) {
 		util::forcedCast<ArgFunction>(&App::_interruptHandler), this
 	);
 
-	setInterruptMask((1 << IRQ_VBLANK) | (1 << IRQ_GPU));
+	setInterruptMask(1 << IRQ_VBLANK);
 }
 
 void App::_dummyWorker(void) {
@@ -59,27 +61,20 @@ static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 void App::_cartDetectWorker(void) {
 	_workerStatus.update(0, 4, WSTR("App.cartDetectWorker.identifyCart"));
 
-	_db.unload();
-	if (_cart)
-		delete _cart;
-	if (_cartData)
-		delete _cartData;
-
-	_cart       = cart::createCart(_dump);
-	_cartData   = nullptr;
-	_identified = nullptr;
+	_unloadCartData();
+	_driver = cart::newCartDriver(_dump);
 
 	if (_dump.chipType) {
-		LOG("dump @ 0x%08x, cart object @ 0x%08x", &_dump, _cart);
+		LOG("dump @ 0x%08x, cart driver @ 0x%08x", &_dump, _driver);
 		_workerStatus.update(1, 4, WSTR("App.cartDetectWorker.readCart"));
 
-		_cart->readCartID();
-		if (!_cart->readPublicData())
-			_cartData = cart::createCartData(_dump);
-		if (!_cartData)
+		_driver->readCartID();
+		if (!_driver->readPublicData())
+			_parser = cart::newCartParser(_dump);
+		if (!_parser)
 			goto _cartInitDone;
 
-		LOG("cart data object @ 0x%08x", _cartData);
+		LOG("cart parser @ 0x%08x", _parser);
 		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!_loader->loadAsset(_db, _CARTDB_PATHS[_dump.chipType])) {
@@ -115,7 +110,7 @@ _cartInitDone:
 
 		delayMicroseconds(5000); // Probably not necessary
 		io::initKonamiBitstream();
-		_cart->readSystemID();
+		_driver->readSystemID();
 	}
 
 _initDone:
@@ -126,12 +121,12 @@ _initDone:
 void App::_cartUnlockWorker(void) {
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
 
-	//_cart->readPrivateData(); // TODO: implement this
+	//_driver->readPrivateData(); // TODO: implement this
 
 	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identify"));
 
 	//if (_dump.flags & cart::DUMP_PRIVATE_DATA_OK)
-		//_identifyResult = _db.identifyCart(*_cart);
+		//_identifyResult = _db.identifyCart(*_driver);
 
 	_workerStatus.finish(_cartInfoScreen, true);
 	_dummyWorker();
@@ -154,11 +149,10 @@ void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VBLANK)) {
 		_ctx->tick();
 		io::clearWatchdog();
-		switchThread(nullptr);
-	}
 
-	if (acknowledgeInterrupt(IRQ_GPU))
-		_ctx->gpuCtx.drawNextLayer();
+		if (gpu::isIdle())
+			switchThread(nullptr);
+	}
 }
 
 void App::run(

@@ -7,6 +7,7 @@
 #include "app/unlock.hpp"
 #include "ps1/system.h"
 #include "asset.hpp"
+#include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
 #include "uibase.hpp"
@@ -90,11 +91,12 @@ private:
 	Thread       _workerThread;
 	WorkerStatus _workerStatus;
 
-	uint8_t        *_workerStack;
-	cart::Cart     *_cart;
-	cart::CartData *_cartData;
-	cart::DBEntry  *_identified;
+	uint8_t       *_workerStack;
+	cart::Driver  *_driver;
+	cart::Parser  *_parser;
+	cart::DBEntry *_identified;
 
+	void _unloadCartData(void);
 	void _setupWorker(void (App::* func)(void));
 	void _setupInterrupts(void);
 
@@ -106,8 +108,16 @@ private:
 	void _interruptHandler(void);
 
 public:
-	App(void);
-	~App(void);
+	inline App(void)
+	: _driver(nullptr), _parser(nullptr), _identified(nullptr) {
+		_workerStack = new uint8_t[WORKER_STACK_SIZE];
+	}
+	inline ~App(void) {
+		_unloadCartData();
+
+		delete[] _workerStack;
+	}
+
 	void run(
 		ui::Context &ctx, asset::AssetLoader &loader,
 		asset::StringTable &strings
