@@ -1,10 +1,12 @@
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 #include "gpu.hpp"
+#include "util.hpp"
 
 namespace gpu {
 
@@ -49,20 +51,6 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 
 /* Rendering context */
 
-void Context::_flushLayer(void) {
-	if (_currentListPtr == _lastListPtr)
-		return;
-
-	auto layer = _drawBuffer().layers.pushItem();
-	assert(layer);
-
-	*(_currentListPtr++) = gp0_endTag(1);
-	*(_currentListPtr++) = gp0_irq();
-
-	*layer        = _lastListPtr;
-	_lastListPtr  = _currentListPtr;
-}
-
 void Context::_applyResolution(VideoMode mode, int shiftX, int shiftY) const {
 	GP1HorizontalRes hres;
 	GP1VerticalRes   vres = (height > 256) ? GP1_VRES_512 : GP1_VRES_256;
@@ -98,42 +86,17 @@ void Context::flip(void) {
 	auto &oldBuffer = _drawBuffer(), &newBuffer = _dispBuffer();
 
 	// Ensure the GPU has finished drawing the previous frame.
-	while (newBuffer.layers.length)
+	while (!isIdle())
 		__asm__ volatile("");
 
-	auto mask = setInterruptMask(0);
+	*_currentListPtr = gp0_endTag(0);
+	_currentListPtr  = newBuffer.displayList;
+	_currentBuffer  ^= 1;
 
-	_flushLayer();
-	_currentListPtr = newBuffer.displayList;
-	_lastListPtr    = newBuffer.displayList;
-	_currentBuffer ^= 1;
-
-	GPU_GP1 = gp1_fbOffset(oldBuffer.clip.x1, oldBuffer.clip.y1);
-
-	// Kick off drawing.
-	drawNextLayer();
-	if (mask)
-		setInterruptMask(mask);
-}
-
-void Context::drawNextLayer(void) {
-	//auto mask  = setInterruptMask(0);
-	auto layer = _dispBuffer().layers.popItem();
-
-	//if (mask)
-		//setInterruptMask(mask);
-	if (!layer)
-		return;
-
-	while (DMA_CHCR(DMA_GPU) & DMA_CHCR_ENABLE)
-		__asm__ volatile("");
-	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
-		__asm__ volatile("");
-
-	GPU_GP1 = gp1_acknowledge();
+	GPU_GP1 = gp1_fbOffset(newBuffer.clip.x1, newBuffer.clip.y1);
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
-	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(*layer);
+	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(oldBuffer.displayList);
 	DMA_CHCR(DMA_GPU) = DMA_CHCR_WRITE | DMA_CHCR_MODE_LIST | DMA_CHCR_ENABLE;
 }
 
@@ -156,7 +119,6 @@ void Context::setResolution(
 	}
 
 	_currentListPtr = _buffers[0].displayList;
-	_lastListPtr    = _buffers[0].displayList;
 	_currentBuffer  = 0;
 
 	_applyResolution(mode);
@@ -175,13 +137,7 @@ uint32_t *Context::newPacket(size_t length) {
 }
 
 void Context::newLayer(int x, int y, int drawWidth, int drawHeight) {
-	auto mask = setInterruptMask(0);
-
-	_flushLayer();
-	if (mask)
-		setInterruptMask(mask);
-
-	auto &clip = _dispBuffer().clip;
+	auto &clip = _drawBuffer().clip;
 
 	x += clip.x1;
 	y += clip.y1;

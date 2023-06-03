@@ -12,10 +12,11 @@ should start in PAL or NTSC mode by default). Requires no external dependencies.
 __version__ = "0.1.0"
 __author__  = "spicyjpeg"
 
-from argparse import ArgumentParser, FileType, Namespace
-from enum     import IntEnum, IntFlag
-from struct   import Struct
-from typing   import BinaryIO, ByteString, Generator
+from argparse    import ArgumentParser, FileType, Namespace
+from dataclasses import dataclass
+from enum        import IntEnum, IntFlag
+from struct      import Struct
+from typing      import BinaryIO, ByteString, Generator
 
 ## Utilities
 
@@ -67,11 +68,11 @@ class ProgHeaderFlag(IntFlag):
 	WRITE   = 1 << 1
 	READ    = 1 << 2
 
+@dataclass
 class Segment:
-	def __init__(self, address: int, data: ByteString, flags: int):
-		self.address: int            = address
-		self.data:    ByteString     = data
-		self.flags:   ProgHeaderFlag = ProgHeaderFlag(flags)
+	address: int
+	data:    bytes
+	flags:   ProgHeaderFlag
 
 	def isReadOnly(self) -> bool:
 		return not \
@@ -79,41 +80,33 @@ class Segment:
 
 class ELF:
 	def __init__(self, _file: BinaryIO):
-		self.type:         ELFType | None         = None
-		self.architecture: ELFArchitecture | None = None
-
-		self.abi:        int | None = None
-		self.entryPoint: int | None = None
-		self.flags:      int | None = None
-
-		self.segments: list[Segment] = []
-
-		self._parse(_file)
-
-	def _parse(self, _file: BinaryIO):
 		# Parse the file header and perform some minimal validation.
 		_file.seek(0)
 
-		magic, wordSize, endianness, _, self.abi, _type, architecture, _, \
-		self.entryPoint, progHeaderOffset, secHeaderOffset, self.flags, \
-		elfHeaderLength, progHeaderLength, progHeaderCount, secHeaderLength, \
-		secHeaderCount, _ = \
+		magic, wordSize, endianness, _, abi, _type, architecture, _, \
+		entryPoint, progHeaderOffset, secHeaderOffset, flags, elfHeaderSize, \
+		progHeaderSize, progHeaderCount, secHeaderSize, secHeaderCount, _ = \
 			parseStructFromFile(_file, ELF_HEADER_STRUCT)
 
-		self.type         = ELFType(_type)
-		self.architecture = ELFArchitecture(architecture)
+		self.type:         ELFType = ELFType(_type)
+		self.architecture: int     = architecture
+		self.abi:          int     = abi
+		self.entryPoint:   int     = entryPoint
+		self.flags:        int     = flags
 
 		if magic != ELF_HEADER_MAGIC:
 			raise RuntimeError("file is not a valid ELF")
 		if wordSize != 1 or endianness != ELFEndianness.LITTLE:
 			raise RuntimeError("ELF file must be 32-bit little-endian")
 		if (
-			elfHeaderLength  != ELF_HEADER_STRUCT.size or
-			progHeaderLength != PROG_HEADER_STRUCT.size
+			elfHeaderSize  != ELF_HEADER_STRUCT.size or
+			progHeaderSize != PROG_HEADER_STRUCT.size
 		):
 			raise RuntimeError("unsupported ELF format")
 
 		# Parse the program headers and extract all loadable segments.
+		self.segments: list[Segment] = []
+
 		_file.seek(progHeaderOffset)
 
 		for (

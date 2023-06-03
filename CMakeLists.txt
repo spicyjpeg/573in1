@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	cart_tool_private
 	LANGUAGES    C CXX ASM
-	VERSION      0.3.0
+	VERSION      0.3.1
 	DESCRIPTION  "Konami System 573 security cartridge tool"
 )
 
@@ -17,6 +17,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 add_executable(
 	cart_tool
 	src/asset.cpp
+	src/cart.cpp
 	src/cartdata.cpp
 	src/cartio.cpp
 	src/gpu.cpp
@@ -67,21 +68,26 @@ target_compile_definitions(
 add_custom_command(
 	TARGET cart_tool POST_BUILD
 	COMMAND
-		"${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
+		"${Python3_EXECUTABLE}"
+		"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
+		-r "cart_tool build ${PROJECT_VERSION} - (C) 2022-2023 spicyjpeg"
 		$<TARGET_FILE:cart_tool> cart_tool.psexe
 	BYPRODUCTS cart_tool.psexe
 	COMMENT    "Converting executable"
+	VERBATIM
 )
 
 ## Default resource archive
 
 add_custom_command(
 	COMMAND
-		"${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
+		"${Python3_EXECUTABLE}"
+		"${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
 		"${PROJECT_SOURCE_DIR}/resources.json" resources.zip
 	OUTPUT  resources.zip
 	DEPENDS resources.json
 	COMMENT "Building resource archive"
+	VERBATIM
 )
 ps1_target_incbin(
 	cart_tool PRIVATE
@@ -99,6 +105,7 @@ ps1_target_incbin(
 #	OUTPUT  cart_tool.iso
 #	DEPENDS cd.json cart_tool
 #	COMMENT "Building CD-ROM image"
+#	VERBATIM
 #)
 
 # Add a dummy target that depends on the CD image to make sure it gets built.

@@ -3,12 +3,151 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "asset.hpp"
+#include "cart.hpp"
 #include "cartdata.hpp"
-#include "cartio.hpp"
 
 namespace cart {
 
-/* Utilities */
+/* Cartridge data parsers */
+
+bool Parser::validate(void) {
+	char region[8];
+
+	if (getRegion(region) < REGION_MIN_LENGTH)
+		return false;
+	if (!isValidRegion(region))
+		return false;
+
+	auto id = getIdentifiers();
+
+	if (id) {
+		// The system ID is excluded from validation as it is going to be
+		// missing if the game hasn't yet been installed.
+		uint8_t idFlags = flags & (
+			DATA_HAS_TRACE_ID | DATA_HAS_CART_ID | DATA_HAS_INSTALL_ID
+		);
+
+		if (id->getFlags() != idFlags)
+			return false;
+	}
+
+	return true;
+}
+
+size_t SimpleParser::getRegion(char *output) const {
+	auto header = _getHeader();
+
+	__builtin_memcpy(output, header->region, 4);
+	output[4] = 0;
+
+	return __builtin_strlen(output);
+}
+
+size_t BasicParser::getRegion(char *output) const {
+	auto header = _getHeader();
+
+	output[0] = header->region[0];
+	output[1] = header->region[1];
+	output[2] = 0;
+
+	return 2;
+}
+
+IdentifierSet *BasicParser::getIdentifiers(void) {
+	return reinterpret_cast<IdentifierSet *>(&_dump.data[sizeof(BasicHeader)]);
+}
+
+bool BasicParser::validate(void) {
+	return (Parser::validate() && _getHeader()->validateChecksum());
+}
+
+size_t ExtendedParser::getRegion(char *output) const {
+	auto header = _getHeader();
+
+	__builtin_memcpy(output, header->region, 4);
+	output[4] = 0;
+
+	return __builtin_strlen(output);
+}
+
+IdentifierSet *ExtendedParser::getIdentifiers(void) {
+	if (!(flags & DATA_HAS_PUBLIC_SECTION))
+		return nullptr;
+
+	return reinterpret_cast<IdentifierSet *>(
+		&_dump.data[sizeof(ExtendedHeader) + sizeof(PublicIdentifierSet)]
+	);
+}
+
+void ExtendedParser::flush(void) {
+	// Copy over the private identifiers to the public data area. On X76F041
+	// carts this area is in the last sector, while on ZS01 carts it is placed
+	// in the first 32 bytes.
+	auto pri = getIdentifiers();
+	auto pub = reinterpret_cast<PublicIdentifierSet *>(
+		&_getPublicData()[sizeof(ExtendedHeader)]
+	);
+
+	pub->traceID.copyFrom(pri->traceID.data);
+	pub->cartID.copyFrom(pri->cartID.data);
+}
+
+bool ExtendedParser::validate(void) {
+	return (Parser::validate() && _getHeader()->validateChecksum());
+}
+
+/* Data format identification */
+
+struct KnownFormat {
+public:
+	const char *name;
+	FormatType format;
+	uint8_t    flags;
+};
+
+static constexpr int _NUM_KNOWN_FORMATS = 8;
+
+static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
+	{
+		// Used by GCB48 (and possibly other games?)
+		.name   = "region string only",
+		.format = SIMPLE,
+		.flags  = DATA_HAS_PUBLIC_SECTION
+	}, {
+		.name   = "basic with no IDs",
+		.format = BASIC,
+		.flags  = 0
+	}, {
+		.name   = "basic with TID",
+		.format = BASIC,
+		.flags  = DATA_HAS_TRACE_ID
+	}, {
+		.name   = "basic with TID, SID",
+		.format = BASIC,
+		.flags  = DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
+	}, {
+		.name   = "basic with code prefix, TID, SID",
+		.format = BASIC,
+		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
+	}, {
+		// Used by most pre-ZS01 Bemani games
+		.name   = "basic with code prefix, all IDs",
+		.format = BASIC,
+		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
+			| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID
+	}, {
+		// Used by early (pre-digital-I/O) Bemani games
+		.name   = "extended with no IDs",
+		.format = EXTENDED,
+		.flags  = DATA_HAS_CODE_PREFIX
+	}, {
+		// Used by GE936/GK936 and all ZS01 Bemani games
+		.name   = "extended with all IDs",
+		.format = EXTENDED,
+		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
+			| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID | DATA_HAS_PUBLIC_SECTION
+	}
+};
 
 bool isValidRegion(const char *region) {
 	// Character 0:    region (A=Asia?, E=Europe, J=Japan, K=Korea, S=?, U=US)
@@ -36,235 +175,38 @@ bool isValidRegion(const char *region) {
 	return true;
 }
 
-/* Common data structures */
-
-void BasicHeader::updateChecksum(void) {
-	auto value = util::sum(reinterpret_cast<const uint8_t *>(this), 4);
-
-	checksum = uint8_t((value & 0xff) ^ 0xff);
-}
-
-bool BasicHeader::validateChecksum(void) const {
-	auto value = util::sum(reinterpret_cast<const uint8_t *>(this), 4);
-
-	return (checksum == ((value & 0xff) ^ 0xff));
-}
-
-void ExtendedHeader::updateChecksum(void) {
-	auto value = util::sum(reinterpret_cast<const uint16_t *>(this), 14);
-
-	checksum = uint16_t(value & 0xffff);
-}
-
-bool ExtendedHeader::validateChecksum(void) const {
-	auto value = util::sum(reinterpret_cast<const uint16_t *>(this), 14);
-
-	return (checksum == (value & 0xffff));
-}
-
-uint8_t IdentifierSet::getFlags(void) const {
-	uint8_t flags = 0;
-
-	if (!traceID.isEmpty())
-		flags |= DATA_HAS_TRACE_ID;
-	if (!cartID.isEmpty())
-		flags |= DATA_HAS_CART_ID;
-	if (!installID.isEmpty())
-		flags |= DATA_HAS_INSTALL_ID;
-	if (!systemID.isEmpty())
-		flags |= DATA_HAS_SYSTEM_ID;
-
-	return flags;
-}
-
-void IdentifierSet::setInstallID(uint8_t prefix) {
-	installID.clear();
-
-	installID.data[0] = prefix;
-	installID.updateChecksum();
-}
-
-void IdentifierSet::updateTraceID(uint8_t prefix, int param) {
-	traceID.clear();
-
-	uint8_t  *input   = &cartID.data[1];
-	uint16_t checksum = 0;
-
-	switch (prefix) {
-		case 0x81:
-			// TODO: reverse engineer this TID format
-			traceID.data[2] = 0;
-			traceID.data[5] = 0;
-			traceID.data[6] = 0;
-
-			LOG("prefix=0x81");
-			break;
-
-		case 0x82:
-			for (size_t i = 0; i < (sizeof(cartID.data) - 2); i++) {
-				uint8_t value = *(input++);
-
-				for (int j = 0; j < 8; j++, value >>= 1) {
-					if (value % 2)
-						checksum ^= 1 << (i % param);
-				}
-			}
-
-			traceID.data[1] = checksum >> 8;
-			traceID.data[2] = checksum & 0xff;
-
-			LOG("prefix=0x82, checksum=%04x", checksum);
-			break;
-
-		default:
-			LOG("unknown prefix 0x%02x", prefix);
-	}
-
-	traceID.data[0] = prefix;
-	traceID.updateChecksum();
-}
-
-/* Data formats */
-
-bool CartData::validate(void) {
-	char region[8];
-
-	if (getRegion(region) < REGION_MIN_LENGTH)
-		return false;
-	if (!isValidRegion(region))
-		return false;
-
-	auto id = getIdentifiers();
-
-	if (id) {
-		uint8_t idFlags = flags & (
-			DATA_HAS_TRACE_ID | DATA_HAS_CART_ID | DATA_HAS_INSTALL_ID |
-			DATA_HAS_SYSTEM_ID
-		);
-
-		if (id->getFlags() != idFlags)
-			return false;
-	}
-
-	return true;
-}
-
-size_t SimpleCartData::getRegion(char *output) const {
-	auto header = _getHeader();
-
-	__builtin_memcpy(output, header->region, 4);
-	output[4] = 0;
-
-	return __builtin_strlen(output);
-}
-
-size_t BasicCartData::getRegion(char *output) const {
-	auto header = _getHeader();
-
-	output[0] = header->region[0];
-	output[1] = header->region[1];
-	output[2] = 0;
-
-	return 2;
-}
-
-IdentifierSet *BasicCartData::getIdentifiers(void) {
-	return reinterpret_cast<IdentifierSet *>(&_dump.data[sizeof(BasicHeader)]);
-}
-
-bool BasicCartData::validate(void) {
-	return (CartData::validate() && _getHeader()->validateChecksum());
-}
-
-size_t ExtendedCartData::getRegion(char *output) const {
-	auto header = _getHeader();
-
-	__builtin_memcpy(output, header->region, 4);
-	output[4] = 0;
-
-	return __builtin_strlen(output);
-}
-
-IdentifierSet *ExtendedCartData::getIdentifiers(void) {
-	if (!(flags & DATA_HAS_PUBLIC_SECTION))
-		return nullptr;
-
-	return reinterpret_cast<IdentifierSet *>(
-		&_dump.data[sizeof(ExtendedHeader) + sizeof(PublicIdentifierSet)]
-	);
-}
-
-void ExtendedCartData::flush(void) {
-	// Copy over the private identifiers to the public data area. On X76F041
-	// carts this area is in the last sector, while on ZS01 carts it is placed
-	// in the first 32 bytes.
-	auto pri = getIdentifiers();
-	auto pub = reinterpret_cast<PublicIdentifierSet *>(
-		&_getPublicData()[sizeof(ExtendedHeader)]
-	);
-
-	pub->traceID.copyFrom(pri->traceID.data);
-	pub->cartID.copyFrom(pri->cartID.data);
-}
-
-bool ExtendedCartData::validate(void) {
-	return (CartData::validate() && _getHeader()->validateChecksum());
-}
-
-/* Data format identification */
-
-struct KnownFormat {
-public:
-	FormatType formatType;
-	uint8_t    flags;
-};
-
-static constexpr int _NUM_KNOWN_FORMATS = 8;
-
-// More variants may exist.
-static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
-	{ SIMPLE,   DATA_HAS_PUBLIC_SECTION },
-	{ BASIC,    0 },
-	{ BASIC,    DATA_HAS_TRACE_ID },
-	{ BASIC,    DATA_HAS_TRACE_ID | DATA_HAS_CART_ID },
-	{ BASIC,    DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID },
-	{ BASIC,    DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
-		| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID },
-	{ EXTENDED, 0 },
-	{ EXTENDED, DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
-		| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID | DATA_HAS_PUBLIC_SECTION },
-};
-
-CartData *createCartData(Dump &dump, FormatType formatType, uint8_t flags) {
+Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
 	switch (formatType) {
 		case SIMPLE:
-			return new SimpleCartData(dump, flags);
+			return new SimpleParser(dump, flags);
 
 		case BASIC:
-			return new BasicCartData(dump, flags);
+			return new BasicParser(dump, flags);
 
 		case EXTENDED:
-			return new ExtendedCartData(dump, flags);
+			return new ExtendedParser(dump, flags);
 
 		default:
-			return new CartData(dump, flags);
+			return new Parser(dump, flags);
 	}
 }
 
-CartData *createCartData(Dump &dump) {
-	for (int i = 0; i < _NUM_KNOWN_FORMATS; i++) {
-		auto     &fmt  = _KNOWN_FORMATS[i];
-		CartData *data = createCartData(dump, fmt.formatType, fmt.flags);
+Parser *newCartParser(Dump &dump) {
+	// Try all formats from the most complex one to the simplest.
+	for (int i = _NUM_KNOWN_FORMATS - 1; i >= 0; i++) {
+		auto   &format = _KNOWN_FORMATS[i];
+		Parser *parser = newCartParser(dump, format.format, format.flags);
 
-		if (data->validate()) {
-			LOG("found known format, index=%d", i);
-			return data;
+		if (parser->validate()) {
+			LOG("found known data format");
+			LOG("%s, index=%d", format.name, i);
+			return parser;
 		}
 
-		delete data;
+		delete parser;
 	}
 
-	LOG("unrecognized dump format");
+	LOG("unrecognized data format");
 	return nullptr;
 }
 

@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
-#include "util.hpp"
 
 namespace gpu {
 
@@ -41,6 +40,12 @@ static inline void init(void) {
 	TIMER_CTRL(1) = TIMER_CTRL_EXT_CLOCK;
 }
 
+static inline bool isIdle(void) {
+	return (
+		!(DMA_CHCR(DMA_GPU) & DMA_CHCR_ENABLE) && (GPU_GP1 & GP1_STAT_CMD_READY)
+	);
+}
+
 static inline void enableDisplay(bool enable) {
 	GPU_GP1 = gp1_dispBlank(!enable);
 }
@@ -56,14 +61,12 @@ struct Buffer {
 public:
 	Rect     clip;
 	uint32_t displayList[DISPLAY_LIST_SIZE];
-
-	volatile util::RingBuffer<uint32_t *volatile, LAYER_STACK_SIZE> layers;
 };
 
 class Context {
 private:
 	Buffer   _buffers[2];
-	uint32_t *_currentListPtr, *_lastListPtr;
+	uint32_t *_currentListPtr;
 	int      _currentBuffer;
 
 	uint32_t _lastTexpage;
@@ -75,7 +78,6 @@ private:
 		return _buffers[_currentBuffer ^ 1];
 	}
 
-	void _flushLayer(void);
 	void _applyResolution(VideoMode mode, int shiftX = 0, int shiftY = 0) const;
 
 public:
@@ -114,7 +116,6 @@ public:
 	void setResolution(
 		VideoMode mode, int width, int height, bool sideBySide = false
 	);
-	void drawNextLayer(void);
 	void flip(void);
 
 	uint32_t *newPacket(size_t length);
