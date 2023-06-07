@@ -1,26 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__  = "spicyjpeg"
 
 import sys
 from argparse import ArgumentParser, FileType, Namespace
-from enum     import IntEnum, IntFlag
 from struct   import Struct
 from typing   import BinaryIO, ByteString, Mapping, Sequence, TextIO
 from zlib     import decompress
 
-## Base45 decoder
+from _common import *
 
-BASE45_CHARSET: str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"
+## Utilities
 
-def decodeBase45(data: str) -> bytearray:
-	mapped: map       = map(BASE45_CHARSET.index, data)
+# This encoding is similar to standard base45, but with some problematic
+# characters (' ', '$', '%', '*') excluded.
+_BASE41_CHARSET: str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:"
+
+def decodeBase41(data: str) -> bytearray:
+	mapped: map[int]  = map(_BASE41_CHARSET.index, data)
 	output: bytearray = bytearray()
 
 	for a, b, c in zip(mapped, mapped, mapped):
-		value: int = a + (b * 45) + (c * 2025)
+		value: int = a + (b * 41) + (c * 1681)
 
 		output.append(value >> 8)
 		output.append(value & 0xff)
@@ -35,43 +38,6 @@ def serialNumberToString(_id: ByteString) -> str:
 
 	return f"{(value // 10000) % 10000:04d}-{value % 10000:04d}"
 
-## Dump parser
-
-DUMP_START:   str    = "573::"
-DUMP_END:     str    = "::"
-DUMP_STRUCT:  Struct = Struct("< 3B x 8s 8s 8s 8s 8s 512s")
-DUMP_VERSION: int    = 1
-
-class ChipType(IntEnum):
-	TYPE_NONE    = 0
-	TYPE_X76F041 = 1
-	TYPE_X76F100 = 2
-	TYPE_ZS01    = 3
-
-class CartFlag(IntFlag):
-	HAS_DIGITAL_IO  = 1 << 0
-	HAS_DS2401      = 1 << 1
-	CONFIG_OK       = 1 << 2
-	SYSTEM_ID_OK    = 1 << 3
-	CART_ID_OK      = 1 << 4
-	ZS_ID_OK        = 1 << 5
-	PUBLIC_DATA_OK  = 1 << 6
-	PRIVATE_DATA_OK = 1 << 7
-
-CHIP_NAMES: Mapping[ChipType, str] = {
-	ChipType.TYPE_NONE:    "None",
-	ChipType.TYPE_X76F041: "Xicor X76F041",
-	ChipType.TYPE_X76F100: "Xicor X76F100",
-	ChipType.TYPE_ZS01:    "Konami ZS01 (PIC16CE625)"
-}
-
-DATA_LENGTHS: Mapping[ChipType, int] = {
-	ChipType.TYPE_NONE:    0,
-	ChipType.TYPE_X76F041: 512,
-	ChipType.TYPE_X76F100: 112,
-	ChipType.TYPE_ZS01:    112
-}
-
 def toPrintableChar(value: int):
 	if (value < 0x20) or (value > 0x7e):
 		return "."
@@ -80,58 +46,52 @@ def toPrintableChar(value: int):
 
 def hexdump(data: ByteString | Sequence[int], output: TextIO, width: int = 16):
 	for i in range(0, len(data), width):
-		hexBytes: map = map(lambda value: f"{value:02x}", data[i:i + width])
-		hexLine:  str = " ".join(hexBytes).ljust(width * 3 - 1)
+		hexBytes: map[str] = map(lambda value: f"{value:02x}", data[i:i + width])
+		hexLine:  str      = " ".join(hexBytes).ljust(width * 3 - 1)
 
-		asciiBytes: map = map(toPrintableChar, data[i:i + width])
-		asciiLine:  str = "".join(asciiBytes).ljust(width)
+		asciiBytes: map[str] = map(toPrintableChar, data[i:i + width])
+		asciiLine:  str      = "".join(asciiBytes).ljust(width)
 
-		output.write(f"{i:04x}: {hexLine} |{asciiLine}|\n")
+		output.write(f"  {i:04x}: {hexLine} |{asciiLine}|\n")
 
-def parseDump(
-	dumpString: str, logOutput: TextIO | None = None,
-	exportOutput: BinaryIO | None = None
-):
-	_dumpString: str = dumpString.strip().upper()
+## Dump parser
 
-	if (
-		not _dumpString.startswith(DUMP_START) or
-		not _dumpString.endswith(DUMP_END)
-	):
-		raise ValueError(f"dump string does not begin with '{DUMP_START}' and end with '{DUMP_END}'")
+_DUMP_START: str = "573::"
+_DUMP_END:   str = "::"
 
-	_dumpString = _dumpString[len(DUMP_START):-len(DUMP_END)]
-	dump: bytes = decompress(decodeBase45(_dumpString))
+_CHIP_NAMES: Mapping[ChipType, str] = {
+	ChipType.NONE:    "None",
+	ChipType.X76F041: "Xicor X76F041",
+	ChipType.X76F100: "Xicor X76F100",
+	ChipType.ZS01:    "Konami ZS01 (PIC16CE625)"
+}
 
-	version, chipType, flags, dataKey, config, systemID, cartID, zsID, data = \
-		DUMP_STRUCT.unpack(dump[0:DUMP_STRUCT.size])
+def parseDumpString(data: str) -> Dump:
+	_data: str = data.strip().upper()
 
-	if version != DUMP_VERSION:
-		raise ValueError(f"unsupported dump version {version}")
+	if not _data.startswith(_DUMP_START) or not _data.endswith(_DUMP_END):
+		raise ValueError(f"dump string does not begin with '{_DUMP_START}' and end with '{_DUMP_END}'")
 
-	chipType: ChipType = ChipType(chipType)
-	flags:    CartFlag = CartFlag(flags)
-	data:     bytes    = data[0:DATA_LENGTHS[chipType]]
+	_data = _data[len(_DUMP_START):-len(_DUMP_END)]
 
-	if logOutput:
-		if flags & CartFlag.SYSTEM_ID_OK:
-			logOutput.write(f"Digital I/O ID:    {systemID.hex('-')}\n")
-			logOutput.write(f"Serial number:     {serialNumberToString(systemID)}\n")
+	return parseDump(decompress(decodeBase41(_data)))
 
-		logOutput.write(f"Cartridge type:    {CHIP_NAMES[chipType]}\n")
-		if flags & CartFlag.CART_ID_OK:
-			logOutput.write(f"DS2401 identifier: {cartID.hex('-')}\n")
-		if flags & CartFlag.ZS_ID_OK:
-			logOutput.write(f"ZS01 identifier:   {zsID.hex('-')}\n")
-		if flags & CartFlag.CONFIG_OK:
-			logOutput.write(f"Configuration:     {config.hex('-')}\n")
+def printDumpInfo(dump: Dump, output: TextIO):
+	if dump.flags & DumpFlag.DUMP_SYSTEM_ID_OK:
+		output.write(f"Digital I/O ID:    {dump.systemID.hex('-')}\n")
+		output.write(f"Serial number:     {serialNumberToString(dump.systemID)}\n")
 
-		logOutput.write("\nEEPROM dump:\n")
-		hexdump(data, logOutput)
-		logOutput.write("\n")
+	output.write(f"Cartridge type:    {_CHIP_NAMES[dump.chipType]}\n")
+	if dump.flags & DumpFlag.DUMP_CART_ID_OK:
+		output.write(f"DS2401 identifier: {dump.cartID.hex('-')}\n")
+	if dump.flags & DumpFlag.DUMP_ZS_ID_OK:
+		output.write(f"ZS01 identifier:   {dump.zsID.hex('-')}\n")
+	if dump.flags & DumpFlag.DUMP_CONFIG_OK:
+		output.write(f"Configuration:     {dump.config.hex('-')}\n")
 
-	if exportOutput:
-		pass # TODO: implement exporting
+	output.write("\nEEPROM dump:\n")
+	hexdump(dump.data, output)
+	output.write("\n")
 
 ## Main
 
@@ -162,15 +122,15 @@ def createParser() -> ArgumentParser:
 		help    = "log cartridge info to specified file (stdout by default)",
 		metavar = "file"
 	)
-	group.add_argument(
-		"-e", "--export",
-		type    = FileType("wb"),
-		help    = "export dump in MAME format to specified file",
-		metavar = "file"
-	)
+	#group.add_argument(
+		#"-e", "--export",
+		#type    = FileType("wb"),
+		#help    = "export dump in MAME format to specified file",
+		#metavar = "file"
+	#)
 
 	group.add_argument(
-		"dump",
+		"data",
 		type  = str,
 		nargs = "?",
 		help  = "QR string to decode (if -i was not passed)"
@@ -184,13 +144,16 @@ def main():
 
 	if args.input:
 		with args.input as _file:
-			dump: str = _file.read()
-	elif args.dump:
-		dump: str = args.dump
+			data: str = _file.read()
+	elif args.data:
+		data: str = args.data
 	else:
 		parser.error("a dump must be passed on the command line or using -i")
 
-	parseDump(dump, args.log, args.export)
+	dump: Dump = parseDumpString(data)
+
+	if args.log:
+		printDumpInfo(dump, args.log)
 
 if __name__ == "__main__":
 	main()
