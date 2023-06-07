@@ -26,7 +26,7 @@ int main(int argc, const char **argv) {
 	const void *ptr   = nullptr;
 	size_t     length = 0;
 
-#ifdef NDEBUG
+#ifdef ENABLE_ARGV
 	for (; argc > 0; argc--) {
 		auto arg = *(argv++);
 
@@ -66,9 +66,10 @@ int main(int argc, const char **argv) {
 				break;
 		}
 	}
-#else
-	// Enable serial port logging by default and skip argv parsing (some
-	// emulators like to leave $a0/$a1 uninitialized) in debug builds.
+#endif
+
+#ifndef NDEBUG
+	// Enable serial port logging by default in debug builds.
 	initSerialIO(115200);
 	util::logger.enableSyslog = true;
 #endif
@@ -96,10 +97,10 @@ int main(int argc, const char **argv) {
 	asset::StringTable strings;
 
 	if (
-		!loader.loadTIM(background.tile,    "assets/textures/background.tim") ||
-		!loader.loadTIM(uiCtx.font.image,   "assets/textures/font.tim") ||
-		!loader.loadFontMetrics(uiCtx.font, "assets/textures/font.metrics") ||
-		!loader.loadAsset(strings,          "assets/app.strings")
+		!loader.loadTIM(background.tile,       "assets/textures/background.tim") ||
+		!loader.loadTIM(uiCtx.font.image,      "assets/textures/font.tim") ||
+		!loader.loadStruct(uiCtx.font.metrics, "assets/textures/font.metrics") ||
+		!loader.loadAsset(strings,             "assets/app.strings")
 	) {
 		LOG("required assets not found, exiting");
 		return 1;

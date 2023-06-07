@@ -174,11 +174,11 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 
 		// Backdrop
 		if (_imagePadding) {
-			width  += _imagePadding;
-			height += _imagePadding;
+			int _width  = width  + _imagePadding;
+			int _height = height + _imagePadding;
 
 			ctx.gpuCtx.drawRect(
-				x - width, y - height, width * 2, height * 2, _backdropColor
+				x - _width, y - _height, _width * 2, _height * 2, _backdropColor
 			);
 		}
 

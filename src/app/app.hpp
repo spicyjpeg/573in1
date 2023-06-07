@@ -91,10 +91,10 @@ private:
 	Thread       _workerThread;
 	WorkerStatus _workerStatus;
 
-	uint8_t       *_workerStack;
-	cart::Driver  *_driver;
-	cart::Parser  *_parser;
-	cart::DBEntry *_identified;
+	uint8_t             *_workerStack;
+	cart::Driver        *_driver;
+	cart::Parser        *_parser;
+	const cart::DBEntry *_identified;
 
 	void _unloadCartData(void);
 	void _setupWorker(void (App::* func)(void));

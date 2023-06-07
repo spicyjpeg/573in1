@@ -19,20 +19,20 @@ public:
 static const CartType _CART_TYPES[cart::NUM_CHIP_TYPES]{
 	{
 		.name    = "CartInfoScreen.noCart.name"_h,
-		.warning = "CartInfoScreen.noCart.warning"_h,
+		.warning = 0,
 		.error   = 0
 	}, {
 		.name    = "CartInfoScreen.x76f041.name"_h,
 		.warning = "CartInfoScreen.x76f041.warning"_h,
-		.error   = 0
+		.error   = "CartInfoScreen.x76f041.error"_h
 	}, {
 		.name    = "CartInfoScreen.x76f100.name"_h,
 		.warning = "CartInfoScreen.x76f100.warning"_h,
-		.error   = 0
+		.error   = "CartInfoScreen.x76f100.error"_h
 	}, {
 		.name    = "CartInfoScreen.zs01.name"_h,
 		.warning = "CartInfoScreen.zs01.warning"_h,
-		.error   = 0
+		.error   = "CartInfoScreen.zs01.error"_h
 	}
 };
 
@@ -105,9 +105,9 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	else
 		__builtin_strcpy(id2, STR("CartInfoScreen.id.noZSID"));
 
-	auto unlockStatus = (dump.flags & cart::DUMP_PRIVATE_DATA_OK) ?
-		STR("CartInfoScreen.unlockStatus.unlocked") :
-		STR("CartInfoScreen.unlockStatus.locked");
+	auto unlockStatus = (dump.flags & cart::DUMP_PRIVATE_DATA_OK)
+		? STR("CartInfoScreen.unlockStatus.unlocked")
+		: STR("CartInfoScreen.unlockStatus.locked");
 
 	ptr += snprintf(
 		ptr, end - ptr, STR("CartInfoScreen.cartInfo"),
@@ -162,10 +162,36 @@ void CartInfoScreen::update(ui::Context &ctx) {
 	}
 }
 
-enum SpecialUnlockKeyEntry {
-	ENTRY_AUTO_UNLOCK = -3,
-	ENTRY_CUSTOM_KEY  = -2,
-	ENTRY_NULL_KEY    = -1
+enum SpecialEntryIndex {
+	ENTRY_AUTO_UNLOCK = -4,
+	ENTRY_CUSTOM_KEY  = -3,
+	ENTRY_NULL_KEY1   = -2,
+	ENTRY_NULL_KEY2   = -1
+};
+
+struct SpecialEntry {
+public:
+	util::Hash name;
+	void (UnlockKeyScreen::*target)(ui::Context &ctx);
+};
+
+static const SpecialEntry _SPECIAL_ENTRIES[]{
+	{
+		.name   = 0,
+		.target = nullptr
+	}, {
+		.name   = "UnlockKeyScreen.useNullKey2"_h,
+		.target = &UnlockKeyScreen::useNullKey2
+	}, {
+		.name   = "UnlockKeyScreen.useNullKey1"_h,
+		.target = &UnlockKeyScreen::useNullKey1
+	}, {
+		.name   = "UnlockKeyScreen.useCustomKey"_h,
+		.target = &UnlockKeyScreen::useCustomKey
+	}, {
+		.name   = "UnlockKeyScreen.autoUnlock"_h,
+		.target = &UnlockKeyScreen::autoUnlock
+	}
 };
 
 int UnlockKeyScreen::_getSpecialEntryOffset(ui::Context &ctx) const {
@@ -173,33 +199,47 @@ int UnlockKeyScreen::_getSpecialEntryOffset(ui::Context &ctx) const {
 }
 
 const char *UnlockKeyScreen::_getItemName(ui::Context &ctx, int index) const {
-	static char name[96]; // TODO: get rid of this ugly crap
-
 	index += _getSpecialEntryOffset(ctx);
 
-	switch (index) {
-		case ENTRY_AUTO_UNLOCK:
-			return _autoUnlockItem;
+	if (index < 0)
+		return STRH(_SPECIAL_ENTRIES[-index].name);
 
-		case ENTRY_CUSTOM_KEY:
-			return _customKeyItem;
+	static char name[96]; // TODO: get rid of this ugly crap
 
-		case ENTRY_NULL_KEY:
-			return _nullKeyItem;
+	APP->_db.get(index)->getDisplayName(name, sizeof(name));
+	return name;
+}
 
-		default:
-			APP->_db.get(index)->getDisplayName(name, sizeof(name));
-			return name;
-	}
+void UnlockKeyScreen::autoUnlock(ui::Context &ctx) {
+	__builtin_memcpy(
+		APP->_dump.dataKey, APP->_identified->dataKey,
+		sizeof(APP->_dump.dataKey)
+	);
+	ctx.show(APP->_unlockConfirmScreen, false, true);
+}
+
+void UnlockKeyScreen::useCustomKey(ui::Context &ctx) {
+	//ctx.show(APP->_unlockKeyEntryScreen, false, true);
+}
+
+void UnlockKeyScreen::useNullKey1(ui::Context &ctx) {
+	__builtin_memset(
+		APP->_dump.dataKey, 0x00, sizeof(APP->_dump.dataKey)
+	);
+	ctx.show(APP->_unlockConfirmScreen, false, true);
+}
+
+void UnlockKeyScreen::useNullKey2(ui::Context &ctx) {
+	__builtin_memset(
+		APP->_dump.dataKey, 0xff, sizeof(APP->_dump.dataKey)
+	);
+	ctx.show(APP->_unlockConfirmScreen, false, true);
 }
 
 void UnlockKeyScreen::show(ui::Context &ctx, bool goBack) {
-	_title          = STR("UnlockKeyScreen.title");
-	_prompt         = STR("UnlockKeyScreen.prompt");
-	_itemPrompt     = STR("UnlockKeyScreen.itemPrompt");
-	_autoUnlockItem = STR("UnlockKeyScreen.autoUnlock");
-	_customKeyItem  = STR("UnlockKeyScreen.customKey");
-	_nullKeyItem    = STR("UnlockKeyScreen.nullKey");
+	_title      = STR("UnlockKeyScreen.title");
+	_prompt     = STR("UnlockKeyScreen.prompt");
+	_itemPrompt = STR("UnlockKeyScreen.itemPrompt");
 
 	_listLength = APP->_db.getNumEntries() - _getSpecialEntryOffset(ctx);
 
@@ -212,32 +252,14 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		int index = _activeItem + _getSpecialEntryOffset(ctx);
 
-		switch (index) {
-			case ENTRY_AUTO_UNLOCK:
-				__builtin_memcpy(
-					APP->_dump.dataKey, APP->_identified->dataKey,
-					sizeof(APP->_dump.dataKey)
-				);
-				ctx.show(APP->_unlockConfirmScreen, false, true);
-				break;
-
-			case ENTRY_CUSTOM_KEY:
-				//ctx.show(APP->_unlockKeyEntryScreen, false, true);
-				break;
-
-			case ENTRY_NULL_KEY:
-				__builtin_memset(
-					APP->_dump.dataKey, 0, sizeof(APP->_dump.dataKey)
-				);
-				ctx.show(APP->_unlockConfirmScreen, false, true);
-				break;
-
-			default:
-				__builtin_memcpy(
-					APP->_dump.dataKey, APP->_db.get(index)->dataKey,
-					sizeof(APP->_dump.dataKey)
-				);
-				ctx.show(APP->_unlockConfirmScreen, false, true);
+		if (index < 0) {
+			(this->*_SPECIAL_ENTRIES[-index].target)(ctx);
+		} else {
+			__builtin_memcpy(
+				APP->_dump.dataKey, APP->_db.get(index)->dataKey,
+				sizeof(APP->_dump.dataKey)
+			);
+			ctx.show(APP->_unlockConfirmScreen, false, true);
 		}
 	} else if (ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT)) {
 		ctx.show(APP->_cartInfoScreen, true, true);

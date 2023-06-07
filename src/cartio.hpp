@@ -20,23 +20,18 @@ enum DriverError {
 	ZS01_CRC_MISMATCH = 9
 };
 
-/* Cartridge driver classes */
+/* Base classes */
 
 class Driver {
 protected:
 	Dump &_dump;
 
 public:
-	inline Driver(Dump &dump, ChipType chipType = NONE, uint8_t flags = 0)
-	: _dump(dump) {
-		dump.clear();
-
-		dump.chipType = chipType;
-		dump.flags    = flags;
-	}
+	inline Driver(Dump &dump)
+	: _dump(dump) {}
 
 	virtual ~Driver(void) {}
-	virtual DriverError readSystemID(void);
+	virtual DriverError readSystemID(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readCartID(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readPublicData(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readPrivateData(void) { return UNSUPPORTED_OP; }
@@ -45,14 +40,54 @@ public:
 	virtual DriverError setDataKey(const uint8_t *key) { return UNSUPPORTED_OP; }
 };
 
-class [[gnu::packed]] X76Driver : public Driver {
+class DummyDriver : public Driver {
+private:
+	Dump _privateDump;
+
+	inline DriverError _getErrorCode(void) {
+		return (_dump.chipType == ZS01) ? ZS01_ERROR : X76_NACK;
+	}
+
+public:
+	inline DummyDriver(Dump &dump)
+	: Driver(dump), _privateDump(dump) {
+		_dump.flags = _privateDump.flags & (
+			DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID
+		);
+	}
+
+	DriverError readSystemID(void);
+	DriverError readCartID(void);
+	DriverError readPublicData(void);
+	DriverError readPrivateData(void);
+	DriverError writeData(void);
+	DriverError erase(void);
+	DriverError setDataKey(const uint8_t *key);
+};
+
+/* Cartridge driver classes */
+
+class CartDriver : public Driver {
+public:
+	inline CartDriver(Dump &dump, ChipType chipType = NONE, uint8_t flags = 0)
+	: Driver(dump) {
+		dump.clear();
+
+		dump.chipType = chipType;
+		dump.flags    = flags;
+	}
+
+	DriverError readSystemID(void);
+};
+
+class [[gnu::packed]] X76Driver : public CartDriver {
 protected:
 	DriverError _readDS2401(void);
 	DriverError _x76Command(uint8_t cmd, uint8_t param, uint8_t pollByte) const;
 
 public:
 	inline X76Driver(Dump &dump, ChipType chipType)
-	: Driver(dump, chipType) {}
+	: CartDriver(dump, chipType) {}
 
 	DriverError readCartID(void);
 };
@@ -79,7 +114,7 @@ public:
 	DriverError setDataKey(const uint8_t *key);
 };
 
-class [[gnu::packed]] ZS01Driver : public Driver {
+class [[gnu::packed]] ZS01Driver : public CartDriver {
 private:
 	uint8_t _encoderState;
 
@@ -87,7 +122,7 @@ private:
 
 public:
 	inline ZS01Driver(Dump &dump)
-	: Driver(dump, ZS01, DUMP_HAS_CART_ID), _encoderState(0) {}
+	: CartDriver(dump, ZS01, DUMP_HAS_CART_ID), _encoderState(0) {}
 
 	DriverError readCartID(void);
 	DriverError readPublicData(void);
@@ -97,6 +132,6 @@ public:
 	DriverError setDataKey(const uint8_t *key);
 };
 
-Driver *newCartDriver(Dump &dump);
+CartDriver *newCartDriver(Dump &dump);
 
 }

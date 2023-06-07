@@ -18,13 +18,14 @@ static constexpr int _DMA_TIMEOUT    = 10000;
 size_t upload(const RectWH &rect, const void *data, bool wait) {
 	size_t length = (rect.w * rect.h) / 2;
 
-	assert(!(length % _DMA_CHUNK_SIZE));
+	//assert(!(length % _DMA_CHUNK_SIZE));
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
 
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
 		return 0;
 
-	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_NONE);
+	auto mask = setInterruptMask(0);
+	GPU_GP1   = gp1_dmaRequestMode(GP1_DREQ_NONE);
 
 	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
 		__asm__ volatile("");
@@ -43,6 +44,7 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 	DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
 	DMA_CHCR(DMA_GPU) = DMA_CHCR_WRITE | DMA_CHCR_MODE_SLICE | DMA_CHCR_ENABLE;
 
+	setInterruptMask(mask);
 	if (wait)
 		waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT);
 

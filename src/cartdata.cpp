@@ -10,26 +10,36 @@ namespace cart {
 
 /* Cartridge data parsers */
 
+// The system and install IDs are excluded from validation as they may not be
+// always present.
+// TODO/FIXME: this will create ambiguity between two of the basic formats...
+static constexpr uint8_t _IDENTIFIER_FLAG_MASK = 
+	DATA_HAS_TRACE_ID | DATA_HAS_CART_ID;
+
 bool Parser::validate(void) {
 	char region[8];
 
-	if (getRegion(region) < REGION_MIN_LENGTH)
+	if (getRegion(region) < REGION_MIN_LENGTH) {
+		LOG("region is too short: %s", region);
 		return false;
-	if (!isValidRegion(region))
+	}
+	if (!isValidRegion(region)) {
+		LOG("invalid region: %s", region);
 		return false;
+	}
 
+#if 0
 	auto id = getIdentifiers();
 
 	if (id) {
-		// The system ID is excluded from validation as it is going to be
-		// missing if the game hasn't yet been installed.
-		uint8_t idFlags = flags & (
-			DATA_HAS_TRACE_ID | DATA_HAS_CART_ID | DATA_HAS_INSTALL_ID
-		);
+		uint8_t flags = (id->getFlags() ^ flags) & _IDENTIFIER_FLAG_MASK;
 
-		if (id->getFlags() != idFlags)
+		if (flags) {
+			LOG("flags do not match, value=%02x", flags);
 			return false;
+		}
 	}
+#endif
 
 	return true;
 }
@@ -37,8 +47,8 @@ bool Parser::validate(void) {
 size_t SimpleParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
-	__builtin_memcpy(output, header->region, 4);
-	output[4] = 0;
+	__builtin_memcpy(output, header->region, sizeof(header->region));
+	output[sizeof(header->region)] = 0;
 
 	return __builtin_strlen(output);
 }
@@ -58,14 +68,26 @@ IdentifierSet *BasicParser::getIdentifiers(void) {
 }
 
 bool BasicParser::validate(void) {
-	return (Parser::validate() && _getHeader()->validateChecksum());
+	return (
+		Parser::validate()
+		&& _getHeader()->validateChecksum(flags & DATA_CHECKSUM_INVERTED)
+	);
+}
+
+size_t ExtendedParser::getCode(char *output) const {
+	auto header = _getHeader();
+
+	__builtin_memcpy(output, header->code, sizeof(header->code));
+	output[sizeof(header->code)] = 0;
+
+	return __builtin_strlen(output);
 }
 
 size_t ExtendedParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
-	__builtin_memcpy(output, header->region, 4);
-	output[4] = 0;
+	__builtin_memcpy(output, header->region, sizeof(header->region));
+	output[sizeof(header->region)] = 0;
 
 	return __builtin_strlen(output);
 }
@@ -93,7 +115,10 @@ void ExtendedParser::flush(void) {
 }
 
 bool ExtendedParser::validate(void) {
-	return (Parser::validate() && _getHeader()->validateChecksum());
+	return (
+		Parser::validate()
+		&& _getHeader()->validateChecksum(flags & DATA_CHECKSUM_INVERTED)
+	);
 }
 
 /* Data format identification */
@@ -105,47 +130,54 @@ public:
 	uint8_t    flags;
 };
 
-static constexpr int _NUM_KNOWN_FORMATS = 8;
+static constexpr int _NUM_KNOWN_FORMATS = 9;
 
 static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
 	{
 		// Used by GCB48 (and possibly other games?)
-		.name   = "region string only",
+		.name   = "region only",
 		.format = SIMPLE,
 		.flags  = DATA_HAS_PUBLIC_SECTION
 	}, {
-		.name   = "basic with no IDs",
+		.name   = "basic (no IDs)",
 		.format = BASIC,
-		.flags  = 0
+		.flags  = DATA_CHECKSUM_INVERTED
 	}, {
-		.name   = "basic with TID",
+		.name   = "basic + TID",
 		.format = BASIC,
-		.flags  = DATA_HAS_TRACE_ID
+		.flags  = DATA_HAS_TRACE_ID | DATA_CHECKSUM_INVERTED
 	}, {
-		.name   = "basic with TID, SID",
+		.name   = "basic + TID, SID",
 		.format = BASIC,
-		.flags  = DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
+		.flags  = DATA_HAS_TRACE_ID | DATA_HAS_CART_ID | DATA_CHECKSUM_INVERTED
 	}, {
-		.name   = "basic with code prefix, TID, SID",
+		.name   = "basic + prefix, TID, SID",
 		.format = BASIC,
 		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
+			| DATA_CHECKSUM_INVERTED
 	}, {
 		// Used by most pre-ZS01 Bemani games
-		.name   = "basic with code prefix, all IDs",
+		.name   = "basic + prefix, all IDs",
 		.format = BASIC,
 		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
-			| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID
+			| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID | DATA_CHECKSUM_INVERTED
 	}, {
 		// Used by early (pre-digital-I/O) Bemani games
-		.name   = "extended with no IDs",
+		.name   = "extended (no IDs)",
+		.format = EXTENDED,
+		.flags  = DATA_HAS_CODE_PREFIX | DATA_CHECKSUM_INVERTED
+	}, {
+		// Used by early (pre-digital-I/O) Bemani games
+		.name   = "extended alt. (no IDs)",
 		.format = EXTENDED,
 		.flags  = DATA_HAS_CODE_PREFIX
 	}, {
 		// Used by GE936/GK936 and all ZS01 Bemani games
-		.name   = "extended with all IDs",
+		.name   = "extended + all IDs",
 		.format = EXTENDED,
 		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
 			| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID | DATA_HAS_PUBLIC_SECTION
+			| DATA_CHECKSUM_INVERTED
 	}
 };
 
@@ -193,15 +225,13 @@ Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
 
 Parser *newCartParser(Dump &dump) {
 	// Try all formats from the most complex one to the simplest.
-	for (int i = _NUM_KNOWN_FORMATS - 1; i >= 0; i++) {
+	for (int i = _NUM_KNOWN_FORMATS - 1; i >= 0; i--) {
 		auto   &format = _KNOWN_FORMATS[i];
 		Parser *parser = newCartParser(dump, format.format, format.flags);
 
-		if (parser->validate()) {
-			LOG("found known data format");
-			LOG("%s, index=%d", format.name, i);
+		LOG("trying as %s", format.name);
+		if (parser->validate())
 			return parser;
-		}
 
 		delete parser;
 	}
@@ -212,7 +242,7 @@ Parser *newCartParser(Dump &dump) {
 
 /* Cartridge database */
 
-const DBEntry *CartDB::lookupEntry(const char *code, const char *region) const {
+const DBEntry *CartDB::lookup(const char *code, const char *region) const {
 	// Perform a binary search. This assumes all entries in the DB are sorted by
 	// their code and region.
 	auto offset = reinterpret_cast<const DBEntry *>(ptr);
@@ -221,10 +251,12 @@ const DBEntry *CartDB::lookupEntry(const char *code, const char *region) const {
 		auto entry = &offset[step];
 		int  diff  = entry->compare(code, region);
 
-		if (!diff)
+		if (!diff) {
+			LOG("%s %s found, entry=0x%08x", code, region, entry);
 			return entry;
-		else if (diff > 0) // TODO: could be diff < 0
+		} else if (diff < 0) {
 			offset = entry;
+		}
 	}
 
 	LOG("%s %s not found", code, region);

@@ -23,6 +23,13 @@ enum FormatType : uint8_t {
 	EXTENDED = 3
 };
 
+enum TraceIDType : uint8_t {
+	TID_NONE             = 0,
+	TID_81               = 1,
+	TID_82_BIG_ENDIAN    = 2,
+	TID_82_LITTLE_ENDIAN = 3
+};
+
 enum DumpFlag : uint8_t {
 	DUMP_HAS_SYSTEM_ID   = 1 << 0,
 	DUMP_HAS_CART_ID     = 1 << 1,
@@ -41,12 +48,13 @@ enum DumpFlag : uint8_t {
 // | DATA_HAS_PUBLIC_SECTION | Mandatory |          | Optional  |
 
 enum DataFlag : uint8_t {
-	DATA_HAS_CODE_PREFIX    = 1 << 0,
-	DATA_HAS_TRACE_ID       = 1 << 1,
-	DATA_HAS_CART_ID        = 1 << 2,
-	DATA_HAS_INSTALL_ID     = 1 << 3,
-	DATA_HAS_SYSTEM_ID      = 1 << 4,
-	DATA_HAS_PUBLIC_SECTION = 1 << 5
+	DATA_HAS_CODE_PREFIX     = 1 << 0,
+	DATA_HAS_TRACE_ID        = 1 << 1,
+	DATA_HAS_CART_ID         = 1 << 2,
+	DATA_HAS_INSTALL_ID      = 1 << 3,
+	DATA_HAS_SYSTEM_ID       = 1 << 4,
+	DATA_HAS_PUBLIC_SECTION  = 1 << 5,
+	DATA_CHECKSUM_INVERTED   = 1 << 6
 };
 
 static constexpr int    NUM_CHIP_TYPES       = 4;
@@ -94,7 +102,7 @@ public:
 
 	uint8_t getFlags(void) const;
 	void setInstallID(uint8_t prefix);
-	void updateTraceID(uint8_t prefix, int param);
+	void updateTraceID(TraceIDType type, int param);
 };
 
 class [[gnu::packed]] PublicIdentifierSet {
@@ -116,8 +124,8 @@ public:
 	char    region[2], codePrefix[2];
 	uint8_t checksum, _pad[3];
 
-	void updateChecksum(void);
-	bool validateChecksum(void) const;
+	void updateChecksum(bool invert = false);
+	bool validateChecksum(bool invert = false) const;
 };
 
 class [[gnu::packed]] ExtendedHeader {
@@ -127,8 +135,8 @@ public:
 	char     region[4];
 	uint16_t checksum;
 
-	void updateChecksum(void);
-	bool validateChecksum(void) const;
+	void updateChecksum(bool invert = false);
+	bool validateChecksum(bool invert = false) const;
 };
 
 /* Cartridge dump structure */
@@ -162,13 +170,9 @@ public:
 	inline void clearData(void) {
 		__builtin_memset(data, 0, getChipSize().dataLength);
 	}
-	inline bool isDataEmpty(void) const {
-		size_t length = getChipSize().dataLength;
-		auto   sum    = util::sum(data, length);
 
-		return (!sum || (sum == (0xff * length)));
-	}
-
+	bool isPublicDataEmpty(void) const;
+	bool isDataEmpty(void) const;
 	size_t toQRString(char *output) const;
 };
 

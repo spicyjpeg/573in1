@@ -8,13 +8,82 @@
 
 namespace cart {
 
+/* Dummy cartridge driver */
+
+DriverError DummyDriver::readSystemID(void) {
+	if (_privateDump.flags & DUMP_SYSTEM_ID_OK) {
+		_dump.flags |= DUMP_SYSTEM_ID_OK;
+		return NO_ERROR;
+	}
+
+	return DS2401_NO_RESP;
+}
+
+DriverError DummyDriver::readCartID(void) {
+	if (_privateDump.flags & DUMP_CART_ID_OK) {
+		_dump.flags |= DUMP_CART_ID_OK;
+		return NO_ERROR;
+	}
+
+	return DS2401_NO_RESP;
+}
+
+DriverError DummyDriver::readPublicData(void) {
+	if (_privateDump.flags & DUMP_PUBLIC_DATA_OK) {
+		_dump.flags |= DUMP_PUBLIC_DATA_OK;
+		return NO_ERROR;
+	}
+
+	return _getErrorCode();
+}
+
+DriverError DummyDriver::readPrivateData(void) {
+	if ((_privateDump.flags & DUMP_PRIVATE_DATA_OK) && !__builtin_memcmp(
+		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
+	)) {
+		_dump.flags |= DUMP_PRIVATE_DATA_OK;
+		return NO_ERROR;
+	}
+
+	return _getErrorCode();
+}
+
+DriverError DummyDriver::writeData(void) {
+	if (!__builtin_memcmp(
+		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
+	)) {
+		__builtin_memcpy(_privateDump.data, _dump.data, sizeof(_dump.data));
+		return NO_ERROR;
+	}
+
+	return _getErrorCode();
+}
+
+DriverError DummyDriver::erase(void) {
+	if (!__builtin_memcmp(
+		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
+	)) {
+		_privateDump.clearData();
+		// TODO: clear config registers as well
+		return NO_ERROR;
+	}
+
+	return _getErrorCode();
+}
+
+DriverError DummyDriver::setDataKey(const uint8_t *key) {
+	// Update the data key stored in the dump.
+	__builtin_memcpy(_dump.dataKey, key, sizeof(_dump.dataKey));
+	return NO_ERROR;
+}
+
 /* Functions common to all cartridge drivers */
 
 static constexpr int _X76_MAX_ACK_POLLS = 5;
 static constexpr int _X76_WRITE_DELAY   = 10000;
 static constexpr int _ZS01_PACKET_DELAY = 30000;
 
-DriverError Driver::readSystemID(void) {
+DriverError CartDriver::readSystemID(void) {
 	auto mask = setInterruptMask(0);
 
 	if (!io::dsDIOReset()) {
@@ -143,6 +212,16 @@ DriverError X76F041Driver::readPrivateData(void) {
 		io::i2cStopWithCS();
 	}
 
+	auto error = _x76Command(
+		_X76F041_CONFIG, _X76F041_CFG_READ_CONFIG, _X76F041_ACK_POLL
+	);
+	if (error)
+		return error;
+
+	// TODO: this may need another "secure read setup"...
+	io::i2cReadBytes(_dump.config, 5);
+	io::i2cStopWithCS();
+
 	return NO_ERROR;
 }
 
@@ -162,6 +241,19 @@ DriverError X76F041Driver::writeData(void) {
 
 		io::i2cStopWithCS(_X76_WRITE_DELAY);
 	}
+
+	auto error = _x76Command(
+		_X76F041_CONFIG, _X76F041_CFG_WRITE_CONFIG, _X76F041_ACK_POLL
+	);
+	if (error)
+		return error;
+
+	if (!io::i2cWriteBytes(_dump.config, 8)) {
+		LOG("NACK while sending data bytes");
+		return X76_NACK;
+	}
+
+	io::i2cStopWithCS(_X76_WRITE_DELAY);
 
 	return NO_ERROR;
 }
@@ -405,10 +497,10 @@ enum ChipIdentifier : uint32_t {
 	_ID_ZS01    = 0x5a530001
 };
 
-Driver *newCartDriver(Dump &dump) {
+CartDriver *newCartDriver(Dump &dump) {
 	if (!io::getCartInsertionStatus()) {
 		LOG("DSR not asserted");
-		return new Driver(dump);
+		return new CartDriver(dump);
 	}
 
 	uint32_t id1 = io::i2cResetZS01();
@@ -428,7 +520,7 @@ Driver *newCartDriver(Dump &dump) {
 			//return new X76F100Driver(dump);
 
 		default:
-			return new Driver(dump);
+			return new CartDriver(dump);
 	}
 }
 

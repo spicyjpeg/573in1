@@ -46,6 +46,8 @@ void App::_setupInterrupts(void) {
 	setInterruptMask(1 << IRQ_VBLANK);
 }
 
+/* Worker functions */
+
 void App::_dummyWorker(void) {
 	for (;;)
 		__asm__ volatile("");
@@ -60,12 +62,22 @@ static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 
 void App::_cartDetectWorker(void) {
 	_workerStatus.update(0, 4, WSTR("App.cartDetectWorker.identifyCart"));
-
 	_unloadCartData();
+
+#ifndef NDEBUG
+	if (_loader->loadStruct(_dump, "data/test.dump")) {
+		LOG("using dummy cart driver");
+		_driver = new cart::DummyDriver(_dump);
+	} else {
+		_driver = cart::newCartDriver(_dump);
+	}
+#else
 	_driver = cart::newCartDriver(_dump);
+#endif
 
 	if (_dump.chipType) {
-		LOG("dump @ 0x%08x, cart driver @ 0x%08x", &_dump, _driver);
+		LOG("cart dump @ 0x%08x", &_dump);
+		LOG("cart driver @ 0x%08x", _driver);
 		_workerStatus.update(1, 4, WSTR("App.cartDetectWorker.readCart"));
 
 		_driver->readCartID();
@@ -78,12 +90,14 @@ void App::_cartDetectWorker(void) {
 		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!_loader->loadAsset(_db, _CARTDB_PATHS[_dump.chipType])) {
-			LOG("failed to load %s", _CARTDB_PATHS[_dump.chipType]);
+			LOG("%s not found", _CARTDB_PATHS[_dump.chipType]);
 			goto _cartInitDone;
 		}
 
-		// TODO
-		//_identified = _db.lookupEntry(code, region);
+		char code[8], region[8];
+
+		if (_parser->getCode(code) && _parser->getRegion(region))
+			_identified = _db.lookup(code, region);
 	}
 
 _cartInitDone:
@@ -121,13 +135,28 @@ _initDone:
 void App::_cartUnlockWorker(void) {
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
 
-	//_driver->readPrivateData(); // TODO: implement this
+	if (_driver->readPrivateData()) {
+		_workerStatus.finish(_unlockErrorScreen);
+		_dummyWorker();
+		return;
+	}
 
-	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identify"));
+	if (_parser)
+		delete _parser;
 
-	//if (_dump.flags & cart::DUMP_PRIVATE_DATA_OK)
-		//_identifyResult = _db.identifyCart(*_driver);
+	_parser = cart::newCartParser(_dump);
+	if (!_parser)
+		goto _unlockDone;
 
+	LOG("cart parser @ 0x%08x", _parser);
+	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identifyGame"));
+
+	char code[8], region[8];
+
+	if (_parser->getCode(code) && _parser->getRegion(region))
+		_identified = _db.lookup(code, region);
+
+_unlockDone:
 	_workerStatus.finish(_cartInfoScreen, true);
 	_dummyWorker();
 }
@@ -144,6 +173,8 @@ void App::_qrCodeWorker(void) {
 	_workerStatus.finish(_qrCodeScreen);
 	_dummyWorker();
 }
+
+/* Misc. functions */
 
 void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VBLANK)) {
