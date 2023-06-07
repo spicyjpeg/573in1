@@ -1,2081 +1,2543 @@
 [
 	{
-		"mameID": "darkhleg",
-		"code": "GX706",
+		"id": "darkhleg",
+		"code": "GE706",
 		"region": "JAA",
 		"name": "Dark Horse Legend",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "strgchmp",
+		"id": "strgchmp",
 		"code": "GQ710",
 		"region": "UAA",
 		"name": "Steering Champ",
 		"year": 1997,
+		"installCart": null,
+		"gameCart": null,
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "hndlchmp",
+		"id": "hndlchmp",
 		"code": "GQ710",
 		"region": "SAA",
 		"name": "Handle Champ",
 		"year": 1997,
+		"installCart": null,
+		"gameCart": null,
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "hndlchmpj",
+		"id": "hndlchmpj",
 		"code": "GQ710",
 		"region": "JAB",
 		"name": "Handle Champ",
 		"year": 1997,
+		"installCart": null,
+		"gameCart": null,
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fbaitbc",
+		"id": "fbaitbc",
 		"code": "GE765",
 		"region": "UAB",
 		"name": "Fisherman's Bait: A Bass Challenge",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "bassangl",
+		"id": "bassangl",
 		"code": "GE765",
 		"region": "JAA",
 		"name": "Bass Angler",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "powyakex",
+		"id": "powyakex",
 		"code": "GX802",
 		"region": "JAB",
 		"name": "Jikkyou Powerful Pro Yakyuu EX",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "jppyex98",
+		"id": "jppyex98",
 		"code": "GC811",
 		"region": "JAA",
 		"name": "Jikkyou Powerful Pro Yakyuu EX '98",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "konam80s",
+		"id": "konam80s",
 		"code": "GC826",
 		"region": "EAA",
 		"name": "Konami 80's AC Special",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "konam80su",
+		"id": "konam80su",
 		"code": "GC826",
 		"region": "UAA",
 		"name": "Konami 80's AC Special",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "konam80sa",
+		"id": "konam80sa",
 		"code": "GC826",
 		"region": "AAA",
 		"name": "Konami 80's AC Special",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "konam80sk",
+		"id": "konam80sk",
 		"code": "GC826",
 		"region": "KAA",
 		"name": "Konami 80's AC Special",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "konam80sj",
+		"id": "konam80sj",
 		"code": "GC826",
 		"region": "JAA",
 		"name": "Konami 80's Gallery",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr",
+		"id": "ddr",
 		"code": "GC845",
 		"region": "JBA",
 		"name": "Dance Dance Revolution: Internet Ranking Ver.",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddrja",
+		"id": "ddrja",
 		"code": "GC845",
 		"region": "JAA",
 		"name": "Dance Dance Revolution",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddrjb",
+		"id": "ddrjb",
 		"code": "GC845",
 		"region": "JAB",
 		"name": "Dance Dance Revolution",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddru",
+		"id": "ddru",
 		"code": "GN845",
 		"region": "UAA",
 		"name": "Dance Dance Revolution",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dstageea",
+		"id": "dstageea",
 		"code": "GN845",
 		"region": "EAA",
 		"name": "Dancing Stage",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dstage",
+		"id": "dstage",
 		"code": "GC845",
 		"region": "EBA",
 		"name": "Dancing Stage: INTERNET R@NKING",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddra",
+		"id": "ddra",
 		"code": "GN845",
 		"region": "AAA",
 		"name": "Dance Dance Revolution",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fbait2bc",
+		"id": "fbait2bc",
 		"code": "GE865",
 		"region": "UAB",
 		"name": "Fisherman's Bait 2: A Bass Challenge",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "bassang2",
+		"id": "bassang2",
 		"code": "GE865",
 		"region": "JAA",
 		"name": "Bass Angler 2",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dmx",
+		"id": "dmx",
 		"code": "GQ874",
 		"region": "JAA",
 		"name": "Dance Maniax",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.6"
+		"bootloaderVersion": "1.6"
 	},
 	{
-		"mameID": "dmxa",
+		"id": "dmxa",
 		"code": "GQ874",
 		"region": "AAA",
 		"name": "Dance Maniax",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.6"
+		"bootloaderVersion": "1.6"
 	},
 	{
-		"mameID": "dncfrks",
+		"id": "dncfrks",
 		"code": "GK874",
 		"region": "KAA",
 		"name": "Dance Freaks",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.6"
+		"bootloaderVersion": "1.6"
 	},
 	{
-		"mameID": "hyperbbc",
+		"id": "hyperbbc",
 		"code": "GQ876",
 		"region": "EAA",
 		"name": "Hyper Bishi Bashi Champ [3-player]",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "hyperbbca",
+		"id": "hyperbbca",
 		"code": "GQ876",
 		"region": "AAA",
 		"name": "Hyper Bishi Bashi Champ [3-player]",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "hyperbbck",
+		"id": "hyperbbck",
 		"code": "GE876",
 		"region": "KAA",
 		"name": "Hyper Bishi Bashi Champ [3-player]",
 		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gchgchmp",
+		"id": "gchgchmp",
 		"code": "GE877",
 		"region": "JAB",
 		"name": "Gachaga Champ",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "drmn",
+		"id": "drmn",
 		"code": "GQ881",
 		"region": "JAD",
 		"name": "DrumMania",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "drmnja",
+		"id": "drmnja",
 		"code": "GQ881",
 		"region": "JAD",
 		"name": "DrumMania Update CD",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "drmnu",
+		"id": "drmnu",
 		"code": "GQ881",
 		"region": "UAB",
 		"name": "DrumMania",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pcnfrks",
+		"id": "pcnfrks",
 		"code": "GQ881",
 		"region": "EAB",
 		"name": "PercussionFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pcnfrksa",
+		"id": "pcnfrksa",
 		"code": "GQ881",
 		"region": "AAB",
 		"name": "PercussionFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pcnfrksk",
+		"id": "pcnfrksk",
 		"code": "GQ881",
 		"region": "KAB",
 		"name": "PercussionFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2m",
+		"id": "gtrfrk2m",
 		"code": "GQ883",
 		"region": "JAD",
 		"name": "GuitarFreaks 2ndMIX Ver 1.01",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2mja",
+		"id": "gtrfrk2mja",
 		"code": "GQ883",
 		"region": "JAA",
 		"name": "GuitarFreaks 2ndMIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2mu",
+		"id": "gtrfrk2mu",
 		"code": "GQ883",
 		"region": "UAA",
 		"name": "GuitarFreaks 2ndMIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2me",
+		"id": "gtrfrk2me",
 		"code": "GQ883",
 		"region": "EAA",
 		"name": "GuitarFreaks 2ndMIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2ma",
+		"id": "gtrfrk2ma",
 		"code": "GQ883",
 		"region": "AAA",
 		"name": "GuitarFreaks 2ndMIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2mk",
+		"id": "gtrfrk2mk",
 		"code": "GQ883",
 		"region": "KAA",
 		"name": "GuitarFreaks 2ndMIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dsftkd",
+		"id": "dsftkd",
 		"code": "GC884",
 		"region": "JAA",
 		"name": "Dancing Stage featuring TRUE KiSS DESTiNATiON",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr2ml",
+		"id": "ddr2ml",
 		"code": "GE885",
 		"region": "JAC",
 		"name": "Dance Dance Revolution 2ndMIX: Dance Dance Revolution LINK VERSION",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr2mlja",
+		"id": "ddr2mlja",
 		"code": "GE885",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 2ndMIX: Dance Dance Revolution LINK VERSION",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr2mljb",
+		"id": "ddr2mljb",
 		"code": "GE885",
 		"region": "JAB",
 		"name": "Dance Dance Revolution 2ndMIX: Dance Dance Revolution LINK VERSION",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrks",
+		"id": "gtrfrks",
 		"code": "GQ886",
 		"region": "JAD",
 		"name": "GuitarFreaks Ver 1.01",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksu",
+		"id": "gtrfrksu",
 		"code": "GQ886",
 		"region": "UAD",
 		"name": "GuitarFreaks Ver 1.01",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrkse",
+		"id": "gtrfrkse",
 		"code": "GQ886",
 		"region": "EAD",
 		"name": "GuitarFreaks Ver 1.01",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksa",
+		"id": "gtrfrksa",
 		"code": "GQ886",
 		"region": "AAD",
 		"name": "GuitarFreaks Ver 1.01",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksja",
+		"id": "gtrfrksja",
 		"code": "GQ886",
 		"region": "JAA",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksua",
+		"id": "gtrfrksua",
 		"code": "GQ886",
 		"region": "UAA",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksea",
+		"id": "gtrfrksea",
 		"code": "GQ886",
 		"region": "EAA",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksaa",
+		"id": "gtrfrksaa",
 		"code": "GQ886",
 		"region": "AAA",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksjb",
+		"id": "gtrfrksjb",
 		"code": "GQ886",
 		"region": "JAC",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksub",
+		"id": "gtrfrksub",
 		"code": "GQ886",
 		"region": "UAC",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrkseb",
+		"id": "gtrfrkseb",
 		"code": "GQ886",
 		"region": "EAC",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrksab",
+		"id": "gtrfrksab",
 		"code": "GQ886",
 		"region": "AAC",
 		"name": "GuitarFreaks",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr3m",
+		"id": "ddr3m",
 		"code": "GN887",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 3rdMIX",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.0"
+		"bootloaderVersion": "1.0"
 	},
 	{
-		"mameID": "ddr3mja",
+		"id": "ddr3mja",
 		"code": "GE887",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 3rdMIX",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.0"
+		"bootloaderVersion": "1.0"
 	},
 	{
-		"mameID": "ddr3ma",
+		"id": "ddr3ma",
 		"code": "GN887",
 		"region": "AAA",
 		"name": "Dance Dance Revolution 3rdMIX",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.1"
+		"bootloaderVersion": "1.1"
 	},
 	{
-		"mameID": "ddr3maa",
+		"id": "ddr3maa",
 		"code": "GE887",
 		"region": "AAA",
 		"name": "Dance Dance Revolution 3rdMIX",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.1"
+		"bootloaderVersion": "1.1"
 	},
 	{
-		"mameID": "ddr3mk",
+		"id": "ddr3mk",
 		"code": "GN887",
 		"region": "KBA",
 		"name": "Dance Dance Revolution 3rdMIX: Ver.Korea2",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.3"
+		"bootloaderVersion": "1.3"
 	},
 	{
-		"mameID": "ddr3mka",
+		"id": "ddr3mka",
 		"code": "GN887",
 		"region": "KAA",
 		"name": "Dance Dance Revolution 3rdMIX: Ver.Korea",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.0"
+		"bootloaderVersion": "1.0"
 	},
 	{
-		"mameID": "ddr3mkb",
+		"id": "ddr3mkb",
 		"code": "GE887",
 		"region": "KBA",
 		"name": "Dance Dance Revolution 3rdMIX: Ver.Korea2",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.3"
+		"bootloaderVersion": "1.3"
 	},
 	{
-		"mameID": "ddr3mkc",
+		"id": "ddr3mkc",
 		"code": "GE887",
 		"region": "KAA",
 		"name": "Dance Dance Revolution 3rdMIX: Ver.Korea",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.3"
+		"bootloaderVersion": "1.3"
 	},
 	{
-		"mameID": "fbaitmc",
+		"id": "fbaitmc",
 		"code": "GX889",
 		"region": "EA",
 		"name": "Fisherman's Bait: Marlin Challenge",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fbaitmcu",
+		"id": "fbaitmcu",
 		"code": "GX889",
 		"region": "UA",
 		"name": "Fisherman's Bait: Marlin Challenge",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fbaitmca",
+		"id": "fbaitmca",
 		"code": "GX889",
 		"region": "AA",
 		"name": "Fisherman's Bait: Marlin Challenge",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fbaitmcj",
+		"id": "fbaitmcj",
 		"code": "GX889",
 		"region": "JA",
 		"name": "Fisherman's Bait: Marlin Challenge",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr2m",
+		"id": "ddr2m",
 		"code": "GN895",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 2ndMIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddrbocd",
+		"id": "ddrbocd",
 		"code": "GE892",
 		"region": "JAA",
 		"name": "Dance Dance Revolution Best of Cool Dancers",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddrsbm",
+		"id": "ddrsbm",
 		"code": "GQ894",
 		"region": "JAA",
 		"name": "Dance Dance Revolution Solo Bass Mix",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr2mc",
+		"id": "ddr2mc",
 		"code": "GE896",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 2ndMIX with beatmania IIDX CLUB VERSiON",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddrs2000",
+		"id": "ddrs2000",
 		"code": "GC905",
 		"region": "JAA",
 		"name": "Dance Dance Revolution Solo 2000",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.2"
+		"bootloaderVersion": "1.2"
 	},
 	{
-		"mameID": "ddrs2000a",
+		"id": "ddrs2000a",
 		"code": "GC905",
 		"region": "AAA",
 		"name": "Dance Dance Revolution Solo 2000",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.2"
+		"bootloaderVersion": "1.2"
 	},
 	{
-		"mameID": "gunmania",
+		"id": "gunmania",
 		"code": "GL906",
 		"region": "JAA",
 		"name": "GunMania",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": null,
 		"ioBoard": "PWB0000073070",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "hypbbc2p",
+		"id": "hypbbc2p",
 		"code": "GX908",
 		"region": "JAA",
 		"name": "Hyper Bishi Bashi Champ [2-player]",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "hypbbc2pk",
+		"id": "hypbbc2pk",
 		"code": "GX908",
 		"region": "KAA",
 		"name": "Hyper Bishi Bashi Champ [2-player]",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dsfdct",
+		"id": "dsfdct",
 		"code": "GC910",
 		"region": "JCA",
 		"name": "Dancing Stage featuring Dreams Come True",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dsfdctja",
+		"id": "dsfdctja",
 		"code": "GC910",
 		"region": "JAA",
 		"name": "Dancing Stage featuring Dreams Come True",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "drmn2m",
+		"id": "drmn2m",
 		"code": "GE912",
 		"region": "JAB",
 		"name": "DrumMania 2ndMIX",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.5"
+		"bootloaderVersion": "1.5"
 	},
 	{
-		"mameID": "drmn2mja",
+		"id": "drmn2mja",
 		"code": "GE912",
 		"region": "JAB",
 		"name": "DrumMania 2ndMIX Session Power Up Kit",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.5"
+		"bootloaderVersion": "1.5"
 	},
 	{
-		"mameID": "pcnfrk2m",
+		"id": "pcnfrk2m",
 		"code": "GE912",
 		"region": "AAA",
 		"name": "PercussionFreaks 2ndMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.5"
+		"bootloaderVersion": "1.5"
 	},
 	{
-		"mameID": "pcnfrk2maa",
+		"id": "pcnfrk2maa",
 		"code": "GE912",
 		"region": "AAB",
 		"name": "PercussionFreaks 2ndMIX Session Power Up Kit",
 		"year": 1999,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.5"
+		"bootloaderVersion": "1.5"
 	},
 	{
-		"mameID": "pcnfrk2mk",
+		"id": "pcnfrk2mk",
 		"code": "GE912",
 		"region": "KAA",
 		"name": "PercussionFreaks 2ndMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.5"
+		"bootloaderVersion": "1.5"
 	},
 	{
-		"mameID": "fghtmn",
+		"id": "fghtmn",
 		"code": "GQ918",
 		"region": "EAA",
 		"name": "Fighting Mania",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fghtmnu",
+		"id": "fghtmnu",
 		"code": "GQ918",
 		"region": "UAA",
 		"name": "Fighting Mania",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fghtmna",
+		"id": "fghtmna",
 		"code": "GQ918",
 		"region": "AAA",
 		"name": "Fighting Mania",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "fghtmnk",
+		"id": "fghtmnk",
 		"code": "GQ918",
 		"region": "KAA",
 		"name": "Fighting Mania",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pnchmn",
+		"id": "pnchmn",
 		"code": "GQ918",
 		"region": "JAB",
 		"name": "Punch Mania: Hokuto no Ken",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pnchmnja",
+		"id": "pnchmnja",
 		"code": "GQ918",
 		"region": "JAB",
 		"name": "Punch Mania: Hokuto no Ken [alt CD]",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddrkara",
+		"id": "ddrkara",
 		"code": "GQ921",
 		"region": "JBB",
 		"name": "Dance Dance Revolution Karaoke MIX",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX921-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2ml1",
+		"id": "gtrfrk2ml1",
 		"code": "GE929",
 		"region": "JAA",
 		"name": "GuitarFreaks 2ndMIX Link Kit 1",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk2ml2",
+		"id": "gtrfrk2ml2",
 		"code": "GC929",
 		"region": "JBB",
 		"name": "GuitarFreaks 2ndMIX Link Kit 2",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "stepchmp",
+		"id": "stepchmp",
 		"code": "GQ930",
 		"region": "JA",
 		"name": "Step Champ",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dsem",
+		"id": "dsem",
 		"code": "GK936",
 		"region": "EAA",
 		"name": "Dancing Stage EuroMIX",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.7"
+		"bootloaderVersion": "1.7"
 	},
 	{
-		"mameID": "dsemea",
+		"id": "dsemea",
 		"code": "GE936",
 		"region": "EAA",
 		"name": "Dancing Stage EuroMIX",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.7"
+		"bootloaderVersion": "1.7"
 	},
 	{
-		"mameID": "ddrkara2",
+		"id": "ddrkara2",
 		"code": "GQ947",
 		"region": "JAA",
 		"name": "Dance Dance Revolution Karaoke MIX 2",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX921-PWB(B)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "gtrfrk3m",
+		"id": "gtrfrk3m",
 		"code": "GE949",
 		"region": "JAC",
 		"name": "GuitarFreaks 3rdMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.4"
+		"bootloaderVersion": "1.4"
 	},
 	{
-		"mameID": "gtrfrk3mja",
+		"id": "gtrfrk3mja",
 		"code": "GE949",
 		"region": "JAB",
 		"name": "GuitarFreaks 3rdMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.4"
+		"bootloaderVersion": "1.4"
 	},
 	{
-		"mameID": "gtrfrk3mjb",
+		"id": "gtrfrk3mjb",
 		"code": "GE949",
 		"region": "JAZ02",
 		"name": "GuitarFreaks 3rdMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.4"
+		"bootloaderVersion": "1.4"
 	},
 	{
-		"mameID": "ddr2mc2",
+		"id": "ddr2mc2",
 		"code": "GE984",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 2ndMIX AND beatmania IIDX substream CLUB VERSiON 2",
 		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "animechmp",
+		"id": "animechmp",
 		"code": "GCA07",
 		"region": "JAA",
 		"name": "Anime Champ",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pnchmn2",
+		"id": "pnchmn2",
 		"code": "GQA09",
 		"region": "JAA",
 		"name": "Punch Mania 2: Hokuto no Ken",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "pnchmn2ja",
+		"id": "pnchmn2ja",
 		"code": "GQA09",
 		"region": "JRA",
 		"name": "Punch Mania 2: Hokuto no Ken e-Amusement",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "salarymc",
+		"id": "salarymc",
 		"code": "GCA18",
 		"region": "JAA",
 		"name": "Salary Man Champ [2-player]",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "ddr3mp",
+		"id": "ddr3mp",
 		"code": "GCA22",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 3rdMIX PLUS",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.6"
+		"bootloaderVersion": "1.6"
 	},
 	{
-		"mameID": "drmn3m",
+		"id": "drmn3m",
 		"code": "GCA23",
 		"region": "JAA",
 		"name": "DrumMania 3rdMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "pcnfrk3m",
+		"id": "pcnfrk3m",
 		"code": "GCA23",
 		"region": "AAA",
 		"name": "PercussionFreaks 3rdMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "pcnfrk3mk",
+		"id": "pcnfrk3mk",
 		"code": "GCA23",
 		"region": "KAA",
 		"name": "PercussionFreaks 3rdMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "gtrfrk4m",
+		"id": "gtrfrk4m",
 		"code": "GEA24",
 		"region": "JAA",
 		"name": "GuitarFreaks 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "drmn4m",
+		"id": "drmn4m",
 		"code": "GEA25",
 		"region": "JAA",
 		"name": "DrumMania 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "drmn4mja",
+		"id": "drmn4mja",
 		"code": "GEA25",
 		"region": "JYA",
 		"name": "DrumMania 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "drmn4mjb",
+		"id": "drmn4mjb",
 		"code": "GEA25",
 		"region": "JZA",
 		"name": "DrumMania 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk4m",
+		"id": "pcnfrk4m",
 		"code": "GEA25",
 		"region": "AAA",
 		"name": "PercussionFreaks 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk4maa",
+		"id": "pcnfrk4maa",
 		"code": "GEA25",
 		"region": "AYA",
 		"name": "PercussionFreaks 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk4mab",
+		"id": "pcnfrk4mab",
 		"code": "GEA25",
 		"region": "AZA",
 		"name": "PercussionFreaks 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk4mk",
+		"id": "pcnfrk4mk",
 		"code": "GCA25",
 		"region": "KAA",
 		"name": "PercussionFreaks 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk4mka",
+		"id": "pcnfrk4mka",
 		"code": "GKA25",
 		"region": "KAA",
 		"name": "PercussionFreaks 4thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5m",
+		"id": "gtrfrk5m",
 		"code": "GEA26",
 		"region": "JAA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mja",
+		"id": "gtrfrk5mja",
 		"code": "GEA26",
 		"region": "JYA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mjb",
+		"id": "gtrfrk5mjb",
 		"code": "GEA26",
 		"region": "JZA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mjc",
+		"id": "gtrfrk5mjc",
 		"code": "GCA26",
 		"region": "JAA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mjd",
+		"id": "gtrfrk5mjd",
 		"code": "GCA26",
 		"region": "JYA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mje",
+		"id": "gtrfrk5mje",
 		"code": "GCA26",
 		"region": "JZA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5ma",
+		"id": "gtrfrk5ma",
 		"code": "GEA26",
 		"region": "AAA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5maa",
+		"id": "gtrfrk5maa",
 		"code": "GEA26",
 		"region": "AYA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mab",
+		"id": "gtrfrk5mab",
 		"code": "GEA26",
 		"region": "AZA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mac",
+		"id": "gtrfrk5mac",
 		"code": "GCA26",
 		"region": "AAA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mad",
+		"id": "gtrfrk5mad",
 		"code": "GCA26",
 		"region": "AYA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk5mae",
+		"id": "gtrfrk5mae",
 		"code": "GCA26",
 		"region": "AZA",
 		"name": "GuitarFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "ddr5m",
+		"id": "ddr5m",
 		"code": "GCA27",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "ddr4m",
+		"id": "ddr4m",
 		"code": "GCA33",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddr4mja",
+		"id": "ddr4mja",
 		"code": "GUA33",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddr4ma",
+		"id": "ddr4ma",
 		"code": "GCA33",
 		"region": "AAA",
 		"name": "Dance Dance Revolution 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddr4maa",
+		"id": "ddr4maa",
 		"code": "GUA33",
 		"region": "AAA",
 		"name": "Dance Dance Revolution 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddrs4m",
+		"id": "ddrs4m",
 		"code": "GCA33",
 		"region": "JBA",
 		"name": "Dance Dance Revolution Solo 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddrs4mja",
+		"id": "ddrs4mja",
 		"code": "GUA33",
 		"region": "JBA",
 		"name": "Dance Dance Revolution Solo 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddrs4ma",
+		"id": "ddrs4ma",
 		"code": "GCA33",
 		"region": "ABA",
 		"name": "Dance Dance Revolution Solo 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddrs4maa",
+		"id": "ddrs4maa",
 		"code": "GUA33",
 		"region": "ABA",
 		"name": "Dance Dance Revolution Solo 4thMIX",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddr4mp",
+		"id": "ddr4mp",
 		"code": "GCA34",
 		"region": "JAA",
 		"name": "Dance Dance Revolution 4thMIX PLUS",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "ddrs4mp",
+		"id": "ddrs4mp",
 		"code": "GCA34",
 		"region": "JBA",
 		"name": "Dance Dance Revolution Solo 4thMIX PLUS",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "kicknkick",
+		"id": "kicknkick",
 		"code": "GNA36",
 		"region": "EAA",
 		"name": "Kick & Kick",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": null,
 		"ioBoard": "GX700-PWB(K)",
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "dsfdr",
+		"id": "dsfdr",
 		"code": "GCA37",
 		"region": "JAA",
 		"name": "Dancing Stage Featuring Disney's Rave",
 		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "dmx2mapp",
+		"id": "dmx2mapp",
 		"code": "GCA38",
 		"region": "JAA",
 		"name": "Dance Maniax 2ndMIX append JPARADISE",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "dmx2mappja",
+		"id": "dmx2mappja",
 		"code": "GCA38",
 		"region": "JBA",
 		"name": "Dance Maniax 2ndMIX append JPARADISE for Dance Maniax",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "dmx2mappjb",
+		"id": "dmx2mappjb",
 		"code": "GCA38",
 		"region": "JRA",
 		"name": "Dance Maniax 2ndMIX append JPARADISE e-Amusement",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "dmx2m",
+		"id": "dmx2m",
 		"code": "GCA39",
 		"region": "JAA",
 		"name": "Dance Maniax 2ndMIX",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "dmx2mja",
+		"id": "dmx2mja",
 		"code": "GCA39",
 		"region": "JRA",
 		"name": "Dance Maniax 2ndMIX e-Amusement",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "mamboagg",
+		"id": "mamboagg",
 		"code": "GQA40",
 		"region": "JAB",
 		"name": "Mambo A Go-Go",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "mamboaggja",
+		"id": "mamboaggja",
 		"code": "GQA40",
 		"region": "JRB",
 		"name": "Mambo A Go-Go e-Amusement",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "ddrusa",
+		"id": "ddrusa",
 		"code": "GKA44",
 		"region": "UAA",
 		"name": "Dance Dance Revolution USA",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "ddrusaa",
+		"id": "ddrusaa",
 		"code": "GEA44",
 		"region": "UAA",
 		"name": "Dance Dance Revolution USA",
 		"year": 2000,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.8"
+		"bootloaderVersion": "1.8"
 	},
 	{
-		"mameID": "drmn5m",
+		"id": "drmn5m",
 		"code": "GCB05",
 		"region": "JAA",
 		"name": "DrumMania 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "drmn5mja",
+		"id": "drmn5mja",
 		"code": "GCB05",
 		"region": "JYA",
 		"name": "DrumMania 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "drmn5mjb",
+		"id": "drmn5mjb",
 		"code": "GCB05",
 		"region": "JZA",
 		"name": "DrumMania 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk5m",
+		"id": "pcnfrk5m",
 		"code": "GCB05",
 		"region": "AAA",
 		"name": "PercussionFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk5maa",
+		"id": "pcnfrk5maa",
 		"code": "GCB05",
 		"region": "AYA",
 		"name": "PercussionFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk5mab",
+		"id": "pcnfrk5mab",
 		"code": "GCB05",
 		"region": "AZA",
 		"name": "PercussionFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk5mk",
+		"id": "pcnfrk5mk",
 		"code": "GCB05",
 		"region": "KAA",
 		"name": "PercussionFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "pcnfrk5mka",
+		"id": "pcnfrk5mka",
 		"code": "GKB05",
 		"region": "KAA",
 		"name": "PercussionFreaks 5thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk6m",
+		"id": "gtrfrk6m",
 		"code": "GCB06",
 		"region": "JAA",
 		"name": "GuitarFreaks 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk6mja",
+		"id": "gtrfrk6mja",
 		"code": "GCB06",
 		"region": "JYA",
 		"name": "GuitarFreaks 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gtrfrk6mjb",
+		"id": "gtrfrk6mjb",
 		"code": "GCB06",
 		"region": "JZA",
 		"name": "GuitarFreaks 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "drmn6m",
+		"id": "drmn6m",
 		"code": "GCB16",
 		"region": "JAA",
 		"name": "DrumMania 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn6mja",
+		"id": "drmn6mja",
 		"code": "GCB16",
 		"region": "JYA",
 		"name": "DrumMania 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn6mjb",
+		"id": "drmn6mjb",
 		"code": "GCB16",
 		"region": "JZA",
 		"name": "DrumMania 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk6m",
+		"id": "pcnfrk6m",
 		"code": "GCB16",
 		"region": "AAA",
 		"name": "PercussionFreaks 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk6maa",
+		"id": "pcnfrk6maa",
 		"code": "GCB16",
 		"region": "AYA",
 		"name": "PercussionFreaks 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk6mab",
+		"id": "pcnfrk6mab",
 		"code": "GCB16",
 		"region": "AZA",
 		"name": "PercussionFreaks 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk7m",
+		"id": "gtrfrk7m",
 		"code": "GCB17",
 		"region": "JAA",
 		"name": "GuitarFreaks 7thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk7mja",
+		"id": "gtrfrk7mja",
 		"code": "GCB17",
 		"region": "JYA",
 		"name": "GuitarFreaks 7thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk7mjb",
+		"id": "gtrfrk7mjb",
 		"code": "GCB17",
 		"region": "JZA",
 		"name": "GuitarFreaks 7thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "ddrmax",
+		"id": "ddrmax",
 		"code": "GCB19",
 		"region": "JAA",
 		"name": "DDRMAX: Dance Dance Revolution 6thMIX",
 		"year": 2001,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "ddrmax2",
+		"id": "ddrmax2",
 		"code": "GCB20",
 		"region": "JAA",
 		"name": "DDRMAX2: Dance Dance Revolution 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "mrtlbeat",
+		"id": "mrtlbeat",
 		"code": "GEB47",
 		"region": "JAB",
 		"name": "Martial Beat",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "mrtlbeatja",
+		"id": "mrtlbeatja",
 		"code": "GEB47",
 		"region": "JBA",
 		"name": "Martial Beat",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "mrtlbeatjb",
+		"id": "mrtlbeatjb",
 		"code": "GNB47",
 		"region": "JAB",
 		"name": "Martial Beat",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "mrtlbeatjc",
+		"id": "mrtlbeatjc",
 		"code": "GNB47",
 		"region": "JBA",
 		"name": "Martial Beat",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.9"
+		"bootloaderVersion": "1.9"
 	},
 	{
-		"mameID": "gbbchmp",
+		"id": "gbbchmp",
 		"code": "GBA48",
 		"region": "JAB",
 		"name": "Great Bishi Bashi Champ",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"installerVersion": null
+		"bootloaderVersion": null
 	},
 	{
-		"mameID": "drmn7m",
+		"id": "drmn7m",
 		"code": "GCC07",
 		"region": "JBA",
 		"name": "DrumMania 7thMIX power-up ver.",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn7mja",
+		"id": "drmn7mja",
 		"code": "GCC07",
 		"region": "JAA",
 		"name": "DrumMania 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn7mjb",
+		"id": "drmn7mjb",
 		"code": "GCC07",
 		"region": "JYA",
 		"name": "DrumMania 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn7mjc",
+		"id": "drmn7mjc",
 		"code": "GCC07",
 		"region": "JZA",
 		"name": "DrumMania 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk7m",
+		"id": "pcnfrk7m",
 		"code": "GCC07",
 		"region": "AAA",
 		"name": "PercussionFreaks 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk7maa",
+		"id": "pcnfrk7maa",
 		"code": "GCC07",
 		"region": "AYA",
 		"name": "PercussionFreaks 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk7mab",
+		"id": "pcnfrk7mab",
 		"code": "GCC07",
 		"region": "AZA",
 		"name": "PercussionFreaks 7thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk8m",
+		"id": "gtrfrk8m",
 		"code": "GCC08",
 		"region": "JBA",
 		"name": "GuitarFreaks 8thMIX power-up ver.",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk8mja",
+		"id": "gtrfrk8mja",
 		"code": "GCC08",
 		"region": "JAA",
 		"name": "GuitarFreaks 8thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk8mjb",
+		"id": "gtrfrk8mjb",
 		"code": "GCC08",
 		"region": "JYA",
 		"name": "GuitarFreaks 8thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk8mjc",
+		"id": "gtrfrk8mjc",
 		"code": "GCC08",
 		"region": "JZA",
 		"name": "GuitarFreaks 8thMIX",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "dsem2",
+		"id": "dsem2",
 		"code": "GKC23",
 		"region": "EAA",
 		"name": "Dancing Stage EuroMIX 2",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "dsem2ea",
+		"id": "dsem2ea",
 		"code": "GCC23",
 		"region": "EAA",
 		"name": "Dancing Stage EuroMIX 2",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "ddrextrm",
+		"id": "ddrextrm",
 		"code": "GCC36",
 		"region": "JAA",
 		"name": "Dance Dance Revolution EXTREME",
 		"year": 2002,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn8m",
+		"id": "drmn8m",
 		"code": "GCC38",
 		"region": "JAA",
 		"name": "DrumMania 8thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn8mja",
+		"id": "drmn8mja",
 		"code": "GCC38",
 		"region": "JBA",
 		"name": "DrumMania 8thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk8m",
+		"id": "pcnfrk8m",
 		"code": "GCC38",
 		"region": "AAA",
 		"name": "PercussionFreaks 8thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk9m",
+		"id": "gtrfrk9m",
 		"code": "GCC39",
 		"region": "JAA",
 		"name": "GuitarFreaks 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk9mja",
+		"id": "gtrfrk9mja",
 		"code": "GCC39",
 		"region": "JBA",
 		"name": "GuitarFreaks 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn9m",
+		"id": "drmn9m",
 		"code": "GCD09",
 		"region": "JAB",
 		"name": "DrumMania 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn9mja",
+		"id": "drmn9mja",
 		"code": "GCD09",
 		"region": "JAA",
 		"name": "DrumMania 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn9mjb",
+		"id": "drmn9mjb",
 		"code": "GCD09",
 		"region": "JAA",
 		"name": "DrumMania 9thMIX e-Amusement",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn9mjc",
+		"id": "drmn9mjc",
 		"code": "GCD09",
 		"region": "JBB",
 		"name": "DrumMania 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn9mjd",
+		"id": "drmn9mjd",
 		"code": "GCD09",
 		"region": "JBA",
 		"name": "DrumMania 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn9mje",
+		"id": "drmn9mje",
 		"code": "GCD09",
 		"region": "JBA",
 		"name": "DrumMania 9thMIX e-Amusement",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk9m",
+		"id": "pcnfrk9m",
 		"code": "GCD09",
 		"region": "AAA",
 		"name": "PercussionFreaks 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk9maa",
+		"id": "pcnfrk9maa",
 		"code": "GCD09",
 		"region": "AAA",
 		"name": "PercussionFreaks 9thMIX e-Amusement",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk9mab",
+		"id": "pcnfrk9mab",
 		"code": "GCD09",
 		"region": "ABA",
 		"name": "PercussionFreaks 9thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk9mac",
+		"id": "pcnfrk9mac",
 		"code": "GCD09",
 		"region": "ABA",
 		"name": "PercussionFreaks 9thMIX e-Amusement",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk10m",
+		"id": "gtrfrk10m",
 		"code": "GCD10",
 		"region": "JAB",
 		"name": "GuitarFreaks 10thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk10mja",
+		"id": "gtrfrk10mja",
 		"code": "GCD10",
 		"region": "JAA",
 		"name": "GuitarFreaks 10thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk10mjb",
+		"id": "gtrfrk10mjb",
 		"code": "GCD10",
 		"region": "JAA",
 		"name": "GuitarFreaks 10thMIX e-Amusement",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk10mjc",
+		"id": "gtrfrk10mjc",
 		"code": "GCD10",
 		"region": "JBB",
 		"name": "GuitarFreaks 10thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk10mjd",
+		"id": "gtrfrk10mjd",
 		"code": "GCD10",
 		"region": "JBA",
 		"name": "GuitarFreaks 10thMIX",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk10mje",
+		"id": "gtrfrk10mje",
 		"code": "GCD10",
 		"region": "JBA",
 		"name": "GuitarFreaks 10thMIX e-Amusement",
 		"year": 2003,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11m",
+		"id": "gtrfrk11m",
 		"code": "GCD39",
 		"region": "JAA",
 		"name": "GuitarFreaks 11thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11mja",
+		"id": "gtrfrk11mja",
 		"code": "GCD39",
 		"region": "JAA",
 		"name": "GuitarFreaks 11thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11mjb",
+		"id": "gtrfrk11mjb",
 		"code": "GCD39",
 		"region": "JBA",
 		"name": "GuitarFreaks 11thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11mjc",
+		"id": "gtrfrk11mjc",
 		"code": "GCD39",
 		"region": "JBA",
 		"name": "GuitarFreaks 11thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11ma",
+		"id": "gtrfrk11ma",
 		"code": "GCD39",
 		"region": "AAA",
 		"name": "GuitarFreaks 11thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11maa",
+		"id": "gtrfrk11maa",
 		"code": "GCD39",
 		"region": "AAA",
 		"name": "GuitarFreaks 11thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11mab",
+		"id": "gtrfrk11mab",
 		"code": "GCD39",
 		"region": "ABA",
 		"name": "GuitarFreaks 11thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "gtrfrk11mac",
+		"id": "gtrfrk11mac",
 		"code": "GCD39",
 		"region": "ABA",
 		"name": "GuitarFreaks 11thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn10m",
+		"id": "drmn10m",
 		"code": "GCD40",
 		"region": "JAA",
 		"name": "DrumMania 10thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn10mja",
+		"id": "drmn10mja",
 		"code": "GCD40",
 		"region": "JAA",
 		"name": "DrumMania 10thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn10mjb",
+		"id": "drmn10mjb",
 		"code": "GCD40",
 		"region": "JBA",
 		"name": "DrumMania 10thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "drmn10mjc",
+		"id": "drmn10mjc",
 		"code": "GCD40",
 		"region": "JBA",
 		"name": "DrumMania 10thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk10m",
+		"id": "pcnfrk10m",
 		"code": "GCD40",
 		"region": "AAA",
 		"name": "PercussionFreaks 10thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk10maa",
+		"id": "pcnfrk10maa",
 		"code": "GCD40",
 		"region": "AAA",
 		"name": "PercussionFreaks 10thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk10mab",
+		"id": "pcnfrk10mab",
 		"code": "GCD40",
 		"region": "ABA",
 		"name": "PercussionFreaks 10thMIX",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	},
 	{
-		"mameID": "pcnfrk10mac",
+		"id": "pcnfrk10mac",
 		"code": "GCD40",
 		"region": "ABA",
 		"name": "PercussionFreaks 10thMIX e-Amusement",
 		"year": 2004,
+		"installCart": null,
+		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"installerVersion": "1.95"
+		"bootloaderVersion": "1.95"
 	}
 ]
