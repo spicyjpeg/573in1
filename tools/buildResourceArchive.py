@@ -248,7 +248,7 @@ def generateStringTable(strings: Mapping[str, Any]) -> bytearray:
 			fullHash, offset = entry
 
 			if index:
-				chained.append(( fullHash, offset, chainIndex ))
+				chained.append(( fullHash, offset, chainIndex + 1 ))
 			else:
 				buckets.append(( fullHash, offset, chainIndex ))
 

@@ -47,13 +47,21 @@ public:
 		close();
 	}
 
+	template<class T> inline size_t loadStruct(T &output, const char *path) {
+		if (!mz_zip_reader_extract_file_to_mem(
+			&_zip, path, &output, sizeof(T), 0
+		))
+			return 0;
+
+		return sizeof(T);
+	}
+
 	bool openMemory(const void *zipData, size_t length);
 	bool openHost(const char *path);
 	void close(void);
 	size_t loadAsset(Asset &output, const char *path);
 	size_t loadTIM(gpu::Image &output, const char *path);
 	size_t loadVAG(spu::Sound &output, const char *path);
-	size_t loadFontMetrics(gpu::Font &output, const char *path);
 };
 
 /* String table manager */

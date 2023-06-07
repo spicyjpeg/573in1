@@ -6,7 +6,6 @@
 #include <string.h>
 #include "ps1/registers.h"
 #include "ps1/system.h"
-#include "vendor/qrcodegen.h"
 #include "util.hpp"
 
 namespace util {
@@ -138,17 +137,20 @@ size_t serialNumberToString(char *output, const uint8_t *input) {
 	return sprintf(output, "%04d-%04d", (value / 10000) % 10000, value % 10000);
 }
 
-// https://datatracker.ietf.org/doc/rfc9285
-size_t encodeBase45(char *output, const uint8_t *input, size_t length) {
+// This encoding is similar to standard base45, but with some problematic
+// characters (' ', '$', '%', '*') excluded.
+static const char _BASE41_CHARSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:";
+
+size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 	size_t outLength = 0;
 
 	for (int i = length + 1; i > 0; i -= 2) {
 		int value = *(input++) << 8;
 		value    |= *(input++);
 
-		*(output++) = qrcodegen_ALPHANUMERIC_CHARSET[value % 45];
-		*(output++) = qrcodegen_ALPHANUMERIC_CHARSET[(value / 45) % 45];
-		*(output++) = qrcodegen_ALPHANUMERIC_CHARSET[value / 2025];
+		*(output++) = _BASE41_CHARSET[value % 41];
+		*(output++) = _BASE41_CHARSET[(value / 41) % 41];
+		*(output++) = _BASE41_CHARSET[value / 1681];
 		outLength  += 3;
 	}
 

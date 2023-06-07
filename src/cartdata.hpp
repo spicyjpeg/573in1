@@ -33,6 +33,7 @@ public:
 	: _dump(dump), flags(flags) {}
 
 	virtual ~Parser(void) {}
+	virtual size_t getCode(char *output) const { return 0; }
 	virtual size_t getRegion(char *output) const { return 0; }
 	virtual IdentifierSet *getIdentifiers(void) { return nullptr; }
 	virtual void flush(void) {}
@@ -77,6 +78,7 @@ public:
 	inline ExtendedParser(Dump &dump, uint8_t flags = 0)
 	: Parser(dump, flags | DATA_HAS_CODE_PREFIX) {}
 
+	size_t getCode(char *output) const;
 	size_t getRegion(char *output) const;
 	IdentifierSet *getIdentifiers(void);
 	void flush(void);
@@ -91,11 +93,12 @@ Parser *newCartParser(Dump &dump);
 
 class [[gnu::packed]] DBEntry {
 public:
-	ChipType   chipType;
-	FormatType formatType;
-	uint8_t    flags;
+	ChipType    chipType;
+	FormatType  formatType;
+	TraceIDType traceIDType;
+	uint8_t     flags;
 
-	uint8_t  traceIDPrefix, traceIDParam, installIDPrefix;
+	uint8_t  traceIDParam, installIDPrefix;
 	uint16_t year;
 	uint8_t  dataKey[8];
 	char     code[8], region[8], name[64];
@@ -135,7 +138,7 @@ public:
 		return length / sizeof(DBEntry);
 	}
 
-	const DBEntry *lookupEntry(const char *code, const char *region) const;
+	const DBEntry *lookup(const char *code, const char *region) const;
 };
 
 }

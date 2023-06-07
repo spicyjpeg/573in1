@@ -17,14 +17,17 @@ public:
 
 class UnlockKeyScreen : public ui::ListScreen {
 private:
-	const char *_autoUnlockItem, *_customKeyItem, *_nullKeyItem;
-
 	int _getSpecialEntryOffset(ui::Context &ctx) const;
 
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
 
 public:
+	void autoUnlock(ui::Context &ctx);
+	void useCustomKey(ui::Context &ctx);
+	void useNullKey1(ui::Context &ctx);
+	void useNullKey2(ui::Context &ctx);
+
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };

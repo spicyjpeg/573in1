@@ -7,8 +7,8 @@
 			"identifyGame":  "Attempting to identify game..."
 		},
 		"cartUnlockWorker": {
-			"read":     "Dumping cartridge...",
-			"identify": "Attempting to identify game..."
+			"read":         "Dumping cartridge...",
+			"identifyGame": "Attempting to identify game..."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
@@ -96,16 +96,18 @@
 
 		"x76f041": {
 			"name":    "{CHIP_ICON} Xicor X76F041",
-			"warning": "X76F041 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, they will lock out any further access and thus become PERMANENTLY BRICKED, with no way to restore access.\n\nAre you sure the game/key is correct?"
+			"warning": "X76F041 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, they will lock out any further access and thus become PERMANENTLY BRICKED, with no way to restore access.\n\nAre you sure the key is correct?",
+			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the maximum allowed number of failed unlocking attempts may have been exceeded (and thus the cartridge may have been bricked).\n\nPress the Test button to view debug logs."
 		},
 		"x76f100": {
 			"name":    "{CHIP_ICON} Xicor X76F100",
-			"warning": "X76F100 and ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the game/key is correct?"
+			"warning": "X76F100 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
+			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nPress the Test button to view debug logs."
 		},
 		"zs01": {
 			"name":    "{CHIP_ICON} Konami ZS01 (PIC16CE625)",
-			"desc":    null,
-			"warning": "X76F100 and ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the game/key is correct?"
+			"warning": "ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
+			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nPress the Test button to view debug logs."
 		}
 	},
 
@@ -122,7 +124,8 @@
 
 	"UnlockErrorScreen": {
 		"title": "Error",
-		"ok":    "{START_BUTTON} Continue"
+
+		"ok": "Back to cartridge info"
 	},
 
 	"UnlockKeyScreen": {
@@ -130,9 +133,10 @@
 		"prompt":     "If the cartridge has been converted before, select the game it was last converted to.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
 
-		"autoUnlock": "Use identified game key",
-		"customKey":  "Enter key manually...",
-		"nullKey":    "Use null key (00-00-00-00-00-00-00-00)"
+		"autoUnlock":   "Use key from identified game (recommended)",
+		"useCustomKey": "Enter key manually...",
+		"useNullKey1":  "Use null key (00-00-00-00-00-00-00-00)",
+		"useNullKey2":  "Use null key (FF-FF-FF-FF-FF-FF-FF-FF)"
 	},
 
 	"WarningScreen": {

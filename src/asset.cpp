@@ -148,15 +148,6 @@ size_t AssetLoader::loadVAG(spu::Sound &output, const char *path) {
 	return size;
 }
 
-size_t AssetLoader::loadFontMetrics(gpu::Font &output, const char *path) {
-	if (!mz_zip_reader_extract_file_to_mem(
-		&_zip, path, output.metrics, sizeof(output.metrics), 0
-	))
-		return 0;
-
-	return sizeof(output.metrics);
-}
-
 /* String table manager */
 
 const char *StringTable::get(util::Hash id) const {
@@ -218,7 +209,7 @@ static void _loadQRCode(
 
 	output.initFromVRAMRect(rect, GP0_COLOR_4BPP);
 	output.width   = size;
-	output.palette = gp0_clut(x / 64, (y + size) / 256);
+	output.palette = gp0_clut(x / 16, y + size);
 
 	LOG("loaded at (%d,%d), size=%d", x, y, size);
 }

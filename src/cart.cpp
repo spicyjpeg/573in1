@@ -17,7 +17,7 @@ bool Identifier::validateChecksum(void) const {
 	uint8_t value = (util::sum(data, 7) & 0xff) ^ 0xff;
 
 	if (value != data[7]) {
-		LOG("checksum mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
+		LOG("mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
 		return false;
 	}
 
@@ -32,7 +32,7 @@ bool Identifier::validateDSCRC(void) const {
 	uint8_t value = util::dsCRC8(data, 7);
 
 	if (value != data[7]) {
-		LOG("CRC mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
+		LOG("mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
 		return false;
 	}
 
@@ -61,68 +61,84 @@ void IdentifierSet::setInstallID(uint8_t prefix) {
 	installID.updateChecksum();
 }
 
-void IdentifierSet::updateTraceID(uint8_t prefix, int param) {
+void IdentifierSet::updateTraceID(TraceIDType type, int param) {
 	traceID.clear();
 
 	uint8_t  *input   = &cartID.data[1];
 	uint16_t checksum = 0;
 
-	switch (prefix) {
-		case 0x81:
-			// TODO: reverse engineer this TID format
-			traceID.data[2] = 0;
-			traceID.data[5] = 0;
-			traceID.data[6] = 0;
+	if (type == TID_81) {
+		// TODO: reverse engineer this TID format
+		traceID.data[0] = 0x81;
+		traceID.data[2] = 0;
+		traceID.data[5] = 0;
+		traceID.data[6] = 0;
 
-			LOG("prefix=0x81");
-			break;
-
-		case 0x82:
-			for (size_t i = 0; i < (sizeof(cartID.data) - 2); i++) {
-				uint8_t value = *(input++);
-
-				for (int j = 0; j < 8; j++, value >>= 1) {
-					if (value % 2)
-						checksum ^= 1 << (i % param);
-				}
-			}
-
-			traceID.data[1] = checksum >> 8;
-			traceID.data[2] = checksum & 0xff;
-
-			LOG("prefix=0x82, checksum=%04x", checksum);
-			break;
-
-		default:
-			LOG("unknown prefix 0x%02x", prefix);
+		LOG("prefix=0x81");
+		goto _done;
 	}
 
-	traceID.data[0] = prefix;
+	for (size_t i = 0; i < (sizeof(cartID.data) - 2); i++) {
+		uint8_t value = *(input++);
+
+		for (int j = 0; j < 8; j++, value >>= 1) {
+			if (value % 2)
+				checksum ^= 1 << (i % param);
+		}
+	}
+
+	if (type == TID_82_BIG_ENDIAN) {
+		traceID.data[1] = checksum >> 8;
+		traceID.data[2] = checksum & 0xff;
+	} else if (type == TID_82_LITTLE_ENDIAN) {
+		traceID.data[1] = checksum & 0xff;
+		traceID.data[2] = checksum >> 8;
+	}
+
+	LOG("prefix=0x82, checksum=%04x", checksum);
+
+_done:
 	traceID.updateChecksum();
 }
 
-void BasicHeader::updateChecksum(void) {
-	auto value = util::sum(reinterpret_cast<const uint8_t *>(this), 4);
+void BasicHeader::updateChecksum(bool invert) {
+	auto    value = util::sum(reinterpret_cast<const uint8_t *>(this), 4);
+	uint8_t mask  = invert ? 0xff : 0x00;
 
-	checksum = uint8_t((value & 0xff) ^ 0xff);
+	checksum = uint8_t((value & 0xff) ^ mask);
 }
 
-bool BasicHeader::validateChecksum(void) const {
-	auto value = util::sum(reinterpret_cast<const uint8_t *>(this), 4);
+bool BasicHeader::validateChecksum(bool invert) const {
+	auto    value = util::sum(reinterpret_cast<const uint8_t *>(this), 4);
+	uint8_t mask  = invert ? 0xff : 0x00;
 
-	return (checksum == ((value & 0xff) ^ 0xff));
+	value = (value & 0xff) ^ mask;
+	if (value != checksum) {
+		LOG("mismatch, exp=0x%02x, got=0x%02x", value, checksum);
+		return false;
+	}
+
+	return true;
 }
 
-void ExtendedHeader::updateChecksum(void) {
-	auto value = util::sum(reinterpret_cast<const uint16_t *>(this), 14);
+void ExtendedHeader::updateChecksum(bool invert) {
+	auto     value = util::sum(reinterpret_cast<const uint16_t *>(this), 7);
+	uint16_t mask  = invert ? 0xffff : 0x0000;
 
-	checksum = uint16_t(value & 0xffff);
+	checksum = uint16_t((value & 0xffff) ^ mask);
 }
 
-bool ExtendedHeader::validateChecksum(void) const {
-	auto value = util::sum(reinterpret_cast<const uint16_t *>(this), 14);
+bool ExtendedHeader::validateChecksum(bool invert) const {
+	auto     value = util::sum(reinterpret_cast<const uint16_t *>(this), 7);
+	uint16_t mask  = invert ? 0xffff : 0x0000;
 
-	return (checksum == (value & 0xffff));
+	value = (value & 0xffff) ^ mask;
+	if (value != checksum) {
+		LOG("mismatch, exp=0x%04x, got=0x%04x", value, checksum);
+		return false;
+	}
+
+	return true;
 }
 
 /* Dump structure and utilities */
@@ -133,6 +149,26 @@ const ChipSize CHIP_SIZES[NUM_CHIP_TYPES]{
 	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =   0 },
 	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =  32 }
 };
+
+bool Dump::isPublicDataEmpty(void) const {
+	if (!(flags & DUMP_PUBLIC_DATA_OK))
+		return false;
+
+	auto size = getChipSize();
+	auto sum  = util::sum(&data[size.publicDataOffset], size.publicDataLength);
+
+	return (!sum || (sum == (0xff * size.publicDataLength)));
+}
+
+bool Dump::isDataEmpty(void) const {
+	if (!(flags & DUMP_PUBLIC_DATA_OK) || !(flags & DUMP_PRIVATE_DATA_OK))
+		return false;
+
+	size_t length = getChipSize().dataLength;
+	auto   sum    = util::sum(data, length);
+
+	return (!sum || (sum == (0xff * length)));
+}
 
 size_t Dump::toQRString(char *output) const {
 	uint8_t compressed[MAX_QR_STRING_LENGTH];
@@ -154,7 +190,7 @@ size_t Dump::toQRString(char *output) const {
 		compLength * 100 / uncompLength
 	);
 
-	compLength = util::encodeBase45(&output[5], compressed, compLength);
+	compLength = util::encodeBase41(&output[5], compressed, compLength);
 	__builtin_memcpy(&output[0], "573::", 5);
 	__builtin_memcpy(&output[compLength + 5], "::", 3);
 
