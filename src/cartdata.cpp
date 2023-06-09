@@ -219,7 +219,8 @@ Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
 			return new ExtendedParser(dump, flags);
 
 		default:
-			return new Parser(dump, flags);
+			//return new Parser(dump, flags);
+			return nullptr;
 	}
 }
 

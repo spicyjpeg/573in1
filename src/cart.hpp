@@ -173,6 +173,7 @@ public:
 
 	bool isPublicDataEmpty(void) const;
 	bool isDataEmpty(void) const;
+	bool isReadableDataEmpty(void) const;
 	size_t toQRString(char *output) const;
 };
 

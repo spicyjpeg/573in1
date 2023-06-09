@@ -83,8 +83,6 @@ void App::_cartDetectWorker(void) {
 		_driver->readCartID();
 		if (!_driver->readPublicData())
 			_parser = cart::newCartParser(_dump);
-		if (!_parser)
-			goto _cartInitDone;
 
 		LOG("cart parser @ 0x%08x", _parser);
 		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
@@ -96,6 +94,8 @@ void App::_cartDetectWorker(void) {
 
 		char code[8], region[8];
 
+		if (!_parser)
+			goto _cartInitDone;
 		if (_parser->getCode(code) && _parser->getRegion(region))
 			_identified = _db.lookup(code, region);
 	}
