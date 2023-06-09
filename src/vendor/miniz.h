@@ -115,7 +115,7 @@
 */
 #pragma once
 
-
+#include "vendorconfig.h"
 
 /* Defines to completely disable specific portions of miniz.c: 
    If all macros here are defined the only functionality remaining will be CRC-32 and adler-32. */

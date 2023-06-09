@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "vendor/ff.h"
 #include "vendor/miniz.h"
 #include "vendor/qrcodegen.h"
 #include "gpu.hpp"
@@ -35,6 +36,7 @@ public:
 class AssetLoader {
 private:
 	mz_zip_archive _zip;
+	FIL            _fatFile;
 	int            _hostFile;
 
 public:
@@ -57,6 +59,7 @@ public:
 	}
 
 	bool openMemory(const void *zipData, size_t length);
+	bool openFAT(const char *path);
 	bool openHost(const char *path);
 	void close(void);
 	size_t loadAsset(Asset &output, const char *path);

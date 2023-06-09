@@ -11,6 +11,10 @@ project(
 )
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_program(
+	CHDMAN_PATH chdman
+	DOC "Path to MAME chdman tool (optional)"
+)
 
 ## Main executable
 
@@ -21,6 +25,7 @@ add_executable(
 	src/cartdata.cpp
 	src/cartio.cpp
 	src/gpu.cpp
+	src/ide.cpp
 	src/io.cpp
 	src/main.cpp
 	src/pad.cpp
@@ -44,6 +49,8 @@ add_executable(
 	src/ps1/system.c
 	src/ps1/system.s
 	src/ps1/unhandledexc.c
+	src/vendor/ff.c
+	src/vendor/ffunicode.c
 	src/vendor/miniz.c
 	src/vendor/printf.c
 	src/vendor/qrcodegen.c
@@ -58,11 +65,7 @@ target_compile_definitions(
 	VERSION="${PROJECT_VERSION}"
 	#ENABLE_ARGV=1
 	ENABLE_PS1_CONTROLLER=1
-	MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS=1
-	MINIZ_NO_ARCHIVE_WRITING_APIS=1
-	MINIZ_NO_STDIO=1
-	MINIZ_NO_TIME=1
-	PRINTF_DISABLE_SUPPORT_FLOAT=1
+	ENABLE_I2C_LOGGING=1
 )
 
 add_custom_command(
@@ -101,12 +104,25 @@ ps1_target_incbin(
 #add_custom_command(
 #	COMMAND
 #		"${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/buildCDImage.py"
-#		"${PROJECT_SOURCE_DIR}/cd.json" cart_tool.iso
+#		-s "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}/cd.json" cart_tool.iso
 #	OUTPUT  cart_tool.iso
 #	DEPENDS cd.json cart_tool
 #	COMMENT "Building CD-ROM image"
 #	VERBATIM
 #)
 
-# Add a dummy target that depends on the CD image to make sure it gets built.
-#add_custom_target(cd ALL DEPENDS cart_tool.iso)
+#if(EXISTS "${CHDMAN_PATH}")
+#	add_custom_command(
+#		COMMAND
+#			"${CHDMAN_PATH}" createcd -f -i cart_tool.iso -o cart_tool.chd
+#		OUTPUT  cart_tool.chd
+#		DEPENDS cart_tool.iso
+#		COMMENT "Building MAME CHD image"
+#		VERBATIM
+#	)
+#
+#	# Add a dummy target that depends on the CD image to ensure it gets built.
+#	add_custom_target(cd ALL DEPENDS cart_tool.iso cart_tool.chd)
+#else()
+#	add_custom_target(cd ALL DEPENDS cart_tool.iso)
+#endif()

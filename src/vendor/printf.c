@@ -34,14 +34,7 @@
 #include <stdint.h>
 
 #include "printf.h"
-
-
-// define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
-// printf_config.h header file
-// default: undefined
-#ifdef PRINTF_INCLUDE_CONFIG_H
-#include "printf_config.h"
-#endif
+#include "vendorconfig.h"
 
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted

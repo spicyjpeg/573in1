@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "ps1/gpucmd.h"
 #include "ps1/pcdrv.h"
+#include "vendor/ff.h"
 #include "vendor/miniz.h"
 #include "vendor/qrcodegen.h"
 #include "asset.hpp"
@@ -13,16 +14,16 @@ namespace asset {
 
 /* Asset loader */
 
+static constexpr uint32_t _ZIP_FLAGS =
+	MZ_ZIP_FLAG_CASE_SENSITIVE | MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY;
+
 bool AssetLoader::openMemory(const void *zipData, size_t length) {
 	//close();
 	mz_zip_zero_struct(&_zip);
 
 	// Sorting the central directory in a zip with a small number of files is
 	// just a waste of time.
-	if (!mz_zip_reader_init_mem(
-		&_zip, zipData, length,
-		MZ_ZIP_FLAG_CASE_SENSITIVE | MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY
-	)) {
+	if (!mz_zip_reader_init_mem(&_zip, zipData, length, _ZIP_FLAGS)) {
 		LOG("zip init error, code=%d", mz_zip_get_last_error(&_zip));
 		return false;
 	}
@@ -32,16 +33,61 @@ bool AssetLoader::openMemory(const void *zipData, size_t length) {
 	return true;
 }
 
+bool AssetLoader::openFAT(const char *path) {
+	auto error = f_open(&_fatFile, path, FA_READ | FA_OPEN_EXISTING);
+	if (error) {
+		LOG("FAT zip open error, code=%d", error);
+		return false;
+	}
+
+	size_t fileSize = f_size(&_fatFile);
+
+	_zip.m_pIO_opaque       = &_fatFile;
+	_zip.m_pNeeds_keepalive = nullptr;
+	_zip.m_pRead            = [](
+		void *opaque, uint64_t offset, void *data, size_t length
+	) -> size_t {
+		auto fatFile = reinterpret_cast<FIL *>(opaque);
+
+		auto error = f_lseek(fatFile, offset);
+		if (error) {
+			LOG("FAT zip seek error, code=%d", error);
+			return 0;
+		}
+
+		size_t actualLength;
+
+		error = f_read(fatFile, data, length, &actualLength);
+		if (error) {
+			LOG("FAT zip read error, code=%d", error);
+			return 0;
+		}
+
+		return actualLength;
+	};
+
+	if (!mz_zip_reader_init(&_zip, fileSize, _ZIP_FLAGS)) {
+		LOG("FAT zip init error, code=%d", mz_zip_get_last_error(&_zip));
+		return false;
+	}
+
+	LOG("length=0x%x", fileSize);
+	ready = true;
+	return true;
+}
+
 bool AssetLoader::openHost(const char *path) {
 	if (pcdrvInit() < 0)
 		return false;
 
 	_hostFile = pcdrvOpen(path, PCDRV_MODE_READ);
-	if (_hostFile < 0)
+	if (_hostFile < 0) {
+		LOG("host zip open error, code=%d", _hostFile);
 		return false;
+	}
 
-	int length = pcdrvSeek(_hostFile, 0, PCDRV_SEEK_END);
-	if (length < 0)
+	int fileSize = pcdrvSeek(_hostFile, 0, PCDRV_SEEK_END);
+	if (fileSize < 0)
 		return false;
 
 	_zip.m_pIO_opaque       = reinterpret_cast<void *>(_hostFile);
@@ -64,15 +110,12 @@ bool AssetLoader::openHost(const char *path) {
 		return actualLength;
 	};
 
-	if (!mz_zip_reader_init(
-		&_zip, length,
-		MZ_ZIP_FLAG_CASE_SENSITIVE | MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY
-	)) {
-		LOG("zip init error, code=%d", mz_zip_get_last_error(&_zip));
+	if (!mz_zip_reader_init(&_zip, fileSize, _ZIP_FLAGS)) {
+		LOG("host zip init error, code=%d", mz_zip_get_last_error(&_zip));
 		return false;
 	}
 
-	LOG("length=0x%x", length);
+	LOG("length=0x%x", fileSize);
 	ready = true;
 	return true;
 }
@@ -82,6 +125,8 @@ void AssetLoader::close(void) {
 		return;
 	if (_hostFile >= 0)
 		pcdrvClose(_hostFile);
+	else
+		f_close(&_fatFile);
 
 	mz_zip_reader_end(&_zip);
 	ready = false;
