@@ -34,14 +34,16 @@ int main(int argc, const char **argv) {
 			continue;
 
 		switch (util::hash(arg, '=')) {
-			//case "boot.rom"_h:
-				//break;
+			case "boot.rom"_h:
+				//LOG("boot.rom=%s", &arg[9]);
+				break;
 
-			//case "boot.from"_h:
-				//break;
+			case "boot.from"_h:
+				//LOG("boot.from=%s", &arg[10]);
+				break;
 
 			case "console"_h:
-				initSerialIO(strtol(&arg[7], nullptr, 0));
+				initSerialIO(strtol(&arg[8], nullptr, 0));
 				util::logger.enableSyslog = true;
 				break;
 
@@ -81,10 +83,12 @@ int main(int argc, const char **argv) {
 
 	if (ptr && length)
 		loader.openMemory(ptr, length);
-	if (!loader.ready) {
-		LOG("loading default resource archive");
+	if (!loader.ready)
+		loader.openFAT("1:/cart_tool/resources.zip");
+	//if (!loader.ready)
+		//loader.openHost("resources.zip");
+	if (!loader.ready)
 		loader.openMemory(_resources, _resourcesSize);
-	}
 
 	io::clearWatchdog();
 
