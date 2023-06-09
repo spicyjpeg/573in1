@@ -108,7 +108,7 @@ bool Packet::validateCRC(void) const {
 	uint16_t value = util::zsCRC16(&command, sizeof(Packet) - sizeof(crc));
 
 	if (value != _crc) {
-		LOG("CRC mismatch, exp=0x%04x, got=0x%04x", value, _crc);
+		LOG("mismatch, exp=0x%04x, got=0x%04x", value, _crc);
 		return false;
 	}
 

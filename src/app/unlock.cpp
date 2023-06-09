@@ -39,6 +39,7 @@ static const CartType _CART_TYPES[cart::NUM_CHIP_TYPES]{
 enum IdentifyState {
 	UNIDENTIFIED = 0,
 	IDENTIFIED   = 1,
+	UNKNOWN      = 2,
 	BLANK_CART   = 2
 };
 
@@ -84,7 +85,12 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 		_prompt = STR("CartInfoScreen.prompt.error");
 		return;
-	} else if (!(dump.flags & cart::DUMP_PUBLIC_DATA_OK)) {
+	}
+	if (
+		//dump.getChipSize().publicDataLength &&
+		(dump.chipType == cart::ZS01) &&
+		!(dump.flags & cart::DUMP_PUBLIC_DATA_OK)
+	) {
 		memccpy(ptr, STR("CartInfoScreen.description.initError"), 0, end - ptr);
 
 		_prompt = STR("CartInfoScreen.prompt.error");
@@ -133,8 +139,10 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	if (APP->_identified) {
 		state = IDENTIFIED;
 		APP->_identified->getDisplayName(name, sizeof(name));
+	} else if (dump.flags & cart::DUMP_PUBLIC_DATA_OK) {
+		state = APP->_dump.isReadableDataEmpty() ? BLANK_CART : UNIDENTIFIED;
 	} else {
-		state = APP->_dump.isDataEmpty() ? BLANK_CART : UNIDENTIFIED;
+		state = UNKNOWN;
 	}
 
 	if (dump.flags & cart::DUMP_PRIVATE_DATA_OK) {

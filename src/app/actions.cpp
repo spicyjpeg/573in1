@@ -16,7 +16,7 @@ public:
 static constexpr int _NUM_IDENTIFIED_ACTIONS   = 6;
 static constexpr int _NUM_UNIDENTIFIED_ACTIONS = 4;
 
-static const Action _IDENTIFIED_ACTIONS[]{
+static const Action _ACTIONS[]{
 	{
 		.name   = "CartActionsScreen.qrDump.name"_h,
 		.prompt = "CartActionsScreen.qrDump.prompt"_h,
@@ -25,6 +25,14 @@ static const Action _IDENTIFIED_ACTIONS[]{
 		.name   = "CartActionsScreen.hexdump.name"_h,
 		.prompt = "CartActionsScreen.hexdump.prompt"_h,
 		.target = &CartActionsScreen::hexdump
+	}, {
+		.name   = "CartActionsScreen.reflash.name"_h,
+		.prompt = "CartActionsScreen.reflash.prompt"_h,
+		.target = &CartActionsScreen::reflash
+	}, {
+		.name   = "CartActionsScreen.erase.name"_h,
+		.prompt = "CartActionsScreen.erase.prompt"_h,
+		.target = &CartActionsScreen::erase
 	}, {
 		.name   = "CartActionsScreen.resetSystemID.name"_h,
 		.prompt = "CartActionsScreen.resetSystemID.prompt"_h,
@@ -33,39 +41,11 @@ static const Action _IDENTIFIED_ACTIONS[]{
 		.name   = "CartActionsScreen.editSystemID.name"_h,
 		.prompt = "CartActionsScreen.editSystemID.prompt"_h,
 		.target = &CartActionsScreen::editSystemID
-	}, {
-		.name   = "CartActionsScreen.reflash.name"_h,
-		.prompt = "CartActionsScreen.reflash.prompt"_h,
-		.target = &CartActionsScreen::reflash
-	}, {
-		.name   = "CartActionsScreen.erase.name"_h,
-		.prompt = "CartActionsScreen.erase.prompt"_h,
-		.target = &CartActionsScreen::erase
-	}
-};
-
-static const Action _UNIDENTIFIED_ACTIONS[]{
-	{
-		.name   = "CartActionsScreen.qrDump.name"_h,
-		.prompt = "CartActionsScreen.qrDump.prompt"_h,
-		.target = &CartActionsScreen::qrDump
-	}, {
-		.name   = "CartActionsScreen.hexdump.name"_h,
-		.prompt = "CartActionsScreen.hexdump.prompt"_h,
-		.target = &CartActionsScreen::hexdump
-	}, {
-		.name   = "CartActionsScreen.reflash.name"_h,
-		.prompt = "CartActionsScreen.reflash.prompt"_h,
-		.target = &CartActionsScreen::reflash
-	}, {
-		.name   = "CartActionsScreen.erase.name"_h,
-		.prompt = "CartActionsScreen.erase.prompt"_h,
-		.target = &CartActionsScreen::erase
 	}
 };
 
 const char *CartActionsScreen::_getItemName(ui::Context &ctx, int index) const {
-	return STRH(_IDENTIFIED_ACTIONS[index].name);
+	return STRH(_ACTIONS[index].name);
 }
 
 void CartActionsScreen::qrDump(ui::Context &ctx) {
@@ -77,39 +57,34 @@ void CartActionsScreen::hexdump(ui::Context &ctx) {
 	//ctx.show(APP->_hexdumpScreen, false, true);
 }
 
-void CartActionsScreen::resetSystemID(ui::Context &ctx) {
-}
-
-void CartActionsScreen::editSystemID(ui::Context &ctx) {
-}
-
 void CartActionsScreen::reflash(ui::Context &ctx) {
 }
 
 void CartActionsScreen::erase(ui::Context &ctx) {
 }
 
+void CartActionsScreen::resetSystemID(ui::Context &ctx) {
+}
+
+void CartActionsScreen::editSystemID(ui::Context &ctx) {
+}
+
 void CartActionsScreen::show(ui::Context &ctx, bool goBack)  {
 	_title      = STR("CartActionsScreen.title");
+	_prompt     = STRH(_ACTIONS[0].prompt);
 	_itemPrompt = STR("CartActionsScreen.itemPrompt");
 
-	if (APP->_identified) {
-		_prompt     = STRH(_IDENTIFIED_ACTIONS[0].prompt);
-		_listLength = _NUM_IDENTIFIED_ACTIONS;
-	} else {
-		_prompt     = STRH(_UNIDENTIFIED_ACTIONS[0].prompt);
-		_listLength = _NUM_UNIDENTIFIED_ACTIONS;
-	}
+	_listLength = 1;
+	/*_listLength = APP->_identified
+		? _NUM_IDENTIFIED_ACTIONS
+		: _NUM_UNIDENTIFIED_ACTIONS;*/
 
 	ListScreen::show(ctx, goBack);
 }
 
 void CartActionsScreen::update(ui::Context &ctx) {
-	auto &action = APP->_identified
-		? _IDENTIFIED_ACTIONS[_activeItem]
-		: _UNIDENTIFIED_ACTIONS[_activeItem];
-
-	_prompt = STRH(action.prompt);
+	auto &action = _ACTIONS[_activeItem];
+	_prompt      = STRH(action.prompt);
 
 	ListScreen::update(ctx);
 

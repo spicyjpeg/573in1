@@ -223,6 +223,7 @@ uint16_t zsCRC16(const uint8_t *data, size_t length);
 
 size_t hexToString(char *output, const uint8_t *input, size_t length, char sep = 0);
 size_t serialNumberToString(char *output, const uint8_t *input);
+size_t traceIDToString(char *output, const uint8_t *input);
 size_t encodeBase41(char *output, const uint8_t *input, size_t length);
 
 }

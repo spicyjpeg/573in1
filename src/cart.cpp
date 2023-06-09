@@ -170,6 +170,16 @@ bool Dump::isDataEmpty(void) const {
 	return (!sum || (sum == (0xff * length)));
 }
 
+bool Dump::isReadableDataEmpty(void) const {
+	// This is more or less a hack. The "right" way to tell if this chip has any
+	// public data would be to use getChipSize().publicDataLength, but many
+	// X76F041 carts don't actually have a public data area.
+	if (chipType == ZS01)
+		return isPublicDataEmpty();
+	else
+		return isDataEmpty();
+}
+
 size_t Dump::toQRString(char *output) const {
 	uint8_t compressed[MAX_QR_STRING_LENGTH];
 	size_t  uncompLength = getDumpLength();

@@ -108,7 +108,7 @@ uint16_t zsCRC16(const uint8_t *data, size_t length) {
 
 /* String manipulation */
 
-static const char HEX_CHARSET[] = "0123456789ABCDEF";
+static const char _HEX_CHARSET[] = "0123456789ABCDEF";
 
 size_t hexToString(char *output, const uint8_t *input, size_t length, char sep) {
 	size_t outLength = 0;
@@ -116,8 +116,8 @@ size_t hexToString(char *output, const uint8_t *input, size_t length, char sep) 
 	for (; length; length--) {
 		uint8_t value = *(input++);
 
-		*(output++) = HEX_CHARSET[value >> 4];
-		*(output++) = HEX_CHARSET[value & 0xf];
+		*(output++) = _HEX_CHARSET[value >> 4];
+		*(output++) = _HEX_CHARSET[value & 0xf];
 
 		if (sep && (length > 1)) {
 			*(output++) = sep;
@@ -135,6 +135,30 @@ size_t serialNumberToString(char *output, const uint8_t *input) {
 	uint32_t value = input[0] | (input[1] << 8) | (input[2] << 16) | (input[3] << 24);
 
 	return sprintf(output, "%04d-%04d", (value / 10000) % 10000, value % 10000);
+}
+
+// This format is used by Konami's tools to display trace IDs in the TID_81
+// format.
+static const char _TRACE_ID_CHECKSUM_CHARSET[] = "0X987654321";
+
+size_t traceIDToString(char *output, const uint8_t *input) {
+	uint16_t high = (input[0] << 8) | input[1];
+	uint32_t low  = (input[2] << 24) | (input[3] << 16) | (input[4] << 8) | input[5];
+
+	size_t length = sprintf(&output[1], "%02d-%04d", high % 100, low % 10000);
+
+	// The checksum is calculated in a very weird way:
+	//   code     = AB-CDEF
+	//   checksum = (A*7 + B*6 + C*5 + D*4 + E*3 + F*2) % 11
+	int checksum = 0, multiplier = 7;
+
+	for (const char *ptr = &output[1]; *ptr; ptr++) {
+		if (*ptr != '-')
+			checksum += (*ptr - '0') * (multiplier--);
+	}
+
+	output[0] = _TRACE_ID_CHECKSUM_CHARSET[checksum % 11];
+	return length + 1;
 }
 
 // This encoding is similar to standard base45, but with some problematic
