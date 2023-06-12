@@ -96,6 +96,8 @@ private:
 	cart::Parser        *_parser;
 	const cart::DBEntry *_identified;
 
+	bool _allowWatchdogClear;
+
 	void _unloadCartData(void);
 	void _setupWorker(void (App::* func)(void));
 	void _setupInterrupts(void);
@@ -104,12 +106,14 @@ private:
 	void _cartDetectWorker(void);
 	void _cartUnlockWorker(void);
 	void _qrCodeWorker(void);
+	void _rebootWorker(void);
 
 	void _interruptHandler(void);
 
 public:
 	inline App(void)
-	: _driver(nullptr), _parser(nullptr), _identified(nullptr) {
+	: _driver(nullptr), _parser(nullptr), _identified(nullptr),
+	_allowWatchdogClear(true) {
 		_workerStack = new uint8_t[WORKER_STACK_SIZE];
 	}
 	inline ~App(void) {

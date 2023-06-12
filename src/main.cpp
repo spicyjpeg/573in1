@@ -4,6 +4,7 @@
 #include "app/app.hpp"
 #include "ps1/gpucmd.h"
 #include "ps1/system.h"
+#include "vendor/ff.h"
 #include "asset.hpp"
 #include "defs.hpp"
 #include "gpu.hpp"
@@ -23,8 +24,11 @@ int main(int argc, const char **argv) {
 
 	int width = 320, height = 240;
 
-	const void *ptr   = nullptr;
-	size_t     length = 0;
+	const void *resPtr   = nullptr;
+	size_t     resLength = 0;
+
+	char mountPath[16];
+	strcpy(mountPath, "1:");
 
 #ifdef ENABLE_ARGV
 	for (; argc > 0; argc--) {
@@ -47,6 +51,10 @@ int main(int argc, const char **argv) {
 				util::logger.enableSyslog = true;
 				break;
 
+			case "mount"_h:
+				__builtin_strncpy(mountPath, &arg[6], sizeof(mountPath));
+				break;
+
 			case "screen.width"_h:
 				width = int(strtol(&arg[13], nullptr, 0));
 				break;
@@ -58,13 +66,13 @@ int main(int argc, const char **argv) {
 			// Allow the default assets to be overridden by passing a pointer to
 			// an in-memory ZIP file as a command-line argument.
 			case "resources.ptr"_h:
-				ptr = reinterpret_cast<const void *>(
+				resPtr = reinterpret_cast<const void *>(
 					strtol(&arg[14], nullptr, 16)
 				);
 				break;
 
 			case "resources.length"_h:
-				length = size_t(strtol(&arg[17], nullptr, 16));
+				resLength = size_t(strtol(&arg[17], nullptr, 16));
 				break;
 		}
 	}
@@ -79,10 +87,20 @@ int main(int argc, const char **argv) {
 	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
 	LOG("(C) 2022-2023 spicyjpeg");
 
+	io::clearWatchdog();
+
+	FATFS fat;
+
+	auto error = f_mount(&fat, mountPath, true);
+	if (error)
+		LOG("FAT init error, code=%d", error);
+
+	io::clearWatchdog();
+
 	asset::AssetLoader loader;
 
-	if (ptr && length)
-		loader.openMemory(ptr, length);
+	if (resPtr && resLength)
+		loader.openMemory(resPtr, resLength);
 	if (!loader.ready)
 		loader.openFAT("1:/cart_tool/resources.zip");
 	//if (!loader.ready)

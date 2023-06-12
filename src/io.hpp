@@ -82,12 +82,12 @@ static inline uint32_t getDIPSwitches(void) {
 }
 
 static inline bool getCartInsertionStatus(void) {
-	return (SIO_STAT(1) >> 7) & 1;
+	return (SIO_STAT(1) / SIO_STAT_DSR) & 1;
 }
 
 static inline bool getCartSerialStatus(void) {
-	SIO_CTRL(1) |= 1 << 5;
-	return (SIO_STAT(1) >> 8) & 1;
+	SIO_CTRL(1) |= SIO_CTRL_RTS;
+	return (SIO_STAT(1) / SIO_STAT_CTS) & 1;
 }
 
 /* Bitbanged I/O */
@@ -99,7 +99,7 @@ static inline bool getCartInput(CartInputPin pin) {
 }
 
 static inline bool getCartSDA(void) {
-	return (SYS573_MISC_IN >> 2) & 1;
+	return (SYS573_MISC_IN / SYS573_MISC_IN_CART_SDA) & 1;
 }
 
 static inline void setCartOutput(CartOutputPin pin, bool value) {
@@ -151,6 +151,7 @@ static inline void setDIO1Wire(bool value) {
 
 void init(void);
 uint32_t getJAMMAInputs(void);
+uint32_t getRTCTime(void);
 
 bool loadBitstream(const uint8_t *data, size_t length);
 void initKonamiBitstream(void);
