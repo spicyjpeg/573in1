@@ -85,7 +85,7 @@ typedef enum {
 } SIOStatusFlag;
 
 typedef enum {
-	SIO_MODE_BAUD_MASK      = 3 << 0,
+	SIO_MODE_BAUD_BITMASK   = 3 << 0,
 	SIO_MODE_BAUD_DIV1      = 1 << 0,
 	SIO_MODE_BAUD_DIV16     = 2 << 0,
 	SIO_MODE_BAUD_DIV64     = 3 << 0,
@@ -191,12 +191,12 @@ typedef enum {
 } DMACHCRFlag;
 
 typedef enum {
-	DMA_DICR_CH_MODE_MASK   = 0x7f <<  0,
-	DMA_DICR_BUS_ERROR      =    1 << 15,
-	DMA_DICR_CH_ENABLE_MASK = 0x7f << 16,
-	DMA_DICR_IRQ_ENABLE     =    1 << 23,
-	DMA_DICR_CH_STAT_MASK   = 0x7f << 24,
-	DMA_DICR_IRQ            =    1 << 31
+	DMA_DICR_CH_MODE_BITMASK   = 0x7f <<  0,
+	DMA_DICR_BUS_ERROR         =    1 << 15,
+	DMA_DICR_CH_ENABLE_BITMASK = 0x7f << 16,
+	DMA_DICR_IRQ_ENABLE        =    1 << 23,
+	DMA_DICR_CH_STAT_BITMASK   = 0x7f << 24,
+	DMA_DICR_IRQ               =    1 << 31
 } DMADICRFlag;
 
 #define DMA_DICR_CH_MODE(dma)   (1 << ((dma) +  0))
@@ -467,6 +467,25 @@ typedef enum {
 #define SYS573_IDE_CS1_BASE _ADDR16(DEV0_BASE | 0x4c0000)
 #define SYS573_RTC_BASE     _ADDR16(DEV0_BASE | 0x620000)
 #define SYS573_IO_BASE      _ADDR16(DEV0_BASE | 0x640000)
+
+/* System 573 RTC */
+
+typedef enum {
+	SYS573_RTC_CTRL_CAL_BITMASK  = 31 << 0,
+	SYS573_RTC_CTRL_CAL_POSITIVE =  0 << 5,
+	SYS573_RTC_CTRL_CAL_NEGATIVE =  1 << 5,
+	SYS573_RTC_CTRL_READ         =  1 << 6,
+	SYS573_RTC_CTRL_WRITE        =  1 << 7
+} Sys573RTCControlFlag;
+
+#define SYS573_RTC_CTRL    _MMIO16(DEV0_BASE | 0x623ff0)
+#define SYS573_RTC_SECOND  _MMIO16(DEV0_BASE | 0x623ff2)
+#define SYS573_RTC_MINUTE  _MMIO16(DEV0_BASE | 0x623ff4)
+#define SYS573_RTC_HOUR    _MMIO16(DEV0_BASE | 0x623ff6)
+#define SYS573_RTC_WEEKDAY _MMIO16(DEV0_BASE | 0x623ff8)
+#define SYS573_RTC_DAY     _MMIO16(DEV0_BASE | 0x623ffa)
+#define SYS573_RTC_MONTH   _MMIO16(DEV0_BASE | 0x623ffc)
+#define SYS573_RTC_YEAR    _MMIO16(DEV0_BASE | 0x623ffe)
 
 /* System 573 analog I/O board */
 

@@ -20,9 +20,10 @@
 #include "ps1/registers.h"
 #include "ps1/system.h"
 
-#define BIOS_API_TABLE  ((VoidFunction *) 0x80000200)
-#define BIOS_BP_VECTOR  ((uint32_t *)     0x80000040)
-#define BIOS_EXC_VECTOR ((uint32_t *)     0x80000080)
+#define BIOS_ENTRY_POINT ((VoidFunction)   0xbfc00000)
+#define BIOS_API_TABLE   ((VoidFunction *) 0x80000200)
+#define BIOS_BP_VECTOR   ((uint32_t *)     0x80000040)
+#define BIOS_EXC_VECTOR  ((uint32_t *)     0x80000080)
 
 /* Internal state */
 
@@ -45,7 +46,7 @@ void installExceptionHandler(void) {
 	IRQ_MASK = 0;
 	IRQ_STAT = 0;
 	DMA_DPCR = 0;
-	DMA_DICR = DMA_DICR_CH_STAT_MASK;
+	DMA_DICR = DMA_DICR_CH_STAT_BITMASK;
 
 	// Ensure interrupts and the GTE are enabled at the COP0 side.
 	uint32_t sr = SR_IEc | SR_Im2 | SR_CU0 | SR_CU2;
@@ -83,6 +84,10 @@ void flushCache(void) {
 	_flushCache();
 	if (mask)
 		setInterruptMask(mask);
+}
+
+void softReset(void) {
+	BIOS_ENTRY_POINT();
 }
 
 /* IRQ acknowledgement and blocking delay */

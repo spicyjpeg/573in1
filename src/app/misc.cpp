@@ -40,7 +40,7 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_numButtons = 1;
 
 #ifdef NDEBUG
-	_cooldownTimer = ctx.time + WARNING_COOLDOWN * 60;
+	_cooldownTimer = ctx.time + ctx.gpuCtx.refreshRate * WARNING_COOLDOWN;
 #else
 	_cooldownTimer = 0;
 #endif

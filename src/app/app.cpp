@@ -174,13 +174,34 @@ void App::_qrCodeWorker(void) {
 	_dummyWorker();
 }
 
+void App::_rebootWorker(void) {
+	int startTime = _ctx->time;
+	int duration  = _ctx->gpuCtx.refreshRate * 3;
+	int elapsed;
+
+	// Stop clearing the watchdog for a few seconds.
+	_allowWatchdogClear = false;
+
+	do {
+		elapsed = _ctx->time - startTime;
+
+		_workerStatus.update(elapsed, duration, WSTR("App.rebootWorker.reboot"));
+		delayMicroseconds(10000);
+	} while (elapsed < duration);
+
+	// If for some reason the watchdog fails to reboot the system, fall back to
+	// a soft reboot.
+	softReset();
+}
+
 /* Misc. functions */
 
 void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VBLANK)) {
 		_ctx->tick();
-		io::clearWatchdog();
 
+		if (_allowWatchdogClear)
+			io::clearWatchdog();
 		if (gpu::isIdle())
 			switchThread(nullptr);
 	}

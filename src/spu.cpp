@@ -112,6 +112,7 @@ void resetAllChannels(void) {
 size_t upload(uint32_t ramOffset, const void *data, size_t length, bool wait) {
 	length /= 4;
 
+	util::assertAligned<uint32_t>(data);
 	assert(!(length % _DMA_CHUNK_SIZE));
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
 

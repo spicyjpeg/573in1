@@ -18,7 +18,8 @@ static constexpr int _DMA_TIMEOUT    = 10000;
 size_t upload(const RectWH &rect, const void *data, bool wait) {
 	size_t length = (rect.w * rect.h) / 2;
 
-	//assert(!(length % _DMA_CHUNK_SIZE));
+	util::assertAligned<uint32_t>(data);
+	assert(!(length % _DMA_CHUNK_SIZE));
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
 
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))

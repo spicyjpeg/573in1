@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "ps1/system.h"
@@ -52,6 +53,10 @@ static inline uint32_t swapEndian(uint32_t value) {
 	value = ((value & 0x00ff00ff) <<  8) | ((value & 0xff00ff00) >>  8);
 
 	return value;
+}
+
+template<typename T, typename X> inline void assertAligned(X *ptr) {
+	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
 }
 
 template<typename T, typename X> static constexpr inline T forcedCast(X item) {

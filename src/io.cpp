@@ -15,7 +15,7 @@ void init(void) {
 	_cartOutputReg = 0;
 	_miscOutputReg = 0x0107;
 
-	BIU_DEV0_ADDR = 0x1f000000;
+	BIU_DEV0_ADDR = DEV0_BASE & 0x1fffffff;
 	BIU_DEV0_CTRL = 0
 		| (7 << 0) // Write delay
 		| (4 << 4) // Read delay
@@ -57,6 +57,32 @@ uint32_t getJAMMAInputs(void) {
 	inputs |= (SYS573_MISC_IN    & 0x1f00) << 16;
 
 	return inputs ^ 0x1fffffff;
+}
+
+uint32_t getRTCTime(void) {
+	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_READ;
+
+	int year = SYS573_RTC_YEAR, month = SYS573_RTC_MONTH,  day = SYS573_RTC_DAY;
+	int hour = SYS573_RTC_HOUR, min   = SYS573_RTC_MINUTE, sec = SYS573_RTC_SECOND;
+
+	year  = (year  & 15) + 10 * ((year  >> 4) & 15); // 0-99
+	month = (month & 15) + 10 * ((month >> 4) &  1); // 1-12
+	day   = (day   & 15) + 10 * ((day   >> 4) &  3); // 1-31
+	hour  = (hour  & 15) + 10 * ((hour  >> 4) &  3); // 0-23
+	min   = (min   & 15) + 10 * ((min   >> 4) &  7); // 0-59
+	sec   = (sec   & 15) + 10 * ((sec   >> 4) &  7); // 0-59
+
+	// Return all values packed into a FAT/MS-DOS-style bitfield. Assume the
+	// year is always in 1995-2094 range.
+	int _year = (year >= 95) ? (year + 1900 - 1980) : (year + 2000 - 1980);
+
+	return 0
+		| (_year << 25)
+		| (month << 21)
+		| (day   << 16)
+		| (hour  << 11)
+		| (min   <<  5)
+		| (sec   >>  1);
 }
 
 /* Digital I/O board driver */

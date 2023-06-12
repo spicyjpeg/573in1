@@ -143,6 +143,11 @@ void setInterruptHandler(ArgFunction func, void *arg);
 void flushCache(void);
 
 /**
+ * @brief Jumps to the entry point in the BIOS. This function does not return.
+ */
+void softReset(void);
+
+/**
  * @brief Blocks for (roughly) the specified number of microseconds. This
  * function does not rely on a hardware timer, so interrupts may throw off
  * timings if not explicitly disabled prior to calling delayMicroseconds().

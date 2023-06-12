@@ -30,7 +30,7 @@
 #define FF_MAX_SS   4096
 #define FF_LBA64    1
 #define FF_MIN_GPT  0x10000000
-#define FF_USE_TRIM 1
+#define FF_USE_TRIM 0
 
 #define FF_FS_TINY     0
 #define FF_FS_EXFAT    1
