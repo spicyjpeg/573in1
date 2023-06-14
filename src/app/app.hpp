@@ -6,10 +6,10 @@
 #include "app/misc.hpp"
 #include "app/unlock.hpp"
 #include "ps1/system.h"
-#include "asset.hpp"
 #include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
+#include "file.hpp"
 #include "uibase.hpp"
 
 /* Worker status class */
@@ -82,9 +82,9 @@ private:
 	CartActionsScreen   _cartActionsScreen;
 	QRCodeScreen        _qrCodeScreen;
 
-	ui::Context        *_ctx;
-	asset::AssetLoader *_loader;
-	asset::StringTable *_strings;
+	ui::Context       *_ctx;
+	file::Provider    *_provider;
+	file::StringTable *_strings;
 
 	cart::Dump   _dump;
 	cart::CartDB _db;
@@ -123,8 +123,7 @@ public:
 	}
 
 	void run(
-		ui::Context &ctx, asset::AssetLoader &loader,
-		asset::StringTable &strings
+		ui::Context &ctx, file::Provider &provider, file::StringTable &strings
 	);
 };
 

@@ -33,4 +33,7 @@ cmake --preset debug
 cmake --build ./build
 ```
 
-Replace `debug` with `release` to build in release mode.
+Replace `debug` with `release` to build in release mode or `min-size-release` to
+optimize the executable for size. If MAME's `chdman` tool is installed and
+listed in the `PATH` environment variable, a CHD image will be generated in
+addition to the raw CD-ROM image.

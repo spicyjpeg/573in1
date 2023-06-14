@@ -13,8 +13,6 @@ static constexpr int _DMA_CHUNK_SIZE = 8;
 static constexpr int _DMA_TIMEOUT    = 10000;
 static constexpr int _STATUS_TIMEOUT = 1000;
 
-static constexpr uint32_t _DUMMY_BLOCK_ADDR = 0x1000;
-
 static bool _waitForStatus(uint16_t mask, uint16_t value) {
 	for (int timeout = _STATUS_TIMEOUT; timeout > 0; timeout--) {
 		if ((SPU_STAT & mask) == value)
@@ -51,7 +49,7 @@ void init(void) {
 
 	// Place a dummy (silent) looping block at the beginning of SPU RAM.
 	SPU_DMA_CTRL = 4;
-	SPU_ADDR     = _DUMMY_BLOCK_ADDR / 8;
+	SPU_ADDR     = DUMMY_BLOCK_OFFSET / 8;
 
 	SPU_DATA = 0x0500;
 	for (int i = 7; i > 0; i--)
@@ -96,7 +94,7 @@ void resetAllChannels(void) {
 		SPU_CH_VOL_L(ch) = 0;
 		SPU_CH_VOL_R(ch) = 0;
 		SPU_CH_FREQ(ch)  = 0x1000;
-		SPU_CH_ADDR(ch)  = _DUMMY_BLOCK_ADDR / 8;
+		SPU_CH_ADDR(ch)  = DUMMY_BLOCK_OFFSET / 8;
 	}
 
 	SPU_FLAG_FM1     = 0;

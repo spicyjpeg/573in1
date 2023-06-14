@@ -4,9 +4,8 @@
 #include "app/app.hpp"
 #include "ps1/gpucmd.h"
 #include "ps1/system.h"
-#include "vendor/ff.h"
-#include "asset.hpp"
 #include "defs.hpp"
+#include "file.hpp"
 #include "gpu.hpp"
 #include "io.hpp"
 #include "spu.hpp"
@@ -16,6 +15,16 @@
 extern "C" const uint8_t _resources[];
 extern "C" const size_t  _resourcesSize;
 
+static const char _DEFAULT_RESOURCE_ZIP_PATH[] = "/cartToolResources.zip";
+
+static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
+	"assets/sound/startup.vag", // ui::SOUND_STARTUP
+	"assets/sounds/move.vag",   // ui::SOUND_MOVE
+	"assets/sounds/enter.vag",  // ui::SOUND_ENTER
+	"assets/sounds/exit.vag",   // ui::SOUND_EXIT
+	"assets/sounds/click.vag"   // ui::SOUND_CLICK
+};
+
 int main(int argc, const char **argv) {
 	installExceptionHandler();
 	gpu::init();
@@ -24,11 +33,9 @@ int main(int argc, const char **argv) {
 
 	int width = 320, height = 240;
 
+	const char *resPath  = _DEFAULT_RESOURCE_ZIP_PATH;
 	const void *resPtr   = nullptr;
 	size_t     resLength = 0;
-
-	char mountPath[16];
-	strcpy(mountPath, "1:");
 
 #ifdef ENABLE_ARGV
 	for (; argc > 0; argc--) {
@@ -51,10 +58,6 @@ int main(int argc, const char **argv) {
 				util::logger.enableSyslog = true;
 				break;
 
-			case "mount"_h:
-				__builtin_strncpy(mountPath, &arg[6], sizeof(mountPath));
-				break;
-
 			case "screen.width"_h:
 				width = int(strtol(&arg[13], nullptr, 0));
 				break;
@@ -63,8 +66,12 @@ int main(int argc, const char **argv) {
 				height = int(strtol(&arg[14], nullptr, 0));
 				break;
 
-			// Allow the default assets to be overridden by passing a pointer to
-			// an in-memory ZIP file as a command-line argument.
+			// Allow the default assets to be overridden by passing a path or a
+			// pointer to an in-memory ZIP file as a command-line argument.
+			case "resources.path"_h:
+				resPath = &arg[15];
+				break;
+
 			case "resources.ptr"_h:
 				resPtr = reinterpret_cast<const void *>(
 					strtol(&arg[14], nullptr, 16)
@@ -89,25 +96,39 @@ int main(int argc, const char **argv) {
 
 	io::clearWatchdog();
 
-	FATFS fat;
+	file::FATProvider fileProvider;
 
-	auto error = f_mount(&fat, mountPath, true);
-	if (error)
-		LOG("FAT init error, code=%d", error);
+	// Attempt to initialize the secondary drive first, then in case of failure
+	// try to initialize the primary drive instead.
+	if (fileProvider.init("1:"))
+		goto _fileInitDone;
+	if (fileProvider.init("0:"))
+		goto _fileInitDone;
 
+_fileInitDone:
 	io::clearWatchdog();
 
-	asset::AssetLoader loader;
+	// Load the resource archive, first from memory if a pointer was given and
+	// then from the HDD. If both attempts fail, fall back to the archive
+	// embedded into the executable.
+	file::ZIPProvider resourceProvider;
+	file::File        *zipFile;
 
-	if (resPtr && resLength)
-		loader.openMemory(resPtr, resLength);
-	if (!loader.ready)
-		loader.openFAT("1:/cart_tool/resources.zip");
-	//if (!loader.ready)
-		//loader.openHost("resources.zip");
-	if (!loader.ready)
-		loader.openMemory(_resources, _resourcesSize);
+	if (resPtr && resLength) {
+		if (resourceProvider.init(resPtr, resLength))
+			goto _resourceInitDone;
+	}
 
+	zipFile = fileProvider.openFile(resPath, file::READ);
+
+	if (zipFile) {
+		if (resourceProvider.init(zipFile))
+			goto _resourceInitDone;
+	}
+
+	resourceProvider.init(_resources, _resourcesSize);
+
+_resourceInitDone:
 	io::clearWatchdog();
 
 	gpu::Context gpuCtx(GP1_MODE_NTSC, width, height, height > 256);
@@ -116,13 +137,21 @@ int main(int argc, const char **argv) {
 	ui::TiledBackground background;
 	ui::LogOverlay      overlay(util::logger);
 
-	asset::StringTable strings;
+	file::StringTable strings;
 
 	if (
-		!loader.loadTIM(background.tile,       "assets/textures/background.tim") ||
-		!loader.loadTIM(uiCtx.font.image,      "assets/textures/font.tim") ||
-		!loader.loadStruct(uiCtx.font.metrics, "assets/textures/font.metrics") ||
-		!loader.loadAsset(strings,             "assets/app.strings")
+		!resourceProvider.loadTIM(
+			background.tile, "assets/textures/background.tim"
+		) ||
+		!resourceProvider.loadTIM(
+			uiCtx.font.image, "assets/textures/font.tim"
+		) ||
+		!resourceProvider.loadStruct(
+			uiCtx.font.metrics, "assets/textures/font.metrics"
+		) ||
+		!resourceProvider.loadData(
+			strings, "assets/app.strings"
+		)
 	) {
 		LOG("required assets not found, exiting");
 		return 1;
@@ -130,11 +159,10 @@ int main(int argc, const char **argv) {
 
 	io::clearWatchdog();
 
-	loader.loadVAG(uiCtx.sounds[ui::SOUND_STARTUP], "assets/sounds/startup.vag");
-	loader.loadVAG(uiCtx.sounds[ui::SOUND_MOVE],    "assets/sounds/move.vag");
-	loader.loadVAG(uiCtx.sounds[ui::SOUND_ENTER],   "assets/sounds/enter.vag");
-	loader.loadVAG(uiCtx.sounds[ui::SOUND_EXIT],    "assets/sounds/exit.vag");
-	loader.loadVAG(uiCtx.sounds[ui::SOUND_CLICK],   "assets/sounds/click.vag");
+	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
+		resourceProvider.loadVAG(uiCtx.sounds[i], _UI_SOUND_PATHS[i]);
+
+	io::clearWatchdog();
 
 	background.text = "v" VERSION_STRING;
 	uiCtx.setBackgroundLayer(background);
@@ -147,6 +175,6 @@ int main(int argc, const char **argv) {
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
 	io::clearWatchdog();
 
-	app.run(uiCtx, loader, strings);
+	app.run(uiCtx, resourceProvider, strings);
 	return 0;
 }

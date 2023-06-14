@@ -9,7 +9,7 @@
 		{
 			"name":        "debug",
 			"displayName": "Debug build",
-			"description": "Build the project with -Og and assertions enabled.",
+			"description": "Build the project with no optimization and assertions enabled.",
 			"generator":   "Ninja",
 			"binaryDir":   "${sourceDir}/build",
 			"cacheVariables": {
@@ -19,11 +19,21 @@
 		{
 			"name":        "release",
 			"displayName": "Release build",
-			"description": "Build the project with -O2 and assertions disabled.",
+			"description": "Build the project with performance optimization and assertions stripped.",
 			"generator":   "Ninja",
 			"binaryDir":   "${sourceDir}/build",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name":        "min-size-release",
+			"displayName": "Minimum size release build",
+			"description": "Build the project with size optimization and assertions stripped.",
+			"generator":   "Ninja",
+			"binaryDir":   "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "MinSizeRel"
 			}
 		}
 	]

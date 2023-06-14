@@ -67,7 +67,7 @@ target_compile_options(
 		-mdivide-breaks
 	,
 		# These options will be added if CMAKE_BUILD_TYPE is not set to Debug.
-		-O2
+		#-O3
 		#-flto
 	>
 )

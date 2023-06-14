@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "ps1/system.h"
 
 namespace util {
@@ -81,6 +82,40 @@ template<typename T> static constexpr inline Hash hash(
 
 Hash hash(const char *str, char terminator = 0);
 Hash hash(const uint8_t *data, size_t length);
+
+/* Simple "smart" pointer */
+
+class Data {
+public:
+	void   *ptr;
+	size_t length;
+
+	inline Data(void)
+	: ptr(nullptr), length(0) {}
+	inline ~Data(void) {
+		destroy();
+	}
+
+	template<typename T> inline T *as(void) {
+		return reinterpret_cast<T *>(ptr);
+	}
+
+	inline void *allocate(size_t _length) {
+		if (ptr)
+			free(ptr);
+
+		ptr    = malloc(_length);
+		length = _length;
+
+		return ptr;
+	}
+	inline void destroy(void) {
+		if (ptr) {
+			free(ptr);
+			ptr = nullptr;
+		}
+	}
+};
 
 /* Simple ring buffer */
 

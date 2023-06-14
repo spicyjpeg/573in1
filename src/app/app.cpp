@@ -3,10 +3,10 @@
 #include <stdint.h>
 #include "app/app.hpp"
 #include "ps1/system.h"
-#include "asset.hpp"
 #include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
+#include "file.hpp"
 #include "io.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
@@ -23,7 +23,7 @@ void App::_unloadCartData(void) {
 		_parser = nullptr;
 	}
 
-	_db.unload();
+	_db.destroy();
 	_identified = nullptr;
 }
 
@@ -65,7 +65,7 @@ void App::_cartDetectWorker(void) {
 	_unloadCartData();
 
 #ifndef NDEBUG
-	if (_loader->loadStruct(_dump, "data/test.dump")) {
+	if (_provider->loadStruct(_dump, "data/test.dump")) {
 		LOG("using dummy cart driver");
 		_driver = new cart::DummyDriver(_dump);
 	} else {
@@ -87,7 +87,7 @@ void App::_cartDetectWorker(void) {
 		LOG("cart parser @ 0x%08x", _parser);
 		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
 
-		if (!_loader->loadAsset(_db, _CARTDB_PATHS[_dump.chipType])) {
+		if (!_provider->loadData(_db, _CARTDB_PATHS[_dump.chipType])) {
 			LOG("%s not found", _CARTDB_PATHS[_dump.chipType]);
 			goto _cartInitDone;
 		}
@@ -104,18 +104,16 @@ _cartInitDone:
 	_workerStatus.update(3, 4, WSTR("App.cartDetectWorker.readDigitalIO"));
 
 	if (io::isDigitalIOPresent()) {
-		asset::Asset file;
-		bool         ready;
+		util::Data bitstream;
+		bool       ready;
 
-		if (!_loader->loadAsset(file, "data/fpga.bit")) {
-			LOG("failed to load data/fpga.bit");
+		if (!_provider->loadData(bitstream, "data/fpga.bit")) {
+			LOG("failed to load bitstream");
 			goto _initDone;
 		}
 
-		ready = io::loadBitstream(
-			reinterpret_cast<const uint8_t *>(file.ptr), file.length
-		);
-		file.unload();
+		ready = io::loadBitstream(bitstream.as<uint8_t>(), bitstream.length);
+		bitstream.destroy();
 
 		if (!ready) {
 			LOG("bitstream upload failed");
@@ -208,17 +206,23 @@ void App::_interruptHandler(void) {
 }
 
 void App::run(
-	ui::Context &ctx, asset::AssetLoader &loader, asset::StringTable &strings
+	ui::Context &ctx, file::Provider &provider, file::StringTable &strings
 ) {
 	LOG("starting app @ 0x%08x", this);
 
-	_ctx     = &ctx;
-	_loader  = &loader;
-	_strings = &strings;
+	_ctx      = &ctx;
+	_provider = &provider;
+	_strings  = &strings;
 
 	ctx.screenData = this;
+
+#ifdef NDEBUG
 	ctx.show(_warningScreen);
 	ctx.sounds[ui::SOUND_STARTUP].play();
+#else
+	// Skip the warning screen in debug builds.
+	ctx.show(_buttonMappingScreen);
+#endif
 
 	_setupWorker(&App::_dummyWorker);
 	_setupInterrupts();

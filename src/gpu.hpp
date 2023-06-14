@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
+#include "vendor/qrcodegen.h"
 
 namespace gpu {
 
@@ -196,5 +197,16 @@ public:
 	) const;
 	int getStringWidth(const char *str, bool breakOnSpace = false) const;
 };
+
+/* QR code encoder */
+
+bool generateQRCode(
+	Image &output, int x, int y, const char *str,
+	qrcodegen_Ecc ecc = qrcodegen_Ecc_MEDIUM
+);
+bool generateQRCode(
+	Image &output, int x, int y, const uint8_t *data, size_t length,
+	qrcodegen_Ecc ecc = qrcodegen_Ecc_MEDIUM
+);
 
 }
