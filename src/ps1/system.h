@@ -94,8 +94,8 @@ static inline uint32_t setInterruptMask(uint32_t mask) {
  *
  * @param thread
  * @param func
- * @param stack Pointer to last 8 bytes in the stack
  * @param arg Optional argument to entry point
+ * @param stack Pointer to last 8 bytes in the stack
  */
 static inline void initThread(
 	Thread *thread, ArgFunction func, void *arg, void *stack
@@ -130,7 +130,8 @@ void installExceptionHandler(void);
  * - it must return quickly, as IRQs fired while the exception handler is
  *   running may otherwise be missed.
  *
- * Interrupts must be re-enabled manually after setting a new handler.
+ * Interrupts must be re-enabled manually using setInterruptMask() after setting
+ * a new handler.
  *
  * @param func
  * @param arg Optional argument to be passed to handler

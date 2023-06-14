@@ -300,14 +300,16 @@ typedef enum {
 /* GPU */
 
 typedef enum {
-	GP1_STAT_MODE_PAL    = 1 << 20,
-	GP1_STAT_DISP_BLANK  = 1 << 23,
-	GP1_STAT_IRQ         = 1 << 24,
-	GP1_STAT_DREQ        = 1 << 25,
-	GP1_STAT_CMD_READY   = 1 << 26,
-	GP1_STAT_READ_READY  = 1 << 27,
-	GP1_STAT_WRITE_READY = 1 << 28,
-	GP1_STAT_FIELD_ODD   = 1 << 31
+	GP1_STAT_MODE_BITMASK = 1 << 20,
+	GP1_STAT_MODE_NTSC    = 0 << 20,
+	GP1_STAT_MODE_PAL     = 1 << 20,
+	GP1_STAT_DISP_BLANK   = 1 << 23,
+	GP1_STAT_IRQ          = 1 << 24,
+	GP1_STAT_DREQ         = 1 << 25,
+	GP1_STAT_CMD_READY    = 1 << 26,
+	GP1_STAT_READ_READY   = 1 << 27,
+	GP1_STAT_WRITE_READY  = 1 << 28,
+	GP1_STAT_FIELD_ODD    = 1 << 31
 } GP1StatusFlag;
 
 #define GPU_GP0 _MMIO32(IO_BASE | 0x1810)

@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "asset.hpp"
 #include "cart.hpp"
+#include "util.hpp"
 
 namespace cart {
 
@@ -118,7 +118,7 @@ public:
 	}
 };
 
-class CartDB : public asset::Asset {
+class CartDB : public util::Data {
 public:
 	inline const DBEntry *operator[](int index) const {
 		return get(index);

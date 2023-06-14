@@ -2,7 +2,7 @@
 #pragma once
 
 #include <stddef.h>
-#include "asset.hpp"
+#include "gpu.hpp"
 #include "uibase.hpp"
 #include "uicommon.hpp"
 #include "util.hpp"
@@ -15,6 +15,7 @@ protected:
 
 public:
 	void qrDump(ui::Context &ctx);
+	void hddDump(ui::Context &ctx);
 	void hexdump(ui::Context &ctx);
 	void reflash(ui::Context &ctx);
 	void erase(ui::Context &ctx);
@@ -28,10 +29,10 @@ public:
 class QRCodeScreen : public ui::ImageScreen {
 public:
 	inline bool generateCode(const char *textInput) {
-		return asset::generateQRCode(_image, 960, 128, textInput);
+		return gpu::generateQRCode(_image, 960, 128, textInput);
 	}
 	inline bool generateCode(const uint8_t *binaryInput, size_t length) {
-		return asset::generateQRCode(_image, 960, 128, binaryInput, length);
+		return gpu::generateQRCode(_image, 960, 128, binaryInput, length);
 	}
 
 	void show(ui::Context &ctx, bool goBack = false);

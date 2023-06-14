@@ -13,6 +13,9 @@
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
 			"generate": "Generating QR code..."
+		},
+		"rebootWorker": {
+			"reboot": "Resetting system..."
 		}
 	},
 
@@ -35,6 +38,10 @@
 		"qrDump": {
 			"name":   "Dump cartridge as QR code",
 			"prompt": "Generate a QR code encoding the contents of the cartridge's EEPROM in compressed format. The code can be scanned and decoded to a raw dump."
+		},
+		"hddDump": {
+			"name":   "Dump cartridge to hard drive",
+			"prompt": "Save the contents of the cartridge's EEPROM to a file on the IDE hard drive."
 		},
 		"hexdump": {
 			"name":   "View cartridge hexdump",
@@ -114,6 +121,11 @@
 	"QRCodeScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
 		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
+	},
+
+	"SystemInfoScreen": {
+		"title":  "System information",
+		"prompt": "Press {START_BUTTON} to go back."
 	},
 
 	"UnlockConfirmScreen": {

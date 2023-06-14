@@ -7,6 +7,9 @@
 
 namespace spu {
 
+static constexpr uint32_t DUMMY_BLOCK_OFFSET = 0x1000;
+static constexpr uint32_t DUMMY_BLOCK_END    = 0x1010;
+
 /* Basic API */
 
 static inline void setVolume(int16_t master, int16_t reverb = 0) {

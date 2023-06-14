@@ -5,6 +5,7 @@
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "ps1/system.h"
+#include "vendor/qrcodegen.h"
 #include "gpu.hpp"
 #include "util.hpp"
 
@@ -428,6 +429,71 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 
 _break:
 	return (width > maxWidth) ? width : maxWidth;
+}
+
+/* QR code encoder */
+
+static void _loadQRCode(Image &output, int x, int y, const uint32_t *qrCode) {
+	int size = qrcodegen_getSize(qrCode);
+	RectWH rect;
+
+	// Generate a 16-color (only 2 colors used) palette and place it below the
+	// QR code in VRAM.
+	const uint32_t palette[8]{ 0x8000ffff };
+
+	rect.x = x;
+	rect.y = y + size;
+	rect.w = 16;
+	rect.h = 1;
+	upload(rect, palette, true);
+
+	rect.y = y;
+	rect.w = qrcodegen_getStride(qrCode) * 2;
+	rect.h = size;
+	upload(rect, &qrCode[1], true);
+
+	output.initFromVRAMRect(rect, GP0_COLOR_4BPP);
+	output.width   = size;
+	output.palette = gp0_clut(x / 16, y + size);
+
+	LOG("loaded at (%d,%d), size=%d", x, y, size);
+}
+
+bool generateQRCode(
+	Image &output, int x, int y, const char *str, qrcodegen_Ecc ecc
+) {
+	uint32_t qrCode[qrcodegen_BUFFER_LEN_MAX];
+	uint32_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
+
+	auto segment = qrcodegen_makeAlphanumeric(
+		str, reinterpret_cast<uint8_t *>(tempBuffer)
+	);
+	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode)) {
+		LOG("QR encoding failed");
+		return false;
+	}
+
+	_loadQRCode(output, x, y, qrCode);
+	return true;
+}
+
+bool generateQRCode(
+	Image &output, int x, int y, const uint8_t *data, size_t length,
+	qrcodegen_Ecc ecc
+) {
+	uint32_t qrCode[qrcodegen_BUFFER_LEN_MAX];
+	uint32_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
+
+	auto segment = qrcodegen_makeBytes(
+		data, length, reinterpret_cast<uint8_t *>(tempBuffer)
+	);
+	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode)) {
+		LOG("QR encoding failed");
+		return false;
+	}
+
+	_loadQRCode(output, x, y, qrCode);
+	return true;
 }
 
 }

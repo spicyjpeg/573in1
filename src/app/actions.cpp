@@ -13,14 +13,18 @@ public:
 	void (CartActionsScreen::*target)(ui::Context &ctx);
 };
 
-static constexpr int _NUM_IDENTIFIED_ACTIONS   = 6;
-static constexpr int _NUM_UNIDENTIFIED_ACTIONS = 4;
+static constexpr int _NUM_IDENTIFIED_ACTIONS   = 7;
+static constexpr int _NUM_UNIDENTIFIED_ACTIONS = 5;
 
 static const Action _ACTIONS[]{
 	{
 		.name   = "CartActionsScreen.qrDump.name"_h,
 		.prompt = "CartActionsScreen.qrDump.prompt"_h,
 		.target = &CartActionsScreen::qrDump
+	}, {
+		.name   = "CartActionsScreen.hddDump.name"_h,
+		.prompt = "CartActionsScreen.hddDump.prompt"_h,
+		.target = &CartActionsScreen::hddDump
 	}, {
 		.name   = "CartActionsScreen.hexdump.name"_h,
 		.prompt = "CartActionsScreen.hexdump.prompt"_h,
@@ -53,8 +57,10 @@ void CartActionsScreen::qrDump(ui::Context &ctx) {
 	ctx.show(APP->_workerStatusScreen, false, true);
 }
 
+void CartActionsScreen::hddDump(ui::Context &ctx) {
+}
+
 void CartActionsScreen::hexdump(ui::Context &ctx) {
-	//ctx.show(APP->_hexdumpScreen, false, true);
 }
 
 void CartActionsScreen::reflash(ui::Context &ctx) {

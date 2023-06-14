@@ -39,11 +39,7 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_locked     = true;
 	_numButtons = 1;
 
-#ifdef NDEBUG
 	_cooldownTimer = ctx.time + ctx.gpuCtx.refreshRate * WARNING_COOLDOWN;
-#else
-	_cooldownTimer = 0;
-#endif
 
 	MessageScreen::show(ctx, goBack);
 

@@ -1,12 +1,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "ide.hpp"
-#include "io.hpp"
-#include "util.hpp"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 #include "vendor/diskio.h"
+#include "ide.hpp"
+#include "io.hpp"
+#include "util.hpp"
 
 namespace ide {
 

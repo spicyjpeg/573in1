@@ -20,10 +20,10 @@ find_program(
 
 add_executable(
 	cart_tool
-	src/asset.cpp
 	src/cart.cpp
 	src/cartdata.cpp
 	src/cartio.cpp
+	src/file.cpp
 	src/gpu.cpp
 	src/ide.cpp
 	src/io.cpp
