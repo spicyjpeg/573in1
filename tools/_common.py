@@ -47,6 +47,7 @@ class DataFlag(IntFlag):
 	DATA_HAS_SYSTEM_ID      = 1 << 4
 	DATA_HAS_PUBLIC_SECTION = 1 << 5
 	DATA_CHECKSUM_INVERTED  = 1 << 6
+	DATA_GX706_WORKAROUND   = 1 << 7
 
 # Character 0:    always G
 # Character 1:    region related? (can be B, C, E, K, L, N, Q, U, X)
@@ -242,6 +243,9 @@ class ExtendedParser(Parser):
 		data: bytes = _getPublicData(dump, flags, _EXTENDED_HEADER_STRUCT.size)
 		ids:  IdentifierSet = IdentifierSet(dump.data[_EXTENDED_HEADER_STRUCT.size + 16:])
 
+		if flags & DataFlag.DATA_GX706_WORKAROUND:
+			data = data[0:1] + b"X" + data[2:]
+
 		code, year, region, checksum = _EXTENDED_HEADER_STRUCT.unpack(data)
 
 		code:   bytes = code.rstrip(b"\0")
@@ -267,7 +271,7 @@ class ExtendedParser(Parser):
 
 ## Cartridge database
 
-DB_ENTRY_STRUCT: Struct = Struct("< 6B H 8s 8s 8s 64s")
+DB_ENTRY_STRUCT: Struct = Struct("< 6B H 8s 8s 8s 96s")
 
 @dataclass
 class GameEntry:

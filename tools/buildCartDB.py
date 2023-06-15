@@ -130,6 +130,10 @@ _KNOWN_FORMATS: Sequence[tuple[str, Type, DataFlag]] = (
 		BasicParser,
 		DataFlag.DATA_HAS_TRACE_ID | DataFlag.DATA_CHECKSUM_INVERTED
 	), (
+		"basic + SID",
+		BasicParser,
+		DataFlag.DATA_HAS_CART_ID | DataFlag.DATA_CHECKSUM_INVERTED
+	), (
 		"basic + TID, SID",
 		BasicParser,
 		DataFlag.DATA_HAS_TRACE_ID | DataFlag.DATA_HAS_CART_ID
@@ -147,15 +151,18 @@ _KNOWN_FORMATS: Sequence[tuple[str, Type, DataFlag]] = (
 			| DataFlag.DATA_HAS_CART_ID | DataFlag.DATA_HAS_INSTALL_ID
 			| DataFlag.DATA_HAS_SYSTEM_ID | DataFlag.DATA_CHECKSUM_INVERTED
 	), (
-		# Used by early (pre-digital-I/O) Bemani games
 		"extended (no IDs)",
 		ExtendedParser,
 		DataFlag.DATA_HAS_CODE_PREFIX | DataFlag.DATA_CHECKSUM_INVERTED
 	), (
-		# Used by early (pre-digital-I/O) Bemani games
-		"extended alt. (no IDs)",
+		"extended (no IDs, alt)",
 		ExtendedParser,
 		DataFlag.DATA_HAS_CODE_PREFIX
+	), (
+		# Used by GX706
+		"extended (no IDs, GX706)",
+		ExtendedParser,
+		DataFlag.DATA_HAS_CODE_PREFIX | DataFlag.DATA_GX706_WORKAROUND
 	), (
 		# Used by GE936/GK936 and all ZS01 Bemani games
 		"extended + all IDs",

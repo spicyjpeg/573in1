@@ -101,7 +101,7 @@ public:
 	uint8_t  traceIDParam, installIDPrefix;
 	uint16_t year;
 	uint8_t  dataKey[8];
-	char     code[8], region[8], name[64];
+	char     code[8], region[8], name[96];
 
 	inline int compare(const char *_code, const char *_region) const {
 		int diff = __builtin_strncmp(code, _code, CODE_LENGTH + 1);
