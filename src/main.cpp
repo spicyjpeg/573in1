@@ -15,14 +15,14 @@
 extern "C" const uint8_t _resources[];
 extern "C" const size_t  _resourcesSize;
 
-static const char _DEFAULT_RESOURCE_ZIP_PATH[] = "/cartToolResources.zip";
+static const char _DEFAULT_RESOURCE_ZIP_PATH[] = "cartToolResources.zip";
 
 static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
-	"assets/sound/startup.vag", // ui::SOUND_STARTUP
-	"assets/sounds/move.vag",   // ui::SOUND_MOVE
-	"assets/sounds/enter.vag",  // ui::SOUND_ENTER
-	"assets/sounds/exit.vag",   // ui::SOUND_EXIT
-	"assets/sounds/click.vag"   // ui::SOUND_CLICK
+	"assets/sounds/startup.vag", // ui::SOUND_STARTUP
+	"assets/sounds/move.vag",    // ui::SOUND_MOVE
+	"assets/sounds/enter.vag",   // ui::SOUND_ENTER
+	"assets/sounds/exit.vag",    // ui::SOUND_EXIT
+	"assets/sounds/click.vag"    // ui::SOUND_CLICK
 };
 
 int main(int argc, const char **argv) {

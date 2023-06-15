@@ -66,10 +66,10 @@ IdentifierSet *BasicParser::getIdentifiers(void) {
 }
 
 bool BasicParser::validate(void) {
-	return (
-		Parser::validate()
-		&& _getHeader()->validateChecksum(flags & DATA_CHECKSUM_INVERTED)
-	);
+	if (!Parser::validate())
+		return false;
+
+	return _getHeader()->validateChecksum(flags & DATA_CHECKSUM_INVERTED);
 }
 
 size_t ExtendedParser::getCode(char *output) const {
@@ -77,6 +77,9 @@ size_t ExtendedParser::getCode(char *output) const {
 
 	__builtin_memcpy(output, header->code, sizeof(header->code));
 	output[sizeof(header->code)] = 0;
+
+	if (flags & DATA_GX706_WORKAROUND)
+		output[1] = 'X';
 
 	return __builtin_strlen(output);
 }
@@ -113,10 +116,21 @@ void ExtendedParser::flush(void) {
 }
 
 bool ExtendedParser::validate(void) {
-	return (
-		Parser::validate()
-		&& _getHeader()->validateChecksum(flags & DATA_CHECKSUM_INVERTED)
-	);
+	if (!Parser::validate())
+		return false;
+
+	auto header = _getHeader();
+	char region = header->region[1];
+
+	if (flags & DATA_GX706_WORKAROUND)
+		header->region[1] = 'X';
+
+	bool valid = header->validateChecksum(flags & DATA_CHECKSUM_INVERTED);
+
+	if (flags & DATA_GX706_WORKAROUND)
+		header->region[1] = region;
+
+	return valid;
 }
 
 /* Data format identification */
@@ -128,7 +142,7 @@ public:
 	uint8_t    flags;
 };
 
-static constexpr int _NUM_KNOWN_FORMATS = 9;
+static constexpr int _NUM_KNOWN_FORMATS = 12;
 
 static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
 	{
@@ -145,6 +159,10 @@ static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
 		.format = BASIC,
 		.flags  = DATA_HAS_TRACE_ID | DATA_CHECKSUM_INVERTED
 	}, {
+		.name   = "basic + SID",
+		.format = BASIC,
+		.flags  = DATA_HAS_CART_ID | DATA_CHECKSUM_INVERTED
+	}, {
 		.name   = "basic + TID, SID",
 		.format = BASIC,
 		.flags  = DATA_HAS_TRACE_ID | DATA_HAS_CART_ID | DATA_CHECKSUM_INVERTED
@@ -160,15 +178,18 @@ static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
 		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_TRACE_ID | DATA_HAS_CART_ID
 			| DATA_HAS_INSTALL_ID | DATA_HAS_SYSTEM_ID | DATA_CHECKSUM_INVERTED
 	}, {
-		// Used by early (pre-digital-I/O) Bemani games
 		.name   = "extended (no IDs)",
 		.format = EXTENDED,
 		.flags  = DATA_HAS_CODE_PREFIX | DATA_CHECKSUM_INVERTED
 	}, {
-		// Used by early (pre-digital-I/O) Bemani games
-		.name   = "extended alt. (no IDs)",
+		.name   = "extended (no IDs, alt)",
 		.format = EXTENDED,
 		.flags  = DATA_HAS_CODE_PREFIX
+	}, {
+		// Used by GX706
+		.name   = "extended (no IDs, GX706)",
+		.format = EXTENDED,
+		.flags  = DATA_HAS_CODE_PREFIX | DATA_GX706_WORKAROUND
 	}, {
 		// Used by GE936/GK936 and all ZS01 Bemani games
 		.name   = "extended + all IDs",

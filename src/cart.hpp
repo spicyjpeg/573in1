@@ -46,6 +46,7 @@ enum DumpFlag : uint8_t {
 // | DATA_HAS_CODE_PREFIX    |           | Optional | Mandatory |
 // | DATA_HAS_*_ID           |           | Optional | Optional  |
 // | DATA_HAS_PUBLIC_SECTION | Mandatory |          | Optional  |
+// | DATA_GX706_WORKAROUND   |           |          | Optional  |
 
 enum DataFlag : uint8_t {
 	DATA_HAS_CODE_PREFIX     = 1 << 0,
@@ -54,7 +55,8 @@ enum DataFlag : uint8_t {
 	DATA_HAS_INSTALL_ID      = 1 << 3,
 	DATA_HAS_SYSTEM_ID       = 1 << 4,
 	DATA_HAS_PUBLIC_SECTION  = 1 << 5,
-	DATA_CHECKSUM_INVERTED   = 1 << 6
+	DATA_CHECKSUM_INVERTED   = 1 << 6,
+	DATA_GX706_WORKAROUND    = 1 << 7
 };
 
 static constexpr int    NUM_CHIP_TYPES       = 4;
