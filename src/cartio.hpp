@@ -51,9 +51,8 @@ private:
 public:
 	inline DummyDriver(Dump &dump)
 	: Driver(dump), _privateDump(dump) {
-		_dump.flags = _privateDump.flags & (
-			DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID
-		);
+		_dump.flags = _privateDump.flags &
+			(DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID);
 	}
 
 	DriverError readSystemID(void);

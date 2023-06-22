@@ -1,6 +1,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "app/app.hpp"
 #include "ps1/system.h"
 #include "cart.hpp"
@@ -65,9 +66,13 @@ void App::_cartDetectWorker(void) {
 	_unloadCartData();
 
 #ifndef NDEBUG
-	if (_provider->loadStruct(_dump, "data/test.dump")) {
+	if (
+		_resourceProvider->loadStruct(_dump, "data/test.573")
+		== sizeof(cart::Dump)
+	) {
 		LOG("using dummy cart driver");
 		_driver = new cart::DummyDriver(_dump);
+		_driver->readSystemID();
 	} else {
 		_driver = cart::newCartDriver(_dump);
 	}
@@ -87,7 +92,7 @@ void App::_cartDetectWorker(void) {
 		LOG("cart parser @ 0x%08x", _parser);
 		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
 
-		if (!_provider->loadData(_db, _CARTDB_PATHS[_dump.chipType])) {
+		if (!_resourceProvider->loadData(_db, _CARTDB_PATHS[_dump.chipType])) {
 			LOG("%s not found", _CARTDB_PATHS[_dump.chipType]);
 			goto _cartInitDone;
 		}
@@ -107,8 +112,8 @@ _cartInitDone:
 		util::Data bitstream;
 		bool       ready;
 
-		if (!_provider->loadData(bitstream, "data/fpga.bit")) {
-			LOG("failed to load bitstream");
+		if (!_resourceProvider->loadData(bitstream, "data/fpga.bit")) {
+			LOG("bitstream unavailable");
 			goto _initDone;
 		}
 
@@ -134,7 +139,7 @@ void App::_cartUnlockWorker(void) {
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
 
 	if (_driver->readPrivateData()) {
-		_workerStatus.finish(_unlockErrorScreen);
+		_workerStatus.finish(_errorScreen);
 		_dummyWorker();
 		return;
 	}
@@ -172,6 +177,26 @@ void App::_qrCodeWorker(void) {
 	_dummyWorker();
 }
 
+void App::_hddDumpWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.hddDumpWorker.save"));
+
+	char code[8], region[8], path[32];
+
+	if (_parser->getCode(code) && _parser->getRegion(region))
+		snprintf(path, sizeof(path), "%s%s.573", code, region);
+	else
+		__builtin_strcpy(path, "unknown_cart.573");
+
+	LOG("saving dump as %s", path);
+
+	if (_fileProvider->saveStruct(_dump, path) == sizeof(cart::Dump))
+		_workerStatus.finish(_cartInfoScreen);
+	else
+		_workerStatus.finish(_errorScreen);
+
+	_dummyWorker();
+}
+
 void App::_rebootWorker(void) {
 	int startTime = _ctx->time;
 	int duration  = _ctx->gpuCtx.refreshRate * 3;
@@ -200,19 +225,21 @@ void App::_interruptHandler(void) {
 
 		if (_allowWatchdogClear)
 			io::clearWatchdog();
-		if (gpu::isIdle())
+		if (gpu::isIdle() && (_workerStatus.status != WORKER_BUSY_SUSPEND))
 			switchThread(nullptr);
 	}
 }
 
 void App::run(
-	ui::Context &ctx, file::Provider &provider, file::StringTable &strings
+	ui::Context &ctx, file::Provider &resourceProvider,
+	file::Provider &fileProvider, file::StringTable &stringTable
 ) {
 	LOG("starting app @ 0x%08x", this);
 
-	_ctx      = &ctx;
-	_provider = &provider;
-	_strings  = &strings;
+	_ctx              = &ctx;
+	_resourceProvider = &resourceProvider;
+	_fileProvider     = &fileProvider;
+	_stringTable      = &stringTable;
 
 	ctx.screenData = this;
 

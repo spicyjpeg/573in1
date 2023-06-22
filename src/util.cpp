@@ -108,7 +108,7 @@ uint16_t zsCRC16(const uint8_t *data, size_t length) {
 
 /* String manipulation */
 
-static const char _HEX_CHARSET[] = "0123456789ABCDEF";
+static const char _HEX_CHARSET[]{ "0123456789ABCDEF" };
 
 size_t hexToString(char *output, const uint8_t *input, size_t length, char sep) {
 	size_t outLength = 0;
@@ -139,7 +139,7 @@ size_t serialNumberToString(char *output, const uint8_t *input) {
 
 // This format is used by Konami's tools to display trace IDs in the TID_81
 // format.
-static const char _TRACE_ID_CHECKSUM_CHARSET[] = "0X987654321";
+static const char _TRACE_ID_CHECKSUM_CHARSET[]{ "0X987654321" };
 
 size_t traceIDToString(char *output, const uint8_t *input) {
 	uint16_t high = (input[0] << 8) | input[1];
@@ -163,7 +163,7 @@ size_t traceIDToString(char *output, const uint8_t *input) {
 
 // This encoding is similar to standard base45, but with some problematic
 // characters (' ', '$', '%', '*') excluded.
-static const char _BASE41_CHARSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:";
+static const char _BASE41_CHARSET[]{ "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:"};
 
 size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 	size_t outLength = 0;

@@ -134,11 +134,12 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	// - unlocked, no private data, blank
 	//   => only dumping/flashing available
 	IdentifyState state;
-	char          name[96];
+	char          name[96], pairStatus[64];
 
 	if (APP->_identified) {
 		state = IDENTIFIED;
 		APP->_identified->getDisplayName(name, sizeof(name));
+		pairStatus[0] = 0; // TODO
 	} else if (dump.flags & cart::DUMP_PUBLIC_DATA_OK) {
 		state = APP->_dump.isReadableDataEmpty() ? BLANK_CART : UNIDENTIFIED;
 	} else {
@@ -146,11 +147,15 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 	if (dump.flags & cart::DUMP_PRIVATE_DATA_OK) {
-		ptr += snprintf(ptr, end - ptr, STRH(_UNLOCKED_PROMPTS[state]), name);
+		ptr += snprintf(
+			ptr, end - ptr, STRH(_UNLOCKED_PROMPTS[state]), name, pairStatus
+		);
 
 		_prompt = STR("CartInfoScreen.prompt.unlocked");
 	} else {
-		ptr += snprintf(ptr, end - ptr, STRH(_LOCKED_PROMPTS[state]), name);
+		ptr += snprintf(
+			ptr, end - ptr, STRH(_LOCKED_PROMPTS[state]), name, pairStatus
+		);
 
 		_prompt = STR("CartInfoScreen.prompt.locked");
 	}
@@ -188,11 +193,11 @@ static const SpecialEntry _SPECIAL_ENTRIES[]{
 		.name   = 0,
 		.target = nullptr
 	}, {
-		.name   = "UnlockKeyScreen.useNullKey2"_h,
-		.target = &UnlockKeyScreen::useNullKey2
+		.name   = "UnlockKeyScreen.useFFKey"_h,
+		.target = &UnlockKeyScreen::useFFKey
 	}, {
-		.name   = "UnlockKeyScreen.useNullKey1"_h,
-		.target = &UnlockKeyScreen::useNullKey1
+		.name   = "UnlockKeyScreen.use00Key"_h,
+		.target = &UnlockKeyScreen::use00Key
 	}, {
 		.name   = "UnlockKeyScreen.useCustomKey"_h,
 		.target = &UnlockKeyScreen::useCustomKey
@@ -223,25 +228,25 @@ void UnlockKeyScreen::autoUnlock(ui::Context &ctx) {
 		APP->_dump.dataKey, APP->_identified->dataKey,
 		sizeof(APP->_dump.dataKey)
 	);
-	ctx.show(APP->_unlockConfirmScreen, false, true);
+	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void UnlockKeyScreen::useCustomKey(ui::Context &ctx) {
-	//ctx.show(APP->_unlockKeyEntryScreen, false, true);
+	ctx.show(APP->_keyEntryScreen, false, true);
 }
 
-void UnlockKeyScreen::useNullKey1(ui::Context &ctx) {
+void UnlockKeyScreen::use00Key(ui::Context &ctx) {
 	__builtin_memset(
 		APP->_dump.dataKey, 0x00, sizeof(APP->_dump.dataKey)
 	);
-	ctx.show(APP->_unlockConfirmScreen, false, true);
+	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void UnlockKeyScreen::useNullKey2(ui::Context &ctx) {
+void UnlockKeyScreen::useFFKey(ui::Context &ctx) {
 	__builtin_memset(
 		APP->_dump.dataKey, 0xff, sizeof(APP->_dump.dataKey)
 	);
-	ctx.show(APP->_unlockConfirmScreen, false, true);
+	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void UnlockKeyScreen::show(ui::Context &ctx, bool goBack) {
@@ -260,6 +265,20 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		int index = _activeItem + _getSpecialEntryOffset(ctx);
 
+		APP->_confirmScreen.setMessage(
+			APP->_unlockKeyScreen,
+			[](ui::Context &ctx) {
+				APP->_setupWorker(&App::_cartUnlockWorker);
+				ctx.show(APP->_workerStatusScreen, false, true);
+			},
+			STRH(_CART_TYPES[APP->_dump.chipType].warning)
+		);
+
+		APP->_errorScreen.setMessage(
+			APP->_cartInfoScreen,
+			STRH(_CART_TYPES[APP->_dump.chipType].error)
+		);
+
 		if (index < 0) {
 			(this->*_SPECIAL_ENTRIES[-index].target)(ctx);
 		} else {
@@ -267,50 +286,15 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 				APP->_dump.dataKey, APP->_db.get(index)->dataKey,
 				sizeof(APP->_dump.dataKey)
 			);
-			ctx.show(APP->_unlockConfirmScreen, false, true);
+			ctx.show(APP->_confirmScreen, false, true);
 		}
 	} else if (ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT)) {
 		ctx.show(APP->_cartInfoScreen, true, true);
 	}
 }
 
-void UnlockConfirmScreen::show(ui::Context &ctx, bool goBack) {
-	_title      = STR("UnlockConfirmScreen.title");
-	_body       = STRH(_CART_TYPES[APP->_dump.chipType].warning);
-	_buttons[0] = STR("UnlockConfirmScreen.no");
-	_buttons[1] = STR("UnlockConfirmScreen.yes");
-
-	_numButtons = 2;
-
-	MessageScreen::show(ctx, goBack);
+void KeyEntryScreen::show(ui::Context &ctx, bool goBack) {
 }
 
-void UnlockConfirmScreen::update(ui::Context &ctx) {
-	MessageScreen::update(ctx);
-
-	if (ctx.buttons.pressed(ui::BTN_START)) {
-		if (_activeButton) {
-			APP->_setupWorker(&App::_cartUnlockWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
-		} else {
-			ctx.show(APP->_unlockKeyScreen, true, true);
-		}
-	}
-}
-
-void UnlockErrorScreen::show(ui::Context &ctx, bool goBack) {
-	_title      = STR("UnlockErrorScreen.title");
-	_body       = STRH(_CART_TYPES[APP->_dump.chipType].error);
-	_buttons[0] = STR("UnlockErrorScreen.ok");
-
-	_numButtons = 1;
-
-	MessageScreen::show(ctx, goBack);
-}
-
-void UnlockErrorScreen::update(ui::Context &ctx) {
-	MessageScreen::update(ctx);
-
-	if (ctx.buttons.pressed(ui::BTN_START))
-		ctx.show(APP->_cartInfoScreen, true, true);
+void KeyEntryScreen::update(ui::Context &ctx) {
 }

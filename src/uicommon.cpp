@@ -89,6 +89,7 @@ void MessageScreen::update(Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_RIGHT)) {
 		if (_activeButton < (_numButtons - 1)) {
 			_activeButton++;
+
 			_buttonAnim.setValue(ctx.time, 0, _getButtonWidth(), SPEED_FASTEST);
 			ctx.sounds[SOUND_MOVE].play();
 		} else {
@@ -183,11 +184,8 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 		}
 
 		// Image
-		width  += 1;
-		height += 1;
-
 		_image.drawScaled(
-			ctx.gpuCtx, x - width, y - height, width * 2, height * 2
+			ctx.gpuCtx, x - width - 1, y - height - 1, width * 2, height * 2
 		);
 	}
 
@@ -357,7 +355,13 @@ void ListScreen::update(Context &ctx) {
 }
 
 HexEntryScreen::HexEntryScreen(void)
-: _title(nullptr), _prompt(nullptr) {}
+: _numDigits(0), _title(nullptr), _prompt(nullptr) {}
+
+void HexEntryScreen::show(Context &ctx, bool goBack) {
+	AnimatedScreen::show(ctx, goBack);
+
+	_activeItem = 0;
+}
 
 void HexEntryScreen::draw(Context &ctx, bool active) const {
 	int screenWidth  = ctx.gpuCtx.width  - SCREEN_MARGIN_X * 2;
@@ -381,6 +385,35 @@ void HexEntryScreen::draw(Context &ctx, bool active) const {
 }
 
 void HexEntryScreen::update(Context &ctx) {
+	if (ctx.buttons.held(ui::BTN_START)) {
+	} else {
+		if (
+			ctx.buttons.pressed(ui::BTN_LEFT) ||
+			(ctx.buttons.repeating(ui::BTN_LEFT) && (_activeItem > 0))
+		) {
+			if (_activeItem > 0) {
+				_activeItem--;
+
+				//_buttonAnim.setValue(ctx.time, 0, _getButtonWidth(), SPEED_FASTEST);
+				ctx.sounds[SOUND_MOVE].play();
+			} else {
+				ctx.sounds[SOUND_CLICK].play();
+			}
+		}
+		if (
+			ctx.buttons.pressed(ui::BTN_RIGHT) ||
+			(ctx.buttons.repeating(ui::BTN_RIGHT) && (_activeItem < (_numDigits - 1)))
+		) {
+			if (_activeItem < (_numDigits + _numButtons - 1)) {
+				_activeItem++;
+
+				//_buttonAnim.setValue(ctx.time, 0, _getButtonWidth(), SPEED_FASTEST);
+				ctx.sounds[SOUND_MOVE].play();
+			} else {
+				ctx.sounds[SOUND_CLICK].play();
+			}
+		}
+	}
 }
 
 }

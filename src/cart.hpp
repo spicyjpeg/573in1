@@ -154,6 +154,7 @@ class [[gnu::packed]] Dump {
 public:
 	ChipType chipType;
 	uint8_t  flags;
+	uint8_t  _reserved[2];
 
 	Identifier systemID, cartID, zsID;
 

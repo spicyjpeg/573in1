@@ -58,6 +58,10 @@ void CartActionsScreen::qrDump(ui::Context &ctx) {
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {
+	APP->_errorScreen.setMessage(*this, STR("CartActionsScreen.hddDump.error"));
+
+	APP->_setupWorker(&App::_hddDumpWorker);
+	ctx.show(APP->_workerStatusScreen, false, true);
 }
 
 void CartActionsScreen::hexdump(ui::Context &ctx) {
@@ -67,6 +71,16 @@ void CartActionsScreen::reflash(ui::Context &ctx) {
 }
 
 void CartActionsScreen::erase(ui::Context &ctx) {
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			//APP->_setupWorker(&App::_eraseWorker);
+			//ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("CartActionsScreen.erase.confirm")
+	);
+
+	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void CartActionsScreen::resetSystemID(ui::Context &ctx) {
@@ -75,15 +89,18 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 void CartActionsScreen::editSystemID(ui::Context &ctx) {
 }
 
-void CartActionsScreen::show(ui::Context &ctx, bool goBack)  {
+void CartActionsScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("CartActionsScreen.title");
 	_prompt     = STRH(_ACTIONS[0].prompt);
 	_itemPrompt = STR("CartActionsScreen.itemPrompt");
 
-	_listLength = 1;
-	/*_listLength = APP->_identified
+#if 0 // TODO
+	_listLength = APP->_identified
 		? _NUM_IDENTIFIED_ACTIONS
-		: _NUM_UNIDENTIFIED_ACTIONS;*/
+		: _NUM_UNIDENTIFIED_ACTIONS;
+#else
+	_listLength = 2;
+#endif
 
 	ListScreen::show(ctx, goBack);
 }

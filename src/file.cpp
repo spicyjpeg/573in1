@@ -108,7 +108,7 @@ void FATFile::close(void) {
 uint32_t currentSPUOffset = spu::DUMMY_BLOCK_END;
 
 size_t Provider::loadData(util::Data &output, const char *path) {
-	auto file = openFile(path);
+	auto file = openFile(path, READ);
 
 	if (!file)
 		return 0;
@@ -124,7 +124,7 @@ size_t Provider::loadData(util::Data &output, const char *path) {
 }
 
 size_t Provider::loadData(void *output, size_t length, const char *path) {
-	auto file = openFile(path);
+	auto file = openFile(path, READ);
 
 	if (!file)
 		return 0;
@@ -135,7 +135,17 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 
 	return actualLength;
 }
+size_t Provider::saveData(const void *input, size_t length, const char *path) {
+	auto file = openFile(path, WRITE | ALLOW_CREATE);
 
+	if (!file)
+		return 0;
+
+	size_t actualLength = file->write(input, length);
+	file->close();
+
+	return actualLength;
+}
 size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 	util::Data data;
 
@@ -332,7 +342,7 @@ size_t ZIPProvider::loadData(void *output, size_t length, const char *path) {
 
 /* String table parser */
 
-static const char _ERROR_STRING[] = "missingno";
+static const char _ERROR_STRING[]{ "missingno" };
 
 const char *StringTable::get(util::Hash id) const {
 	if (!ptr)

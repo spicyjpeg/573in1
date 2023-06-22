@@ -77,12 +77,16 @@ public:
 	template<class T> inline size_t loadStruct(T &output, const char *path) {
 		return loadData(&output, sizeof(output), path);
 	}
+	template<class T> inline size_t saveStruct(const T &input, const char *path) {
+		return saveData(&input, sizeof(input), path);
+	}
 
 	virtual void close(void) {}
 
-	virtual File *openFile(const char *path) { return nullptr; }
+	virtual File *openFile(const char *path, uint32_t flags) { return nullptr; }
 	virtual size_t loadData(util::Data &output, const char *path);
 	virtual size_t loadData(void *output, size_t length, const char *path);
+	virtual size_t saveData(const void *input, size_t length, const char *path);
 	size_t loadTIM(gpu::Image &output, const char *path);
 	size_t loadVAG(spu::Sound &output, const char *path);
 };

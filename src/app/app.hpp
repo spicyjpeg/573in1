@@ -14,45 +14,57 @@
 
 /* Worker status class */
 
+enum WorkerStatusType {
+	WORKER_IDLE         = 0,
+	WORKER_BUSY         = 1,
+	WORKER_BUSY_SUSPEND = 2, // Prevent main thread from running
+	WORKER_NEXT         = 3, // Go to next screen (goBack=false)
+	WORKER_NEXT_BACK    = 4  // Go to next screen (goBack=true)
+};
+
 // This class is used by the worker thread to report its current status back to
 // the main thread and the WorkerStatusScreen.
 class WorkerStatus {
 public:
-	volatile int  progress, progressTotal;
-	volatile bool nextGoBack;
+	volatile WorkerStatusType status;
+
+	volatile int progress, progressTotal;
 
 	const char *volatile message;
 	ui::Screen *volatile nextScreen;
 
-	inline void update(int part, int total) {
+	inline void reset(void) {
+		status        = WORKER_IDLE;
+		progress      = 0;
+		progressTotal = 1;
+		message       = nullptr;
+		nextScreen    = nullptr;
+	}
+	inline void update(int part, int total, const char *text = nullptr) {
 		auto mask     = setInterruptMask(0);
+		status        = WORKER_BUSY;
 		progress      = part;
 		progressTotal = total;
 
+		if (text)
+			message = text;
 		if (mask)
 			setInterruptMask(mask);
 	}
-	inline void update(int part, int total, const char *text) {
-		auto mask     = setInterruptMask(0);
-		progress      = part;
-		progressTotal = total;
-		message       = text;
+	inline void suspendMainThread(void) {
+		auto mask = setInterruptMask(0);
+		status    = WORKER_BUSY_SUSPEND;
 
 		if (mask)
 			setInterruptMask(mask);
 	}
 	inline void finish(ui::Screen &next, bool goBack = false) {
-		auto mask     = setInterruptMask(0);
+		auto mask  = setInterruptMask(0);
+		status     = goBack ? WORKER_NEXT_BACK : WORKER_NEXT;
 		nextScreen = &next;
-		nextGoBack = goBack;
 
 		if (mask)
 			setInterruptMask(mask);
-	}
-	inline void reset(void) {
-		progress      = 0;
-		progressTotal = 1;
-		nextScreen    = nullptr;
 	}
 };
 
@@ -64,10 +76,11 @@ class App {
 	friend class WorkerStatusScreen;
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
+	friend class ErrorScreen;
+	friend class ConfirmScreen;
 	friend class CartInfoScreen;
 	friend class UnlockKeyScreen;
-	friend class UnlockConfirmScreen;
-	friend class UnlockErrorScreen;
+	friend class KeyEntryScreen;
 	friend class CartActionsScreen;
 	friend class QRCodeScreen;
 
@@ -75,16 +88,17 @@ private:
 	WorkerStatusScreen  _workerStatusScreen;
 	WarningScreen       _warningScreen;
 	ButtonMappingScreen	_buttonMappingScreen;
+	ErrorScreen         _errorScreen;
+	ConfirmScreen       _confirmScreen;
 	CartInfoScreen      _cartInfoScreen;
 	UnlockKeyScreen     _unlockKeyScreen;
-	UnlockConfirmScreen _unlockConfirmScreen;
-	UnlockErrorScreen   _unlockErrorScreen;
+	KeyEntryScreen      _keyEntryScreen;
 	CartActionsScreen   _cartActionsScreen;
 	QRCodeScreen        _qrCodeScreen;
 
 	ui::Context       *_ctx;
-	file::Provider    *_provider;
-	file::StringTable *_strings;
+	file::Provider    *_resourceProvider, *_fileProvider;
+	file::StringTable *_stringTable;
 
 	cart::Dump   _dump;
 	cart::CartDB _db;
@@ -106,6 +120,7 @@ private:
 	void _cartDetectWorker(void);
 	void _cartUnlockWorker(void);
 	void _qrCodeWorker(void);
+	void _hddDumpWorker(void);
 	void _rebootWorker(void);
 
 	void _interruptHandler(void);
@@ -123,14 +138,15 @@ public:
 	}
 
 	void run(
-		ui::Context &ctx, file::Provider &provider, file::StringTable &strings
+		ui::Context &ctx, file::Provider &resourceProvider,
+		file::Provider &fileProvider, file::StringTable &stringTable
 	);
 };
 
 #define APP      (reinterpret_cast<App *>(ctx.screenData))
-#define STR(id)  (APP->_strings->get(id ## _h))
-#define STRH(id) (APP->_strings->get(id))
+#define STR(id)  (APP->_stringTable->get(id ## _h))
+#define STRH(id) (APP->_stringTable->get(id))
 
 #define WAPP      (reinterpret_cast<App *>(_ctx->screenData))
-#define WSTR(id)  (WAPP->_strings->get(id ## _h))
-#define WSTRH(id) (WAPP->_strings->get(id))
+#define WSTR(id)  (WAPP->_stringTable->get(id ## _h))
+#define WSTRH(id) (WAPP->_stringTable->get(id))

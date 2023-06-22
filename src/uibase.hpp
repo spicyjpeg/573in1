@@ -31,14 +31,15 @@ enum Color : gpu::Color {
 	COLOR_SUBTITLE   = 0x4078a0
 };
 
-static constexpr int NUM_UI_SOUNDS = 5;
+static constexpr int NUM_UI_SOUNDS = 6;
 
 enum Sound {
 	SOUND_STARTUP = 0,
-	SOUND_MOVE    = 1,
-	SOUND_ENTER   = 2,
-	SOUND_EXIT    = 3,
-	SOUND_CLICK   = 4
+	SOUND_ERROR   = 1,
+	SOUND_MOVE    = 2,
+	SOUND_ENTER   = 3,
+	SOUND_EXIT    = 4,
+	SOUND_CLICK   = 5
 };
 
 enum AnimationSpeed {

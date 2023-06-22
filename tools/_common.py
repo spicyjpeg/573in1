@@ -116,7 +116,7 @@ class IdentifierSet:
 
 ## Cartridge dump structure
 
-_DUMP_HEADER_STRUCT: Struct = Struct("< 2B 8s 8s 8s 8s 8s")
+_DUMP_HEADER_STRUCT: Struct = Struct("< 2B 2x 8s 8s 8s 8s 8s")
 
 _CHIP_SIZES: Mapping[ChipType, tuple[int, int, int]] = {
 	ChipType.X76F041: ( 512, 384, 128 ),

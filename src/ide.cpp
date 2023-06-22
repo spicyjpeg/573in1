@@ -8,6 +8,19 @@
 #include "io.hpp"
 #include "util.hpp"
 
+/*
+ * Based on the following specifications:
+ *
+ * - "AT Attachment with Packet Interface - 6", 2001-06-26
+ * - "CF+ and CompactFlash Specification Revision 3.0", 2004-12-23
+ * - SFF-8020i "ATA Packet Interface for CD-ROMs 2.6", 1996-01-22 (seems to be
+ *   rather inaccurate about the IDE side of things, but some drives actually
+ *   implement those inaccuracies!)
+ *
+ * https://www.cs.utexas.edu/~dahlin/Classes/UGOS/reading/ide.html
+ * https://web.archive.org/web/20060427142409/http://www.stanford.edu/~csapuntz/blackmagic.html
+ */
+
 namespace ide {
 
 static constexpr int _STATUS_TIMEOUT       = 100000;
@@ -83,6 +96,8 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 			return NO_ERROR;
 
 		delayMicroseconds(1);
+		if (acknowledgeInterrupt(IRQ_VBLANK))
+			io::clearWatchdog();
 	}
 
 	LOG("IDE timeout, stat=0x%02x, err=0x%02x", _read(CS0_STATUS), _read(CS0_ERROR));
