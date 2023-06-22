@@ -20,7 +20,7 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 	size_t length = (rect.w * rect.h) / 2;
 
 	util::assertAligned<uint32_t>(data);
-	assert(!(length % _DMA_CHUNK_SIZE));
+	//assert(!(length % _DMA_CHUNK_SIZE));
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
 
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))

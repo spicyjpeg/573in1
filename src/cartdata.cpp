@@ -142,7 +142,7 @@ public:
 	uint8_t    flags;
 };
 
-static constexpr int _NUM_KNOWN_FORMATS = 12;
+static constexpr int _NUM_KNOWN_FORMATS = 11;
 
 static const KnownFormat _KNOWN_FORMATS[_NUM_KNOWN_FORMATS]{
 	{
@@ -216,7 +216,7 @@ bool isValidRegion(const char *region) {
 		if (region[2] == 'Z') {
 			if (!__builtin_isdigit(region[3]) || !__builtin_isdigit(region[4]))
 				return false;
-			
+
 			region += 2;
 		}
 		if (region[3])

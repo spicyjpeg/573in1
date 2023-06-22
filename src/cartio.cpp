@@ -20,6 +20,8 @@ DriverError DummyDriver::readSystemID(void) {
 }
 
 DriverError DummyDriver::readCartID(void) {
+	if (_privateDump.flags & DUMP_ZS_ID_OK)
+		_dump.flags |= DUMP_ZS_ID_OK;
 	if (_privateDump.flags & DUMP_CART_ID_OK) {
 		_dump.flags |= DUMP_CART_ID_OK;
 		return NO_ERROR;
@@ -195,7 +197,7 @@ enum X76F041ConfigOp : uint8_t {
 	_X76F041_CFG_SET_DATA_KEY = 0x20,
 	_X76F041_CFG_READ_CONFIG  = 0x60,
 	_X76F041_CFG_WRITE_CONFIG = 0x50,
-	_X76F041_CFG_ERASE        = 0x70
+	_X76F041_CFG_MASS_PROGRAM = 0x70
 };
 
 DriverError X76F041Driver::readPrivateData(void) {
@@ -282,7 +284,7 @@ DriverError X76F041Driver::writeData(void) {
 
 DriverError X76F041Driver::erase(void) {
 	auto error = _x76Command(
-		_X76F041_CONFIG, _X76F041_CFG_ERASE, _X76F041_ACK_POLL
+		_X76F041_CONFIG, _X76F041_CFG_MASS_PROGRAM, _X76F041_ACK_POLL
 	);
 	if (error)
 		return error;

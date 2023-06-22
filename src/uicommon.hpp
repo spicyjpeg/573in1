@@ -107,12 +107,16 @@ public:
 
 class HexEntryScreen : public AnimatedScreen {
 protected:
-	uint8_t _buffer[16];
+	uint8_t _buffer[32];
+
+	int _numDigits, _numButtons, _activeItem;
 
 	const char *_title, *_prompt;
+	const char *_buttons[3];
 
 public:
 	HexEntryScreen(void);
+	virtual void show(Context &ctx, bool goBack = false);
 	virtual void draw(Context &ctx, bool active = true) const;
 	virtual void update(Context &ctx);
 };

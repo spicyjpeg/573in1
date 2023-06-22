@@ -25,20 +25,14 @@ protected:
 public:
 	void autoUnlock(ui::Context &ctx);
 	void useCustomKey(ui::Context &ctx);
-	void useNullKey1(ui::Context &ctx);
-	void useNullKey2(ui::Context &ctx);
+	void use00Key(ui::Context &ctx);
+	void useFFKey(ui::Context &ctx);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };
 
-class UnlockConfirmScreen : public ui::MessageScreen {
-public:
-	void show(ui::Context &ctx, bool goBack = false);
-	void update(ui::Context &ctx);
-};
-
-class UnlockErrorScreen : public ui::MessageScreen {
+class KeyEntryScreen : public ui::HexEntryScreen {
 public:
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
