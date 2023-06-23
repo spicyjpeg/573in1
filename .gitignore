@@ -10,4 +10,5 @@ __pycache__/
 *.pyo
 
 # Do not include the dumps used to generate the cartdb files.
-#dumps/
+#data/dumps/
+#data/tests/
