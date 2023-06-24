@@ -16,27 +16,37 @@
 
 void App::_unloadCartData(void) {
 	if (_driver) {
-		delete _driver;
-		_driver = nullptr;
+		//delete _driver;
+		//_driver = nullptr;
 	}
 	if (_parser) {
 		delete _parser;
 		_parser = nullptr;
 	}
 
-	_db.destroy();
+	_dump.chipType = cart::NONE;
+	_dump.clearIdentifiers();
+	_dump.clearData();
+
 	_identified = nullptr;
+	_db.destroy();
 }
 
-void App::_setupWorker(void (App::* func)(void)) {
-	LOG("starting thread, func=0x%08x", func);
+void App::_setupWorker(void (App::*func)(void)) {
+	LOG("restarting worker, func=0x%08x", func);
+
+	auto mask = setInterruptMask(0);
 
 	_workerStatus.reset();
+	_workerFunction = func;
+
 	initThread(
 		// This is not how you implement delegates in C++.
-		&_workerThread, util::forcedCast<ArgFunction>(func), this,
+		&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
 		&_workerStack[(WORKER_STACK_SIZE - 1) & ~7]
 	);
+	if (mask)
+		setInterruptMask(mask);
 }
 
 void App::_setupInterrupts(void) {
@@ -49,11 +59,6 @@ void App::_setupInterrupts(void) {
 
 /* Worker functions */
 
-void App::_dummyWorker(void) {
-	for (;;)
-		__asm__ volatile("");
-}
-
 static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 	nullptr,
 	"data/x76f041.cartdb",
@@ -62,23 +67,25 @@ static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 };
 
 void App::_cartDetectWorker(void) {
+	_workerStatus.setNextScreen(_cartInfoScreen);
 	_workerStatus.update(0, 4, WSTR("App.cartDetectWorker.identifyCart"));
 	_unloadCartData();
 
-#ifndef NDEBUG
-	if (
-		_resourceProvider->loadStruct(_dump, "data/test.573")
-		== sizeof(cart::Dump)
-	) {
-		LOG("using dummy cart driver");
-		_driver = new cart::DummyDriver(_dump);
-		_driver->readSystemID();
-	} else {
-		_driver = cart::newCartDriver(_dump);
-	}
+	if (!_driver) {
+#ifdef ENABLE_DUMMY_DRIVER
+		if (
+			_resourceProvider->loadStruct(_dump, "data/test.573")
+			== sizeof(cart::Dump)
+		) {
+			LOG("using dummy cart driver");
+			_driver = new cart::DummyDriver(_dump);
+		} else {
+			_driver = cart::newCartDriver(_dump);
+		}
 #else
-	_driver = cart::newCartDriver(_dump);
+		_driver = cart::newCartDriver(_dump);
 #endif
+	}
 
 	if (_dump.chipType) {
 		LOG("cart dump @ 0x%08x", &_dump);
@@ -114,7 +121,7 @@ _cartInitDone:
 
 		if (!_resourceProvider->loadData(bitstream, "data/fpga.bit")) {
 			LOG("bitstream unavailable");
-			goto _initDone;
+			return;
 		}
 
 		ready = io::loadBitstream(bitstream.as<uint8_t>(), bitstream.length);
@@ -122,25 +129,27 @@ _cartInitDone:
 
 		if (!ready) {
 			LOG("bitstream upload failed");
-			goto _initDone;
+			return;
 		}
 
 		delayMicroseconds(5000); // Probably not necessary
 		io::initKonamiBitstream();
-		_driver->readSystemID();
 	}
 
-_initDone:
-	_workerStatus.finish(_cartInfoScreen);
-	_dummyWorker();
+	// This must be outside of the if block above to make sure the system ID
+	// gets read with the dummy driver.
+	_driver->readSystemID();
 }
 
 void App::_cartUnlockWorker(void) {
+	_workerStatus.setNextScreen(_cartInfoScreen, true);
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
 
 	if (_driver->readPrivateData()) {
-		_workerStatus.finish(_errorScreen);
-		_dummyWorker();
+		/*_errorScreen.setMessage(
+			_cartInfoScreen, WSTR("App.cartUnlockWorker.error")
+		);*/
+		_workerStatus.setNextScreen(_errorScreen);
 		return;
 	}
 
@@ -149,7 +158,7 @@ void App::_cartUnlockWorker(void) {
 
 	_parser = cart::newCartParser(_dump);
 	if (!_parser)
-		goto _unlockDone;
+		return;
 
 	LOG("cart parser @ 0x%08x", _parser);
 	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identifyGame"));
@@ -158,23 +167,17 @@ void App::_cartUnlockWorker(void) {
 
 	if (_parser->getCode(code) && _parser->getRegion(region))
 		_identified = _db.lookup(code, region);
-
-_unlockDone:
-	_workerStatus.finish(_cartInfoScreen, true);
-	_dummyWorker();
 }
 
 void App::_qrCodeWorker(void) {
 	char qrString[cart::MAX_QR_STRING_LENGTH];
 
+	_workerStatus.setNextScreen(_qrCodeScreen);
 	_workerStatus.update(0, 2, WSTR("App.qrCodeWorker.compress"));
 	_dump.toQRString(qrString);
 
 	_workerStatus.update(1, 2, WSTR("App.qrCodeWorker.generate"));
 	_qrCodeScreen.generateCode(qrString);
-
-	_workerStatus.finish(_qrCodeScreen);
-	_dummyWorker();
 }
 
 void App::_hddDumpWorker(void) {
@@ -182,19 +185,52 @@ void App::_hddDumpWorker(void) {
 
 	char code[8], region[8], path[32];
 
-	if (_parser->getCode(code) && _parser->getRegion(region))
+	if (_identified && _parser->getCode(code) && _parser->getRegion(region))
 		snprintf(path, sizeof(path), "%s%s.573", code, region);
 	else
-		__builtin_strcpy(path, "unknown_cart.573");
+		__builtin_strcpy(path, "unknown.573");
 
 	LOG("saving dump as %s", path);
 
-	if (_fileProvider->saveStruct(_dump, path) == sizeof(cart::Dump))
-		_workerStatus.finish(_cartInfoScreen);
-	else
-		_workerStatus.finish(_errorScreen);
+	if (_fileProvider->saveStruct(_dump, path) != sizeof(cart::Dump)) {
+		_errorScreen.setMessage(
+			_cartInfoScreen, WSTR("App.hddDumpWorker.error")
+		);
+		_workerStatus.setNextScreen(_errorScreen);
+		return;
+	}
 
-	_dummyWorker();
+	_workerStatus.setNextScreen(_cartInfoScreen);
+}
+
+void App::_cartWriteWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.cartWriteWorker.write"));
+
+	if (_driver->writeData()) {
+		_errorScreen.setMessage(
+			_cartInfoScreen, WSTR("App.cartWriteWorker.error")
+		);
+		_workerStatus.setNextScreen(_errorScreen);
+		return;
+	}
+
+	_cartDetectWorker();
+	_cartUnlockWorker();
+}
+
+void App::_cartEraseWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.cartEraseWorker.erase"));
+
+	if (_driver->erase()) {
+		_errorScreen.setMessage(
+			_cartInfoScreen, WSTR("App.cartEraseWorker.error")
+		);
+		_workerStatus.setNextScreen(_errorScreen);
+		return;
+	}
+
+	_cartDetectWorker();
+	_cartUnlockWorker();
 }
 
 void App::_rebootWorker(void) {
@@ -218,6 +254,17 @@ void App::_rebootWorker(void) {
 }
 
 /* Misc. functions */
+
+void App::_worker(void) {
+	if (_workerFunction) {
+		(this->*_workerFunction)();
+		_workerStatus.finish();
+	}
+
+	// Do nothing while waiting for vblank once the task is done.
+	for (;;)
+		__asm__ volatile("");
+}
 
 void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VBLANK)) {
@@ -251,7 +298,7 @@ void App::run(
 	ctx.show(_buttonMappingScreen);
 #endif
 
-	_setupWorker(&App::_dummyWorker);
+	_setupWorker(nullptr);
 	_setupInterrupts();
 
 	for (;;) {

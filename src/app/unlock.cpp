@@ -77,7 +77,9 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 		__builtin_strcpy(id2, id1);
 	}
 
-	ptr += snprintf(ptr, end - ptr, STR("CartInfoScreen.digitalIOInfo"), id1, id2);
+	ptr += snprintf(
+		ptr, end - ptr, STR("CartInfoScreen.digitalIOInfo"), id1, id2
+	);
 
 	// Cartridge info
 	if (!dump.chipType) {
@@ -139,7 +141,37 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	if (APP->_identified) {
 		state = IDENTIFIED;
 		APP->_identified->getDisplayName(name, sizeof(name));
-		pairStatus[0] = 0; // TODO
+
+		//
+
+		auto ids = APP->_parser->getIdentifiers();
+
+		if (!(APP->_identified->flags & cart::DATA_HAS_SYSTEM_ID)) {
+			__builtin_strcpy(
+				pairStatus, STR("CartInfoScreen.pairing.unsupported")
+			);
+		} else if (!ids || !(dump.flags & cart::DUMP_PRIVATE_DATA_OK)) {
+			__builtin_strcpy(pairStatus, STR("CartInfoScreen.pairing.unknown"));
+		} else {
+			auto &id = ids->systemID;
+
+			id.toString(id1);
+			id.toSerialNumber(id2);
+
+			if (!__builtin_memcmp(id.data, dump.systemID.data, sizeof(id.data)))
+				__builtin_strcpy(
+					pairStatus, STR("CartInfoScreen.pairing.thisSystem")
+				);
+			else if (id.isEmpty())
+				__builtin_strcpy(
+					pairStatus, STR("CartInfoScreen.pairing.unpaired")
+				);
+			else
+				snprintf(
+					pairStatus, sizeof(pairStatus),
+					STR("CartInfoScreen.pairing.otherSystem"), id1, id2
+				);
+		}
 	} else if (dump.flags & cart::DUMP_PUBLIC_DATA_OK) {
 		state = APP->_dump.isReadableDataEmpty() ? BLANK_CART : UNIDENTIFIED;
 	} else {

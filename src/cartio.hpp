@@ -51,8 +51,7 @@ private:
 public:
 	inline DummyDriver(Dump &dump)
 	: Driver(dump), _privateDump(dump) {
-		_dump.flags = _privateDump.flags &
-			(DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID);
+		dump.flags &= DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID;
 	}
 
 	DriverError readSystemID(void);
@@ -70,7 +69,9 @@ class CartDriver : public Driver {
 public:
 	inline CartDriver(Dump &dump, ChipType chipType = NONE, uint8_t flags = 0)
 	: Driver(dump) {
-		dump.clear();
+		dump.clearIdentifiers();
+		dump.clearKey();
+		dump.clearData();
 
 		dump.chipType = chipType;
 		dump.flags    = flags;

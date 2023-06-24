@@ -12,6 +12,7 @@ namespace cart {
 
 DriverError DummyDriver::readSystemID(void) {
 	if (_privateDump.flags & DUMP_SYSTEM_ID_OK) {
+		_dump.systemID.copyFrom(_privateDump.systemID.data);
 		_dump.flags |= DUMP_SYSTEM_ID_OK;
 		return NO_ERROR;
 	}
@@ -20,9 +21,12 @@ DriverError DummyDriver::readSystemID(void) {
 }
 
 DriverError DummyDriver::readCartID(void) {
-	if (_privateDump.flags & DUMP_ZS_ID_OK)
+	if (_privateDump.flags & DUMP_ZS_ID_OK) {
+		_dump.zsID.copyFrom(_privateDump.zsID.data);
 		_dump.flags |= DUMP_ZS_ID_OK;
+	}
 	if (_privateDump.flags & DUMP_CART_ID_OK) {
+		_dump.cartID.copyFrom(_privateDump.cartID.data);
 		_dump.flags |= DUMP_CART_ID_OK;
 		return NO_ERROR;
 	}
@@ -32,6 +36,7 @@ DriverError DummyDriver::readCartID(void) {
 
 DriverError DummyDriver::readPublicData(void) {
 	if (_privateDump.flags & DUMP_PUBLIC_DATA_OK) {
+		_dump.copyDataFrom(_privateDump.data);
 		_dump.flags |= DUMP_PUBLIC_DATA_OK;
 		return NO_ERROR;
 	}
@@ -43,6 +48,7 @@ DriverError DummyDriver::readPrivateData(void) {
 	if ((_privateDump.flags & DUMP_PRIVATE_DATA_OK) && !__builtin_memcmp(
 		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
 	)) {
+		_dump.copyDataFrom(_privateDump.data);
 		_dump.flags |= DUMP_PRIVATE_DATA_OK;
 		return NO_ERROR;
 	}
@@ -54,7 +60,7 @@ DriverError DummyDriver::writeData(void) {
 	if (!__builtin_memcmp(
 		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
 	)) {
-		__builtin_memcpy(_privateDump.data, _dump.data, sizeof(_dump.data));
+		_privateDump.copyDataFrom(_dump.data);
 		return NO_ERROR;
 	}
 
@@ -66,7 +72,10 @@ DriverError DummyDriver::erase(void) {
 		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
 	)) {
 		_privateDump.clearData();
+		_privateDump.clearKey();
 		// TODO: clear config registers as well
+
+		_dump.clearKey();
 		return NO_ERROR;
 	}
 
@@ -74,9 +83,16 @@ DriverError DummyDriver::erase(void) {
 }
 
 DriverError DummyDriver::setDataKey(const uint8_t *key) {
-	// Update the data key stored in the dump.
-	__builtin_memcpy(_dump.dataKey, key, sizeof(_dump.dataKey));
-	return NO_ERROR;
+	if (!__builtin_memcmp(
+		_dump.dataKey, _privateDump.dataKey, sizeof(_dump.dataKey)
+	)) {
+		_privateDump.copyKeyFrom(key);
+
+		_dump.copyKeyFrom(key);
+		return NO_ERROR;
+	}
+
+	return _getErrorCode();
 }
 
 /* Functions common to all cartridge drivers */
@@ -290,6 +306,8 @@ DriverError X76F041Driver::erase(void) {
 		return error;
 
 	io::i2cStopWithCS(_X76_WRITE_DELAY);
+
+	_dump.clearKey();
 	return NO_ERROR;
 }
 
@@ -312,8 +330,7 @@ DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 
 	io::i2cStopWithCS(_X76_WRITE_DELAY);
 
-	// Update the data key stored in the dump.
-	__builtin_memcpy(_dump.dataKey, key, sizeof(_dump.dataKey));
+	_dump.copyKeyFrom(key);
 	return NO_ERROR;
 }
 
@@ -508,7 +525,12 @@ DriverError ZS01Driver::erase(void) {
 	request.address = zs01::ADDR_ERASE;
 	request.encodeWriteRequest(key, _encoderState);
 
-	return _transact(request, response);
+	DriverError error = _transact(request, response);
+	if (error)
+		return error;
+
+	_dump.clearKey();
+	return NO_ERROR;
 }
 
 DriverError ZS01Driver::setDataKey(const uint8_t *key) {
@@ -525,8 +547,7 @@ DriverError ZS01Driver::setDataKey(const uint8_t *key) {
 	if (error)
 		return error;
 
-	// Update the data key stored in the dump.
-	__builtin_memcpy(_dump.dataKey, key, sizeof(_dump.dataKey));
+	_dump.copyKeyFrom(key);
 	return NO_ERROR;
 }
 
