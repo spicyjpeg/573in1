@@ -95,6 +95,7 @@ class App {
 	friend class KeyEntryScreen;
 	friend class CartActionsScreen;
 	friend class QRCodeScreen;
+	friend class SystemIDEntryScreen;
 
 private:
 	WorkerStatusScreen  _workerStatusScreen;
@@ -107,6 +108,7 @@ private:
 	KeyEntryScreen      _keyEntryScreen;
 	CartActionsScreen   _cartActionsScreen;
 	QRCodeScreen        _qrCodeScreen;
+	SystemIDEntryScreen _systemIDEntryScreen;
 
 	ui::Context       *_ctx;
 	file::Provider    *_resourceProvider, *_fileProvider;

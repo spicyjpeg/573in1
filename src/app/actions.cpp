@@ -98,6 +98,18 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 }
 
 void CartActionsScreen::editSystemID(ui::Context &ctx) {
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_systemIDEntryScreen.setSystemID(*(APP->_parser));
+
+			APP->_setupWorker(&App::_cartWriteWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("CartActionsScreen.editSystemID.confirm")
+	);
+
+	ctx.show(APP->_systemIDEntryScreen, false, true);
 }
 
 void CartActionsScreen::show(ui::Context &ctx, bool goBack) {
@@ -144,4 +156,30 @@ void QRCodeScreen::show(ui::Context &ctx, bool goBack) {
 void QRCodeScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_cartInfoScreen, true, true);
+}
+
+void SystemIDEntryScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("SystemIDEntryScreen.title");
+	_body       = STR("SystemIDEntryScreen.body");
+	_buttons[0] = STR("SystemIDEntryScreen.cancel");
+	_buttons[1] = STR("SystemIDEntryScreen.ok");
+
+	_numButtons = 2;
+	_locked     = false;
+
+	_bufferLength = 8;
+	_separator    = '-';
+
+	HexEntryScreen::show(ctx, goBack);
+}
+
+void SystemIDEntryScreen::update(ui::Context &ctx) {
+	HexEntryScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (_activeButton == _buttonIndexOffset)
+			ctx.show(APP->_cartActionsScreen, true, true);
+		else if (_activeButton == (_buttonIndexOffset + 1))
+			ctx.show(APP->_confirmScreen, false, true);
+	}
 }

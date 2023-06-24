@@ -173,7 +173,7 @@ public:
 	inline void copyDataFrom(const uint8_t *source) {
 		__builtin_memcpy(data, source, getChipSize().dataLength);
 	}
-	inline void copyDataTo(uint8_t *dest) {
+	inline void copyDataTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, data, getChipSize().dataLength);
 	}
 	inline void clearData(void) {
@@ -182,7 +182,7 @@ public:
 	inline void copyKeyFrom(const uint8_t *source) {
 		__builtin_memcpy(dataKey, source, sizeof(dataKey));
 	}
-	inline void copyKeyTo(uint8_t *dest) {
+	inline void copyKeyTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, dataKey, sizeof(dataKey));
 	}
 	inline void clearKey(void) {

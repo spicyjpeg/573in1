@@ -387,6 +387,24 @@ void Font::draw(
 	draw(ctx, str, _rect, color, wordWrap);
 }
 
+int Font::getCharacterWidth(char ch) const {
+	switch (ch) {
+		case 0:
+		case '\n':
+		case '\r':
+			return 0;
+
+		case '\t':
+			return FONT_TAB_WIDTH;
+
+		case ' ':
+			return FONT_SPACE_WIDTH;
+
+		default:
+			return (metrics[ch - FONT_CHAR_OFFSET] >> 16) & 0x7f;
+	}
+}
+
 int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 	auto _str = reinterpret_cast<const uint8_t *>(str);
 	if (!str)

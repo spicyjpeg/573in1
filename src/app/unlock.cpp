@@ -326,7 +326,46 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 }
 
 void KeyEntryScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("KeyEntryScreen.title");
+	_body       = STR("KeyEntryScreen.body");
+	_buttons[0] = STR("KeyEntryScreen.cancel");
+	_buttons[1] = STR("KeyEntryScreen.ok");
+
+	_numButtons = 2;
+	_locked     = false;
+
+	_bufferLength = 8;
+	_separator    = '-';
+
+	HexEntryScreen::show(ctx, goBack);
 }
 
 void KeyEntryScreen::update(ui::Context &ctx) {
+	HexEntryScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (_activeButton == _buttonIndexOffset) {
+			ctx.show(APP->_unlockKeyScreen, true, true);
+		} else if (_activeButton == (_buttonIndexOffset + 1)) {
+			// TODO: deduplicate this code (it is the same as UnlockKeyScreen)
+			APP->_confirmScreen.setMessage(
+				APP->_unlockKeyScreen,
+				[](ui::Context &ctx) {
+					APP->_setupWorker(&App::_cartUnlockWorker);
+					ctx.show(APP->_workerStatusScreen, false, true);
+				},
+				STRH(_CART_TYPES[APP->_dump.chipType].warning)
+			);
+
+			APP->_errorScreen.setMessage(
+				APP->_cartInfoScreen,
+				STRH(_CART_TYPES[APP->_dump.chipType].error)
+			);
+
+			__builtin_memcpy(
+				APP->_dump.dataKey, _buffer, sizeof(APP->_dump.dataKey)
+			);
+			ctx.show(APP->_confirmScreen, false, true);
+		}
+	}
 }

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "cartdata.hpp"
 #include "gpu.hpp"
 #include "uibase.hpp"
 #include "uicommon.hpp"
@@ -33,6 +34,17 @@ public:
 	}
 	inline bool generateCode(const uint8_t *binaryInput, size_t length) {
 		return gpu::generateQRCode(_image, 960, 128, binaryInput, length);
+	}
+
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class SystemIDEntryScreen : public ui::HexEntryScreen {
+public:
+	inline void setSystemID(cart::Parser &parser) const {
+		parser.getIdentifiers()->systemID.copyFrom(_buffer);
+		parser.flush();
 	}
 
 	void show(ui::Context &ctx, bool goBack = false);

@@ -21,13 +21,32 @@ private:
 	}
 
 protected:
-	int  _numButtons, _activeButton;
+	int  _numButtons, _activeButton, _buttonIndexOffset;
 	bool _locked;
 
 	const char *_buttons[3];
 
 public:
 	MessageScreen(void);
+	virtual void show(Context &ctx, bool goBack = false);
+	virtual void draw(Context &ctx, bool active = true) const;
+	virtual void update(Context &ctx);
+};
+
+class HexEntryScreen : public MessageScreen {
+private:
+	int _charIndex;
+
+	util::Tween<int, util::QuadOutEasing> _cursorAnim;
+
+protected:
+	uint8_t _buffer[32];
+	char    _separator;
+
+	int _bufferLength;
+
+public:
+	HexEntryScreen(void);
 	virtual void show(Context &ctx, bool goBack = false);
 	virtual void draw(Context &ctx, bool active = true) const;
 	virtual void update(Context &ctx);
@@ -103,22 +122,6 @@ protected:
 
 public:
 	ListScreen(void);
-	virtual void show(Context &ctx, bool goBack = false);
-	virtual void draw(Context &ctx, bool active = true) const;
-	virtual void update(Context &ctx);
-};
-
-class HexEntryScreen : public AnimatedScreen {
-protected:
-	uint8_t _buffer[32];
-
-	int _numDigits, _numButtons, _activeItem;
-
-	const char *_title, *_prompt;
-	const char *_buttons[3];
-
-public:
-	HexEntryScreen(void);
 	virtual void show(Context &ctx, bool goBack = false);
 	virtual void draw(Context &ctx, bool active = true) const;
 	virtual void update(Context &ctx);

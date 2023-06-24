@@ -17,7 +17,8 @@ void PlaceholderScreen::draw(Context &ctx, bool active) const {
 }
 
 MessageScreen::MessageScreen(void)
-: ModalScreen(MODAL_WIDTH, MODAL_HEIGHT_FULL), _numButtons(0), _locked(false) {}
+: ModalScreen(MODAL_WIDTH, MODAL_HEIGHT_FULL), _numButtons(0),
+_buttonIndexOffset(0), _locked(false) {}
 
 void MessageScreen::show(Context &ctx, bool goBack) {
 	ModalScreen::show(ctx, goBack);
@@ -31,6 +32,8 @@ void MessageScreen::draw(Context &ctx, bool active) const {
 
 	if (!active || !_numButtons)
 		return;
+
+	int activeButton = _activeButton - _buttonIndexOffset;
 
 	int buttonX = _width / 8;
 	int buttonY = TITLE_BAR_HEIGHT + _height - (BUTTON_HEIGHT + MODAL_PADDING);
@@ -51,7 +54,7 @@ void MessageScreen::draw(Context &ctx, bool active) const {
 
 			ctx.font.draw(ctx.gpuCtx, _buttons[i], rect, COLOR_TEXT2);
 		} else {
-			if (i == _activeButton) {
+			if (i == activeButton) {
 				ctx.gpuCtx.drawRect(
 					buttonX, buttonY, rect.w, BUTTON_HEIGHT, COLOR_HIGHLIGHT2
 				);
@@ -87,13 +90,137 @@ void MessageScreen::update(Context &ctx) {
 		}
 	}
 	if (ctx.buttons.pressed(ui::BTN_RIGHT)) {
-		if (_activeButton < (_numButtons - 1)) {
+		if (_activeButton < (_buttonIndexOffset + _numButtons - 1)) {
 			_activeButton++;
 
 			_buttonAnim.setValue(ctx.time, 0, _getButtonWidth(), SPEED_FASTEST);
 			ctx.sounds[SOUND_MOVE].play();
 		} else {
 			ctx.sounds[SOUND_CLICK].play();
+		}
+	}
+}
+
+HexEntryScreen::HexEntryScreen(void)
+: _bufferLength(0) {}
+
+void HexEntryScreen::show(Context &ctx, bool goBack) {
+	MessageScreen::show(ctx, goBack);
+
+	_buttonIndexOffset = _bufferLength * 2;
+	__builtin_memset(_buffer, 0, _bufferLength);
+
+	_charIndex = 0;
+	_cursorAnim.setValue(0);
+}
+
+void HexEntryScreen::draw(Context &ctx, bool active) const {
+	MessageScreen::draw(ctx, active);
+
+	if (!active)
+		return;
+
+	int boxY     = TITLE_BAR_HEIGHT + _height -
+		(BUTTON_HEIGHT + MODAL_PADDING) * 2;
+	int boxWidth = _width - MODAL_PADDING * 2;
+
+	// Text box
+	ctx.gpuCtx.drawRect(
+		MODAL_PADDING, boxY, boxWidth, BUTTON_HEIGHT, COLOR_BOX1
+	);
+
+	char      text[128];
+	gpu::Rect rect;
+
+	util::hexToString(text, _buffer, _bufferLength, _separator);
+
+	int digitWidth = ctx.font.getCharacterWidth('0');
+	int textOffset = MODAL_PADDING +
+		(boxWidth - ctx.font.getStringWidth(text)) / 2;
+
+	// Cursor
+	if (_activeButton < _buttonIndexOffset)
+		ctx.gpuCtx.drawGradientRectV(
+			textOffset + _cursorAnim.getValue(ctx.time), boxY, digitWidth,
+			BUTTON_HEIGHT, COLOR_BOX1, COLOR_HIGHLIGHT1
+		);
+
+	// Text
+	rect.x1 = textOffset;
+	rect.y1 = boxY + BUTTON_PADDING;
+	rect.x2 = _width - MODAL_PADDING;
+	rect.y2 = boxY + BUTTON_PADDING + gpu::FONT_LINE_HEIGHT;
+	ctx.font.draw(ctx.gpuCtx, text, rect, COLOR_TITLE);
+
+	// Highlighted digit
+	if (_activeButton < _buttonIndexOffset) {
+		text[0] = text[_charIndex];
+		text[1] = 0;
+
+		rect.x1 = textOffset + _cursorAnim.getTargetValue();
+		ctx.font.draw(ctx.gpuCtx, text, rect, COLOR_SUBTITLE);
+	}
+}
+
+void HexEntryScreen::update(Context &ctx) {
+	if (
+		ctx.buttons.held(ui::BTN_START) && (_activeButton < _buttonIndexOffset)
+	) {
+		uint8_t *ptr  = &_buffer[_activeButton / 2];
+		int     digit = (_activeButton % 2) ? (*ptr & 0x0f) : (*ptr >> 4);
+
+		if (
+			ctx.buttons.pressed(ui::BTN_LEFT) ||
+			(ctx.buttons.repeating(ui::BTN_LEFT) && (digit > 0))
+		) {
+			digit--;
+			if (digit < 0) {
+				digit = 0xf;
+				ctx.sounds[SOUND_CLICK].play();
+			} else {
+				ctx.sounds[SOUND_MOVE].play();
+			}
+		}
+		if (
+			ctx.buttons.pressed(ui::BTN_RIGHT) ||
+			(ctx.buttons.repeating(ui::BTN_RIGHT) && (digit < 0xf))
+		) {
+			digit++;
+			if (digit > 0xf) {
+				digit = 0;
+				ctx.sounds[SOUND_CLICK].play();
+			} else {
+				ctx.sounds[SOUND_MOVE].play();
+			}
+		}
+
+		if (_activeButton % 2)
+			*ptr = (*ptr & 0xf0) | digit;
+		else
+			*ptr = (*ptr & 0x0f) | (digit << 4);
+	} else {
+		int oldActive = _activeButton;
+
+		MessageScreen::update(ctx);
+
+		// Update the cursor's position if necessary.
+		if (oldActive != _activeButton) {
+			int digitWidth = ctx.font.getCharacterWidth('0');
+			int sepWidth   = ctx.font.getCharacterWidth(_separator);
+
+			int offset = _activeButton, cursorX = 0;
+			_charIndex = 0;
+
+			for (; offset >= 2; offset -= 2) {
+				cursorX    += digitWidth * 2 + sepWidth;
+				_charIndex += 3;
+			}
+			for (; offset; offset--) {
+				cursorX += digitWidth;
+				_charIndex++;
+			}
+
+			_cursorAnim.setValue(ctx.time, cursorX, SPEED_FASTEST);
 		}
 	}
 }
@@ -352,68 +479,6 @@ void ListScreen::update(Context &ctx) {
 		_scrollAnim.setValue(ctx.time, LIST_BOX_PADDING - topOffset, SPEED_FAST);
 	else if (bottomOffset > currentOffset)
 		_scrollAnim.setValue(ctx.time, -(LIST_BOX_PADDING + bottomOffset), SPEED_FAST);
-}
-
-HexEntryScreen::HexEntryScreen(void)
-: _numDigits(0), _title(nullptr), _prompt(nullptr) {}
-
-void HexEntryScreen::show(Context &ctx, bool goBack) {
-	AnimatedScreen::show(ctx, goBack);
-
-	_activeItem = 0;
-}
-
-void HexEntryScreen::draw(Context &ctx, bool active) const {
-	int screenWidth  = ctx.gpuCtx.width  - SCREEN_MARGIN_X * 2;
-	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
-
-	_newLayer(
-		ctx, SCREEN_MARGIN_X, SCREEN_MARGIN_Y, screenWidth, screenHeight
-	);
-
-	/*gpu::RectWH rect;
-
-	rect.x = 0;
-	rect.y = 0;
-	rect.w = screenWidth;
-	rect.h = gpu::FONT_LINE_HEIGHT;
-	ctx.font.draw(ctx.gpuCtx, _title, rect, COLOR_TITLE);
-
-	rect.y = screenHeight - SCREEN_PROMPT_HEIGHT;
-	rect.h = SCREEN_PROMPT_HEIGHT;
-	ctx.font.draw(ctx.gpuCtx, _prompt, rect, COLOR_TEXT1, true);*/
-}
-
-void HexEntryScreen::update(Context &ctx) {
-	if (ctx.buttons.held(ui::BTN_START)) {
-	} else {
-		if (
-			ctx.buttons.pressed(ui::BTN_LEFT) ||
-			(ctx.buttons.repeating(ui::BTN_LEFT) && (_activeItem > 0))
-		) {
-			if (_activeItem > 0) {
-				_activeItem--;
-
-				//_buttonAnim.setValue(ctx.time, 0, _getButtonWidth(), SPEED_FASTEST);
-				ctx.sounds[SOUND_MOVE].play();
-			} else {
-				ctx.sounds[SOUND_CLICK].play();
-			}
-		}
-		if (
-			ctx.buttons.pressed(ui::BTN_RIGHT) ||
-			(ctx.buttons.repeating(ui::BTN_RIGHT) && (_activeItem < (_numDigits - 1)))
-		) {
-			if (_activeItem < (_numDigits + _numButtons - 1)) {
-				_activeItem++;
-
-				//_buttonAnim.setValue(ctx.time, 0, _getButtonWidth(), SPEED_FASTEST);
-				ctx.sounds[SOUND_MOVE].play();
-			} else {
-				ctx.sounds[SOUND_CLICK].play();
-			}
-		}
-	}
 }
 
 }

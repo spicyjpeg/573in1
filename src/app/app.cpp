@@ -16,8 +16,8 @@
 
 void App::_unloadCartData(void) {
 	if (_driver) {
-		//delete _driver;
-		//_driver = nullptr;
+		delete _driver;
+		_driver = nullptr;
 	}
 	if (_parser) {
 		delete _parser;
@@ -71,21 +71,19 @@ void App::_cartDetectWorker(void) {
 	_workerStatus.update(0, 4, WSTR("App.cartDetectWorker.identifyCart"));
 	_unloadCartData();
 
-	if (!_driver) {
 #ifdef ENABLE_DUMMY_DRIVER
-		if (
-			_resourceProvider->loadStruct(_dump, "data/test.573")
-			== sizeof(cart::Dump)
-		) {
-			LOG("using dummy cart driver");
-			_driver = new cart::DummyDriver(_dump);
-		} else {
-			_driver = cart::newCartDriver(_dump);
-		}
-#else
+	if (
+		_resourceProvider->loadStruct(_dump, "data/test.573")
+		== sizeof(cart::Dump)
+	) {
+		LOG("using dummy cart driver");
+		_driver = new cart::DummyDriver(_dump);
+	} else {
 		_driver = cart::newCartDriver(_dump);
-#endif
 	}
+#else
+	_driver = cart::newCartDriver(_dump);
+#endif
 
 	if (_dump.chipType) {
 		LOG("cart dump @ 0x%08x", &_dump);
