@@ -25,6 +25,10 @@ enum WorkerStatusType {
 // This class is used by the worker thread to report its current status back to
 // the main thread and the WorkerStatusScreen.
 class WorkerStatus {
+private:
+	volatile bool        _nextGoBack;
+	ui::Screen *volatile _nextScreen;
+
 public:
 	volatile WorkerStatusType status;
 
@@ -58,10 +62,18 @@ public:
 		if (mask)
 			setInterruptMask(mask);
 	}
-	inline void finish(ui::Screen &next, bool goBack = false) {
+	inline void setNextScreen(ui::Screen &next, bool goBack = false) {
+		auto mask   = setInterruptMask(0);
+		_nextGoBack = goBack;
+		_nextScreen = &next;
+
+		if (mask)
+			setInterruptMask(mask);
+	}
+	inline void finish(void) {
 		auto mask  = setInterruptMask(0);
-		status     = goBack ? WORKER_NEXT_BACK : WORKER_NEXT;
-		nextScreen = &next;
+		status     = _nextGoBack ? WORKER_NEXT_BACK : WORKER_NEXT;
+		nextScreen = _nextScreen;
 
 		if (mask)
 			setInterruptMask(mask);
@@ -70,7 +82,7 @@ public:
 
 /* App class */
 
-static constexpr size_t WORKER_STACK_SIZE = 0x10000;
+static constexpr size_t WORKER_STACK_SIZE = 0x20000;
 
 class App {
 	friend class WorkerStatusScreen;
@@ -104,6 +116,7 @@ private:
 	cart::CartDB _db;
 	Thread       _workerThread;
 	WorkerStatus _workerStatus;
+	void         (App::*_workerFunction)(void);
 
 	uint8_t             *_workerStack;
 	cart::Driver        *_driver;
@@ -113,16 +126,18 @@ private:
 	bool _allowWatchdogClear;
 
 	void _unloadCartData(void);
-	void _setupWorker(void (App::* func)(void));
+	void _setupWorker(void (App::*func)(void));
 	void _setupInterrupts(void);
 
-	void _dummyWorker(void);
 	void _cartDetectWorker(void);
 	void _cartUnlockWorker(void);
 	void _qrCodeWorker(void);
 	void _hddDumpWorker(void);
+	void _cartWriteWorker(void);
+	void _cartEraseWorker(void);
 	void _rebootWorker(void);
 
+	void _worker(void);
 	void _interruptHandler(void);
 
 public:

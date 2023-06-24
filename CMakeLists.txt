@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	cart_tool_private
 	LANGUAGES    C CXX ASM
-	VERSION      0.3.1
+	VERSION      0.3.2
 	DESCRIPTION  "Konami System 573 security cartridge tool"
 )
 
@@ -63,9 +63,14 @@ target_include_directories(
 target_compile_definitions(
 	cart_tool PRIVATE
 	VERSION="${PROJECT_VERSION}"
-	#ENABLE_ARGV=1
-	ENABLE_PS1_CONTROLLER=1
-	ENABLE_I2C_LOGGING=1
+	$<IF:$<CONFIG:Debug>,
+		ENABLE_DUMMY_DRIVER=1
+		ENABLE_I2C_LOGGING=1
+		ENABLE_PS1_CONTROLLER=1
+	,
+		#ENABLE_ARGV=1
+		ENABLE_PS1_CONTROLLER=1
+	>
 )
 
 add_custom_command(
@@ -104,7 +109,8 @@ ps1_target_incbin(
 #add_custom_command(
 #	COMMAND
 #		"${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/buildCDImage.py"
-#		-s "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}/cd.json" cart_tool.iso
+#		-s "${PROJECT_BINARY_DIR}"
+#		"${PROJECT_SOURCE_DIR}/cd.json" cart_tool.iso
 #	OUTPUT  cart_tool.iso
 #	DEPENDS cd.json cart_tool
 #	COMMENT "Building CD-ROM image"

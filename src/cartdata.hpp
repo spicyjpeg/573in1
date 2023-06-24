@@ -36,6 +36,7 @@ public:
 	virtual size_t getCode(char *output) const { return 0; }
 	virtual size_t getRegion(char *output) const { return 0; }
 	virtual IdentifierSet *getIdentifiers(void) { return nullptr; }
+	virtual PublicIdentifierSet *getPublicIdentifiers(void) { return nullptr; }
 	virtual void flush(void) {}
 	virtual bool validate(void);
 };
@@ -81,6 +82,7 @@ public:
 	size_t getCode(char *output) const;
 	size_t getRegion(char *output) const;
 	IdentifierSet *getIdentifiers(void);
+	PublicIdentifierSet *getPublicIdentifiers(void);
 	void flush(void);
 	bool validate(void);
 };

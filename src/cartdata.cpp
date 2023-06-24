@@ -75,8 +75,8 @@ bool BasicParser::validate(void) {
 size_t ExtendedParser::getCode(char *output) const {
 	auto header = _getHeader();
 
-	__builtin_memcpy(output, header->code, sizeof(header->code));
-	output[sizeof(header->code)] = 0;
+	__builtin_memcpy(output, header->code, sizeof(header->code) - 1);
+	output[sizeof(header->code) - 1] = 0;
 
 	if (flags & DATA_GX706_WORKAROUND)
 		output[1] = 'X';
@@ -102,14 +102,21 @@ IdentifierSet *ExtendedParser::getIdentifiers(void) {
 	);
 }
 
+PublicIdentifierSet *ExtendedParser::getPublicIdentifiers(void) {
+	if (!(flags & DATA_HAS_PUBLIC_SECTION))
+		return nullptr;
+
+	return reinterpret_cast<PublicIdentifierSet *>(
+		&_getPublicData()[sizeof(ExtendedHeader)]
+	);
+}
+
 void ExtendedParser::flush(void) {
 	// Copy over the private identifiers to the public data area. On X76F041
 	// carts this area is in the last sector, while on ZS01 carts it is placed
 	// in the first 32 bytes.
 	auto pri = getIdentifiers();
-	auto pub = reinterpret_cast<PublicIdentifierSet *>(
-		&_getPublicData()[sizeof(ExtendedHeader)]
-	);
+	auto pub = getPublicIdentifiers();
 
 	pub->traceID.copyFrom(pri->traceID.data);
 	pub->cartID.copyFrom(pri->cartID.data);

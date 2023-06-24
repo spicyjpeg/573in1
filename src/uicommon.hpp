@@ -39,6 +39,9 @@ private:
 
 protected:
 	inline void _setProgress(Context &ctx, int part, int total) {
+		if (!total)
+			total = 1;
+
 		int totalWidth = _width - MODAL_PADDING * 2;
 		int partWidth  = (totalWidth * part) / total;
 

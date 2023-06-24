@@ -167,11 +167,26 @@ public:
 	inline size_t getDumpLength(void) const {
 		return (sizeof(Dump) - sizeof(data)) + getChipSize().dataLength;
 	}
-	inline void clear(void) {
-		__builtin_memset(this, 0, sizeof(Dump));
+	inline void clearIdentifiers(void) {
+		__builtin_memset(&systemID, 0, sizeof(Identifier) * 3);
+	}
+	inline void copyDataFrom(const uint8_t *source) {
+		__builtin_memcpy(data, source, getChipSize().dataLength);
+	}
+	inline void copyDataTo(uint8_t *dest) {
+		__builtin_memcpy(dest, data, getChipSize().dataLength);
 	}
 	inline void clearData(void) {
-		__builtin_memset(data, 0, getChipSize().dataLength);
+		__builtin_memset(data, 0, sizeof(data));
+	}
+	inline void copyKeyFrom(const uint8_t *source) {
+		__builtin_memcpy(dataKey, source, sizeof(dataKey));
+	}
+	inline void copyKeyTo(uint8_t *dest) {
+		__builtin_memcpy(dest, dataKey, sizeof(dataKey));
+	}
+	inline void clearKey(void) {
+		__builtin_memset(dataKey, 0, sizeof(dataKey));
 	}
 
 	bool isPublicDataEmpty(void) const;

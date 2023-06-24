@@ -6,12 +6,21 @@
 			"readCart":      "Reading security cartridge...",
 			"identifyGame":  "Attempting to identify game..."
 		},
+		"cartEraseWorker": {
+			"erase":  "Performing cartridge erase...",
+			"error":  "An error occurred while erasing the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
+		},
 		"cartUnlockWorker": {
 			"read":         "Dumping cartridge...",
 			"identifyGame": "Attempting to identify game..."
 		},
+		"cartWriteWorker": {
+			"write": "Writing new data to cartridge...",
+			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
+		},
 		"hddDumpWorker": {
-			"save": "Saving cartridge dump..."
+			"save":  "Saving cartridge dump...",
+			"error": "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
@@ -44,23 +53,23 @@
 		},
 		"hddDump": {
 			"name":   "Dump cartridge to hard drive",
-			"prompt": "Save the contents of the cartridge's EEPROM to a file on the IDE hard drive or CF card connected as secondary drive (if any).",
-			"error":  "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
+			"prompt": "Save the contents of the cartridge's EEPROM to a file on the IDE hard drive or CF card connected as secondary drive (if any)."
 		},
 		"hexdump": {
-			"name":   "View cartridge hexdump",
+			"name":   "[UNIMPLEMENTED] View cartridge hexdump",
 			"prompt": "Display the raw contents of the cartridge's EEPROM."
 		},
 		"resetSystemID": {
-			"name":   "Reset system identifier (unpair cartridge)",
-			"prompt": "Delete any previously saved system identifier, allowing the cartridge to be used to reinstall the game on any system."
+			"name":    "Reset system identifier (unpair cartridge)",
+			"prompt":  "Delete any previously saved system identifier, allowing the cartridge to be used to reinstall the game on any system.",
+			"confirm": "The system identifier will be cleared, allowing the cartridge to be used on a system with any digital I/O board. The game will have to be reinstalled in order to pair the cartridge to the new board.\n\nDo you wish to proceed?"
 		},
 		"editSystemID": {
-			"name":   "Edit system identifier (pair to another 573)",
+			"name":   "[UNIMPLEMENTED] Edit system identifier",
 			"prompt": "Edit the saved system identifier to allow the cartridge to be used on a specific system without having to reinstall the game first."
 		},
 		"reflash": {
-			"name":   "Erase and reflash cartridge",
+			"name":   "[UNIMPLEMENTED] Erase and convert to another game",
 			"prompt": "Wipe all data and flash the cartridge with another game's identifiers. All cartridges can be converted for use with any other game that uses the same cartridge type."
 		},
 		"erase": {
@@ -85,6 +94,13 @@
 			"locked":   "{CLOSED_LOCK} locked, game key required",
 			"unlocked": "{OPEN_LOCK} unlocked"
 		},
+		"pairing": {
+			"unsupported": "This game does not pair to I/O boards",
+			"unknown":     "Unlock cartridge to view pairing status",
+			"unpaired":    "Not paired to any digital I/O board",
+			"thisSystem":  "Paired to this system's I/O board",
+			"otherSystem": "Paired to %s (%s)"
+		},
 		"description": {
 			"noCart":    "No supported cartridge has been found.\n\nTurn off the system and insert a security cartridge in order to continue. DO NOT HOTPLUG CARTRIDGES; hotplugging may damage both the 573 and the cartridge.\n\nIf a cartridge is inserted but not detected, try cleaning its pins as well as the system's security cartridge connector.",
 			"initError": "Failed to initialize and read unprotected data from this cartridge.\n\nTurn off the system and make sure the cartridge is inserted correctly. If this issue persists, try using another cartridge of the same type.",
@@ -98,12 +114,6 @@
 				"unidentified": "This cartridge contains data for an unsupported game.\n\nThe system identifier (if any) cannot be reset or edited, however you may still dump the cartridge's contents or reflash it for use with a supported game.",
 				"identified":   "This cartridge has been identified as:\n  %s\n  %s\n\nYou may now proceed to reset the system identifier, edit it or erase and reflash the cartridge for use with another game.",
 				"blank":        "This cartridge has been previously erased and is now blank.\n\nIt must be flashed and optionally initialized with a system identifier in order to be used with a supported game."
-			},
-			"pairing": {
-				"unsupported": "This game does not pair to I/O boards",
-				"unpaired":    "Not paired to any digital I/O board",
-				"thisSystem":  "Paired to this system's I/O board",
-				"otherSystem": "Paired to %s"
 			}
 		},
 		"prompt": {
@@ -130,7 +140,7 @@
 	},
 
 	"ConfirmScreen": {
-		"title": "Confirm",
+		"title": "Confirm operation",
 		"no":    "No, go back",
 		"yes":   "Yes, continue"
 	},

@@ -442,19 +442,26 @@ static void _loadQRCode(Image &output, int x, int y, const uint32_t *qrCode) {
 	const uint32_t palette[8]{ 0x8000ffff };
 
 	rect.x = x;
-	rect.y = y + size;
+	rect.y = y + size + 2;
 	rect.w = 16;
 	rect.h = 1;
 	upload(rect, palette, true);
 
-	rect.y = y;
+	// Leave one pixel of margin on all sides as a workaround for GPU polygon
+	// scaling artifacts.
+	rect.x = x + 1;
+	rect.y = y + 1;
 	rect.w = qrcodegen_getStride(qrCode) * 2;
 	rect.h = size;
 	upload(rect, &qrCode[1], true);
 
-	output.initFromVRAMRect(rect, GP0_COLOR_4BPP);
-	output.width   = size;
-	output.palette = gp0_clut(x / 16, y + size);
+	output.u       = (x & 0x3f) * 4 + 3;
+	output.v       = y & 0xff;
+	output.width   = size + 1;
+	output.height  = size + 1;
+	output.texpage =
+		gp0_page(x / 64, y / 256, GP0_BLEND_SEMITRANS, GP0_COLOR_4BPP);
+	output.palette = gp0_clut(x / 16, y + size + 2);
 
 	LOG("loaded at (%d,%d), size=%d", x, y, size);
 }

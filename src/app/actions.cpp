@@ -13,8 +13,8 @@ public:
 	void (CartActionsScreen::*target)(ui::Context &ctx);
 };
 
-static constexpr int _NUM_IDENTIFIED_ACTIONS   = 7;
-static constexpr int _NUM_UNIDENTIFIED_ACTIONS = 5;
+static constexpr int _NUM_SYSTEM_ID_ACTIONS    = 7;
+static constexpr int _NUM_NO_SYSTEM_ID_ACTIONS = 5;
 
 static const Action _ACTIONS[]{
 	{
@@ -58,8 +58,6 @@ void CartActionsScreen::qrDump(ui::Context &ctx) {
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {
-	APP->_errorScreen.setMessage(*this, STR("CartActionsScreen.hddDump.error"));
-
 	APP->_setupWorker(&App::_hddDumpWorker);
 	ctx.show(APP->_workerStatusScreen, false, true);
 }
@@ -74,8 +72,8 @@ void CartActionsScreen::erase(ui::Context &ctx) {
 	APP->_confirmScreen.setMessage(
 		*this,
 		[](ui::Context &ctx) {
-			//APP->_setupWorker(&App::_eraseWorker);
-			//ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_setupWorker(&App::_cartEraseWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
 		},
 		STR("CartActionsScreen.erase.confirm")
 	);
@@ -84,6 +82,19 @@ void CartActionsScreen::erase(ui::Context &ctx) {
 }
 
 void CartActionsScreen::resetSystemID(ui::Context &ctx) {
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_parser->getIdentifiers()->systemID.clear();
+			APP->_parser->flush();
+
+			APP->_setupWorker(&App::_cartWriteWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("CartActionsScreen.resetSystemID.confirm")
+	);
+
+	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void CartActionsScreen::editSystemID(ui::Context &ctx) {
@@ -94,13 +105,12 @@ void CartActionsScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = STRH(_ACTIONS[0].prompt);
 	_itemPrompt = STR("CartActionsScreen.itemPrompt");
 
-#if 0 // TODO
-	_listLength = APP->_identified
-		? _NUM_IDENTIFIED_ACTIONS
-		: _NUM_UNIDENTIFIED_ACTIONS;
-#else
-	_listLength = 2;
-#endif
+	_listLength = _NUM_NO_SYSTEM_ID_ACTIONS;
+
+	if (APP->_identified) {
+		if (APP->_identified->flags & cart::DATA_HAS_SYSTEM_ID)
+			_listLength = _NUM_SYSTEM_ID_ACTIONS;
+	}
 
 	ListScreen::show(ctx, goBack);
 }

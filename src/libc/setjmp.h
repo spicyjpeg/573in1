@@ -18,20 +18,18 @@
 
 #include <stdint.h>
 
-typedef struct _JumpBuffer {
+typedef struct {
 	uint32_t ra;
 	uint32_t s0, s1, s2, s3, s4, s5, s6, s7;
 	uint32_t gp, sp, fp;
-} JumpBuffer;
-
-typedef JumpBuffer *jmp_buf;
+} jmp_buf;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int setjmp(jmp_buf env);
-void longjmp(jmp_buf env, int status);
+int setjmp(jmp_buf *env);
+void longjmp(jmp_buf *env, int status);
 
 #ifdef __cplusplus
 }
