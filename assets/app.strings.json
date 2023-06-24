@@ -65,8 +65,9 @@
 			"confirm": "The system identifier will be cleared, allowing the cartridge to be used on a system with any digital I/O board. The game will have to be reinstalled in order to pair the cartridge to the new board.\n\nDo you wish to proceed?"
 		},
 		"editSystemID": {
-			"name":   "[UNIMPLEMENTED] Edit system identifier",
-			"prompt": "Edit the saved system identifier to allow the cartridge to be used on a specific system without having to reinstall the game first."
+			"name":    "Edit system identifier (pair to another I/O board)",
+			"prompt":  "Edit the saved system identifier to allow the cartridge to be used on a specific system without having to reinstall the game first.",
+			"confirm": "The system identifier will be changed, allowing the cartridge to be used on the respective system. If already installed on the new system, the game will not have to be reinstalled.\n\nDo you wish to proceed?"
 		},
 		"reflash": {
 			"name":   "[UNIMPLEMENTED] Erase and convert to another game",
@@ -150,9 +151,23 @@
 		"ok":    "Continue"
 	},
 
+	"KeyEntryScreen": {
+		"title":  "Enter unlocking key",
+		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"cancel": "Cancel",
+		"ok":     "Confirm"
+	},
+
 	"QRCodeScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
 		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
+	},
+
+	"SystemIDEntryScreen": {
+		"title":  "Enter system ID",
+		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"cancel": "Cancel",
+		"ok":     "Confirm"
 	},
 
 	"SystemInfoScreen": {

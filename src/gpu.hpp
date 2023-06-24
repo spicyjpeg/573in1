@@ -195,6 +195,7 @@ public:
 		Context &ctx, const char *str, const RectWH &rect,
 		Color color = 0x808080, bool wordWrap = false
 	) const;
+	int getCharacterWidth(char ch) const;
 	int getStringWidth(const char *str, bool breakOnSpace = false) const;
 };
 

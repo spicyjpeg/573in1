@@ -42,17 +42,12 @@ public:
 
 class DummyDriver : public Driver {
 private:
-	Dump _privateDump;
-
 	inline DriverError _getErrorCode(void) {
 		return (_dump.chipType == ZS01) ? ZS01_ERROR : X76_NACK;
 	}
 
 public:
-	inline DummyDriver(Dump &dump)
-	: Driver(dump), _privateDump(dump) {
-		dump.flags &= DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID;
-	}
+	DummyDriver(Dump &dump);
 
 	DriverError readSystemID(void);
 	DriverError readCartID(void);
