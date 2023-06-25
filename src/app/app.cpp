@@ -253,17 +253,21 @@ void App::_cartReflashWorker(void) {
 
 	_dump.clearData();
 
-	pri->clear();
-	pri->cartID.copyFrom(_dump.cartID.data);
-	pri->updateTraceID(_reflashEntry->traceIDType, _reflashEntry->traceIDParam);
-
-	// The private installation ID seems to be unused on carts with a public
-	// data section.
-	if (pub) {
-		pri->installID.clear();
-		pub->setInstallID(_reflashEntry->installIDPrefix);
-	} else {
-		pri->setInstallID(_reflashEntry->installIDPrefix);
+	if (pri) {
+		if (_reflashEntry->flags & cart::DATA_HAS_CART_ID)
+			pri->cartID.copyFrom(_dump.cartID.data);
+		if (_reflashEntry->flags & cart::DATA_HAS_TRACE_ID)
+			pri->updateTraceID(
+				_reflashEntry->traceIDType, _reflashEntry->traceIDParam
+			);
+		if (_reflashEntry->flags & cart::DATA_HAS_INSTALL_ID) {
+			// The private installation ID seems to be unused on carts with a
+			// public data section.
+			if (pub)
+				pub->setInstallID(_reflashEntry->installIDPrefix);
+			else
+				pri->setInstallID(_reflashEntry->installIDPrefix);
+		}
 	}
 
 	_parser->setCode(_reflashEntry->code);

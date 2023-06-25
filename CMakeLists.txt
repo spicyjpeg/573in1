@@ -34,10 +34,10 @@ add_executable(
 	src/uicommon.cpp
 	src/util.cpp
 	src/zs01.cpp
-	src/app/actions.cpp
 	src/app/app.cpp
+	src/app/cartactions.cpp
+	src/app/cartunlock.cpp
 	src/app/misc.cpp
-	src/app/unlock.cpp
 	src/libc/crt0.c
 	src/libc/cxxsupport.cpp
 	src/libc/malloc.c
@@ -79,6 +79,7 @@ add_custom_command(
 		"${Python3_EXECUTABLE}"
 		"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
 		-r "cart_tool build ${PROJECT_VERSION} - (C) 2022-2023 spicyjpeg"
+		-s 0x801dfff0
 		$<TARGET_FILE:cart_tool> cart_tool.psexe
 	BYPRODUCTS cart_tool.psexe
 	COMMENT    "Converting executable"

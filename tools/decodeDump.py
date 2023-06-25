@@ -79,7 +79,7 @@ def parseDumpString(data: str) -> Dump:
 def printDumpInfo(dump: Dump, output: TextIO):
 	if dump.flags & DumpFlag.DUMP_SYSTEM_ID_OK:
 		output.write(f"Digital I/O ID:    {dump.systemID.hex('-')}\n")
-		output.write(f"Serial number:     {serialNumberToString(dump.systemID)}\n")
+		output.write(f"Digital I/O SN:    {serialNumberToString(dump.systemID)}\n\n")
 
 	output.write(f"Cartridge type:    {_CHIP_NAMES[dump.chipType]}\n")
 	if dump.flags & DumpFlag.DUMP_CART_ID_OK:
@@ -111,8 +111,8 @@ def createParser() -> ArgumentParser:
 	group = parser.add_argument_group("File paths")
 	group.add_argument(
 		"-i", "--input",
-		type    = FileType("rt"),
-		help    = "read dump from specified file",
+		type    = FileType("rb"),
+		help    = "read dump or QR string from specified file",
 		metavar = "file"
 	)
 	group.add_argument(
@@ -122,12 +122,12 @@ def createParser() -> ArgumentParser:
 		help    = "log cartridge info to specified file (stdout by default)",
 		metavar = "file"
 	)
-	#group.add_argument(
-		#"-e", "--export",
-		#type    = FileType("wb"),
-		#help    = "export dump in MAME format to specified file",
-		#metavar = "file"
-	#)
+	group.add_argument(
+		"-e", "--export",
+		type    = FileType("wb"),
+		help    = "export binary dump (.573 file) to specified path",
+		metavar = "file"
+	)
 
 	group.add_argument(
 		"data",
@@ -144,16 +144,22 @@ def main():
 
 	if args.input:
 		with args.input as _file:
-			data: str = _file.read()
+			data: bytes = _file.read()
+
+		try:
+			dump: Dump = parseDump(data)
+		except:
+			dump: Dump = parseDumpString(data.decode("ascii"))
 	elif args.data:
-		data: str = args.data
+		dump: Dump = parseDumpString(args.data)
 	else:
 		parser.error("a dump must be passed on the command line or using -i")
 
-	dump: Dump = parseDumpString(data)
-
 	if args.log:
 		printDumpInfo(dump, args.log)
+	if args.export:
+		with args.export as _file:
+			_file.write(dump.serialize())
 
 if __name__ == "__main__":
 	main()
