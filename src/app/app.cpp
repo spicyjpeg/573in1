@@ -90,8 +90,16 @@ void App::_cartDetectWorker(void) {
 		LOG("cart driver @ 0x%08x", _driver);
 		_workerStatus.update(1, 4, WSTR("App.cartDetectWorker.readCart"));
 
-		_driver->readCartID();
-		if (!_driver->readPublicData())
+		auto error = _driver->readCartID();
+
+		if (error)
+			LOG("cart ID error, code=%d", error);
+
+		error = _driver->readPublicData();
+
+		if (error)
+			LOG("public data error, code=%d", error);
+		else
 			_parser = cart::newCartParser(_dump);
 
 		LOG("cart parser @ 0x%08x", _parser);
@@ -136,14 +144,21 @@ _cartInitDone:
 
 	// This must be outside of the if block above to make sure the system ID
 	// gets read with the dummy driver.
-	_driver->readSystemID();
+	auto error = _driver->readSystemID();
+
+	if (error)
+		LOG("system ID error, code=%d", error);
 }
 
 void App::_cartUnlockWorker(void) {
 	_workerStatus.setNextScreen(_cartInfoScreen, true);
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
 
-	if (_driver->readPrivateData()) {
+	auto error = _driver->readPrivateData();
+
+	if (error) {
+		LOG("private data error, code=%d", error);
+
 		/*_errorScreen.setMessage(
 			_cartInfoScreen, WSTR("App.cartUnlockWorker.error")
 		);*/
@@ -155,6 +170,7 @@ void App::_cartUnlockWorker(void) {
 		delete _parser;
 
 	_parser = cart::newCartParser(_dump);
+
 	if (!_parser)
 		return;
 
@@ -204,51 +220,102 @@ void App::_hddDumpWorker(void) {
 void App::_cartWriteWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartWriteWorker.write"));
 
-	if (_driver->writeData()) {
+	auto error = _driver->writeData();
+
+	_cartDetectWorker();
+
+	if (!error && _identified) {
+		_identified->copyKeyTo(_dump.dataKey);
+		_cartUnlockWorker();
+	}
+
+	if (error) {
+		LOG("write error, code=%d", error);
+
 		_errorScreen.setMessage(
 			_cartInfoScreen, WSTR("App.cartWriteWorker.error")
 		);
 		_workerStatus.setNextScreen(_errorScreen);
-		return;
+	}
+}
+
+void App::_cartReflashWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.cartWriteWorker.flash"));
+
+	if (_parser)
+		delete _parser;
+
+	_parser  = cart::newCartParser(
+		_dump, _reflashEntry->formatType, _reflashEntry->flags
+	);
+	auto pri = _parser->getIdentifiers();
+	auto pub = _parser->getPublicIdentifiers();
+
+	_dump.clearData();
+
+	pri->clear();
+	pri->cartID.copyFrom(_dump.cartID.data);
+	pri->updateTraceID(_reflashEntry->traceIDType, _reflashEntry->traceIDParam);
+
+	// The private installation ID seems to be unused on carts with a public
+	// data section.
+	if (pub) {
+		pri->installID.clear();
+		pub->setInstallID(_reflashEntry->installIDPrefix);
+	} else {
+		pri->setInstallID(_reflashEntry->installIDPrefix);
+	}
+
+	_parser->setCode(_reflashEntry->code);
+	_parser->setRegion(_reflashEntry->region);
+	_parser->setYear(_reflashEntry->year);
+	_parser->flush();
+
+	uint8_t key[8];
+	auto    error = _driver->writeData();
+
+	if (!error) {
+		_reflashEntry->copyKeyTo(key);
+		error = _driver->setDataKey(key);
 	}
 
 	_cartDetectWorker();
-	_cartUnlockWorker();
+
+	if (!error) {
+		_dump.copyKeyFrom(key);
+		_cartUnlockWorker();
+	}
+
+	if (error) {
+		LOG("write error, code=%d", error);
+
+		_errorScreen.setMessage(
+			_cartInfoScreen, WSTR("App.cartReflashWorker.error")
+		);
+		_workerStatus.setNextScreen(_errorScreen);
+	}
 }
 
 void App::_cartEraseWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartEraseWorker.erase"));
 
-	if (_driver->erase()) {
+	auto error = _driver->erase();
+
+	_cartDetectWorker();
+
+	if (!error) {
+		_dump.clearKey();
+		_cartUnlockWorker();
+	}
+
+	if (error) {
+		LOG("erase error, code=%d", error);
+
 		_errorScreen.setMessage(
 			_cartInfoScreen, WSTR("App.cartEraseWorker.error")
 		);
 		_workerStatus.setNextScreen(_errorScreen);
-		return;
 	}
-
-	_cartDetectWorker();
-	_cartUnlockWorker();
-}
-
-void App::_rebootWorker(void) {
-	int startTime = _ctx->time;
-	int duration  = _ctx->gpuCtx.refreshRate * 3;
-	int elapsed;
-
-	// Stop clearing the watchdog for a few seconds.
-	_allowWatchdogClear = false;
-
-	do {
-		elapsed = _ctx->time - startTime;
-
-		_workerStatus.update(elapsed, duration, WSTR("App.rebootWorker.reboot"));
-		delayMicroseconds(10000);
-	} while (elapsed < duration);
-
-	// If for some reason the watchdog fails to reboot the system, fall back to
-	// a soft reboot.
-	softReset();
 }
 
 /* Misc. functions */
@@ -267,9 +334,8 @@ void App::_worker(void) {
 void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VBLANK)) {
 		_ctx->tick();
+		io::clearWatchdog();
 
-		if (_allowWatchdogClear)
-			io::clearWatchdog();
 		if (gpu::isIdle() && (_workerStatus.status != WORKER_BUSY_SUSPEND))
 			switchThread(nullptr);
 	}

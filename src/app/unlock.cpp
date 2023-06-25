@@ -142,8 +142,6 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 		state = IDENTIFIED;
 		APP->_identified->getDisplayName(name, sizeof(name));
 
-		//
-
 		auto ids = APP->_parser->getIdentifiers();
 
 		if (!(APP->_identified->flags & cart::DATA_HAS_SYSTEM_ID)) {
@@ -320,7 +318,10 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 			);
 			ctx.show(APP->_confirmScreen, false, true);
 		}
-	} else if (ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT)) {
+	} else if (
+		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
+		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+	) {
 		ctx.show(APP->_cartInfoScreen, true, true);
 	}
 }

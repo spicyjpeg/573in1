@@ -51,6 +51,22 @@ size_t SimpleParser::getRegion(char *output) const {
 	return __builtin_strlen(output);
 }
 
+void SimpleParser::setRegion(const char *input) {
+	auto header = _getHeader();
+
+	__builtin_strncpy(header->region, input, sizeof(header->region));
+}
+
+void BasicParser::setCode(const char *input) {
+	if (!(flags & DATA_HAS_CODE_PREFIX))
+		return;
+
+	auto header = _getHeader();
+
+	header->region[2] = input[0];
+	header->region[3] = input[1];
+}
+
 size_t BasicParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
@@ -61,8 +77,19 @@ size_t BasicParser::getRegion(char *output) const {
 	return 2;
 }
 
+void BasicParser::setRegion(const char *input) {
+	auto header = _getHeader();
+
+	header->region[0] = input[0];
+	header->region[1] = input[1];
+}
+
 IdentifierSet *BasicParser::getIdentifiers(void) {
 	return reinterpret_cast<IdentifierSet *>(&_dump.data[sizeof(BasicHeader)]);
+}
+
+void BasicParser::flush(void) {
+	_getHeader()->updateChecksum(flags & DATA_CHECKSUM_INVERTED);
 }
 
 bool BasicParser::validate(void) {
@@ -84,6 +111,15 @@ size_t ExtendedParser::getCode(char *output) const {
 	return __builtin_strlen(output);
 }
 
+void ExtendedParser::setCode(const char *input) {
+	auto header = _getHeader();
+
+	__builtin_strncpy(header->code, input, sizeof(header->code));
+
+	if (flags & DATA_GX706_WORKAROUND)
+		header->region[1] = 'E';
+}
+
 size_t ExtendedParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
@@ -91,6 +127,20 @@ size_t ExtendedParser::getRegion(char *output) const {
 	output[sizeof(header->region)] = 0;
 
 	return __builtin_strlen(output);
+}
+
+void ExtendedParser::setRegion(const char *input) {
+	auto header = _getHeader();
+
+	__builtin_strncpy(header->region, input, sizeof(header->region));
+}
+
+uint16_t ExtendedParser::getYear(void) const {
+	return _getHeader()->year;
+}
+
+void ExtendedParser::setYear(uint16_t value) {
+	_getHeader()->year = value;
 }
 
 IdentifierSet *ExtendedParser::getIdentifiers(void) {
@@ -118,8 +168,11 @@ void ExtendedParser::flush(void) {
 	auto pri = getIdentifiers();
 	auto pub = getPublicIdentifiers();
 
-	pub->traceID.copyFrom(pri->traceID.data);
-	pub->cartID.copyFrom(pri->cartID.data);
+	// The private installation ID seems to always go unused and zeroed out...
+	//pub->installID.copyFrom(pri->installID.data);
+	pub->systemID.copyFrom(pri->systemID.data);
+
+	_getHeader()->updateChecksum(flags & DATA_CHECKSUM_INVERTED);
 }
 
 bool ExtendedParser::validate(void) {
@@ -272,18 +325,22 @@ Parser *newCartParser(Dump &dump) {
 const DBEntry *CartDB::lookup(const char *code, const char *region) const {
 	// Perform a binary search. This assumes all entries in the DB are sorted by
 	// their code and region.
-	auto offset = reinterpret_cast<const DBEntry *>(ptr);
+	auto low  = reinterpret_cast<const DBEntry *>(ptr);
+	auto high = &low[getNumEntries() - 1];
 
-	for (size_t step = getNumEntries() / 2; step; step /= 2) {
-		auto entry = &offset[step];
+	while (low <= high) {
+		auto entry = &low[(high - low) / 2];
 		int  diff  = entry->compare(code, region);
 
 		if (!diff) {
 			LOG("%s %s found, entry=0x%08x", code, region, entry);
 			return entry;
-		} else if (diff < 0) {
-			offset = entry;
 		}
+
+		if (diff < 0)
+			low = &entry[1];
+		else
+			high = &entry[-1];
 	}
 
 	LOG("%s %s not found", code, region);

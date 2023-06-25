@@ -21,6 +21,7 @@ public:
 	void reflash(ui::Context &ctx);
 	void erase(ui::Context &ctx);
 	void resetSystemID(ui::Context &ctx);
+	void matchSystemID(ui::Context &ctx);
 	void editSystemID(ui::Context &ctx);
 
 	void show(ui::Context &ctx, bool goBack = false);
@@ -36,6 +37,24 @@ public:
 		return gpu::generateQRCode(_image, 960, 128, binaryInput, length);
 	}
 
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class HexdumpScreen : public ui::TextScreen {
+private:
+	char _bodyText[2048];
+
+public:
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class ReflashGameScreen : public ui::ListScreen {
+protected:
+	const char *_getItemName(ui::Context &ctx, int index) const;
+
+public:
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };

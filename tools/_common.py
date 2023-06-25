@@ -6,7 +6,7 @@ __author__  = "spicyjpeg"
 import re
 from dataclasses import dataclass
 from enum        import IntEnum, IntFlag
-from struct      import Struct
+from struct      import Struct, unpack
 from typing      import Any, Iterable, Iterator, Mapping, Sequence
 
 ## Definitions
@@ -100,7 +100,24 @@ class IdentifierSet:
 
 		return flags
 
-	def getTraceIDType(self) -> TraceIDType:
+	def getCartIDChecksum(self, param: int) -> int:
+		if self.cartID is None:
+			return 0
+
+		checksum: int = 0
+
+		for i in range(6):
+			value: int = self.cartID[i + 1]
+
+			for j in range(i * 8, (i + 1) * 8):
+				if value & 1:
+					checksum ^= 1 << (j % param)
+
+				value >>= 1
+
+		return checksum & 0xffff
+
+	def getTraceIDType(self, param: int) -> TraceIDType:
 		if self.traceID is None:
 			return TraceIDType.TID_NONE
 
@@ -109,7 +126,17 @@ class IdentifierSet:
 				return TraceIDType.TID_81
 
 			case 0x82:
-				return TraceIDType.TID_82_BIG_ENDIAN # TODO
+				print(self.cartID,self.traceID)
+				checksum: int = self.getCartIDChecksum(param)
+				big:      int = unpack("> H", self.traceID[1:3])[0]
+				little:   int = unpack("< H", self.traceID[1:3])[0]
+
+				if checksum == big:
+					return TraceIDType.TID_82_BIG_ENDIAN
+				elif checksum == little:
+					return TraceIDType.TID_82_LITTLE_ENDIAN
+
+				raise ValueError(f"trace ID mismatch, exp=0x{checksum:04x}, big=0x{big:04x}, little=0x{little:04x}")
 
 			case prefix:
 				raise ValueError(f"unknown trace ID prefix: 0x{prefix:02x}")
@@ -272,6 +299,7 @@ class ExtendedParser(Parser):
 ## Cartridge database
 
 DB_ENTRY_STRUCT: Struct = Struct("< 6B H 8s 8s 8s 96s")
+TRACE_ID_PARAMS: Sequence[int] = 16, 14
 
 @dataclass
 class GameEntry:
@@ -312,21 +340,32 @@ class DBEntry:
 	year:            int = 0
 
 	def __init__(self, game: GameEntry, dump: Dump, parser: Parser):
+		# Find the correct parameters for the trace ID heuristically.
+		_type: TraceIDType | None = None
+
+		for self.traceIDParam in TRACE_ID_PARAMS:
+			try:
+				_type = parser.identifiers.getTraceIDType(self.traceIDParam)
+			except ValueError:
+				continue
+
+			break
+
+		if _type is None:
+			raise RuntimeError("failed to determine trace ID parameters")
+
 		self.game        = game
 		self.dataKey     = dump.dataKey
 		self.chipType    = dump.chipType
 		self.formatType  = parser.formatType
-		self.traceIDType = parser.identifiers.getTraceIDType()
+		self.traceIDType = _type
 		self.flags       = parser.flags
 		self.year        = parser.year or 0
 
-		# TODO: implement this properly
-		self.traceIDParam = 16
-
-		if parser.identifiers.installID:
-			self.installIDPrefix = parser.identifiers.installID[0]
-		else:
+		if parser.identifiers.installID is None:
 			self.installIDPrefix = 0
+		else:
+			self.installIDPrefix = parser.identifiers.installID[0]
 
 	def __lt__(self, entry: Any) -> bool:
 		return (self.game < entry.game)

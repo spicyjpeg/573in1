@@ -109,11 +109,14 @@ public:
 
 class [[gnu::packed]] PublicIdentifierSet {
 public:
-	Identifier traceID, cartID; // aka TID, SID
+	Identifier installID, systemID; // aka MID, XID
 
 	inline void clear(void) {
 		__builtin_memset(this, 0, sizeof(PublicIdentifierSet));
 	}
+
+	uint8_t getFlags(void) const;
+	void setInstallID(uint8_t prefix);
 };
 
 class [[gnu::packed]] SimpleHeader {

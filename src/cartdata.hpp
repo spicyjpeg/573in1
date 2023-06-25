@@ -34,7 +34,11 @@ public:
 
 	virtual ~Parser(void) {}
 	virtual size_t getCode(char *output) const { return 0; }
+	virtual void setCode(const char *input) {}
 	virtual size_t getRegion(char *output) const { return 0; }
+	virtual void setRegion(const char *input) {}
+	virtual uint16_t getYear(void) const { return 0; }
+	virtual void setYear(uint16_t value) {}
 	virtual IdentifierSet *getIdentifiers(void) { return nullptr; }
 	virtual PublicIdentifierSet *getPublicIdentifiers(void) { return nullptr; }
 	virtual void flush(void) {}
@@ -52,6 +56,7 @@ public:
 	: Parser(dump, flags | DATA_HAS_PUBLIC_SECTION) {}
 
 	size_t getRegion(char *output) const;
+	void setRegion(const char *input);
 };
 
 class BasicParser : public Parser {
@@ -64,8 +69,11 @@ public:
 	inline BasicParser(Dump &dump, uint8_t flags = 0)
 	: Parser(dump, flags) {}
 
+	void setCode(const char *input);
 	size_t getRegion(char *output) const;
+	void setRegion(const char *input);
 	IdentifierSet *getIdentifiers(void);
+	void flush(void);
 	bool validate(void);
 };
 
@@ -80,7 +88,11 @@ public:
 	: Parser(dump, flags | DATA_HAS_CODE_PREFIX) {}
 
 	size_t getCode(char *output) const;
+	void setCode(const char *input);
 	size_t getRegion(char *output) const;
+	void setRegion(const char *input);
+	uint16_t getYear(void) const;
+	void setYear(uint16_t value);
 	IdentifierSet *getIdentifiers(void);
 	PublicIdentifierSet *getPublicIdentifiers(void);
 	void flush(void);
@@ -117,6 +129,9 @@ public:
 	}
 	inline int getDisplayName(char *output, size_t length) const {
 		return snprintf(output, length, "%s %s\t%s", code, region, name);
+	}
+	inline void copyKeyTo(uint8_t *dest) const {
+		__builtin_memcpy(dest, dataKey, sizeof(dataKey));
 	}
 };
 

@@ -68,24 +68,27 @@ void IdentifierSet::updateTraceID(TraceIDType type, int param) {
 	uint16_t checksum = 0;
 
 	if (type == TID_81) {
-		// TODO: reverse engineer this TID format
+		// This format seems to be an arbitrary unique identifier not tied to
+		// anything in particular (perhaps RTC RAM?), ignored by the game.
 		traceID.data[0] = 0x81;
-		traceID.data[2] = 0;
-		traceID.data[5] = 0;
-		traceID.data[6] = 0;
+		traceID.data[2] = 5;
+		traceID.data[5] = 7;
+		traceID.data[6] = 3;
 
 		LOG("prefix=0x81");
 		goto _done;
 	}
 
-	for (size_t i = 0; i < (sizeof(cartID.data) - 2); i++) {
+	for (size_t i = 0; i < ((sizeof(cartID.data) - 2) * 8); i += 8) {
 		uint8_t value = *(input++);
 
-		for (int j = 0; j < 8; j++, value >>= 1) {
-			if (value % 2)
-				checksum ^= 1 << (i % param);
+		for (size_t j = i; j < (i + 8); j++, value >>= 1) {
+			if (value & 1)
+				checksum ^= 1 << (j % param);
 		}
 	}
+
+	traceID.data[0] = 0x82;
 
 	if (type == TID_82_BIG_ENDIAN) {
 		traceID.data[1] = checksum >> 8;
@@ -99,6 +102,24 @@ void IdentifierSet::updateTraceID(TraceIDType type, int param) {
 
 _done:
 	traceID.updateChecksum();
+}
+
+uint8_t PublicIdentifierSet::getFlags(void) const {
+	uint8_t flags = 0;
+
+	if (!installID.isEmpty())
+		flags |= DATA_HAS_INSTALL_ID;
+	if (!systemID.isEmpty())
+		flags |= DATA_HAS_SYSTEM_ID;
+
+	return flags;
+}
+
+void PublicIdentifierSet::setInstallID(uint8_t prefix) {
+	installID.clear();
+
+	installID.data[0] = prefix;
+	installID.updateChecksum();
 }
 
 void BasicHeader::updateChecksum(bool invert) {
