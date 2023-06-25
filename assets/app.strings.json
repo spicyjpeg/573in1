@@ -8,7 +8,11 @@
 		},
 		"cartEraseWorker": {
 			"erase":  "Performing cartridge erase...",
-			"error":  "An error occurred while erasing the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
+			"error":  "An error occurred while erasing the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
+		},
+		"cartReflashWorker": {
+			"flash": "Performing cartridge reflash...",
+			"error": "An error occurred while reflashing the cartridge. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
 		},
 		"cartUnlockWorker": {
 			"read":         "Dumping cartridge...",
@@ -56,22 +60,31 @@
 			"prompt": "Save the contents of the cartridge's EEPROM to a file on the IDE hard drive or CF card connected as secondary drive (if any)."
 		},
 		"hexdump": {
-			"name":   "[UNIMPLEMENTED] View cartridge hexdump",
-			"prompt": "Display the raw contents of the cartridge's EEPROM."
+			"name":   "View cartridge hexdump",
+			"prompt": "Display the raw contents of the cartridge's EEPROM in hexadecimal format."
 		},
 		"resetSystemID": {
 			"name":    "Reset system identifier (unpair cartridge)",
 			"prompt":  "Delete any previously saved system identifier, allowing the cartridge to be used to reinstall the game on any system.",
-			"confirm": "The system identifier will be cleared, allowing the cartridge to be used on a system with any digital I/O board. The game will have to be reinstalled in order to pair the cartridge to the new board.\n\nDo you wish to proceed?"
+			"confirm": "The system identifier will be cleared, allowing the cartridge to be used on a system with any digital I/O board. The game will have to be reinstalled in order to pair the cartridge to the new board.\n\nDo you wish to proceed?",
+			"error":   "The system identifier is not present or has already been cleared on this cartridge."
+		},
+		"matchSystemID": {
+			"name":    "Copy system identifier (pair to this system)",
+			"prompt":  "Set the saved system identifier to allow the cartridge to be used on this system without having to reinstall the game first.",
+			"confirm": "The system identifier will be changed, allowing the cartridge to be used on this system. If already installed here, the game will not have to be reinstalled.\n\nDo you wish to proceed?",
+			"error":   "No digital I/O board found. Copying the system identifier requires a digital I/O board to be installed in this system."
 		},
 		"editSystemID": {
 			"name":    "Edit system identifier (pair to another I/O board)",
 			"prompt":  "Edit the saved system identifier to allow the cartridge to be used on a specific system without having to reinstall the game first.",
-			"confirm": "The system identifier will be changed, allowing the cartridge to be used on the respective system. If already installed on the new system, the game will not have to be reinstalled.\n\nDo you wish to proceed?"
+			"confirm": "The system identifier will be changed, allowing the cartridge to be used on the respective system. If already installed on the new system, the game will not have to be reinstalled.\n\nDo you wish to proceed?",
+			"error":   "The system identifier entered is invalid. Make sure all digits are correct and try again."
 		},
 		"reflash": {
-			"name":   "[UNIMPLEMENTED] Erase and convert to another game",
-			"prompt": "Wipe all data and flash the cartridge with another game's identifiers. All cartridges can be converted for use with any other game that uses the same cartridge type."
+			"name":    "Erase and convert cartridge to another game",
+			"prompt":  "Wipe all data and flash the cartridge with another game's identifiers. All cartridges can be converted for use with any other game that uses the same cartridge type.",
+			"confirm": "The contents of the cartridge's EEPROM will be replaced, the system identifier (if any) will be cleared and the unlocking key will be updated to match the new game.\n\nDo you wish to proceed?"
 		},
 		"erase": {
 			"name":    "Erase cartridge",
@@ -151,6 +164,11 @@
 		"ok":    "Continue"
 	},
 
+	"HexdumpScreen": {
+		"title":  "{CART_ICON} Cartridge dump",
+		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+	},
+
 	"KeyEntryScreen": {
 		"title":  "Enter unlocking key",
 		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
@@ -163,8 +181,14 @@
 		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
 	},
 
+	"ReflashGameScreen": {
+		"title":      "{CART_ICON} Select game to convert cartridge to",
+		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back"
+	},
+
 	"SystemIDEntryScreen": {
-		"title":  "Enter system ID",
+		"title":  "Edit system identifier",
 		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"

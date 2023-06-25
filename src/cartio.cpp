@@ -110,6 +110,7 @@ DriverError DummyDriver::setDataKey(const uint8_t *key) {
 static constexpr int _X76_MAX_ACK_POLLS = 5;
 static constexpr int _X76_WRITE_DELAY   = 12000;
 static constexpr int _X76_PACKET_DELAY  = 12000;
+static constexpr int _ZS01_SEND_DELAY   = 30000;
 static constexpr int _ZS01_PACKET_DELAY = 30000;
 
 DriverError CartDriver::readSystemID(void) {
@@ -377,6 +378,7 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 DriverError ZS01Driver::_transact(
 	zs01::Packet &request, zs01::Packet &response
 ) {
+	delayMicroseconds(_ZS01_PACKET_DELAY);
 	io::i2cStart();
 
 #ifdef ENABLE_I2C_LOGGING
@@ -387,7 +389,7 @@ DriverError ZS01Driver::_transact(
 #endif
 
 	if (!io::i2cWriteBytes(
-		&request.command, sizeof(zs01::Packet), _ZS01_PACKET_DELAY
+		&request.command, sizeof(zs01::Packet), _ZS01_SEND_DELAY
 	)) {
 		io::i2cStop();
 		LOG("NACK while sending request packet");
@@ -402,13 +404,15 @@ DriverError ZS01Driver::_transact(
 	LOG("R: %s", buffer);
 #endif
 
-	if (!response.decodeResponse())
-		return ZS01_CRC_MISMATCH;
+	bool ok = response.decodeResponse();
 
 #ifdef ENABLE_I2C_LOGGING
 	util::hexToString(buffer, &response.command, sizeof(zs01::Packet), ' ');
 	LOG("D: %s", buffer);
 #endif
+
+	//if (!ok)
+		//return ZS01_CRC_MISMATCH;
 
 	_encoderState = response.address;
 

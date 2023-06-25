@@ -171,15 +171,18 @@ void initKonamiBitstream(void) {
 
 /* I2C driver */
 
+static constexpr int _I2C_BUS_DELAY   = 50;
+static constexpr int _I2C_RESET_DELAY = 500;
+
 // SDA is open-drain so it is toggled by changing pin direction.
 #define _SDA(value)   setCartSDADir(!(value))
-#define SDA(value)    _SDA(value), delayMicroseconds(20)
+#define SDA(value)    _SDA(value), delayMicroseconds(_I2C_BUS_DELAY)
 #define _SCL(value)   setCartOutput(OUT_SCL, value)
-#define SCL(value)    _SCL(value), delayMicroseconds(20)
+#define SCL(value)    _SCL(value), delayMicroseconds(_I2C_BUS_DELAY)
 #define _CS(value)    setCartOutput(OUT_CS, value)
-#define CS(value)     _CS(value), delayMicroseconds(20)
+#define CS(value)     _CS(value), delayMicroseconds(_I2C_BUS_DELAY)
 #define _RESET(value) setCartOutput(OUT_RESET, value)
-#define RESET(value)  _RESET(value), delayMicroseconds(20)
+#define RESET(value)  _RESET(value), delayMicroseconds(_I2C_BUS_DELAY)
 
 void i2cStart(void) {
 	_SDA(true);
@@ -226,7 +229,7 @@ uint8_t i2cReadByte(void) {
 		SCL(false);
 	}
 
-	delayMicroseconds(20);
+	delayMicroseconds(_I2C_BUS_DELAY);
 	return value;
 }
 
@@ -248,12 +251,12 @@ void i2cSendACK(bool ack) {
 }
 
 bool i2cGetACK(void) {
-	delayMicroseconds(20); // Required for ZS01
+	delayMicroseconds(_I2C_BUS_DELAY); // Required for ZS01
 	SCL(true);
 	bool ack = !getCartSDA();
 	SCL(false);
 
-	delayMicroseconds(20);
+	delayMicroseconds(_I2C_BUS_DELAY);
 	return ack;
 }
 
@@ -291,6 +294,7 @@ uint32_t i2cResetX76(void) {
 	SCL(true);
 	SCL(false);
 	RESET(false);
+	delayMicroseconds(_I2C_RESET_DELAY);
 
 	for (int bit = 0; bit < 32; bit++) { // LSB first
 		SCL(true);
@@ -317,7 +321,7 @@ uint32_t i2cResetZS01(void) {
 
 	RESET(false);
 	RESET(true);
-	delayMicroseconds(100);
+	delayMicroseconds(_I2C_RESET_DELAY);
 
 	SCL(true);
 	SCL(false);
@@ -335,12 +339,14 @@ uint32_t i2cResetZS01(void) {
 
 /* 1-wire driver */
 
+static constexpr int _DS_RESET_DELAY = 480;
+
 #define _CART1WIRE(value) setCartOutput(OUT_1WIRE, !(value))
 #define _DIO1WIRE(value)  setDIO1Wire(value)
 
 bool dsCartReset(void) {
 	_CART1WIRE(false);
-	delayMicroseconds(480);
+	delayMicroseconds(_DS_RESET_DELAY);
 	_CART1WIRE(true);
 
 	delayMicroseconds(60);
@@ -353,7 +359,7 @@ bool dsCartReset(void) {
 
 bool dsDIOReset(void) {
 	_DIO1WIRE(false);
-	delayMicroseconds(480);
+	delayMicroseconds(_DS_RESET_DELAY);
 	_DIO1WIRE(true);
 
 	delayMicroseconds(60);

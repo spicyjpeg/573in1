@@ -18,8 +18,10 @@ static const Key _COMMAND_KEY{
 // Konami's driver generates a pseudorandom key for each transaction, but it can
 // be a fixed key as well.
 static const Key _RESPONSE_KEY{
-	.add   = { 0, 0, 0, 0, 0, 0, 0, 0 },
-	.shift = { 0, 0, 0, 0, 0, 0, 0, 0 }
+	.add   = { 237, 8, 16, 11, 6, 4, 8, 30 },
+	.shift = {   0, 3,  2,  2, 6, 2, 2,  1 }
+	//.add   = { 0, 0, 0, 0, 0, 0, 0, 0 },
+	//.shift = { 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 /* Packet encoding/decoding */

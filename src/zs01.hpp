@@ -30,15 +30,15 @@ enum RequestFlag : uint8_t {
 enum ResponseCode : uint8_t {
 	// The meaning of these codes is currently unknown. Presumably:
 	// - one of the "security errors" is a CRC validation failure, the other
-	//   could be data key related
+	//   could be data key related, the third one could be DS2401 related
 	// - one of the unknown errors is for invalid commands or addresses
-	// - one or two of the unknown errors are for actual read/write failures
+	// - one of the unknown errors is for actual read/write failures
 	RESP_NO_ERROR        = 0x00,
-	RESP_SECURITY_ERROR1 = 0x01,
-	RESP_UNKNOWN_ERROR1  = 0x02,
-	RESP_UNKNOWN_ERROR2  = 0x03,
-	RESP_SECURITY_ERROR2 = 0x04,
-	RESP_UNKNOWN_ERROR3  = 0x05
+	RESP_UNKNOWN_ERROR1  = 0x01,
+	RESP_SECURITY_ERROR1 = 0x02,
+	RESP_SECURITY_ERROR2 = 0x03,
+	RESP_UNKNOWN_ERROR2  = 0x04,
+	RESP_SECURITY_ERROR3 = 0x05
 };
 
 /* Packet encoding/decoding */

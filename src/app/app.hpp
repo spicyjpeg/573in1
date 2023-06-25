@@ -95,6 +95,8 @@ class App {
 	friend class KeyEntryScreen;
 	friend class CartActionsScreen;
 	friend class QRCodeScreen;
+	friend class HexdumpScreen;
+	friend class ReflashGameScreen;
 	friend class SystemIDEntryScreen;
 
 private:
@@ -108,6 +110,8 @@ private:
 	KeyEntryScreen      _keyEntryScreen;
 	CartActionsScreen   _cartActionsScreen;
 	QRCodeScreen        _qrCodeScreen;
+	HexdumpScreen       _hexdumpScreen;
+	ReflashGameScreen   _reflashGameScreen;
 	SystemIDEntryScreen _systemIDEntryScreen;
 
 	ui::Context       *_ctx;
@@ -123,9 +127,7 @@ private:
 	uint8_t             *_workerStack;
 	cart::Driver        *_driver;
 	cart::Parser        *_parser;
-	const cart::DBEntry *_identified;
-
-	bool _allowWatchdogClear;
+	const cart::DBEntry *_identified, *_reflashEntry;
 
 	void _unloadCartData(void);
 	void _setupWorker(void (App::*func)(void));
@@ -136,16 +138,15 @@ private:
 	void _qrCodeWorker(void);
 	void _hddDumpWorker(void);
 	void _cartWriteWorker(void);
+	void _cartReflashWorker(void);
 	void _cartEraseWorker(void);
-	void _rebootWorker(void);
 
 	void _worker(void);
 	void _interruptHandler(void);
 
 public:
 	inline App(void)
-	: _driver(nullptr), _parser(nullptr), _identified(nullptr),
-	_allowWatchdogClear(true) {
+	: _driver(nullptr), _parser(nullptr), _identified(nullptr) {
 		_workerStack = new uint8_t[WORKER_STACK_SIZE];
 	}
 	inline ~App(void) {

@@ -232,7 +232,7 @@ DeviceError Device::enumerate(void) {
 	_copyString(revision, block.revision, sizeof(revision));
 	_copyString(serialNumber, block.serialNumber, sizeof(serialNumber));
 
-	LOG("%s: %s", (flags & DEVICE_PRIMARY) ? "primary" : "secondary", model);
+	LOG("%s: %s", (flags & DEVICE_SECONDARY) ? "secondary" : "primary", model);
 
 	// Find out the fastest PIO transfer mode supported and enable it.
 	int mode = 1;
