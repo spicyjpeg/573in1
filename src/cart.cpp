@@ -67,40 +67,45 @@ void IdentifierSet::updateTraceID(TraceIDType type, int param) {
 	uint8_t  *input   = &cartID.data[1];
 	uint16_t checksum = 0;
 
-	if (type == TID_81) {
-		// This format seems to be an arbitrary unique identifier not tied to
-		// anything in particular (perhaps RTC RAM?), ignored by the game.
-		traceID.data[0] = 0x81;
-		traceID.data[2] = 5;
-		traceID.data[5] = 7;
-		traceID.data[6] = 3;
+	switch (type) {
+		case TID_NONE:
+			return;
 
-		LOG("prefix=0x81");
-		goto _done;
+		case TID_81:
+			// This format seems to be an arbitrary unique identifier not tied
+			// to anything in particular (maybe RTC RAM?), ignored by the game.
+			traceID.data[0] = 0x81;
+			traceID.data[2] = 5;
+			traceID.data[5] = 7;
+			traceID.data[6] = 3;
+
+			LOG("prefix=0x81");
+			break;
+
+		case TID_82_BIG_ENDIAN:
+		case TID_82_LITTLE_ENDIAN:
+			for (size_t i = 0; i < ((sizeof(cartID.data) - 2) * 8); i += 8) {
+				uint8_t value = *(input++);
+
+				for (size_t j = i; j < (i + 8); j++, value >>= 1) {
+					if (value & 1)
+						checksum ^= 1 << (j % param);
+				}
+			}
+
+			traceID.data[0] = 0x82;
+			if (type == TID_82_BIG_ENDIAN) {
+				traceID.data[1] = checksum >> 8;
+				traceID.data[2] = checksum & 0xff;
+			} else {
+				traceID.data[1] = checksum & 0xff;
+				traceID.data[2] = checksum >> 8;
+			}
+
+			LOG("prefix=0x82, checksum=%04x", checksum);
+			break;
 	}
 
-	for (size_t i = 0; i < ((sizeof(cartID.data) - 2) * 8); i += 8) {
-		uint8_t value = *(input++);
-
-		for (size_t j = i; j < (i + 8); j++, value >>= 1) {
-			if (value & 1)
-				checksum ^= 1 << (j % param);
-		}
-	}
-
-	traceID.data[0] = 0x82;
-
-	if (type == TID_82_BIG_ENDIAN) {
-		traceID.data[1] = checksum >> 8;
-		traceID.data[2] = checksum & 0xff;
-	} else if (type == TID_82_LITTLE_ENDIAN) {
-		traceID.data[1] = checksum & 0xff;
-		traceID.data[2] = checksum >> 8;
-	}
-
-	LOG("prefix=0x82, checksum=%04x", checksum);
-
-_done:
 	traceID.updateChecksum();
 }
 

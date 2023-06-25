@@ -2,9 +2,9 @@
 #pragma once
 
 #include <stdint.h>
-#include "app/actions.hpp"
+#include "app/cartactions.hpp"
 #include "app/misc.hpp"
-#include "app/unlock.hpp"
+#include "app/cartunlock.hpp"
 #include "ps1/system.h"
 #include "cart.hpp"
 #include "cartdata.hpp"

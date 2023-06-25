@@ -122,10 +122,7 @@ public:
 		if (diff)
 			return diff;
 
-		// If the provided region string is longer than this entry's region but
-		// the first few characters match, return 0. Do not however match
-		// strings shorter than this entry's region.
-		return __builtin_strncmp(region, _region, __builtin_strlen(region));
+		return __builtin_strncmp(region, _region, REGION_MAX_LENGTH);
 	}
 	inline int getDisplayName(char *output, size_t length) const {
 		return snprintf(output, length, "%s %s\t%s", code, region, name);

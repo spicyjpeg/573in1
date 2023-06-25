@@ -126,7 +126,6 @@ class IdentifierSet:
 				return TraceIDType.TID_81
 
 			case 0x82:
-				print(self.cartID,self.traceID)
 				checksum: int = self.getCartIDChecksum(param)
 				big:      int = unpack("> H", self.traceID[1:3])[0]
 				little:   int = unpack("< H", self.traceID[1:3])[0]
@@ -140,6 +139,30 @@ class IdentifierSet:
 
 			case prefix:
 				raise ValueError(f"unknown trace ID prefix: 0x{prefix:02x}")
+
+@dataclass
+class PublicIdentifierSet:
+	installID: bytes | None = None # aka MID
+	systemID:  bytes | None = None # aka XID
+
+	def __init__(self, data: bytes):
+		ids: list[bytes | None] = []
+
+		for offset in range(0, 16, 8):
+			_id: bytes = data[offset:offset + 8]
+			ids.append(_id if sum(_id) else None)
+
+		self.installID, self.systemID = ids
+
+	def getFlags(self) -> DataFlag:
+		flags: DataFlag = DataFlag(0)
+
+		if self.installID:
+			flags |= DataFlag.DATA_HAS_INSTALL_ID
+		if self.systemID:
+			flags |= DataFlag.DATA_HAS_SYSTEM_ID
+
+		return flags
 
 ## Cartridge dump structure
 
@@ -219,9 +242,10 @@ class ParserError(BaseException):
 
 @dataclass
 class Parser:
-	formatType:  FormatType
-	flags:       DataFlag
-	identifiers: IdentifierSet
+	formatType:        FormatType
+	flags:             DataFlag
+	identifiers:       IdentifierSet
+	publicIdentifiers: PublicIdentifierSet
 
 	region:     str | None = None
 	codePrefix: str | None = None
@@ -236,13 +260,15 @@ class SimpleParser(Parser):
 			raise ParserError(f"invalid game region: {region}")
 
 		super().__init__(
-			FormatType.SIMPLE, flags, IdentifierSet(b""), region.decode("ascii")
+			FormatType.SIMPLE, flags, IdentifierSet(b""),
+			PublicIdentifierSet(b""), region.decode("ascii")
 		)
 
 class BasicParser(Parser):
 	def __init__(self, dump: Dump, flags: DataFlag):
 		data: bytes = _getPublicData(dump, flags, _BASIC_HEADER_STRUCT.size)
-		ids: IdentifierSet = IdentifierSet(dump.data[_BASIC_HEADER_STRUCT.size:])
+
+		pri: IdentifierSet = IdentifierSet(dump.data[_BASIC_HEADER_STRUCT.size:])
 
 		region, codePrefix, checksum = _BASIC_HEADER_STRUCT.unpack(data)
 
@@ -257,23 +283,29 @@ class BasicParser(Parser):
 			raise ParserError(f"invalid game region: {region}")
 		if bool(flags & DataFlag.DATA_HAS_CODE_PREFIX) != bool(codePrefix):
 			raise ParserError(f"game code prefix should{' not' if codePrefix else ''} be present")
-		if (ids.getFlags() ^ flags) & _IDENTIFIER_FLAG_MASK:
+		if (pri.getFlags() ^ flags) & _IDENTIFIER_FLAG_MASK:
 			raise ParserError("identifier flags do not match")
 
 		super().__init__(
-			FormatType.BASIC, flags, ids, region.decode("ascii"),
-			codePrefix.decode("ascii") or None
+			FormatType.BASIC, flags, pri, PublicIdentifierSet(b""),
+			region.decode("ascii"), codePrefix.decode("ascii") or None
 		)
 
 class ExtendedParser(Parser):
 	def __init__(self, dump: Dump, flags: DataFlag):
-		data: bytes = _getPublicData(dump, flags, _EXTENDED_HEADER_STRUCT.size)
-		ids:  IdentifierSet = IdentifierSet(dump.data[_EXTENDED_HEADER_STRUCT.size + 16:])
+		data: bytes = \
+			_getPublicData(dump, flags, _EXTENDED_HEADER_STRUCT.size + 16)
+
+		pri: IdentifierSet       = \
+			IdentifierSet(dump.data[_EXTENDED_HEADER_STRUCT.size + 16:])
+		pub: PublicIdentifierSet = \
+			PublicIdentifierSet(data[_EXTENDED_HEADER_STRUCT.size:])
 
 		if flags & DataFlag.DATA_GX706_WORKAROUND:
 			data = data[0:1] + b"X" + data[2:]
 
-		code, year, region, checksum = _EXTENDED_HEADER_STRUCT.unpack(data)
+		code, year, region, checksum = \
+			_EXTENDED_HEADER_STRUCT.unpack(data[0:_EXTENDED_HEADER_STRUCT.size])
 
 		code:   bytes = code.rstrip(b"\0")
 		region: bytes = region.rstrip(b"\0")
@@ -287,13 +319,13 @@ class ExtendedParser(Parser):
 			raise ParserError(f"invalid game code: {code}")
 		if GAME_REGION_REGEX.fullmatch(region) is None:
 			raise ParserError(f"invalid game region: {region}")
-		if (ids.getFlags() ^ flags) & _IDENTIFIER_FLAG_MASK:
+		if (pri.getFlags() ^ flags) & _IDENTIFIER_FLAG_MASK:
 			raise ParserError("identifier flags do not match")
 
 		_code: str = code.decode("ascii")
 		super().__init__(
-			FormatType.EXTENDED, flags, ids, region.decode("ascii"), _code[0:2],
-			_code, year
+			FormatType.EXTENDED, flags, pri, pub, region.decode("ascii"),
+			_code[0:2], _code, year
 		)
 
 ## Cartridge database
@@ -302,32 +334,10 @@ DB_ENTRY_STRUCT: Struct = Struct("< 6B H 8s 8s 8s 96s")
 TRACE_ID_PARAMS: Sequence[int] = 16, 14
 
 @dataclass
-class GameEntry:
-	code:   str
-	region: str
-	name:   str
-
-	installCart: str | None = None
-	gameCart:    str | None = None
-	ioBoard:     str | None = None
-
-	# Implement the comparison overload so sorting will work.
-	def __lt__(self, entry: Any) -> bool:
-		return ( self.code, self.region, self.name ) < \
-			( entry.code, entry.region, entry.name )
-
-	def __str__(self) -> str:
-		return f"{self.code} {self.region}"
-
-	def getFullName(self) -> str:
-		return f"{self.name} [{self.code} {self.region}]"
-
-	def hasSystemID(self) -> bool:
-		return (self.ioBoard in SYSTEM_ID_IO_BOARDS)
-
-@dataclass
 class DBEntry:
-	game:    GameEntry
+	code:    str
+	region:  str
+	name:    str
 	dataKey: bytes
 
 	chipType:    ChipType
@@ -339,7 +349,9 @@ class DBEntry:
 	installIDPrefix: int = 0
 	year:            int = 0
 
-	def __init__(self, game: GameEntry, dump: Dump, parser: Parser):
+	def __init__(
+		self, code: str, region: str, name: str, dump: Dump, parser: Parser
+	):
 		# Find the correct parameters for the trace ID heuristically.
 		_type: TraceIDType | None = None
 
@@ -354,7 +366,9 @@ class DBEntry:
 		if _type is None:
 			raise RuntimeError("failed to determine trace ID parameters")
 
-		self.game        = game
+		self.code        = code
+		self.region      = region
+		self.name        = name
 		self.dataKey     = dump.dataKey
 		self.chipType    = dump.chipType
 		self.formatType  = parser.formatType
@@ -362,13 +376,17 @@ class DBEntry:
 		self.flags       = parser.flags
 		self.year        = parser.year or 0
 
-		if parser.identifiers.installID is None:
-			self.installIDPrefix = 0
-		else:
+		if parser.publicIdentifiers.installID is not None:
+			self.installIDPrefix = parser.publicIdentifiers.installID[0]
+		elif parser.identifiers.installID is not None:
 			self.installIDPrefix = parser.identifiers.installID[0]
+		else:
+			self.installIDPrefix = 0
 
+	# Implement the comparison overload so sorting will work.
 	def __lt__(self, entry: Any) -> bool:
-		return (self.game < entry.game)
+		return ( self.code, self.region, self.name ) < \
+			( entry.code, entry.region, entry.name )
 
 	def serialize(self) -> bytes:
 		return DB_ENTRY_STRUCT.pack(
@@ -380,7 +398,7 @@ class DBEntry:
 			self.installIDPrefix,
 			self.year,
 			self.dataKey,
-			self.game.code.encode("ascii"),
-			self.game.region.encode("ascii"),
-			self.game.name.encode("ascii")
+			self.code.encode("ascii"),
+			self.region.encode("ascii"),
+			self.name.encode("ascii")
 		)

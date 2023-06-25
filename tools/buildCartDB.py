@@ -7,6 +7,7 @@ __author__  = "spicyjpeg"
 import json, logging, os, re
 from argparse    import ArgumentParser, Namespace
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from operator    import methodcaller
 from pathlib     import Path
 from struct      import Struct
@@ -15,6 +16,30 @@ from typing      import Any, Generator, Iterable, Mapping, Sequence, Type
 from _common import *
 
 ## Game list (loaded from games.json)
+
+@dataclass
+class GameEntry:
+	code:   str
+	region: str
+	name:   str
+
+	installCart: str | None = None
+	gameCart:    str | None = None
+	ioBoard:     str | None = None
+
+	# Implement the comparison overload so sorting will work.
+	def __lt__(self, entry: Any) -> bool:
+		return ( self.code, self.region, self.name ) < \
+			( entry.code, entry.region, entry.name )
+
+	def __str__(self) -> str:
+		return f"{self.code} {self.region}"
+
+	def getFullName(self) -> str:
+		return f"{self.name} [{self.code} {self.region}]"
+
+	def hasSystemID(self) -> bool:
+		return (self.ioBoard in SYSTEM_ID_IO_BOARDS)
 
 class GameDB:
 	def __init__(self, entries: Iterable[Mapping[str, Any]] | None = None):
@@ -207,22 +232,28 @@ def processDump(
 		else:
 			parser.code = code.group().decode("ascii")
 
-	matches: list[GameEntry] = sorted(db.lookup(parser.code, parser.region))
+	matches: list[GameEntry]    = sorted(db.lookup(parser.code, parser.region))
+	games:   dict[str, DBEntry] = {}
 
 	if not matches:
 		raise RuntimeError(f"{parser.code} {parser.region} not found in game list")
 
-	names: str = ", ".join(map(methodcaller("getFullName"), matches))
-	logging.info(f"imported {dump.chipType.name}: {names}")
-
 	for game in matches:
+		if game.name in games:
+			continue
+
 		# TODO: handle separate installation/game carts
 		if game.hasSystemID():
 			parser.flags |= DataFlag.DATA_HAS_SYSTEM_ID
 		else:
 			parser.flags &= ~DataFlag.DATA_HAS_SYSTEM_ID
 
-		yield DBEntry(game, dump, parser)
+		games[game.name] = \
+			DBEntry(parser.code, parser.region, game.name, dump, parser)
+
+		logging.info(f"imported {dump.chipType.name}: {game.name}")
+
+	yield from games.values()
 
 ## Main
 
