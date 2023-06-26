@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	cart_tool_private
 	LANGUAGES    C CXX ASM
-	VERSION      0.3.2
+	VERSION      0.3.3
 	DESCRIPTION  "Konami System 573 security cartridge tool"
 )
 
@@ -25,6 +25,7 @@ add_executable(
 	src/cartio.cpp
 	src/file.cpp
 	src/gpu.cpp
+	src/gpufont.cpp
 	src/ide.cpp
 	src/io.cpp
 	src/main.cpp
@@ -37,6 +38,7 @@ add_executable(
 	src/app/app.cpp
 	src/app/cartactions.cpp
 	src/app/cartunlock.cpp
+	src/app/main.cpp
 	src/app/misc.cpp
 	src/libc/crt0.c
 	src/libc/cxxsupport.cpp

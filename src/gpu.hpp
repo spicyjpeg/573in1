@@ -142,7 +142,7 @@ public:
 	void drawBackdrop(Color color, BlendMode blendMode);
 };
 
-/* Image and font classes */
+/* Image class */
 
 struct [[gnu::packed]] TIMHeader {
 public:
@@ -174,29 +174,6 @@ public:
 		Context &ctx, int x, int y, int w, int h, bool blend = false
 	) const;
 	void draw(Context &ctx, int x, int y, bool blend = false) const;
-};
-
-static constexpr int FONT_CHAR_OFFSET = ' ';
-static constexpr int FONT_CHAR_COUNT  = 120;
-static constexpr int FONT_SPACE_WIDTH = 4;
-static constexpr int FONT_TAB_WIDTH   = 32;
-static constexpr int FONT_LINE_HEIGHT = 10;
-
-class Font {
-public:
-	Image    image;
-	uint32_t metrics[FONT_CHAR_COUNT];
-
-	void draw(
-		Context &ctx, const char *str, const Rect &rect, Color color = 0x808080,
-		bool wordWrap = false
-	) const;
-	void draw(
-		Context &ctx, const char *str, const RectWH &rect,
-		Color color = 0x808080, bool wordWrap = false
-	) const;
-	int getCharacterWidth(char ch) const;
-	int getStringWidth(const char *str, bool breakOnSpace = false) const;
 };
 
 /* QR code encoder */

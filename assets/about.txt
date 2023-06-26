@@ -1,6 +1,10 @@
+cart_tool - (C) 2022-2023 spicyjpeg
 
-# FatFs
-# https://elm-chan.org/fsw/ff/00index_e.html
+# Open source licenses
+
+This tool embeds several third-party libraries and projects:
+
+## FatFs (https://elm-chan.org/fsw/ff/00index_e.html)
 
 Copyright (C) 2022, ChaN, all rights reserved.
 
@@ -9,15 +13,14 @@ source and binary forms, with or without modification, are permitted provided
 that the following condition is met:
 
 1. Redistributions of source code must retain the above copyright notice,
-   this condition and the following disclaimer.
+this condition and the following disclaimer.
 
 This software is provided by the copyright holder and contributors "AS IS"
 and any warranties related to this software are DISCLAIMED.
 The copyright owner or contributors be NOT LIABLE for any damages caused
 by use of this software.
 
-# miniz
-# https://github.com/richgel999/miniz
+## miniz (https://github.com/richgel999/miniz)
 
 Copyright 2013-2014 RAD Game Tools and Valve Software
 Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
@@ -42,8 +45,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-# printf
-# https://github.com/mpaland/printf
+## printf (https://github.com/mpaland/printf)
 
 The MIT License (MIT)
 
@@ -67,8 +69,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-# ps1-bare-metal
-# https://github.com/spicyjpeg/ps1-bare-metal
+## ps1-bare-metal (https://github.com/spicyjpeg/ps1-bare-metal)
 
 ps1-bare-metal - (C) 2023 spicyjpeg
 
@@ -84,8 +85,7 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
-# qrcodegen
-# https://www.nayuki.io/page/qr-code-generator-library
+## qrcodegen (https://www.nayuki.io/page/qr-code-generator-library)
 
 Copyright (c) 2022 Project Nayuki. (MIT License)
 
@@ -97,12 +97,12 @@ the Software, and to permit persons to whom the Software is furnished to do so,
 subject to the following conditions:
 
 * The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
+all copies or substantial portions of the Software.
 
 * The Software is provided "as is", without warranty of any kind, express or
-  implied, including but not limited to the warranties of merchantability,
-  fitness for a particular purpose and noninfringement. In no event shall the
-  authors or copyright holders be liable for any claim, damages or other
-  liability, whether in an action of contract, tort or otherwise, arising from,
-  out of or in connection with the Software or the use or other dealings in the
-  Software.
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose and noninfringement. In no event shall the
+authors or copyright holders be liable for any claim, damages or other
+liability, whether in an action of contract, tort or otherwise, arising from,
+out of or in connection with the Software or the use or other dealings in the
+Software.

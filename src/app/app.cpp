@@ -366,6 +366,17 @@ bool App::_cartEraseWorker(void) {
 	return _cartUnlockWorker();
 }
 
+bool App::_rebootWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.rebootWorker.reboot"));
+	_workerStatus.setStatus(WORKER_REBOOT);
+
+	// Fall back to a soft reboot if the watchdog fails to reset the system.
+	delayMicroseconds(2000000);
+	softReset();
+
+	return true;
+}
+
 /* Misc. functions */
 
 void App::_worker(void) {
@@ -382,8 +393,9 @@ void App::_worker(void) {
 void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VBLANK)) {
 		_ctx->tick();
-		io::clearWatchdog();
 
+		if (_workerStatus.status != WORKER_REBOOT)
+			io::clearWatchdog();
 		if (gpu::isIdle() && (_workerStatus.status != WORKER_BUSY_SUSPEND))
 			switchThread(nullptr);
 	}

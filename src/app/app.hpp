@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "app/cartactions.hpp"
+#include "app/main.hpp"
 #include "app/misc.hpp"
 #include "app/cartunlock.hpp"
 #include "ps1/system.h"
@@ -16,10 +17,11 @@
 
 enum WorkerStatusType {
 	WORKER_IDLE         = 0,
-	WORKER_BUSY         = 1,
-	WORKER_BUSY_SUSPEND = 2, // Prevent main thread from running
-	WORKER_NEXT         = 3, // Go to next screen (goBack=false)
-	WORKER_NEXT_BACK    = 4  // Go to next screen (goBack=true)
+	WORKER_REBOOT       = 1,
+	WORKER_BUSY         = 2,
+	WORKER_BUSY_SUSPEND = 3, // Prevent main thread from running
+	WORKER_NEXT         = 4, // Go to next screen (goBack=false)
+	WORKER_NEXT_BACK    = 5  // Go to next screen (goBack=true)
 };
 
 // This class is used by the worker thread to report its current status back to
@@ -55,9 +57,9 @@ public:
 		if (mask)
 			setInterruptMask(mask);
 	}
-	inline void suspendMainThread(void) {
+	inline void setStatus(WorkerStatusType value) {
 		auto mask = setInterruptMask(0);
-		status    = WORKER_BUSY_SUSPEND;
+		status    = value;
 
 		if (mask)
 			setInterruptMask(mask);
@@ -86,10 +88,12 @@ static constexpr size_t WORKER_STACK_SIZE = 0x20000;
 
 class App {
 	friend class WorkerStatusScreen;
-	friend class WarningScreen;
-	friend class ButtonMappingScreen;
 	friend class ErrorScreen;
 	friend class ConfirmScreen;
+	friend class WarningScreen;
+	friend class ButtonMappingScreen;
+	friend class MainMenuScreen;
+	friend class AboutScreen;
 	friend class CartInfoScreen;
 	friend class UnlockKeyScreen;
 	friend class KeyEntryScreen;
@@ -101,10 +105,12 @@ class App {
 
 private:
 	WorkerStatusScreen  _workerStatusScreen;
-	WarningScreen       _warningScreen;
-	ButtonMappingScreen	_buttonMappingScreen;
 	ErrorScreen         _errorScreen;
 	ConfirmScreen       _confirmScreen;
+	WarningScreen       _warningScreen;
+	ButtonMappingScreen	_buttonMappingScreen;
+	MainMenuScreen      _mainMenuScreen;
+	AboutScreen         _aboutScreen;
 	CartInfoScreen      _cartInfoScreen;
 	UnlockKeyScreen     _unlockKeyScreen;
 	KeyEntryScreen      _keyEntryScreen;
@@ -140,6 +146,7 @@ private:
 	bool _cartWriteWorker(void);
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
+	bool _rebootWorker(void);
 
 	void _worker(void);
 	void _interruptHandler(void);

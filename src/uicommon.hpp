@@ -1,7 +1,10 @@
 
 #pragma once
 
+#include <stdint.h>
+#include "gpufont.hpp"
 #include "uibase.hpp"
+#include "util.hpp"
 
 namespace ui {
 
@@ -75,12 +78,25 @@ public:
 };
 
 class TextScreen : public AnimatedScreen {
+private:
+	util::Tween<int, util::QuadOutEasing> _scrollAnim;
+
+	int _textHeight;
+
 protected:
 	const char *_title, *_body, *_prompt;
 
+	inline void _updateTextHeight(ui::Context &ctx) {
+		int screenWidth = ctx.gpuCtx.width - SCREEN_MARGIN_X * 2;
+
+		_textHeight = ctx.font.getStringHeight(_body, screenWidth, true);
+	}
+
 public:
 	TextScreen(void);
+	virtual void show(Context &ctx, bool goBack = false);
 	virtual void draw(Context &ctx, bool active = true) const;
+	virtual void update(Context &ctx);
 };
 
 class ImageScreen : public AnimatedScreen {

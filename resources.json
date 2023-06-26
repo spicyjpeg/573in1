@@ -51,8 +51,8 @@
 	},
 	{
 		"type":   "text",
-		"name":   "assets/licenses.txt",
-		"source": "assets/licenses.txt"
+		"name":   "assets/about.txt",
+		"source": "assets/about.txt"
 	},
 
 	{
