@@ -288,10 +288,10 @@ void TextScreen::draw(Context &ctx, bool active) const {
 	ctx.font.draw(ctx.gpuCtx, _title, rect, COLOR_TITLE);
 
 	rect.y1 = gpu::FONT_LINE_HEIGHT + SCREEN_BLOCK_MARGIN;
-	rect.y2 = screenHeight - SCREEN_PROMPT_HEIGHT;
+	rect.y2 = screenHeight - SCREEN_PROMPT_HEIGHT_MIN;
 	ctx.font.draw(ctx.gpuCtx, _body, rect, COLOR_TEXT1, true);
 
-	rect.y1 = screenHeight - SCREEN_PROMPT_HEIGHT;
+	rect.y1 = screenHeight - SCREEN_PROMPT_HEIGHT_MIN;
 	rect.y2 = screenHeight;
 	ctx.font.draw(ctx.gpuCtx, _prompt, rect, COLOR_TEXT1, true);
 }

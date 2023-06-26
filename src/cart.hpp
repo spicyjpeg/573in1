@@ -171,7 +171,9 @@ public:
 		return (sizeof(Dump) - sizeof(data)) + getChipSize().dataLength;
 	}
 	inline void clearIdentifiers(void) {
-		__builtin_memset(&systemID, 0, sizeof(Identifier) * 3);
+		systemID.clear();
+		cartID.clear();
+		zsID.clear();
 	}
 	inline void copyDataFrom(const uint8_t *source) {
 		__builtin_memcpy(data, source, getChipSize().dataLength);
@@ -191,7 +193,17 @@ public:
 	inline void clearKey(void) {
 		__builtin_memset(dataKey, 0, sizeof(dataKey));
 	}
+	inline void copyConfigFrom(const uint8_t *source) {
+		__builtin_memcpy(config, source, sizeof(config));
+	}
+	inline void copyConfigTo(uint8_t *dest) const {
+		__builtin_memcpy(dest, config, sizeof(config));
+	}
+	inline void clearConfig(void) {
+		__builtin_memset(config, 0, sizeof(config));
+	}
 
+	void initConfig(uint8_t maxAttempts, bool hasPublicSection = false);
 	bool isPublicDataEmpty(void) const;
 	bool isDataEmpty(void) const;
 	bool isReadableDataEmpty(void) const;

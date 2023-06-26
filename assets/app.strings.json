@@ -7,7 +7,7 @@
 			"identifyGame":  "Attempting to identify game..."
 		},
 		"cartEraseWorker": {
-			"erase":  "Performing cartridge erase...",
+			"erase":  "Erasing cartridge...",
 			"error":  "An error occurred while erasing the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
 		},
 		"cartReflashWorker": {
@@ -96,7 +96,7 @@
 	"CartInfoScreen": {
 		"title":          "{CART_ICON} Cartridge information",
 		"digitalIOInfo":  "Digital I/O ID:\t%s\nDigital I/O SN:\t%s\n\n",
-		"cartInfo":       "Cartridge type:\t%s\nUnlock status:\t%s\nDS2401 identifier:\t%s\nZS01 identifier:\t%s\n\n",
+		"cartInfo":       "Cartridge type:\t%s\nUnlock status:\t%s\nDS2401 identifier:\t%s\nZS01 identifier:\t%s\nConfiguration:\t%s\n\n",
 
 		"id": {
 			"error":      "read failure",
@@ -104,13 +104,17 @@
 			"noCartID":   "cartridge has no DS2401",
 			"noZSID":     "not a ZS01 cartridge"
 		},
+		"config": {
+			"error":  "read failure",
+			"locked": "unlock required"
+		},
 		"unlockStatus": {
 			"locked":   "{CLOSED_LOCK} locked, game key required",
 			"unlocked": "{OPEN_LOCK} unlocked"
 		},
 		"pairing": {
 			"unsupported": "This game does not pair to I/O boards",
-			"unknown":     "Unlock cartridge to view pairing status",
+			"unknown":     "Unlock required to view pairing status",
 			"unpaired":    "Not paired to any digital I/O board",
 			"thisSystem":  "Paired to this system's I/O board",
 			"otherSystem": "Paired to %s (%s)"
@@ -201,7 +205,7 @@
 
 	"UnlockKeyScreen": {
 		"title":      "{CART_ICON} Select unlocking key",
-		"prompt":     "If the cartridge has been converted before, select the game it was last converted to.",
+		"prompt":     "If the cartridge has been converted before, select the game it was last converted to. If it is currently blank, select 00-00-00-00-00-00-00-00.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
 
 		"autoUnlock":   "Use key from identified game (recommended)",

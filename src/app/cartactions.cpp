@@ -163,8 +163,8 @@ void CartActionsScreen::show(ui::Context &ctx, bool goBack) {
 
 	_listLength = _NUM_NO_SYSTEM_ID_ACTIONS;
 
-	if (APP->_identified) {
-		if (APP->_identified->flags & cart::DATA_HAS_SYSTEM_ID)
+	if (APP->_parser) {
+		if (APP->_parser->flags & cart::DATA_HAS_SYSTEM_ID)
 			_listLength = _NUM_SYSTEM_ID_ACTIONS;
 	}
 
@@ -214,7 +214,7 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
 	for (size_t i = 0; i < length; i += 16) {
-		ptr += snprintf(ptr, end - ptr, "%04x: ", i);
+		ptr += snprintf(ptr, end - ptr, "%04X: ", i);
 		ptr += util::hexToString(ptr, &APP->_dump.data[i], 16, ' ');
 
 		*(ptr++) = '\n';
@@ -258,7 +258,7 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 			STR("CartActionsScreen.reflash.confirm")
 		);
 
-		APP->_reflashEntry = APP->_db.get(_activeItem);
+		APP->_selectedEntry = APP->_db.get(_activeItem);
 		ctx.show(APP->_confirmScreen, false, true);
 	} else if (
 		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
