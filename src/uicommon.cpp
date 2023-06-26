@@ -2,6 +2,7 @@
 #include "ps1/gpucmd.h"
 #include "defs.hpp"
 #include "gpu.hpp"
+#include "gpufont.hpp"
 #include "uibase.hpp"
 #include "uicommon.hpp"
 
@@ -271,10 +272,18 @@ void ProgressScreen::draw(Context &ctx, bool active) const {
 TextScreen::TextScreen(void)
 : _title(nullptr), _body(nullptr), _prompt(nullptr) {}
 
+void TextScreen::show(Context &ctx, bool goBack) {
+	AnimatedScreen::show(ctx, goBack);
+
+	_scrollAnim.setValue(0);
+	_updateTextHeight(ctx);
+}
+
 void TextScreen::draw(Context &ctx, bool active) const {
 	int screenWidth  = ctx.gpuCtx.width  - SCREEN_MARGIN_X * 2;
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
 
+	// Top/bottom text
 	_newLayer(
 		ctx, SCREEN_MARGIN_X, SCREEN_MARGIN_Y, screenWidth, screenHeight
 	);
@@ -287,13 +296,71 @@ void TextScreen::draw(Context &ctx, bool active) const {
 	rect.y2 = gpu::FONT_LINE_HEIGHT;
 	ctx.font.draw(ctx.gpuCtx, _title, rect, COLOR_TITLE);
 
-	rect.y1 = gpu::FONT_LINE_HEIGHT + SCREEN_BLOCK_MARGIN;
-	rect.y2 = screenHeight - SCREEN_PROMPT_HEIGHT_MIN;
-	ctx.font.draw(ctx.gpuCtx, _body, rect, COLOR_TEXT1, true);
-
 	rect.y1 = screenHeight - SCREEN_PROMPT_HEIGHT_MIN;
 	rect.y2 = screenHeight;
 	ctx.font.draw(ctx.gpuCtx, _prompt, rect, COLOR_TEXT1, true);
+
+	int bodyOffset = gpu::FONT_LINE_HEIGHT + SCREEN_BLOCK_MARGIN;
+	int bodyHeight = screenHeight - (bodyOffset + SCREEN_PROMPT_HEIGHT_MIN);
+
+	// Scrollable text
+	_newLayer(
+		ctx, SCREEN_MARGIN_X, SCREEN_MARGIN_Y + bodyOffset, screenWidth,
+		bodyHeight
+	);
+
+	gpu::Rect clip;
+
+	rect.y1 = -_scrollAnim.getValue(ctx.time);
+	rect.y2 = 0x7fff;
+	clip.x1 = 0;
+	clip.y1 = 0;
+	clip.x2 = screenWidth;
+	clip.y2 = bodyHeight;
+	ctx.font.draw(ctx.gpuCtx, _body, rect, clip, COLOR_TEXT1, true);
+}
+
+void TextScreen::update(Context &ctx) {
+	if (!ctx.buttons.held(ui::BTN_LEFT) && !ctx.buttons.held(ui::BTN_RIGHT))
+		return;
+
+	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
+	int bodyOffset   = gpu::FONT_LINE_HEIGHT + SCREEN_BLOCK_MARGIN;
+	int bodyHeight   = screenHeight - (bodyOffset + SCREEN_PROMPT_HEIGHT_MIN);
+
+	int scrollHeight = _textHeight - util::min(_textHeight, bodyHeight);
+
+	int oldValue = _scrollAnim.getTargetValue();
+	int value    = oldValue;
+
+	if (
+		ctx.buttons.pressed(ui::BTN_LEFT) ||
+		(ctx.buttons.repeating(ui::BTN_LEFT) && (value > 0))
+	) {
+		if (value <= 0) {
+			value = scrollHeight;
+			ctx.sounds[SOUND_CLICK].play();
+		} else {
+			value -= util::min(SCROLL_AMOUNT, value);
+			ctx.sounds[SOUND_MOVE].play();
+		}
+
+		_scrollAnim.setValue(ctx.time, oldValue, value, SPEED_FASTEST);
+	}
+	if (
+		ctx.buttons.pressed(ui::BTN_RIGHT) ||
+		(ctx.buttons.repeating(ui::BTN_RIGHT) && (value < scrollHeight))
+	) {
+		if (value >= scrollHeight) {
+			value = 0;
+			ctx.sounds[SOUND_CLICK].play();
+		} else {
+			value += util::min(SCROLL_AMOUNT, scrollHeight - value);
+			ctx.sounds[SOUND_MOVE].play();
+		}
+
+		_scrollAnim.setValue(ctx.time, oldValue, value, SPEED_FASTEST);
+	}
 }
 
 ImageScreen::ImageScreen(void)

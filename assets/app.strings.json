@@ -1,4 +1,9 @@
 {
+	"AboutScreen": {
+		"title":  "{CART_ICON} About this tool",
+		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+	},
+
 	"App": {
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
@@ -120,7 +125,7 @@
 			"otherSystem": "Paired to %s (%s)"
 		},
 		"description": {
-			"noCart":    "No supported cartridge has been found.\n\nTurn off the system and insert a security cartridge in order to continue. DO NOT HOTPLUG CARTRIDGES; hotplugging may damage both the 573 and the cartridge.\n\nIf a cartridge is inserted but not detected, try cleaning its pins as well as the system's security cartridge connector.",
+			"noCart":    "No supported cartridge has been found.\n\nTurn off the system and insert a security cartridge in order to continue. DO NOT HOTPLUG CARTRIDGES; hotplugging may damage both the 573 and the cartridge.\n\nIf a cartridge is inserted but not detected, try cleaning its pins as well as the system's security cartridge connector.\n\nPress the Test button to view debug logs.",
 			"initError": "Failed to initialize and read unprotected data from this cartridge.\n\nTurn off the system and make sure the cartridge is inserted correctly. If this issue persists, try using another cartridge of the same type.",
 
 			"locked": {
@@ -135,9 +140,9 @@
 			}
 		},
 		"prompt": {
-			"locked":   "Press {START_BUTTON} to proceed to unlock the cartridge.",
-			"unlocked": "Press {START_BUTTON} to continue.",
-			"error":    "Press the Test button to view debug logs."
+			"locked":   "Press {START_BUTTON} to unlock the cartridge, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back.",
+			"unlocked": "Press {START_BUTTON} to continue, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back.",
+			"error":    "Hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back."
 		},
 
 		"x76f041": {
@@ -178,6 +183,32 @@
 		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
+	},
+
+	"MainMenuScreen": {
+		"title":      "{CART_ICON} Main menu",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm",
+
+		"cartInfo": {
+			"name":   "Manage security cartridge",
+			"prompt": "Display information about, unlock, dump and manipulate the contents of the inserted security cartridge (if any)."
+		},
+		"dump": {
+			"name":   "Dump flash, PCMCIA cards, RTC or BIOS ROM",
+			"prompt": "Dump the contents of the internal ROMs, flash or any PCMCIA cards to the IDE hard drive or CF card connected as secondary drive (if any)."
+		},
+		"restore": {
+			"name":   "Restore flash, PCMCIA cards or RTC from dump",
+			"prompt": "Restore the contents of the internal flash or any PCMCIA cards to the IDE hard drive or CF card connected as secondary drive (if any)."
+		},
+		"about": {
+			"name":   "About this tool",
+			"prompt": "View information about this tool, including open source licenses."
+		},
+		"reboot": {
+			"name":   "Reboot system",
+			"prompt": "Restart the system. Swap out the CD-ROM and toggle DIP switch 4 before selecting this option to boot the installed game."
+		}
 	},
 
 	"QRCodeScreen": {

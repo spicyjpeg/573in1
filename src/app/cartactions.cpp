@@ -10,13 +10,13 @@
 struct Action {
 public:
 	util::Hash name, prompt;
-	void (CartActionsScreen::*target)(ui::Context &ctx);
+	void       (CartActionsScreen::*target)(ui::Context &ctx);
 };
 
 static constexpr int _NUM_SYSTEM_ID_ACTIONS    = 8;
 static constexpr int _NUM_NO_SYSTEM_ID_ACTIONS = 5;
 
-static const Action _ACTIONS[]{
+static const Action _ACTIONS[_NUM_SYSTEM_ID_ACTIONS]{
 	{
 		.name   = "CartActionsScreen.qrDump.name"_h,
 		.prompt = "CartActionsScreen.qrDump.prompt"_h,
@@ -224,6 +224,8 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 }
 
 void HexdumpScreen::update(ui::Context &ctx) {
+	TextScreen::update(ctx);
+
 	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_cartInfoScreen, true, true);
 }

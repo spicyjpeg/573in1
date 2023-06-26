@@ -87,6 +87,7 @@ void flushCache(void) {
 }
 
 void softReset(void) {
+	setInterruptMask(0);
 	BIOS_ENTRY_POINT();
 }
 

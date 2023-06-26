@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "ps1/gpucmd.h"
 #include "gpu.hpp"
+#include "gpufont.hpp"
 #include "io.hpp"
 #include "pad.hpp"
 #include "uibase.hpp"

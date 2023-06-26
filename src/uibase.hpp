@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "gpu.hpp"
+#include "gpufont.hpp"
 #include "spu.hpp"
 #include "util.hpp"
 
@@ -72,6 +73,8 @@ static constexpr int BUTTON_PADDING = 5;
 static constexpr int PROGRESS_BAR_HEIGHT = 8;
 
 static constexpr int SHADOW_OFFSET = 4;
+
+static constexpr int SCROLL_AMOUNT = 32;
 
 /* Button state manager */
 

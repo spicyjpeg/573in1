@@ -205,17 +205,19 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 }
 
 void CartInfoScreen::update(ui::Context &ctx) {
-	auto &dump = APP->_dump;
+	TextScreen::update(ctx);
 
-	if (!dump.chipType)
-		return;
-
-	if (ctx.buttons.pressed(ui::BTN_START)) {
-		if (dump.flags & cart::DUMP_PRIVATE_DATA_OK)
+	if (APP->_dump.chipType && ctx.buttons.pressed(ui::BTN_START)) {
+		if (APP->_dump.flags & cart::DUMP_PRIVATE_DATA_OK)
 			ctx.show(APP->_cartActionsScreen, false, true);
 		else
 			ctx.show(APP->_unlockKeyScreen, false, true);
 	}
+	if (
+		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
+		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+	)
+		ctx.show(APP->_mainMenuScreen, true, true);
 }
 
 enum SpecialEntryIndex {
@@ -341,7 +343,8 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 			APP->_selectedEntry = APP->_db.get(index);
 			ctx.show(APP->_confirmScreen, false, true);
 		}
-	} else if (
+	}
+	if (
 		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
 		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
 	) {
