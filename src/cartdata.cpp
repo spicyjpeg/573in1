@@ -117,7 +117,7 @@ void ExtendedParser::setCode(const char *input) {
 	__builtin_strncpy(header->code, input, sizeof(header->code));
 
 	if (flags & DATA_GX706_WORKAROUND)
-		header->region[1] = 'E';
+		header->code[1] = 'E';
 }
 
 size_t ExtendedParser::getRegion(char *output) const {
@@ -172,7 +172,16 @@ void ExtendedParser::flush(void) {
 	//pub->installID.copyFrom(pri->installID.data);
 	pub->systemID.copyFrom(pri->systemID.data);
 
-	_getHeader()->updateChecksum(flags & DATA_CHECKSUM_INVERTED);
+	auto header = _getHeader();
+	char code   = header->code[1];
+
+	if (flags & DATA_GX706_WORKAROUND)
+		header->code[1] = 'X';
+
+	header->updateChecksum(flags & DATA_CHECKSUM_INVERTED);
+
+	if (flags & DATA_GX706_WORKAROUND)
+		header->code[1] = code;
 }
 
 bool ExtendedParser::validate(void) {
@@ -180,15 +189,15 @@ bool ExtendedParser::validate(void) {
 		return false;
 
 	auto header = _getHeader();
-	char region = header->region[1];
+	char code   = header->code[1];
 
 	if (flags & DATA_GX706_WORKAROUND)
-		header->region[1] = 'X';
+		header->code[1] = 'X';
 
 	bool valid = header->validateChecksum(flags & DATA_CHECKSUM_INVERTED);
 
 	if (flags & DATA_GX706_WORKAROUND)
-		header->region[1] = region;
+		header->code[1] = code;
 
 	return valid;
 }

@@ -48,10 +48,11 @@ enum AnimationSpeed {
 	SPEED_SLOW    = 20
 };
 
-static constexpr int SCREEN_MARGIN_X      = 16;
-static constexpr int SCREEN_MARGIN_Y      = 20;
-static constexpr int SCREEN_BLOCK_MARGIN  = 6;
-static constexpr int SCREEN_PROMPT_HEIGHT = 30;
+static constexpr int SCREEN_MARGIN_X          = 16;
+static constexpr int SCREEN_MARGIN_Y          = 20;
+static constexpr int SCREEN_BLOCK_MARGIN      = 6;
+static constexpr int SCREEN_PROMPT_HEIGHT     = 30;
+static constexpr int SCREEN_PROMPT_HEIGHT_MIN = 10;
 
 static constexpr int LIST_BOX_PADDING  = 4;
 static constexpr int LIST_ITEM_PADDING = 2;

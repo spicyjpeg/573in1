@@ -18,10 +18,8 @@ static const Key _COMMAND_KEY{
 // Konami's driver generates a pseudorandom key for each transaction, but it can
 // be a fixed key as well.
 static const Key _RESPONSE_KEY{
-	.add   = { 237, 8, 16, 11, 6, 4, 8, 30 },
-	.shift = {   0, 3,  2,  2, 6, 2, 2,  1 }
-	//.add   = { 0, 0, 0, 0, 0, 0, 0, 0 },
-	//.shift = { 0, 0, 0, 0, 0, 0, 0, 0 }
+	.add   = { 0, 0, 0, 0, 0, 0, 0, 0 },
+	.shift = { 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 /* Packet encoding/decoding */
@@ -118,6 +116,8 @@ bool Packet::validateCRC(void) const {
 }
 
 void Packet::encodeReadRequest(void) {
+	LOG("addr=0x%02x, public", address);
+
 	command = REQ_READ;
 	_RESPONSE_KEY.packInto(data);
 	updateCRC();
@@ -126,6 +126,8 @@ void Packet::encodeReadRequest(void) {
 }
 
 void Packet::encodeReadRequest(Key &dataKey, uint8_t state) {
+	LOG("addr=0x%02x, private", address);
+
 	command = REQ_READ | REQ_USE_DATA_KEY;
 	_RESPONSE_KEY.packInto(data);
 	updateCRC();
@@ -135,6 +137,8 @@ void Packet::encodeReadRequest(Key &dataKey, uint8_t state) {
 }
 
 void Packet::encodeWriteRequest(Key &dataKey, uint8_t state) {
+	LOG("addr=0x%02x", address);
+
 	command = REQ_WRITE | REQ_USE_DATA_KEY;
 	updateCRC();
 

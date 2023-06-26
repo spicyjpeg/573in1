@@ -122,24 +122,24 @@ private:
 	cart::CartDB _db;
 	Thread       _workerThread;
 	WorkerStatus _workerStatus;
-	void         (App::*_workerFunction)(void);
+	bool         (App::*_workerFunction)(void);
 
 	uint8_t             *_workerStack;
 	cart::Driver        *_driver;
 	cart::Parser        *_parser;
-	const cart::DBEntry *_identified, *_reflashEntry;
+	const cart::DBEntry *_identified, *_selectedEntry;
 
 	void _unloadCartData(void);
-	void _setupWorker(void (App::*func)(void));
+	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
 
-	void _cartDetectWorker(void);
-	void _cartUnlockWorker(void);
-	void _qrCodeWorker(void);
-	void _hddDumpWorker(void);
-	void _cartWriteWorker(void);
-	void _cartReflashWorker(void);
-	void _cartEraseWorker(void);
+	bool _cartDetectWorker(void);
+	bool _cartUnlockWorker(void);
+	bool _qrCodeWorker(void);
+	bool _hddDumpWorker(void);
+	bool _cartWriteWorker(void);
+	bool _cartReflashWorker(void);
+	bool _cartEraseWorker(void);
 
 	void _worker(void);
 	void _interruptHandler(void);

@@ -45,6 +45,9 @@ DriverError DummyDriver::readCartID(void) {
 }
 
 DriverError DummyDriver::readPublicData(void) {
+	if (_dummyDump.chipType != ZS01)
+		return UNSUPPORTED_OP;
+
 	if (_dummyDump.flags & DUMP_PUBLIC_DATA_OK) {
 		_dump.copyDataFrom(_dummyDump.data);
 		_dump.flags |= DUMP_PUBLIC_DATA_OK;
@@ -59,7 +62,8 @@ DriverError DummyDriver::readPrivateData(void) {
 		_dump.dataKey, _dummyDump.dataKey, sizeof(_dump.dataKey)
 	)) {
 		_dump.copyDataFrom(_dummyDump.data);
-		_dump.flags |= DUMP_PRIVATE_DATA_OK;
+		_dump.copyConfigFrom(_dummyDump.config);
+		_dump.flags |= DUMP_PRIVATE_DATA_OK | DUMP_CONFIG_OK;
 		return NO_ERROR;
 	}
 
@@ -411,8 +415,8 @@ DriverError ZS01Driver::_transact(
 	LOG("D: %s", buffer);
 #endif
 
-	//if (!ok)
-		//return ZS01_CRC_MISMATCH;
+	if (!ok)
+		return ZS01_CRC_MISMATCH;
 
 	_encoderState = response.address;
 

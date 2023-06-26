@@ -62,7 +62,7 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 	auto &dump = APP->_dump;
 
-	char id1[32], id2[32];
+	char id1[32], id2[32], config[32];
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
 	// Digital I/O board info
@@ -113,25 +113,36 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	else
 		__builtin_strcpy(id2, STR("CartInfoScreen.id.noZSID"));
 
+	if (dump.flags & cart::DUMP_CONFIG_OK)
+		util::hexToString(config, dump.config, sizeof(dump.config), '-');
+	else if (dump.flags & cart::DUMP_PRIVATE_DATA_OK)
+		__builtin_strcpy(config, STR("CartInfoScreen.config.error"));
+	else
+		__builtin_strcpy(config, STR("CartInfoScreen.config.locked"));
+
 	auto unlockStatus = (dump.flags & cart::DUMP_PRIVATE_DATA_OK)
 		? STR("CartInfoScreen.unlockStatus.unlocked")
 		: STR("CartInfoScreen.unlockStatus.locked");
 
 	ptr += snprintf(
 		ptr, end - ptr, STR("CartInfoScreen.cartInfo"),
-		STRH(_CART_TYPES[dump.chipType].name), unlockStatus, id1, id2
+		STRH(_CART_TYPES[dump.chipType].name), unlockStatus, id1, id2, config
 	);
 
-	// At this point the cartridge can be in one of 6 states:
+	// At this point the cartridge can be in one of 8 states:
 	// - locked, identified
 	//   => unlock required, auto unlock available
-	// - locked, unidentified
+	// - locked, parsed but unidentified
+	//   => unlock required
+	// - locked, parsing failed
 	//   => unlock required
 	// - locked, blank or no public data
 	//   => unlock required
 	// - unlocked, identified
 	//   => all actions available
-	// - unlocked, no private data, unidentified
+	// - unlocked, no private data, parsed but unidentified
+	//   => all actions available (not implemented yet)
+	// - unlocked, no private data, parsing failed
 	//   => only dumping/flashing available
 	// - unlocked, no private data, blank
 	//   => only dumping/flashing available
@@ -170,7 +181,9 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 					STR("CartInfoScreen.pairing.otherSystem"), id1, id2
 				);
 		}
-	} else if (dump.flags & cart::DUMP_PUBLIC_DATA_OK) {
+	} else if (
+		dump.flags & (cart::DUMP_PUBLIC_DATA_OK | cart::DUMP_PRIVATE_DATA_OK)
+	) {
 		state = APP->_dump.isReadableDataEmpty() ? BLANK_CART : UNIDENTIFIED;
 	} else {
 		state = UNKNOWN;
@@ -258,10 +271,14 @@ void UnlockKeyScreen::autoUnlock(ui::Context &ctx) {
 		APP->_dump.dataKey, APP->_identified->dataKey,
 		sizeof(APP->_dump.dataKey)
 	);
+
+	//APP->_selectedEntry = APP->_identified;
+	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void UnlockKeyScreen::useCustomKey(ui::Context &ctx) {
+	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_keyEntryScreen, false, true);
 }
 
@@ -269,6 +286,8 @@ void UnlockKeyScreen::use00Key(ui::Context &ctx) {
 	__builtin_memset(
 		APP->_dump.dataKey, 0x00, sizeof(APP->_dump.dataKey)
 	);
+
+	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
@@ -276,6 +295,8 @@ void UnlockKeyScreen::useFFKey(ui::Context &ctx) {
 	__builtin_memset(
 		APP->_dump.dataKey, 0xff, sizeof(APP->_dump.dataKey)
 	);
+
+	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
@@ -316,6 +337,8 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 				APP->_dump.dataKey, APP->_db.get(index)->dataKey,
 				sizeof(APP->_dump.dataKey)
 			);
+
+			APP->_selectedEntry = APP->_db.get(index);
 			ctx.show(APP->_confirmScreen, false, true);
 		}
 	} else if (

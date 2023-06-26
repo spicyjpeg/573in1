@@ -176,6 +176,27 @@ const ChipSize CHIP_SIZES[NUM_CHIP_TYPES]{
 	{ .dataLength = 112, .publicDataOffset =   0, .publicDataLength =  32 }
 };
 
+void Dump::initConfig(uint8_t maxAttempts, bool hasPublicSection) {
+	clearConfig();
+
+	switch (chipType) {
+		case X76F041:
+			config[0] = 0xff;
+			config[1] = hasPublicSection ? 0xaf : 0xff;
+			config[2] = 0x20; // Disable retry counter
+			config[3] = maxAttempts;
+			break;
+
+		case ZS01:
+			//assert(hasPublicSection);
+			config[4] = maxAttempts;
+			break;
+
+		default:
+			break;
+	}
+}
+
 bool Dump::isPublicDataEmpty(void) const {
 	if (!(flags & DUMP_PUBLIC_DATA_OK))
 		return false;
