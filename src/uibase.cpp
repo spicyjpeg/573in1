@@ -334,7 +334,8 @@ void ModalScreen::draw(Context &ctx, bool active) const {
 		rect.x1 = TITLE_BAR_PADDING;
 		rect.y1 = TITLE_BAR_PADDING;
 		rect.x2 = _width - TITLE_BAR_PADDING;
-		rect.y2 = TITLE_BAR_HEIGHT - TITLE_BAR_PADDING;
+		rect.y2 = TITLE_BAR_PADDING + gpu::FONT_LINE_HEIGHT;
+		//rect.y2 = TITLE_BAR_HEIGHT - TITLE_BAR_PADDING;
 		ctx.font.draw(ctx.gpuCtx, _title, rect, COLOR_TITLE);
 
 		rect.y1 = TITLE_BAR_HEIGHT + MODAL_PADDING;

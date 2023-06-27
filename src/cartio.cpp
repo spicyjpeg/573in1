@@ -196,7 +196,7 @@ DriverError X76Driver::_x76Command(
 	}
 
 #ifdef ENABLE_I2C_LOGGING
-	char buffer[32];
+	char buffer[48];
 
 	util::hexToString(buffer, _dump.dataKey, sizeof(_dump.dataKey), ' ');
 	LOG("S: %02X %02X %s", cmd, param, buffer);
@@ -386,7 +386,7 @@ DriverError ZS01Driver::_transact(
 	io::i2cStart();
 
 #ifdef ENABLE_I2C_LOGGING
-	char buffer[32];
+	char buffer[48];
 
 	util::hexToString(buffer, &request.command, sizeof(zs01::Packet), ' ');
 	LOG("S: %s", buffer);
@@ -553,13 +553,13 @@ DriverError ZS01Driver::erase(void) {
 
 DriverError ZS01Driver::setDataKey(const uint8_t *key) {
 	zs01::Packet request, response;
-	zs01::Key    newKey;
+	zs01::Key    oldKey;
 
-	newKey.unpackFrom(_dump.dataKey);
+	oldKey.unpackFrom(_dump.dataKey);
 
 	request.address = zs01::ADDR_DATA_KEY;
 	request.copyFrom(key);
-	request.encodeWriteRequest(newKey, _encoderState);
+	request.encodeWriteRequest(oldKey, _encoderState);
 
 	DriverError error = _transact(request, response);
 	if (error)

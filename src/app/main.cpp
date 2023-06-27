@@ -81,7 +81,7 @@ public:
 	void       (MainMenuScreen::*target)(ui::Context &ctx);
 };
 
-static constexpr int _NUM_MENU_ENTRIES = 5;
+static constexpr int _NUM_MENU_ENTRIES = 3;
 
 static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 	{
@@ -89,6 +89,7 @@ static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 		.prompt = "MainMenuScreen.cartInfo.prompt"_h,
 		.target = &MainMenuScreen::cartInfo
 	}, {
+#if 0
 		.name   = "MainMenuScreen.dump.name"_h,
 		.prompt = "MainMenuScreen.dump.prompt"_h,
 		.target = &MainMenuScreen::dump
@@ -97,6 +98,7 @@ static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 		.prompt = "MainMenuScreen.restore.prompt"_h,
 		.target = &MainMenuScreen::restore
 	}, {
+#endif
 		.name   = "MainMenuScreen.about.name"_h,
 		.prompt = "MainMenuScreen.about.prompt"_h,
 		.target = &MainMenuScreen::about

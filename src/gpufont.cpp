@@ -55,10 +55,10 @@ void Font::draw(
 				int w = size & 0x7f; size >>= 7;
 				int h = size & 0x7f; size >>= 7;
 
-				if (y > (clipRect.y2 - h))
+				if (y > clipRect.y2)
 					return;
 				if (
-					(x >= (clipRect.x1 - w)) && (x <= (clipRect.x2 - w)) &&
+					(x >= (clipRect.x1 - w)) && (x <= clipRect.x2) &&
 					(y >= (clipRect.y1 - h))
 				) {
 					auto cmd = ctx.newPacket(4);

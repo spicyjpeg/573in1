@@ -1,6 +1,12 @@
-cart_tool - (C) 2022-2023 spicyjpeg
+Konami System 573 security cartridge tool
 
-# Open source licenses
+(C) 2022-2023 spicyjpeg
+
+WARNING: This tool is experimental and provided with no warranty whatsoever. It
+is not guaranteed to work and improper usage can PERMANENTLY BRICK your System
+573 security cartridges. Use this tool at your own risk.
+
+# Third-party licenses
 
 This tool embeds several third-party libraries and projects:
 
