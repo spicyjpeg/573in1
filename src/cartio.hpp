@@ -64,9 +64,9 @@ class CartDriver : public Driver {
 public:
 	inline CartDriver(Dump &dump, ChipType chipType = NONE, uint8_t flags = 0)
 	: Driver(dump) {
-		dump.clearIdentifiers();
-		dump.clearKey();
-		dump.clearData();
+		//dump.clearIdentifiers();
+		//dump.clearKey();
+		//dump.clearData();
 
 		dump.chipType = chipType;
 		dump.flags    = flags;

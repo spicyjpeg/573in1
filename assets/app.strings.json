@@ -54,7 +54,7 @@
 
 	"CartActionsScreen": {
 		"title":      "{CART_ICON} Cartridge options",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
 
 		"qrDump": {
 			"name":   "Dump cartridge as QR code",
@@ -187,7 +187,7 @@
 
 	"MainMenuScreen": {
 		"title":      "{CART_ICON} Main menu",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm",
+		"itemPrompt": "{RIGHT_ARROW} Select by pressing {START_BUTTON}",
 
 		"cartInfo": {
 			"name":   "Manage security cartridge",
@@ -219,7 +219,7 @@
 	"ReflashGameScreen": {
 		"title":      "{CART_ICON} Select game to convert cartridge to",
 		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back"
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back"
 	},
 
 	"SystemIDEntryScreen": {
@@ -237,7 +237,7 @@
 	"UnlockKeyScreen": {
 		"title":      "{CART_ICON} Select unlocking key",
 		"prompt":     "If the cartridge has been converted before, select the game it was last converted to. If it is currently blank, select 00-00-00-00-00-00-00-00.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to confirm, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
 
 		"autoUnlock":   "Use key from identified game (recommended)",
 		"useCustomKey": "Enter key manually...",

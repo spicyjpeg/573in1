@@ -202,7 +202,7 @@ void QRCodeScreen::show(ui::Context &ctx, bool goBack) {
 
 void QRCodeScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START))
-		ctx.show(APP->_cartInfoScreen, true, true);
+		ctx.show(APP->_cartActionsScreen, true, true);
 }
 
 void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
@@ -220,6 +220,8 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 		*(ptr++) = '\n';
 	}
 
+	*(--ptr) = 0;
+
 	TextScreen::show(ctx, goBack);
 }
 
@@ -227,7 +229,7 @@ void HexdumpScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START))
-		ctx.show(APP->_cartInfoScreen, true, true);
+		ctx.show(APP->_cartActionsScreen, true, true);
 }
 
 const char *ReflashGameScreen::_getItemName(ui::Context &ctx, int index) const {

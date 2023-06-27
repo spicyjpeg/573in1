@@ -42,7 +42,8 @@ void MessageScreen::draw(Context &ctx, bool active) const {
 
 	rect.y = buttonY + BUTTON_PADDING;
 	rect.w = _getButtonWidth();
-	rect.h = BUTTON_HEIGHT - BUTTON_PADDING * 2;
+	rect.h = rect.y + gpu::FONT_LINE_HEIGHT;
+	//rect.h = BUTTON_HEIGHT - BUTTON_PADDING * 2;
 
 	for (int i = 0; i < _numButtons; i++) {
 		rect.x = buttonX +
@@ -301,7 +302,8 @@ void TextScreen::draw(Context &ctx, bool active) const {
 	ctx.font.draw(ctx.gpuCtx, _prompt, rect, COLOR_TEXT1, true);
 
 	int bodyOffset = gpu::FONT_LINE_HEIGHT + SCREEN_BLOCK_MARGIN;
-	int bodyHeight = screenHeight - (bodyOffset + SCREEN_PROMPT_HEIGHT_MIN);
+	int bodyHeight = screenHeight -
+		(bodyOffset + SCREEN_PROMPT_HEIGHT_MIN + SCREEN_BLOCK_MARGIN);
 
 	// Scrollable text
 	_newLayer(
@@ -326,7 +328,8 @@ void TextScreen::update(Context &ctx) {
 
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
 	int bodyOffset   = gpu::FONT_LINE_HEIGHT + SCREEN_BLOCK_MARGIN;
-	int bodyHeight   = screenHeight - (bodyOffset + SCREEN_PROMPT_HEIGHT_MIN);
+	int bodyHeight   = screenHeight -
+		(bodyOffset + SCREEN_PROMPT_HEIGHT_MIN + SCREEN_BLOCK_MARGIN);
 
 	int scrollHeight = _textHeight - util::min(_textHeight, bodyHeight);
 
@@ -420,10 +423,11 @@ void ListScreen::_drawItems(Context &ctx) const {
 
 	rect.x1 = LIST_BOX_PADDING + LIST_ITEM_PADDING;
 	rect.x2 = itemWidth - LIST_ITEM_PADDING;
-	rect.y2 = listHeight;
+	//rect.y2 = listHeight;
 
 	for (int i = 0; (i < _listLength) && (itemY < listHeight); i++) {
 		int itemHeight = gpu::FONT_LINE_HEIGHT + LIST_ITEM_PADDING * 2;
+
 		if (i == _activeItem)
 			itemHeight += gpu::FONT_LINE_HEIGHT;
 
@@ -439,10 +443,12 @@ void ListScreen::_drawItems(Context &ctx) const {
 				);
 
 				rect.y1 = itemY + LIST_ITEM_PADDING + gpu::FONT_LINE_HEIGHT;
+				rect.y2 = rect.y1 + gpu::FONT_LINE_HEIGHT;
 				ctx.font.draw(ctx.gpuCtx, _itemPrompt, rect, COLOR_SUBTITLE);
 			}
 
 			rect.y1 = itemY + LIST_ITEM_PADDING;
+			rect.y2 = rect.y1 + gpu::FONT_LINE_HEIGHT;
 			ctx.font.draw(ctx.gpuCtx, _getItemName(ctx, i), rect, COLOR_TITLE);
 		}
 

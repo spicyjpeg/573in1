@@ -252,7 +252,7 @@ bool App::_hddDumpWorker(void) {
 		return false;
 	}
 
-	_workerStatus.setNextScreen(_cartInfoScreen);
+	_workerStatus.setNextScreen(_cartActionsScreen);
 	return true;
 }
 
@@ -321,13 +321,12 @@ bool App::_cartReflashWorker(void) {
 	_parser->setYear(_selectedEntry->year);
 	_parser->flush();
 
-	uint8_t key[8];
-	auto    error = _driver->writeData();
+	auto error = _driver->setDataKey(_selectedEntry->dataKey);
 
-	if (!error) {
-		_selectedEntry->copyKeyTo(key);
-		error = _driver->setDataKey(key);
-	}
+	if (error)
+		LOG("failed to set data key");
+	else
+		error = _driver->writeData();
 
 	_cartDetectWorker();
 
@@ -341,7 +340,6 @@ bool App::_cartReflashWorker(void) {
 		return false;
 	}
 
-	_dump.copyKeyFrom(key);
 	return _cartUnlockWorker();
 }
 
@@ -362,7 +360,6 @@ bool App::_cartEraseWorker(void) {
 		return false;
 	}
 
-	_dump.clearKey();
 	return _cartUnlockWorker();
 }
 
