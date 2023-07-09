@@ -232,8 +232,8 @@ bool App::_qrCodeWorker(void) {
 	return true;
 }
 
-bool App::_hddDumpWorker(void) {
-	_workerStatus.update(0, 1, WSTR("App.hddDumpWorker.save"));
+bool App::_cartDumpWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
 	char code[8], region[8], path[32];
 
@@ -246,7 +246,7 @@ bool App::_hddDumpWorker(void) {
 
 	if (_fileProvider->saveStruct(_dump, path) != sizeof(cart::Dump)) {
 		_errorScreen.setMessage(
-			_cartInfoScreen, WSTR("App.hddDumpWorker.error")
+			_cartInfoScreen, WSTR("App.cartDumpWorker.error")
 		);
 		_workerStatus.setNextScreen(_errorScreen);
 		return false;
@@ -322,6 +322,7 @@ bool App::_cartReflashWorker(void) {
 	_parser->flush();
 
 	auto error = _driver->setDataKey(_selectedEntry->dataKey);
+	delayMicroseconds(1000000); // TODO: does this fix ZS01 bricking?
 
 	if (error)
 		LOG("failed to set data key");
@@ -347,6 +348,7 @@ bool App::_cartEraseWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartEraseWorker.erase"));
 
 	auto error = _driver->erase();
+	delayMicroseconds(1000000); // TODO: does this fix ZS01 bricking?
 
 	_cartDetectWorker();
 
@@ -361,6 +363,140 @@ bool App::_cartEraseWorker(void) {
 	}
 
 	return _cartUnlockWorker();
+}
+
+struct DumpRegion {
+	util::Hash     prompt;
+	const char     *path;
+	const uint16_t *ptr;
+	size_t         length;
+	int            bank;
+	uint32_t       inputs;
+};
+
+static constexpr int _NUM_DUMP_REGIONS = 5;
+
+static const DumpRegion _DUMP_REGIONS[_NUM_DUMP_REGIONS]{
+	{
+		.prompt = "App.romDumpWorker.dumpBIOS"_h,
+		.path   = "dump_%d/bios.bin",
+		.ptr    = reinterpret_cast<const uint16_t *>(DEV2_BASE),
+		.length = 0x80000,
+		.bank   = -1,
+		.inputs = 0
+	}, {
+		.prompt = "App.romDumpWorker.dumpRTC"_h,
+		.path   = "dump_%d/rtc.bin",
+		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE | 0x620000),
+		.length = 0x2000,
+		.bank   = -1,
+		.inputs = 0
+	}, {
+		.prompt = "App.romDumpWorker.dumpFlash"_h,
+		.path   = "dump_%d/flash.bin",
+		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
+		.length = 0x1000000,
+		.bank   = SYS573_BANK_FLASH,
+		.inputs = 0
+	}, {
+		.prompt = "App.romDumpWorker.dumpPCMCIA1"_h,
+		.path   = "dump_%d/pcmcia1.bin",
+		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
+		.length = 0x4000000,
+		.bank   = SYS573_BANK_PCMCIA1,
+		.inputs = io::JAMMA_PCMCIA_CD1
+	}, {
+		.prompt = "App.romDumpWorker.dumpPCMCIA2"_h,
+		.path   = "dump_%d/pcmcia2.bin",
+		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
+		.length = 0x4000000,
+		.bank   = SYS573_BANK_PCMCIA2,
+		.inputs = io::JAMMA_PCMCIA_CD2
+	}
+};
+
+bool App::_romDumpWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.romDumpWorker.init"));
+
+	// Store all dumps in a directory named "dump_N".
+	int  index = 0;
+	char path[32];
+
+	do {
+		index++;
+		snprintf(path, sizeof(path), "dump_%d", index);
+	} while (_fileProvider->fileExists(path));
+
+	LOG("saving dumps to %s", path);
+
+	if (!_fileProvider->createDirectory(path)) {
+		_errorScreen.setMessage(
+			_mainMenuScreen, WSTR("App.romDumpWorker.initError")
+		);
+		_workerStatus.setNextScreen(_errorScreen);
+		return false;
+	}
+
+	uint32_t inputs = io::getJAMMAInputs();
+
+	for (int i = 0; i < _NUM_DUMP_REGIONS; i++) {
+		auto &region = _DUMP_REGIONS[i];
+
+		// Skip PCMCIA slots if a card is not inserted.
+		if (region.inputs && !(inputs & region.inputs))
+			continue;
+
+		_workerStatus.update(i, _NUM_DUMP_REGIONS, WSTRH(region.prompt));
+		snprintf(path, sizeof(path), region.path, index);
+
+		auto _file = _fileProvider->openFile(
+			path, file::WRITE | file::ALLOW_CREATE
+		);
+
+		if (!_file)
+			goto _writeError;
+
+		// Read data from the source and write it to the file one 8 KB chunk at
+		// a time.
+		uint16_t buffer[0x1000];
+
+		const uint16_t *ptr   = region.ptr;
+		size_t         length = region.length;
+		int            bank   = region.bank;
+
+		io::setFlashBank(bank++);
+
+		for (; length; length -= sizeof(buffer)) {
+			uint16_t *output = buffer;
+
+			for (int i = sizeof(buffer); i; i -= 2)
+				*(output++) = *(ptr++);
+
+			// TODO TODO
+			if (ptr >= reinterpret_cast<const void *>(DEV0_BASE | 0x400000)) {
+				ptr = region.ptr;
+				io::setFlashBank(bank++);
+			}
+
+			if (_file->write(buffer, sizeof(buffer)) < sizeof(buffer)) {
+				_file->close();
+				goto _writeError;
+			}
+		}
+
+		_file->close();
+		LOG("%s saved", path);
+	}
+
+	_workerStatus.setNextScreen(_mainMenuScreen);
+	return true;
+
+_writeError:
+	_errorScreen.setMessage(
+		_mainMenuScreen, WSTR("App.romDumpWorker.dumpError")
+	);
+	_workerStatus.setNextScreen(_errorScreen);
+	return false;
 }
 
 bool App::_rebootWorker(void) {

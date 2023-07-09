@@ -81,7 +81,7 @@ public:
 	void       (MainMenuScreen::*target)(ui::Context &ctx);
 };
 
-static constexpr int _NUM_MENU_ENTRIES = 3;
+static constexpr int _NUM_MENU_ENTRIES = 4;
 
 static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 	{
@@ -89,11 +89,11 @@ static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 		.prompt = "MainMenuScreen.cartInfo.prompt"_h,
 		.target = &MainMenuScreen::cartInfo
 	}, {
-#if 0
 		.name   = "MainMenuScreen.dump.name"_h,
 		.prompt = "MainMenuScreen.dump.prompt"_h,
 		.target = &MainMenuScreen::dump
 	}, {
+#if 0
 		.name   = "MainMenuScreen.restore.name"_h,
 		.prompt = "MainMenuScreen.restore.prompt"_h,
 		.target = &MainMenuScreen::restore
@@ -123,7 +123,16 @@ void MainMenuScreen::cartInfo(ui::Context &ctx) {
 }
 
 void MainMenuScreen::dump(ui::Context &ctx) {
-	//ctx.show(APP->_dumpMenuScreen, false, true);
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_romDumpWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("MainMenuScreen.dump.confirm")
+	);
+
+	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void MainMenuScreen::restore(ui::Context &ctx) {

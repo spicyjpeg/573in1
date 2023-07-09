@@ -111,6 +111,12 @@ static inline void setCartOutput(CartOutputPin pin, bool value) {
 	SYS573_CART_OUT = _cartOutputReg;
 }
 
+static inline void setFlashBank(int bank) {
+	_bankSwitchReg = (_bankSwitchReg & (3 << 6)) | bank;
+
+	SYS573_BANK_CTRL = _bankSwitchReg;
+}
+
 static inline void setCartSDADir(bool dir) {
 	if (dir)
 		_bankSwitchReg |= 1 << 6;

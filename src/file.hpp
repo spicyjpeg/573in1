@@ -83,6 +83,9 @@ public:
 
 	virtual void close(void) {}
 
+	virtual bool fileExists(const char *path);
+	virtual bool createDirectory(const char *path) { return false; }
+
 	virtual File *openFile(const char *path, uint32_t flags) { return nullptr; }
 	virtual size_t loadData(util::Data &output, const char *path);
 	virtual size_t loadData(void *output, size_t length, const char *path);
@@ -95,6 +98,8 @@ class HostProvider : public Provider {
 public:
 	bool init(void);
 
+	bool createDirectory(const char *path);
+
 	File *openFile(const char *path, uint32_t flags);
 };
 
@@ -106,6 +111,9 @@ private:
 public:
 	bool init(const char *drive);
 	void close(void);
+
+	bool fileExists(const char *path);
+	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
 };
@@ -120,6 +128,8 @@ public:
 	bool init(File *file);
 	bool init(const void *zipData, size_t length);
 	void close(void);
+
+	bool fileExists(const char *path);
 
 	size_t loadData(util::Data &output, const char *path);
 	size_t loadData(void *output, size_t length, const char *path);

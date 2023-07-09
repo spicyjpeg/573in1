@@ -29,7 +29,7 @@ pcdrvInit:
 .type pcdrvCreate, @function
 
 pcdrvCreate:
-	li    $a2, 0
+	move  $a2, $a1
 	move  $a1, $a0
 	break 0, 0x102 # (path, path, 0) -> error, fd
 

@@ -17,6 +17,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdint.h>
 
 typedef enum {
 	PCDRV_MODE_READ       = 0,
@@ -30,12 +31,20 @@ typedef enum {
 	PCDRV_SEEK_END = 2
 } PCDRVSeekMode;
 
+typedef enum {
+	PCDRV_ATTR_READ_ONLY = 1 << 0,
+	PCDRV_ATTR_HIDDEN    = 1 << 1,
+	PCDRV_ATTR_SYSTEM    = 1 << 2,
+	PCDRV_ATTR_DIRECTORY = 1 << 4,
+	PCDRV_ATTR_ARCHIVE   = 1 << 5
+} PCDRVAttribute;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int pcdrvInit(void);
-int pcdrvCreate(const char *path);
+int pcdrvCreate(const char *path, uint32_t attributes);
 int pcdrvOpen(const char *path, PCDRVOpenMode mode);
 int pcdrvClose(int fd);
 int pcdrvRead(int fd, void *data, size_t length);
