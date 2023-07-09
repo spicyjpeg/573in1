@@ -142,10 +142,11 @@ private:
 	bool _cartDetectWorker(void);
 	bool _cartUnlockWorker(void);
 	bool _qrCodeWorker(void);
-	bool _hddDumpWorker(void);
+	bool _cartDumpWorker(void);
 	bool _cartWriteWorker(void);
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
+	bool _romDumpWorker(void);
 	bool _rebootWorker(void);
 
 	void _worker(void);

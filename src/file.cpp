@@ -107,6 +107,16 @@ void FATFile::close(void) {
 
 uint32_t currentSPUOffset = spu::DUMMY_BLOCK_END;
 
+bool Provider::fileExists(const char *path) {
+	auto file = openFile(path, READ);
+
+	if (!file)
+		return false;
+
+	file->close();
+	return true;
+}
+
 size_t Provider::loadData(util::Data &output, const char *path) {
 	auto file = openFile(path, READ);
 
@@ -135,6 +145,7 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 
 	return actualLength;
 }
+
 size_t Provider::saveData(const void *input, size_t length, const char *path) {
 	auto file = openFile(path, WRITE | ALLOW_CREATE);
 
@@ -146,6 +157,7 @@ size_t Provider::saveData(const void *input, size_t length, const char *path) {
 
 	return actualLength;
 }
+
 size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 	util::Data data;
 
@@ -209,6 +221,18 @@ bool HostProvider::init(void) {
 	return true;
 }
 
+bool HostProvider::createDirectory(const char *path) {
+	int fd = pcdrvCreate(path, PCDRV_ATTR_DIRECTORY);
+
+	if (fd < 0) {
+		LOG("PCDRV error, code=%d", fd);
+		return false;
+	}
+
+	pcdrvClose(fd);
+	return true;
+}
+
 File *HostProvider::openFile(const char *path, uint32_t flags) {
 	PCDRVOpenMode mode = PCDRV_MODE_READ;
 
@@ -237,14 +261,14 @@ bool FATProvider::init(const char *drive) {
 	auto error = f_mount(&_fs, drive, 1);
 
 	if (error) {
-		LOG("mount error, drive=%s, code=%d", drive, error);
+		LOG("FAT mount error, drive=%s, code=%d", drive, error);
 		return false;
 	}
 
 	f_chdrive(drive);
 	__builtin_strncpy(_drive, drive, sizeof(_drive));
 
-	LOG("mount ok, drive=%s", drive);
+	LOG("FAT mount ok, drive=%s", drive);
 	return true;
 }
 
@@ -252,9 +276,24 @@ void FATProvider::close(void) {
 	auto error = f_unmount(_drive);
 
 	if (error)
-		LOG("unmount error, drive=%s, code=%d", _drive, error);
+		LOG("FAT unmount error, drive=%s, code=%d", _drive, error);
 	else
-		LOG("unmount ok, drive=%s", _drive);
+		LOG("FAT unmount ok, drive=%s", _drive);
+}
+
+bool FATProvider::fileExists(const char *path) {
+	return !f_stat(path, nullptr);
+}
+
+bool FATProvider::createDirectory(const char *path) {
+	auto error = f_mkdir(path);
+
+	if (error) {
+		LOG("FAT error, code=%d", error);
+		return false;
+	}
+
+	return true;
 }
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
@@ -318,6 +357,10 @@ void ZIPProvider::close(void) {
 
 	if (_file)
 		_file->close();
+}
+
+bool ZIPProvider::fileExists(const char *path) {
+	return (mz_zip_reader_locate_file(&_zip, path, nullptr, 0) >= 0);
 }
 
 size_t ZIPProvider::loadData(util::Data &output, const char *path) {

@@ -27,13 +27,23 @@
 			"write": "Writing new data to cartridge...",
 			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
 		},
-		"hddDumpWorker": {
+		"cartDumpWorker": {
 			"save":  "Saving cartridge dump...",
 			"error": "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
 			"generate": "Generating QR code..."
+		},
+		"romDumpWorker": {
+			"init":        "Creating dump directory...",
+			"dumpBIOS":    "Dumping BIOS ROM...",
+			"dumpRTC":     "Dumping RTC RAM...",
+			"dumpFlash":   "Dumping internal flash...",
+			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...",
+			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...",
+			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
+			"dumpError":   "An error occurred while writing dumps to the hard drive. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
 		},
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
@@ -187,19 +197,20 @@
 
 	"MainMenuScreen": {
 		"title":      "{CART_ICON} Main menu",
-		"itemPrompt": "{RIGHT_ARROW} Select by pressing {START_BUTTON}",
+		"itemPrompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to move, select by pressing {START_BUTTON}",
 
 		"cartInfo": {
 			"name":   "Manage security cartridge",
 			"prompt": "Display information about, unlock, dump and manipulate the contents of the inserted security cartridge (if any)."
 		},
 		"dump": {
-			"name":   "Dump flash, PCMCIA cards, RTC or BIOS ROM",
-			"prompt": "Dump the contents of the internal ROMs, flash or any PCMCIA cards to the IDE hard drive or CF card connected as secondary drive (if any)."
+			"name":    "Dump flash, PCMCIA cards, RTC and BIOS ROM",
+			"prompt":  "Dump the contents of the internal ROMs and PCMCIA cards to the IDE hard drive or CF card connected as secondary drive (if any).",
+			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and the dumps saved to a new directory in the root of the hard drive or CF card currently configured as secondary on the IDE bus.\n\nDo you wish to proceed?"
 		},
 		"restore": {
 			"name":   "Restore flash, PCMCIA cards or RTC from dump",
-			"prompt": "Restore the contents of the internal flash or any PCMCIA cards to the IDE hard drive or CF card connected as secondary drive (if any)."
+			"prompt": "Restore the contents of the internal ROMs or any PCMCIA cards from the IDE hard drive or CF card connected as secondary drive (if any)."
 		},
 		"about": {
 			"name":   "About this tool",

@@ -36,7 +36,8 @@ typedef enum {
 	EXP1_BASE = 0xbf000000,
 	IO_BASE   = 0xbf800000,
 	EXP2_BASE = 0xbf802000,
-	EXP3_BASE = 0xbfa00000
+	EXP3_BASE = 0xbfa00000,
+	DEV2_BASE = 0xbfc00000
 } BaseAddress;
 
 /* Bus interface */
@@ -178,6 +179,7 @@ typedef enum {
 typedef enum {
 	DMA_CHCR_READ             = 0 <<  0,
 	DMA_CHCR_WRITE            = 1 <<  0,
+	DMA_CHCR_REVERSE          = 1 <<  1,
 	DMA_CHCR_CHOPPING         = 1 <<  8,
 	DMA_CHCR_MODE_BITMASK     = 3 <<  9,
 	DMA_CHCR_MODE_BURST       = 0 <<  9,
@@ -189,6 +191,13 @@ typedef enum {
 	DMA_CHCR_TRIGGER          = 1 << 28,
 	DMA_CHCR_PAUSE            = 1 << 29  // Burst mode only
 } DMACHCRFlag;
+
+typedef enum {
+	DMA_DPCR_PRIORITY_BITMASK = 7 << 0,
+	DMA_DPCR_PRIORITY_MIN     = 7 << 0,
+	DMA_DPCR_PRIORITY_MAX     = 0 << 0,
+	DMA_DPCR_ENABLE           = 1 << 3
+} DMADPCRFlag;
 
 typedef enum {
 	DMA_DICR_CH_MODE_BITMASK   = 0x7f <<  0,
@@ -448,6 +457,12 @@ typedef enum {
 	SYS573_MISC_IN_PCMCIA_CD2 = 1 << 11,
 	SYS573_MISC_IN_SERVICE    = 1 << 12
 } Sys573MiscInputFlag;
+
+typedef enum {
+	SYS573_BANK_FLASH   =  0,
+	SYS573_BANK_PCMCIA1 = 16,
+	SYS573_BANK_PCMCIA2 = 32
+} Sys573Bank;
 
 #define SYS573_MISC_OUT    _MMIO16(DEV0_BASE | 0x400000)
 #define SYS573_DIP_CART    _MMIO16(DEV0_BASE | 0x400004)

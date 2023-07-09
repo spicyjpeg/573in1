@@ -270,11 +270,11 @@ private:
 		SYS573_IDE_CS1_BASE[reg] = value;
 	}
 
-	inline void _select(uint8_t flags) {
+	inline void _select(uint8_t regFlags) {
 		if (flags & DEVICE_SECONDARY)
-			_write(CS0_DEVICE_SEL, flags | CS0_DEVICE_SEL_SECONDARY);
+			_write(CS0_DEVICE_SEL, regFlags | CS0_DEVICE_SEL_SECONDARY);
 		else
-			_write(CS0_DEVICE_SEL, flags | CS0_DEVICE_SEL_PRIMARY);
+			_write(CS0_DEVICE_SEL, regFlags | CS0_DEVICE_SEL_PRIMARY);
 	}
 
 	void _setLBA(uint64_t lba, uint16_t count);

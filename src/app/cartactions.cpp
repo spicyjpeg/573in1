@@ -62,7 +62,7 @@ void CartActionsScreen::qrDump(ui::Context &ctx) {
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {
-	APP->_setupWorker(&App::_hddDumpWorker);
+	APP->_setupWorker(&App::_cartDumpWorker);
 	ctx.show(APP->_workerStatusScreen, false, true);
 }
 

@@ -280,8 +280,9 @@ DeviceError Device::_ideReadWrite(
 		if (error)
 			return error;
 
-		//error = _transferDMA(reinterpret_cast<void *>(ptr), length, write);
-		error = _transferPIO(reinterpret_cast<void *>(ptr), length, write);
+		error = _transferPIO(
+			reinterpret_cast<void *>(ptr), length * ATA_SECTOR_SIZE, write
+		);
 		if (error)
 			return error;
 
@@ -312,7 +313,7 @@ DeviceError Device::flushCache(void) {
 /* FatFs API glue */
 
 extern "C" DSTATUS disk_initialize(uint8_t drive) {
-	if (!devices[drive].enumerate())
+	if (devices[drive].enumerate())
 		return RES_NOTRDY;
 
 	return disk_status(drive);
@@ -322,7 +323,7 @@ extern "C" DSTATUS disk_status(uint8_t drive) {
 	auto     &dev  = devices[drive];
 	uint32_t flags = 0;
 
-	if (dev.flags & DEVICE_READY)
+	if (!(dev.flags & DEVICE_READY))
 		flags |= STA_NOINIT;
 	if (!dev.capacity)
 		flags |= STA_NODISK;
