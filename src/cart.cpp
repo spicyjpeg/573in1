@@ -102,7 +102,7 @@ void IdentifierSet::updateTraceID(TraceIDType type, int param) {
 				traceID.data[2] = checksum >> 8;
 			}
 
-			LOG("prefix=0x82, checksum=%04x", checksum);
+			LOG("prefix=0x82, checksum=0x%04x", checksum);
 			break;
 	}
 

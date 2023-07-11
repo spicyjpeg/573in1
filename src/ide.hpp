@@ -220,26 +220,30 @@ public:
 	uint16_t _reserved99[49];
 	uint16_t checksum;              // 255
 
-	inline uint32_t getSectorCount(void) {
+	inline uint32_t getSectorCount(void) const {
 		return sectorCount[0] | (sectorCount[1] << 16);
 	}
-	inline uint64_t getSectorCountExt(void) {
+	inline uint64_t getSectorCountExt(void) const {
 		return 0
 			| (uint64_t(sectorCountExt[0]) <<  0)
 			| (uint64_t(sectorCountExt[1]) << 16)
 			| (uint64_t(sectorCountExt[2]) << 32)
 			| (uint64_t(sectorCountExt[3]) << 48);
 	}
+
+	bool validateChecksum(void) const;
+	int getHighestPIOMode(void) const;
 };
 
 /* Device class */
 
 enum DeviceError {
-	NO_ERROR        = 0,
-	UNSUPPORTED_OP  = 1,
-	STATUS_TIMEOUT  = 2,
-	DRIVE_ERROR     = 3,
-	INCOMPLETE_DATA = 4
+	NO_ERROR          = 0,
+	UNSUPPORTED_OP    = 1,
+	STATUS_TIMEOUT    = 2,
+	DRIVE_ERROR       = 3,
+	INCOMPLETE_DATA   = 4,
+	CHECKSUM_MISMATCH = 5
 };
 
 enum DeviceFlag {
@@ -284,7 +288,7 @@ private:
 	DeviceError _transferDMA(void *data, size_t length, bool write = false);
 
 	DeviceError _ideReadWrite(
-		uint32_t ptr, uint64_t lba, size_t count, bool write
+		uintptr_t ptr, uint64_t lba, size_t count, bool write
 	);
 
 public:
@@ -296,6 +300,9 @@ public:
 	inline Device(uint32_t flags)
 	: flags(flags), capacity(0) {}
 
+	inline size_t getSectorSize(void) const {
+		return (flags & DEVICE_ATAPI) ? ATAPI_SECTOR_SIZE : ATA_SECTOR_SIZE;
+	}
 	inline DeviceError ideRead(void *data, uint64_t lba, size_t count) {
 		return _ideReadWrite(reinterpret_cast<uint32_t>(data), lba, count, false);
 	}
@@ -304,7 +311,7 @@ public:
 	}
 
 	DeviceError enumerate(void);
-	DeviceError flushCache(void);
+	DeviceError ideFlushCache(void);
 };
 
 extern Device devices[2];

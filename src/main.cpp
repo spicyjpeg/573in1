@@ -120,11 +120,13 @@ _fileInitDone:
 			goto _resourceInitDone;
 	}
 
-	zipFile = fileProvider.openFile(resPath, file::READ);
+	if (fileProvider.fileExists(resPath)) {
+		zipFile = fileProvider.openFile(resPath, file::READ);
 
-	if (zipFile) {
-		if (resourceProvider.init(zipFile))
-			goto _resourceInitDone;
+		if (zipFile) {
+			if (resourceProvider.init(zipFile))
+				goto _resourceInitDone;
+		}
 	}
 
 	resourceProvider.init(_resources, _resourcesSize);

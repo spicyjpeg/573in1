@@ -152,6 +152,7 @@ public:
 	void *screenData; // Opaque, can be accessed by screens
 
 	inline void tick(void) {
+		//buttons.update();
 		time++;
 	}
 	inline void setBackgroundLayer(Layer &layer) {
