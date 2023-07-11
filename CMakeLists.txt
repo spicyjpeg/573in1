@@ -27,6 +27,7 @@ add_executable(
 	src/gpu.cpp
 	src/gpufont.cpp
 	src/ide.cpp
+	src/ideglue.cpp
 	src/io.cpp
 	src/main.cpp
 	src/pad.cpp

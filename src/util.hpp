@@ -56,7 +56,7 @@ static inline uint32_t swapEndian(uint32_t value) {
 	return value;
 }
 
-template<typename T, typename X> inline void assertAligned(X *ptr) {
+template<typename T, typename X> static inline void assertAligned(X *ptr) {
 	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
 }
 

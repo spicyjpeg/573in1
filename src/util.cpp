@@ -163,7 +163,7 @@ size_t traceIDToString(char *output, const uint8_t *input) {
 
 // This encoding is similar to standard base45, but with some problematic
 // characters (' ', '$', '%', '*') excluded.
-static const char _BASE41_CHARSET[]{ "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:"};
+static const char _BASE41_CHARSET[]{ "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:" };
 
 size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 	size_t outLength = 0;

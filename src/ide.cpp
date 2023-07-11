@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include "ps1/registers.h"
 #include "ps1/system.h"
-#include "vendor/diskio.h"
 #include "ide.hpp"
 #include "io.hpp"
 #include "util.hpp"
@@ -29,7 +28,7 @@ static constexpr int _DMA_TIMEOUT          = 10000;
 
 /* Utilities */
 
-void _copyString(char *output, const uint16_t *input, size_t length) {
+static void _copyString(char *output, const uint16_t *input, size_t length) {
 	// The strings in the identification block are byte-swapped and padded with
 	// spaces. To make them printable, any span of consecutive space characters
 	// at the end is replaced with null bytes.
@@ -54,6 +53,33 @@ void _copyString(char *output, const uint16_t *input, size_t length) {
 		*(--output) = a;
 		*(--output) = b;
 	}
+}
+
+bool IdentifyBlock::validateChecksum(void) const {
+	if ((checksum & 0xff) != 0xa5)
+		return true;
+
+	uint8_t value = (util::sum(
+		reinterpret_cast<const uint8_t *>(&deviceFlags), ATA_SECTOR_SIZE - 1
+	) & 0xff) ^ 0xff;
+
+	if (value != (checksum >> 8)) {
+		LOG("mismatch, exp=0x%02x, got=0x%02x", value, checksum >> 8);
+		return false;
+	}
+
+	return true;
+}
+
+int IdentifyBlock::getHighestPIOMode(void) const {
+	if (timingValidityFlags & (1 << 1)) {
+		if (pioModeFlags & (1 << 1))
+			return 4;
+		if (pioModeFlags & (1 << 0))
+			return 3;
+	}
+
+	return 1;
 }
 
 /* Device class */
@@ -154,6 +180,7 @@ DeviceError Device::_transferDMA(void *data, size_t length, bool write) {
 	uint32_t flags = DMA_CHCR_MODE_BURST | DMA_CHCR_ENABLE | DMA_CHCR_TRIGGER;
 	flags         |= write ? DMA_CHCR_WRITE : DMA_CHCR_READ;
 
+	// TODO: is this actually needed?
 	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(SYS573_IDE_CS0_BASE) & 0x1fffffff;
 
 	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
@@ -199,6 +226,8 @@ DeviceError Device::enumerate(void) {
 		if (error)
 			return error;
 
+		if (!block.validateChecksum())
+			return CHECKSUM_MISMATCH;
 		if (
 			(block.deviceFlags & IDENTIFY_DEV_ATAPI_TYPE_BITMASK)
 			== IDENTIFY_DEV_ATAPI_TYPE_CDROM
@@ -218,6 +247,8 @@ DeviceError Device::enumerate(void) {
 		if (error)
 			return error;
 
+		if (!block.validateChecksum())
+			return CHECKSUM_MISMATCH;
 		if (block.commandSetFlags[1] & (1 << 10)) {
 			flags   |= DEVICE_HAS_LBA48;
 			capacity = block.getSectorCountExt();
@@ -232,17 +263,10 @@ DeviceError Device::enumerate(void) {
 	_copyString(revision, block.revision, sizeof(revision));
 	_copyString(serialNumber, block.serialNumber, sizeof(serialNumber));
 
-	LOG("%s: %s", (flags & DEVICE_SECONDARY) ? "secondary" : "primary", model);
+	LOG("%s=%s", (flags & DEVICE_SECONDARY) ? "sec" : "pri", model);
 
 	// Find out the fastest PIO transfer mode supported and enable it.
-	int mode = 1;
-
-	if (block.timingValidityFlags & (1 << 1)) {
-		if (block.pioModeFlags & (1 << 1))
-			mode = 4;
-		else if (block.pioModeFlags & (1 << 0))
-			mode = 3;
-	}
+	int mode = block.getHighestPIOMode();
 
 	_write(CS0_FEATURES, FEATURE_TRANSFER_MODE);
 	_write(CS0_COUNT,    (1 << 3) | mode);
@@ -250,13 +274,13 @@ DeviceError Device::enumerate(void) {
 	if (error)
 		return error;
 
-	LOG("done, stat=0x%02x", _read(CS0_STATUS));
+	LOG("done, stat=0x%02x, mode=PIO%d", _read(CS0_STATUS), mode);
 	flags |= DEVICE_READY;
 	return NO_ERROR;
 }
 
 DeviceError Device::_ideReadWrite(
-	uint32_t ptr, uint64_t lba, size_t count, bool write
+	uintptr_t ptr, uint64_t lba, size_t count, bool write
 ) {
 	if (flags & DEVICE_ATAPI)
 		return UNSUPPORTED_OP;
@@ -280,11 +304,17 @@ DeviceError Device::_ideReadWrite(
 		if (error)
 			return error;
 
-		error = _transferPIO(
-			reinterpret_cast<void *>(ptr), length * ATA_SECTOR_SIZE, write
-		);
-		if (error)
-			return error;
+		// Data must be transferred one sector at a time as the drive may
+		// deassert DRQ between sectors.
+		for (size_t i = length; i; i--) {
+			error = _transferDMA(
+				reinterpret_cast<void *>(ptr), ATA_SECTOR_SIZE, write
+			);
+			if (error)
+				return error;
+
+			ptr += ATA_SECTOR_SIZE;
+		}
 
 		error = _waitForStatus(
 			CS0_STATUS_BSY | CS0_STATUS_DRDY, CS0_STATUS_DRDY, _STATUS_TIMEOUT
@@ -292,14 +322,13 @@ DeviceError Device::_ideReadWrite(
 		if (error)
 			return error;
 
-		ptr   += length;
 		count -= length;
 	}
 
 	return NO_ERROR;
 }
 
-DeviceError Device::flushCache(void) {
+DeviceError Device::ideFlushCache(void) {
 	if (!(flags & DEVICE_HAS_FLUSH))
 		return NO_ERROR;
 		//return UNSUPPORTED_OP;
@@ -308,86 +337,6 @@ DeviceError Device::flushCache(void) {
 	return _command(
 		(flags & DEVICE_HAS_LBA48) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE
 	);
-}
-
-/* FatFs API glue */
-
-extern "C" DSTATUS disk_initialize(uint8_t drive) {
-	if (devices[drive].enumerate())
-		return RES_NOTRDY;
-
-	return disk_status(drive);
-}
-
-extern "C" DSTATUS disk_status(uint8_t drive) {
-	auto     &dev  = devices[drive];
-	uint32_t flags = 0;
-
-	if (!(dev.flags & DEVICE_READY))
-		flags |= STA_NOINIT;
-	if (!dev.capacity)
-		flags |= STA_NODISK;
-	if (dev.flags & DEVICE_READ_ONLY)
-		flags |= STA_PROTECT;
-
-	return flags;
-}
-
-extern "C" DRESULT disk_read(
-	uint8_t drive, uint8_t *data, LBA_t lba, size_t count
-) {
-	auto &dev = devices[drive];
-
-	if (!(dev.flags & DEVICE_READY))
-		return RES_NOTRDY;
-	if (dev.ideRead(data, lba, count))
-		return RES_ERROR;
-
-	return RES_OK;
-}
-
-extern "C" DRESULT disk_write(
-	uint8_t drive, const uint8_t *data, LBA_t lba, size_t count
-) {
-	auto &dev = devices[drive];
-
-	if (!(dev.flags & DEVICE_READY))
-		return RES_NOTRDY;
-	if (dev.flags & DEVICE_READ_ONLY)
-		return RES_WRPRT;
-	if (dev.ideWrite(data, lba, count))
-		return RES_ERROR;
-
-	return RES_OK;
-}
-
-extern "C" DRESULT disk_ioctl(uint8_t drive, uint8_t cmd, void *data) {
-	auto &dev = devices[drive];
-
-	if (!(dev.flags & DEVICE_READY))
-		return RES_NOTRDY;
-
-	switch (cmd) {
-		case CTRL_SYNC:
-			return dev.flushCache() ? RES_ERROR : RES_OK;
-
-		case GET_SECTOR_COUNT:
-			__builtin_memcpy(data, &dev.capacity, sizeof(LBA_t));
-			return RES_OK;
-
-		case GET_SECTOR_SIZE:
-		//case GET_BLOCK_SIZE:
-			*reinterpret_cast<uint16_t *>(data) = (dev.flags & DEVICE_ATAPI)
-				? ATAPI_SECTOR_SIZE : ATA_SECTOR_SIZE;
-			return RES_OK;
-
-		default:
-			return RES_PARERR;
-	}
-}
-
-extern "C" uint32_t get_fattime(void) {
-	return io::getRTCTime();
 }
 
 }

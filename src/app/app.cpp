@@ -72,10 +72,7 @@ bool App::_cartDetectWorker(void) {
 	_unloadCartData();
 
 #ifdef ENABLE_DUMMY_DRIVER
-	if (
-		_resourceProvider->loadStruct(_dump, "data/test.573")
-		== sizeof(cart::Dump)
-	) {
+	if (_resourceProvider->loadStruct(_dump, "data/test.573")) {
 		LOG("using dummy cart driver");
 		_driver = new cart::DummyDriver(_dump);
 	} else {
@@ -242,9 +239,10 @@ bool App::_cartDumpWorker(void) {
 	else
 		__builtin_strcpy(path, "unknown.573");
 
-	LOG("saving dump as %s", path);
+	size_t length = _dump.getDumpLength();
+	LOG("saving %s, length=%d", path, length);
 
-	if (_fileProvider->saveStruct(_dump, path) != sizeof(cart::Dump)) {
+	if (_fileProvider->saveData(&_dump, length, path) != length) {
 		_errorScreen.setMessage(
 			_cartInfoScreen, WSTR("App.cartDumpWorker.error")
 		);
@@ -374,6 +372,11 @@ struct DumpRegion {
 	uint32_t       inputs;
 };
 
+enum DumpBank {
+	BANK_NONE_8BIT  = -1,
+	BANK_NONE_16BIT = -2
+};
+
 static constexpr int _NUM_DUMP_REGIONS = 5;
 
 static const DumpRegion _DUMP_REGIONS[_NUM_DUMP_REGIONS]{
@@ -382,14 +385,14 @@ static const DumpRegion _DUMP_REGIONS[_NUM_DUMP_REGIONS]{
 		.path   = "dump_%d/bios.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV2_BASE),
 		.length = 0x80000,
-		.bank   = -1,
+		.bank   = BANK_NONE_16BIT,
 		.inputs = 0
 	}, {
 		.prompt = "App.romDumpWorker.dumpRTC"_h,
 		.path   = "dump_%d/rtc.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE | 0x620000),
 		.length = 0x2000,
-		.bank   = -1,
+		.bank   = BANK_NONE_8BIT,
 		.inputs = 0
 	}, {
 		.prompt = "App.romDumpWorker.dumpFlash"_h,
@@ -446,7 +449,6 @@ bool App::_romDumpWorker(void) {
 		if (region.inputs && !(inputs & region.inputs))
 			continue;
 
-		_workerStatus.update(i, _NUM_DUMP_REGIONS, WSTRH(region.prompt));
 		snprintf(path, sizeof(path), region.path, index);
 
 		auto _file = _fileProvider->openFile(
@@ -456,24 +458,38 @@ bool App::_romDumpWorker(void) {
 		if (!_file)
 			goto _writeError;
 
-		// Read data from the source and write it to the file one 8 KB chunk at
-		// a time.
-		uint16_t buffer[0x1000];
+		// The buffer has to be 8 KB to match the size of RTC RAM.
+		uint8_t buffer[0x2000];
 
-		const uint16_t *ptr   = region.ptr;
-		size_t         length = region.length;
-		int            bank   = region.bank;
+		const uint16_t *ptr  = region.ptr;
+		int            count = region.length / sizeof(buffer);
+		int            bank  = region.bank;
 
-		io::setFlashBank(bank++);
+		if (bank >= 0)
+			io::setFlashBank(bank++);
 
-		for (; length; length -= sizeof(buffer)) {
-			uint16_t *output = buffer;
+		for (int j = 0; j < count; j++) {
+			_workerStatus.update(j, count, WSTRH(region.prompt));
 
-			for (int i = sizeof(buffer); i; i -= 2)
-				*(output++) = *(ptr++);
+			// The RTC is an 8-bit device connected to a 16-bit bus, i.e. each
+			// byte must be read as a 16-bit value and then the upper 8 bits
+			// must be discarded.
+			if (bank == BANK_NONE_8BIT) {
+				uint8_t *output = buffer;
 
-			// TODO TODO
-			if (ptr >= reinterpret_cast<const void *>(DEV0_BASE | 0x400000)) {
+				for (size_t k = sizeof(buffer); k; k--)
+					*(output++) = static_cast<uint8_t>(*(ptr++));
+			} else {
+				uint16_t *output = reinterpret_cast<uint16_t *>(buffer);
+
+				for (size_t k = sizeof(buffer); k; k -= 2)
+					*(output++) = *(ptr++);
+			}
+
+			if (
+				(bank >= 0) &&
+				(ptr  >= reinterpret_cast<const void *>(DEV0_BASE | 0x400000))
+			) {
 				ptr = region.ptr;
 				io::setFlashBank(bank++);
 			}
