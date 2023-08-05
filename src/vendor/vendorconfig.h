@@ -46,6 +46,8 @@
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
 #define MINIZ_NO_STDIO
 #define MINIZ_NO_TIME
+#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
+#define USE_EXTERNAL_MZCRC
 
 /* printf configuration */
 

@@ -17,18 +17,18 @@ void PlaceholderScreen::draw(Context &ctx, bool active) const {
 	);
 }
 
-MessageScreen::MessageScreen(void)
+MessageBoxScreen::MessageBoxScreen(void)
 : ModalScreen(MODAL_WIDTH, MODAL_HEIGHT_FULL), _numButtons(0),
 _buttonIndexOffset(0), _locked(false) {}
 
-void MessageScreen::show(Context &ctx, bool goBack) {
+void MessageBoxScreen::show(Context &ctx, bool goBack) {
 	ModalScreen::show(ctx, goBack);
 
 	_activeButton = 0;
 	_buttonAnim.setValue(_getButtonWidth());
 }
 
-void MessageScreen::draw(Context &ctx, bool active) const {
+void MessageBoxScreen::draw(Context &ctx, bool active) const {
 	ModalScreen::draw(ctx, active);
 
 	if (!active || !_numButtons)
@@ -77,7 +77,7 @@ void MessageScreen::draw(Context &ctx, bool active) const {
 	}
 }
 
-void MessageScreen::update(Context &ctx) {
+void MessageBoxScreen::update(Context &ctx) {
 	if (_locked)
 		return;
 
@@ -117,7 +117,7 @@ HexEntryScreen::HexEntryScreen(void)
 : _bufferLength(0) {}
 
 void HexEntryScreen::show(Context &ctx, bool goBack) {
-	MessageScreen::show(ctx, goBack);
+	MessageBoxScreen::show(ctx, goBack);
 
 	_buttonIndexOffset = _bufferLength * 2;
 	__builtin_memset(_buffer, 0, _bufferLength);
@@ -127,7 +127,7 @@ void HexEntryScreen::show(Context &ctx, bool goBack) {
 }
 
 void HexEntryScreen::draw(Context &ctx, bool active) const {
-	MessageScreen::draw(ctx, active);
+	MessageBoxScreen::draw(ctx, active);
 
 	if (!active)
 		return;
@@ -214,7 +214,7 @@ void HexEntryScreen::update(Context &ctx) {
 	} else {
 		int oldActive = _activeButton;
 
-		MessageScreen::update(ctx);
+		MessageBoxScreen::update(ctx);
 
 		// Update the cursor's position if necessary.
 		if (oldActive != _activeButton) {

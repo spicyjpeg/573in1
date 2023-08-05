@@ -144,8 +144,8 @@ bool Sound::initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset) {
 		return false;
 
 	offset     = ramOffset / 8;
-	sampleRate = (util::swapEndian(header->sampleRate) << 12) / 44100;
-	length     = util::swapEndian(header->length);
+	sampleRate = (__builtin_bswap32(header->sampleRate) << 12) / 44100;
+	length     = __builtin_bswap32(header->length);
 
 	return true;
 }

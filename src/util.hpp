@@ -43,19 +43,6 @@ template<typename T> static inline T roundUpToMultiple(T value, T length) {
 	return diff ? (value - diff + length) : value;
 }
 
-static inline uint16_t swapEndian(uint16_t value) {
-	value = ((value & 0x00ff) << 8) | ((value & 0xff00) >> 8);
-
-	return value;
-}
-
-static inline uint32_t swapEndian(uint32_t value) {
-	value = ((value & 0x0000ffff) << 16) | ((value & 0xffff0000) >> 16);
-	value = ((value & 0x00ff00ff) <<  8) | ((value & 0xff00ff00) >>  8);
-
-	return value;
-}
-
 template<typename T, typename X> static inline void assertAligned(X *ptr) {
 	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
 }
@@ -260,11 +247,21 @@ extern Logger logger;
 
 uint8_t dsCRC8(const uint8_t *data, size_t length);
 uint16_t zsCRC16(const uint8_t *data, size_t length);
+uint32_t zipCRC32(const uint8_t *data, size_t length, uint32_t crc = 0);
+void initZipCRC32(void);
 
 size_t hexToString(char *output, const uint8_t *input, size_t length, char sep = 0);
 size_t serialNumberToString(char *output, const uint8_t *input);
 size_t traceIDToString(char *output, const uint8_t *input);
 size_t encodeBase41(char *output, const uint8_t *input, size_t length);
+
+/* Error strings */
+
+extern const char *const CART_DRIVER_ERROR_NAMES[];
+extern const char *const IDE_DEVICE_ERROR_NAMES[];
+extern const char *const FATFS_ERROR_NAMES[];
+extern const char *const MINIZ_ERROR_NAMES[];
+extern const char *const MINIZ_ZIP_ERROR_NAMES[];
 
 }
 

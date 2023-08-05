@@ -30,7 +30,15 @@ void WorkerStatusScreen::update(ui::Context &ctx) {
 	_body = worker.message;
 }
 
-void ErrorScreen::setMessage(ui::Screen &prev, const char *format, ...) {
+static const util::Hash _MESSAGE_TITLES[]{
+	"MessageScreen.title.success"_h,
+	"MessageScreen.title.error"_h
+};
+
+void MessageScreen::setMessage(
+	MessageType type, ui::Screen &prev, const char *format, ...
+) {
+	_type       = type;
 	_prevScreen = &prev;
 
 	va_list ap;
@@ -40,19 +48,19 @@ void ErrorScreen::setMessage(ui::Screen &prev, const char *format, ...) {
 	va_end(ap);
 }
 
-void ErrorScreen::show(ui::Context &ctx, bool goBack) {
-	_title      = STR("ErrorScreen.title");
+void MessageScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STRH(_MESSAGE_TITLES[_type]);
 	_body       = _bodyText;
-	_buttons[0] = STR("ErrorScreen.ok");
+	_buttons[0] = STR("MessageScreen.ok");
 
 	_numButtons = 1;
 	_locked     = _prevScreen ? false : true;
 
-	MessageScreen::show(ctx, goBack);
+	MessageBoxScreen::show(ctx, goBack);
 }
 
-void ErrorScreen::update(ui::Context &ctx) {
-	MessageScreen::update(ctx);
+void MessageScreen::update(ui::Context &ctx) {
+	MessageBoxScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(*_prevScreen, true, true);
@@ -80,12 +88,12 @@ void ConfirmScreen::show(ui::Context &ctx, bool goBack) {
 
 	_numButtons = 2;
 
-	MessageScreen::show(ctx, goBack);
+	MessageBoxScreen::show(ctx, goBack);
 	ctx.sounds[ui::SOUND_ERROR].play();
 }
 
 void ConfirmScreen::update(ui::Context &ctx) {
-	MessageScreen::update(ctx);
+	MessageBoxScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (_activeButton)

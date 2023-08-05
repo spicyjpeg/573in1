@@ -31,6 +31,7 @@ int main(int argc, const char **argv) {
 	gpu::init();
 	spu::init();
 	io::init();
+	util::initZipCRC32();
 
 	int width = 320, height = 240;
 

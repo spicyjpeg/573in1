@@ -7,6 +7,7 @@
 #include "vendor/ff.h"
 #include "vendor/miniz.h"
 #include "file.hpp"
+#include "utilerror.hpp"
 
 namespace file {
 
@@ -16,7 +17,7 @@ size_t HostFile::read(void *output, size_t length) {
 	int actualLength = pcdrvRead(_fd, output, length);
 
 	if (actualLength < 0) {
-		LOG("PCDRV error, code=%d", actualLength);
+		LOG("PCDRV error, code=%d, file=0x%08x", actualLength, this);
 		return 0;
 	}
 
@@ -27,7 +28,7 @@ size_t HostFile::write(const void *input, size_t length) {
 	int actualLength = pcdrvWrite(_fd, input, length);
 
 	if (actualLength < 0) {
-		LOG("PCDRV error, code=%d", actualLength);
+		LOG("PCDRV error, code=%d, file=0x%08x", actualLength, this);
 		return 0;
 	}
 
@@ -38,7 +39,7 @@ uint64_t HostFile::seek(uint64_t offset) {
 	int actualOffset = pcdrvSeek(_fd, int(offset), PCDRV_SEEK_SET);
 
 	if (actualOffset < 0) {
-		LOG("PCDRV error, code=%d", actualOffset);
+		LOG("PCDRV error, code=%d, file=0x%08x", actualOffset, this);
 		return 0;
 	}
 
@@ -49,7 +50,7 @@ uint64_t HostFile::tell(void) const {
 	int actualOffset = pcdrvSeek(_fd, 0, PCDRV_SEEK_CUR);
 
 	if (actualOffset < 0) {
-		LOG("PCDRV error, code=%d", actualOffset);
+		LOG("PCDRV error, code=%d, file=0x%08x", actualOffset, this);
 		return 0;
 	}
 
@@ -65,7 +66,7 @@ size_t FATFile::read(void *output, size_t length) {
 	auto   error = f_read(&_fd, output, length, &actualLength);
 
 	if (error) {
-		LOG("FAT error, code=%d", error);
+		LOG("%s, file=0x%08x", util::getErrorString(error), this);
 		return 0;
 	}
 
@@ -77,7 +78,7 @@ size_t FATFile::write(const void *input, size_t length) {
 	auto   error = f_write(&_fd, input, length, &actualLength);
 
 	if (error) {
-		LOG("FAT error, code=%d", error);
+		LOG("%s, file=0x%08x", util::getErrorString(error), this);
 		return 0;
 	}
 
@@ -88,7 +89,7 @@ uint64_t FATFile::seek(uint64_t offset) {
 	auto error = f_lseek(&_fd, offset);
 
 	if (error) {
-		LOG("FAT error, code=%d", error);
+		LOG("%s, file=0x%08x", util::getErrorString(error), this);
 		return 0;
 	}
 
@@ -261,7 +262,7 @@ bool FATProvider::init(const char *drive) {
 	auto error = f_mount(&_fs, drive, 1);
 
 	if (error) {
-		LOG("FAT mount error, drive=%s, code=%d", drive, error);
+		LOG("%s, drive=%s", util::getErrorString(error), drive);
 		return false;
 	}
 
@@ -276,7 +277,7 @@ void FATProvider::close(void) {
 	auto error = f_unmount(_drive);
 
 	if (error)
-		LOG("FAT unmount error, drive=%s, code=%d", _drive, error);
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
 	else
 		LOG("FAT unmount ok, drive=%s", _drive);
 }
@@ -289,7 +290,7 @@ bool FATProvider::createDirectory(const char *path) {
 	auto error = f_mkdir(path);
 
 	if (error) {
-		LOG("FAT error, code=%d", error);
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
 		return false;
 	}
 
@@ -301,7 +302,7 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 	auto error = f_open(&(file->_fd), path, uint8_t(flags));
 
 	if (error) {
-		LOG("FAT error, code=%d", error);
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
 		return nullptr;
 	}
 
@@ -331,11 +332,13 @@ bool ZIPProvider::init(File *file) {
 	};
 
 	if (!mz_zip_reader_init(&_zip, file->length, _ZIP_FLAGS)) {
-		LOG("host zip init error, code=%d", mz_zip_get_last_error(&_zip));
+		auto error = mz_zip_get_last_error(&_zip);
+
+		LOG("%s, file=0x%08x", util::getErrorString(error), file);
 		return false;
 	}
 
-	LOG("file=0x%08x, length=0x%x", file, file->length);
+	LOG("ZIP init ok, file=0x%08x", file);
 	return true;
 }
 
@@ -344,11 +347,13 @@ bool ZIPProvider::init(const void *zipData, size_t length) {
 	_file = nullptr;
 
 	if (!mz_zip_reader_init_mem(&_zip, zipData, length, _ZIP_FLAGS)) {
-		LOG("ZIP error, code=%d", mz_zip_get_last_error(&_zip));
+		auto error = mz_zip_get_last_error(&_zip);
+
+		LOG("%s, ptr=0x%08x", util::getErrorString(error), zipData);
 		return false;
 	}
 
-	LOG("ptr=0x%08x, length=0x%x", zipData, length);
+	LOG("ZIP init ok, ptr=0x%08x", zipData);
 	return true;
 }
 
@@ -369,15 +374,23 @@ size_t ZIPProvider::loadData(util::Data &output, const char *path) {
 		&_zip, path, &(output.length), 0
 	);
 
-	if (!output.ptr)
+	if (!output.ptr) {
+		auto error = mz_zip_get_last_error(&_zip);
+
+		LOG("%s, zip=0x%08x", util::getErrorString(error), this);
 		return 0;
+	}
 
 	return output.length;
 }
 
 size_t ZIPProvider::loadData(void *output, size_t length, const char *path) {
-	if (!mz_zip_reader_extract_file_to_mem(&_zip, path, output, length, 0))
+	if (!mz_zip_reader_extract_file_to_mem(&_zip, path, output, length, 0)) {
+		auto error = mz_zip_get_last_error(&_zip);
+
+		LOG("%s, zip=0x%08x", util::getErrorString(error), this);
 		return 0;
+	}
 
 	// FIXME: this may not reflect the file's actual length
 	return length;
