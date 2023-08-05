@@ -11,6 +11,7 @@
 #include "io.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
+#include "utilerror.hpp"
 
 /* App class */
 
@@ -24,7 +25,10 @@ void App::_unloadCartData(void) {
 		_parser = nullptr;
 	}
 
-	_dump.chipType = cart::NONE;
+	_dump.chipType     = cart::NONE;
+	_dump._reserved[0] = 0;
+	_dump._reserved[1] = 0;
+
 	_dump.clearIdentifiers();
 	_dump.clearData();
 
@@ -90,12 +94,12 @@ bool App::_cartDetectWorker(void) {
 		auto error = _driver->readCartID();
 
 		if (error)
-			LOG("cart ID error, code=%d", error);
+			LOG("SID error [%s]", util::getErrorString(error));
 
 		error = _driver->readPublicData();
 
 		if (error)
-			LOG("public data error, code=%d", error);
+			LOG("read error [%s]", util::getErrorString(error));
 		else
 			_parser = cart::newCartParser(_dump);
 
@@ -159,7 +163,7 @@ _cartInitDone:
 	auto error = _driver->readSystemID();
 
 	if (error)
-		LOG("system ID error, code=%d", error);
+		LOG("XID error [%s]", util::getErrorString(error));
 
 	return true;
 }
@@ -171,12 +175,12 @@ bool App::_cartUnlockWorker(void) {
 	auto error = _driver->readPrivateData();
 
 	if (error) {
-		LOG("private data error, code=%d", error);
+		LOG("read error [%s]", util::getErrorString(error));
 
-		/*_errorScreen.setMessage(
-			_cartInfoScreen, WSTR("App.cartUnlockWorker.error")
+		/*_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartUnlockWorker.error")
 		);*/
-		_workerStatus.setNextScreen(_errorScreen);
+		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
 
@@ -243,14 +247,18 @@ bool App::_cartDumpWorker(void) {
 	LOG("saving %s, length=%d", path, length);
 
 	if (_fileProvider->saveData(&_dump, length, path) != length) {
-		_errorScreen.setMessage(
-			_cartInfoScreen, WSTR("App.cartDumpWorker.error")
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartDumpWorker.error")
 		);
-		_workerStatus.setNextScreen(_errorScreen);
+		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
 
-	_workerStatus.setNextScreen(_cartActionsScreen);
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _cartInfoScreen, WSTR("App.cartDumpWorker.success"),
+		path
+	);
+	_workerStatus.setNextScreen(_messageScreen);
 	return true;
 }
 
@@ -266,12 +274,12 @@ bool App::_cartWriteWorker(void) {
 	_cartDetectWorker();
 
 	if (error) {
-		LOG("write error, code=%d", error);
+		LOG("write error [%s]", util::getErrorString(error));
 
-		_errorScreen.setMessage(
-			_cartInfoScreen, WSTR("App.cartWriteWorker.error")
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartWriteWorker.error")
 		);
-		_workerStatus.setNextScreen(_errorScreen);
+		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
 
@@ -323,19 +331,19 @@ bool App::_cartReflashWorker(void) {
 	delayMicroseconds(1000000); // TODO: does this fix ZS01 bricking?
 
 	if (error)
-		LOG("failed to set data key");
+		LOG("key error [%s]", util::getErrorString(error));
 	else
 		error = _driver->writeData();
 
 	_cartDetectWorker();
 
 	if (error) {
-		LOG("write error, code=%d", error);
+		LOG("write error [%s]", util::getErrorString(error));
 
-		_errorScreen.setMessage(
-			_cartInfoScreen, WSTR("App.cartReflashWorker.error")
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartReflashWorker.error")
 		);
-		_workerStatus.setNextScreen(_errorScreen);
+		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
 
@@ -351,12 +359,12 @@ bool App::_cartEraseWorker(void) {
 	_cartDetectWorker();
 
 	if (error) {
-		LOG("erase error, code=%d", error);
+		LOG("erase error [%s]", util::getErrorString(error));
 
-		_errorScreen.setMessage(
-			_cartInfoScreen, WSTR("App.cartEraseWorker.error")
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartEraseWorker.error")
 		);
-		_workerStatus.setNextScreen(_errorScreen);
+		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
 
@@ -423,20 +431,20 @@ bool App::_romDumpWorker(void) {
 
 	// Store all dumps in a directory named "dump_N".
 	int  index = 0;
-	char path[32];
+	char directoryPath[32], filePath[32];
 
 	do {
 		index++;
-		snprintf(path, sizeof(path), "dump_%d", index);
-	} while (_fileProvider->fileExists(path));
+		snprintf(directoryPath, sizeof(directoryPath), "dump_%d", index);
+	} while (_fileProvider->fileExists(directoryPath));
 
-	LOG("saving dumps to %s", path);
+	LOG("saving dumps to %s", directoryPath);
 
-	if (!_fileProvider->createDirectory(path)) {
-		_errorScreen.setMessage(
-			_mainMenuScreen, WSTR("App.romDumpWorker.initError")
+	if (!_fileProvider->createDirectory(directoryPath)) {
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.initError")
 		);
-		_workerStatus.setNextScreen(_errorScreen);
+		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
 
@@ -449,10 +457,10 @@ bool App::_romDumpWorker(void) {
 		if (region.inputs && !(inputs & region.inputs))
 			continue;
 
-		snprintf(path, sizeof(path), region.path, index);
+		snprintf(filePath, sizeof(filePath), region.path, index);
 
 		auto _file = _fileProvider->openFile(
-			path, file::WRITE | file::ALLOW_CREATE
+			filePath, file::WRITE | file::ALLOW_CREATE
 		);
 
 		if (!_file)
@@ -501,17 +509,21 @@ bool App::_romDumpWorker(void) {
 		}
 
 		_file->close();
-		LOG("%s saved", path);
+		LOG("%s saved", filePath);
 	}
 
-	_workerStatus.setNextScreen(_mainMenuScreen);
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _mainMenuScreen, WSTR("App.romDumpWorker.success"),
+		directoryPath
+	);
+	_workerStatus.setNextScreen(_messageScreen);
 	return true;
 
 _writeError:
-	_errorScreen.setMessage(
-		_mainMenuScreen, WSTR("App.romDumpWorker.dumpError")
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.dumpError")
 	);
-	_workerStatus.setNextScreen(_errorScreen);
+	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 }
 

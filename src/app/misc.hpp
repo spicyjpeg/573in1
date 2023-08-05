@@ -12,19 +12,27 @@ public:
 	void update(ui::Context &ctx);
 };
 
-class ErrorScreen : public ui::MessageScreen {
+enum MessageType {
+	MESSAGE_SUCCESS = 0,
+	MESSAGE_ERROR   = 1
+};
+
+class MessageScreen : public ui::MessageBoxScreen {
 private:
-	char       _bodyText[512];
-	ui::Screen *_prevScreen;
+	MessageType _type;
+	char        _bodyText[512];
+	ui::Screen  *_prevScreen;
 
 public:
-	void setMessage(ui::Screen &prev, const char *format, ...);
+	void setMessage(
+		MessageType type, ui::Screen &prev, const char *format, ...
+	);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };
 
-class ConfirmScreen : public ui::MessageScreen {
+class ConfirmScreen : public ui::MessageBoxScreen {
 private:
 	char       _bodyText[512];
 	ui::Screen *_prevScreen;

@@ -18,13 +18,13 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 
 	_cooldownTimer = ctx.time + ctx.gpuCtx.refreshRate * WARNING_COOLDOWN;
 
-	MessageScreen::show(ctx, goBack);
+	MessageBoxScreen::show(ctx, goBack);
 
 	ctx.buttons.buttonMap = ui::MAP_SINGLE_BUTTON;
 }
 
 void WarningScreen::update(ui::Context &ctx) {
-	MessageScreen::update(ctx);
+	MessageBoxScreen::update(ctx);
 
 	int time = _cooldownTimer - ctx.time;
 	_locked  = (time > 0);
@@ -98,6 +98,10 @@ static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 		.prompt = "MainMenuScreen.restore.prompt"_h,
 		.target = &MainMenuScreen::restore
 	}, {
+		.name   = "MainMenuScreen.systemInfo.name"_h,
+		.prompt = "MainMenuScreen.systemInfo.prompt"_h,
+		.target = &MainMenuScreen::systemInfo
+	}, {
 #endif
 		.name   = "MainMenuScreen.about.name"_h,
 		.prompt = "MainMenuScreen.about.prompt"_h,
@@ -137,6 +141,10 @@ void MainMenuScreen::dump(ui::Context &ctx) {
 
 void MainMenuScreen::restore(ui::Context &ctx) {
 	//ctx.show(APP->_restoreMenuScreen, false, true);
+}
+
+void MainMenuScreen::systemInfo(ui::Context &ctx) {
+	//ctx.show(APP->systemInfoScreen, false, true);
 }
 
 void MainMenuScreen::about(ui::Context &ctx) {
@@ -204,6 +212,10 @@ void AboutScreen::hide(ui::Context &ctx, bool goBack) {
 void AboutScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
-	if (ctx.buttons.pressed(ui::BTN_START))
+	if (
+		ctx.buttons.pressed(ui::BTN_START) ||
+		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
+		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+	)
 		ctx.show(APP->_mainMenuScreen, true, true);
 }

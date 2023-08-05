@@ -7,7 +7,7 @@
 
 /* Main menu screens */
 
-class WarningScreen : public ui::MessageScreen {
+class WarningScreen : public ui::MessageBoxScreen {
 private:
 	int  _cooldownTimer;
 	char _buttonText[16];
@@ -34,6 +34,7 @@ public:
 	void cartInfo(ui::Context &ctx);
 	void dump(ui::Context &ctx);
 	void restore(ui::Context &ctx);
+	void systemInfo(ui::Context &ctx);
 	void about(ui::Context &ctx);
 	void reboot(ui::Context &ctx);
 

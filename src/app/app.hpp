@@ -88,7 +88,7 @@ static constexpr size_t WORKER_STACK_SIZE = 0x20000;
 
 class App {
 	friend class WorkerStatusScreen;
-	friend class ErrorScreen;
+	friend class MessageScreen;
 	friend class ConfirmScreen;
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
@@ -105,7 +105,7 @@ class App {
 
 private:
 	WorkerStatusScreen  _workerStatusScreen;
-	ErrorScreen         _errorScreen;
+	MessageScreen       _messageScreen;
 	ConfirmScreen       _confirmScreen;
 	WarningScreen       _warningScreen;
 	ButtonMappingScreen	_buttonMappingScreen;

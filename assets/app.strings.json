@@ -28,8 +28,9 @@
 			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
 		},
 		"cartDumpWorker": {
-			"save":  "Saving cartridge dump...",
-			"error": "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
+			"save":    "Saving cartridge dump...",
+			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with this tool.",
+			"error":   "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
@@ -42,6 +43,7 @@
 			"dumpFlash":   "Dumping internal flash...",
 			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...",
 			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...",
+			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
 			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 			"dumpError":   "An error occurred while writing dumps to the hard drive. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
 		},
@@ -178,11 +180,6 @@
 		"yes":   "Yes, continue"
 	},
 
-	"ErrorScreen": {
-		"title": "Error",
-		"ok":    "Continue"
-	},
-
 	"HexdumpScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
 		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
@@ -222,6 +219,15 @@
 		}
 	},
 
+	"MessageScreen": {
+		"title": {
+			"success": "Success",
+			"error":   "Error"
+		},
+
+		"ok": "Continue"
+	},
+
 	"QRCodeScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
 		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
@@ -242,7 +248,7 @@
 
 	"SystemInfoScreen": {
 		"title":  "System information",
-		"prompt": "Press {START_BUTTON} to go back."
+		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
 	"UnlockKeyScreen": {

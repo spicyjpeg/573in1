@@ -103,11 +103,11 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 
 		ctx.show(APP->_confirmScreen, false, true);
 	} else {
-		APP->_errorScreen.setMessage(
-			*this, STR("CartActionsScreen.resetSystemID.error")
+		APP->_messageScreen.setMessage(
+			MESSAGE_ERROR, *this, STR("CartActionsScreen.resetSystemID.error")
 		);
 
-		ctx.show(APP->_errorScreen, false, true);
+		ctx.show(APP->_messageScreen, false, true);
 	}
 }
 
@@ -129,11 +129,11 @@ void CartActionsScreen::matchSystemID(ui::Context &ctx) {
 
 		ctx.show(APP->_confirmScreen, false, true);
 	} else {
-		APP->_errorScreen.setMessage(
-			*this, STR("CartActionsScreen.matchSystemID.error")
+		APP->_messageScreen.setMessage(
+			MESSAGE_ERROR, *this, STR("CartActionsScreen.matchSystemID.error")
 		);
 
-		ctx.show(APP->_errorScreen, false, true);
+		ctx.show(APP->_messageScreen, false, true);
 	}
 }
 
@@ -149,8 +149,9 @@ void CartActionsScreen::editSystemID(ui::Context &ctx) {
 		STR("CartActionsScreen.editSystemID.confirm")
 	);
 
-	APP->_errorScreen.setMessage(
-		APP->_systemIDEntryScreen, STR("CartActionsScreen.editSystemID.error")
+	APP->_messageScreen.setMessage(
+		MESSAGE_ERROR, APP->_systemIDEntryScreen,
+		STR("CartActionsScreen.editSystemID.error")
 	);
 
 	ctx.show(APP->_systemIDEntryScreen, false, true);
@@ -201,7 +202,11 @@ void QRCodeScreen::show(ui::Context &ctx, bool goBack) {
 }
 
 void QRCodeScreen::update(ui::Context &ctx) {
-	if (ctx.buttons.pressed(ui::BTN_START))
+	if (
+		ctx.buttons.pressed(ui::BTN_START) ||
+		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
+		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+	)
 		ctx.show(APP->_cartActionsScreen, true, true);
 }
 
@@ -228,7 +233,11 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 void HexdumpScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
-	if (ctx.buttons.pressed(ui::BTN_START))
+	if (
+		ctx.buttons.pressed(ui::BTN_START) ||
+		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
+		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+	)
 		ctx.show(APP->_cartActionsScreen, true, true);
 }
 
@@ -299,7 +308,7 @@ void SystemIDEntryScreen::update(ui::Context &ctx) {
 			if (util::dsCRC8(_buffer, 7) == _buffer[7])
 				ctx.show(APP->_confirmScreen, false, true);
 			else
-				ctx.show(APP->_errorScreen, false, true);
+				ctx.show(APP->_messageScreen, false, true);
 		}
 	}
 }

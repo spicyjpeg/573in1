@@ -327,8 +327,8 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 			STRH(_CART_TYPES[APP->_dump.chipType].warning)
 		);
 
-		APP->_errorScreen.setMessage(
-			APP->_cartInfoScreen,
+		APP->_messageScreen.setMessage(
+			MESSAGE_ERROR, APP->_cartInfoScreen,
 			STRH(_CART_TYPES[APP->_dump.chipType].error)
 		);
 
@@ -384,8 +384,8 @@ void KeyEntryScreen::update(ui::Context &ctx) {
 				STRH(_CART_TYPES[APP->_dump.chipType].warning)
 			);
 
-			APP->_errorScreen.setMessage(
-				APP->_cartInfoScreen,
+			APP->_messageScreen.setMessage(
+				MESSAGE_ERROR, APP->_cartInfoScreen,
 				STRH(_CART_TYPES[APP->_dump.chipType].error)
 			);
 

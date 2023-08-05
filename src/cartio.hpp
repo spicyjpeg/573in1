@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "cart.hpp"
 #include "util.hpp"
 #include "zs01.hpp"
 

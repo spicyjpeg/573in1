@@ -15,7 +15,7 @@ public:
 	void draw(Context &ctx, bool active) const;
 };
 
-class MessageScreen : public ModalScreen {
+class MessageBoxScreen : public ModalScreen {
 private:
 	util::Tween<int, util::QuadOutEasing> _buttonAnim;
 
@@ -30,13 +30,13 @@ protected:
 	const char *_buttons[3];
 
 public:
-	MessageScreen(void);
+	MessageBoxScreen(void);
 	virtual void show(Context &ctx, bool goBack = false);
 	virtual void draw(Context &ctx, bool active = true) const;
 	virtual void update(Context &ctx);
 };
 
-class HexEntryScreen : public MessageScreen {
+class HexEntryScreen : public MessageBoxScreen {
 private:
 	int _charIndex;
 
