@@ -18,34 +18,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "ps1/cop0gte.h"
 #include "ps1/registers.h"
-
-typedef enum {
-	CAUSE_INT  =  0, // Interrupt
-	CAUSE_AdEL =  4, // Load address error
-	CAUSE_AdES =  5, // Store address error
-	CAUSE_IBE  =  6, // Instruction bus error
-	CAUSE_DBE  =  7, // Data bus error
-	CAUSE_SYS  =  8, // Syscall
-	CAUSE_BP   =  9, // Breakpoint or break instruction
-	CAUSE_RI   = 10, // Reserved instruction
-	CAUSE_CpU  = 11, // Coprocessor unusable
-	CAUSE_Ov   = 12  // Arithmetic overflow
-} ExceptionCause;
-
-typedef enum {
-	SR_IEc = 1 <<  0, // Current interrupt enable
-	SR_KUc = 1 <<  1, // Current privilege level
-	SR_IEp = 1 <<  2, // Previous interrupt enable
-	SR_KUp = 1 <<  3, // Previous privilege level
-	SR_IEo = 1 <<  4, // Old interrupt enable
-	SR_KUo = 1 <<  5, // Old privilege level
-	SR_Im0 = 1 <<  8, // IRQ mask 0 (software interrupt)
-	SR_Im1 = 1 <<  9, // IRQ mask 1 (software interrupt)
-	SR_Im2 = 1 << 10, // IRQ mask 2 (hardware interrupt)
-	SR_CU0 = 1 << 28, // Coprocessor 0 privilege level
-	SR_CU2 = 1 << 30  // Coprocessor 2 enable
-} SRFlag;
 
 typedef struct {
 	uint32_t pc, at, v0, v1, a0, a1, a2, a3;
@@ -74,17 +48,28 @@ extern Thread *currentThread;
 extern Thread *nextThread;
 
 /**
- * @brief Disables interrupts temporarily, then sets the IRQ_MASK register to
- * the specified value (which should be a bitfield of (1 << IRQ_*) flags) and
- * returns its previous value. Must *not* be used in IRQ handlers.
+ * @brief Enables all interrupts at the COP0 side (without altering the IRQ_MASK
+ * register). If any IRQs occurred and were not acknowledged while interrupts
+ * were disabled, any callback set using setInterruptHandler() will be invoked
+ * immediately.
  */
-static inline uint32_t setInterruptMask(uint32_t mask) {
-	register uint32_t v0 __asm__("v0");
-	register uint32_t a0 __asm__("a0") = 0;
-	register uint32_t a1 __asm__("a1") = mask;
+static inline void enableInterrupts(void) {
+	cop0_setSR(cop0_getSR() | COP0_SR_IEc);
+}
 
-	__asm__ volatile("syscall 0;" : "=r"(v0) : "r"(a0), "r"(a1) : "memory");
-	return v0;
+/**
+ * @brief Disables all interrupts at the COP0 side (without altering the
+ * IRQ_MASK register). This function is not atomic, but can be used safely as
+ * long as no other code is manipulating the COP0 SR register while interrupts
+ * are enabled.
+ *
+ * @return True if interrupts were previously enabled, false otherwise
+ */
+static inline bool disableInterrupts(void) {
+	uint32_t sr = cop0_getSR();
+
+	cop0_setSR(sr & ~COP0_SR_IEc);
+	return (sr & COP0_SR_IEc);
 }
 
 /**
@@ -130,7 +115,7 @@ void installExceptionHandler(void);
  * - it must return quickly, as IRQs fired while the exception handler is
  *   running may otherwise be missed.
  *
- * Interrupts must be re-enabled manually using setInterruptMask() after setting
+ * Interrupts must be re-enabled manually using enableInterrupts() after setting
  * a new handler.
  *
  * @param func
@@ -139,7 +124,8 @@ void installExceptionHandler(void);
 void setInterruptHandler(ArgFunction func, void *arg);
 
 /**
- * @brief Clears the instruction cache. Must *not* be used in IRQ handlers.
+ * @brief Temporarily disables interrupts, then calls the BIOS function to clear
+ * the instruction cache.
  */
 void flushCache(void);
 
@@ -217,7 +203,12 @@ void switchThread(Thread *thread);
  *
  * @param thread Pointer to new thread or NULL for main thread
  */
-void switchThreadImmediate(Thread *thread);
+static inline void switchThreadImmediate(Thread *thread) {
+	switchThread(thread);
+
+	// Execute a syscall to force the switch to happen.
+	__asm__ volatile("syscall 0;" ::: "memory");
+}
 
 #ifdef __cplusplus
 }

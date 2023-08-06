@@ -20,10 +20,6 @@
 .set CAUSE, $13
 .set EPC,   $14
 
-.set IO_BASE,  0xbf80
-.set IRQ_STAT, 0x1070
-.set IRQ_MASK, 0x1074
-
 .section .text._exceptionVector, "ax", @progbits
 .global _exceptionVector
 .type _exceptionVector, @function
@@ -31,55 +27,27 @@
 _exceptionVector:
 	# This tiny stub is going to be relocated to the address the CPU jumps to
 	# when an exception occurs (0x80000080) at runtime, overriding the default
-	# one installed by the BIOS.
+	# one installed by the BIOS. We're going to fetch a pointer to the current
+	# thread, grab the EPC (i.e. the address of the instruction that was being
+	# executed before the exception occurred) and jump to the exception handler.
+	# NOTE: we can't use any registers other than $k0 and $k1 here, as doing so
+	# would destroy their contents and corrupt the current thread's state.
 	lui   $k0, %hi(currentThread)
-	j     _exceptionHandler
 	lw    $k0, %lo(currentThread)($k0)
 
-	nop
+	j     _exceptionHandler
+	mfc0  $k1, EPC
 
 .section .text._exceptionHandler, "ax", @progbits
 .global _exceptionHandler
 .type _exceptionHandler, @function
 
 _exceptionHandler:
-	# We're going to need at least 3 registers to store a pointer to the current
-	# thread, the return pointer (EPC) and the state of the CAUSE register
-	# respectively. $k0 and $k1 are always available to the exception handler,
-	# so only $at needs to be saved.
-	nop
+	# Save the full state of the thread in order to make sure the interrupt
+	# handler callback (invoked later on) can use any register. The state of
+	# $hi/$lo is saved after all other registers in order to let the multiplier
+	# finish any ongoing calculation.
 	sw    $at, 0x04($k0)
-	mfc0  $at, CAUSE
-
-	# Check CAUSE bits 2-6 to determine what triggered the exception. If it was
-	# caused by a syscall, increment EPC so it won't be executed again;
-	# furthermore, if the first argument passed to the syscall was zero, take an
-	# alternate, shorter code path (as it is the syscall to set IRQ_MASK).
-	li    $k1, 8 << 2 # if (((CAUSE >> 2) & 0x1f) != 8) goto notFastSyscall
-	andi  $at, 0x1f << 2
-	bne   $at, $k1, .LnotFastSyscall
-	mfc0  $k1, EPC
-
-	bnez  $a0, .LnotFastSyscall # if (arg0) goto notFastSyscall
-	addiu $k1, 4 # EPC++
-
-.LfastSyscall:
-	# Save the current value of IRQ_MASK then set it "atomically" (as interrupts
-	# are disabled while the exception handler runs), then restore $at and
-	# return immediately without the overhead of saving and restoring the whole
-	# thread.
-	lui   $at, IO_BASE
-	lhu   $v0, IRQ_MASK($at) # returnValue = IRQ_MASK
-	lw    $at, 0x04($k0)
-	sh    $a1, IRQ_MASK($at) # IRQ_MASK = arg1
-
-	jr    $k1
-	rfe
-
-.LnotFastSyscall:
-	# If the fast path couldn't be taken, save the full state of the thread. The
-	# state of $hi/$lo is saved after all other registers in order to let the
-	# multiplier finish any ongoing calculation.
 	sw    $v0, 0x08($k0)
 	sw    $v1, 0x0c($k0)
 	sw    $a0, 0x10($k0)
@@ -114,41 +82,53 @@ _exceptionHandler:
 	sw    $v0, 0x78($k0)
 	sw    $v1, 0x7c($k0)
 
-	# Check again if the CAUSE code is either 0 (IRQ) or 8 (syscall). If not
-	# call _unhandledException(), which will then display information about the
-	# exception and lock up.
-	lui   $v0, %hi(interruptHandler)
-	andi  $v1, $at, 0x17 << 2 # if (!(((CAUSE >> 2) & 0x1f) % 8)) goto irqOrSyscall
-	beqz  $v1, .LirqOrSyscall
-	lw    $v0, %lo(interruptHandler)($v0)
+	# Check bits 2-6 of the CAUSE register to determine what triggered the
+	# exception. If it was caused by a syscall, increment EPC to make sure
+	# returning to the thread won't trigger another syscall.
+	mfc0  $v0, CAUSE
+	lui   $v1, %hi(interruptHandler)
+
+	andi  $v0, 0x1f << 2 # if (((CAUSE >> 2) & 0x1f) == 0) goto checkForGTEInst
+	beqz  $v0, .LcheckForGTEInst
+	li    $at, 8 << 2 # if (((CAUSE >> 2) & 0x1f) == 8) goto applyIncrement
+	beq   $v0, $at, .LapplyIncrement
+	lw    $v1, %lo(interruptHandler)($v1)
 
 .LotherException:
+	# If the exception was not triggered by a syscall nor by an interrupt call
+	# _unhandledException(), which will then display information about the
+	# exception and lock up.
+	sw    $k1, 0x00($k0)
+
 	mfc0  $a1, BADV # _unhandledException((CAUSE >> 2) & 0x1f, BADV)
-	srl   $a0, $at, 2
+	srl   $a0, $v0, 2
 	jal   _unhandledException
 	addiu $sp, -8
 
 	b     .Lreturn
 	addiu $sp, 8
 
-.LirqOrSyscall:
-	# Otherwise, check if the interrupted instruction was a GTE opcode and
-	# increment EPC to avoid executing it again (as with syscalls). This is a
-	# workaround for a hardware bug.
-	lw    $v1, 0($k1)
-	li    $at, 0x25 # if ((*EPC >> 25) == 0x25) EPC++
-	srl   $v1, 25
-	bne   $v1, $at, .LskipIncrement
-	lui   $a0, %hi(interruptHandlerArg)
+.LcheckForGTEInst:
+	# If the exception was caused by an interrupt, check if the interrupted
+	# instruction was a GTE opcode and increment EPC to avoid executing it again
+	# if that is the case. This is a workaround for a hardware bug.
+	lw    $v0, 0($k1) # if ((*EPC >> 25) == 0x25) EPC++
+	li    $at, 0x25
+	srl   $v0, 25
+	bne   $v0, $at, .LskipIncrement
+	lw    $v1, %lo(interruptHandler)($v1)
 
+.LapplyIncrement:
 	addiu $k1, 4
 
 .LskipIncrement:
-	lw    $a0, %lo(interruptHandlerArg)($a0)
+	# Save the modified EPC and dispatch any pending interrupts. The handler
+	# will temporarily use the current thread's stack.
 	sw    $k1, 0x00($k0)
 
-	# Dispatch any pending interrupts.
-	jalr  $v0 # interruptHandler(interruptHandlerArg)
+	lui   $a0, %hi(interruptHandlerArg)
+	lw    $a0, %lo(interruptHandlerArg)($a0)
+	jalr  $v1 # interruptHandler(interruptHandlerArg)
 	addiu $sp, -8
 
 	addiu $sp, 8

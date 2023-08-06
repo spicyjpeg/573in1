@@ -285,6 +285,34 @@ typedef enum {
 	GP1_CMD_GET_INFO    = 16 << 24
 } GP1Command;
 
+DEF32 gp1_clockMultiplierH(GP1HorizontalRes horizontalRes) {
+	switch (horizontalRes) {
+		case GP1_HRES_256:
+			return 10;
+		case GP1_HRES_320:
+			return 8;
+		case GP1_HRES_368:
+			return 7;
+		case GP1_HRES_512:
+			return 5;
+		case GP1_HRES_640:
+			return 4;
+		default:
+			return 0;
+	}
+}
+
+DEF32 gp1_clockDividerV(GP1VerticalRes verticalRes) {
+	switch (verticalRes) {
+		case GP1_VRES_256:
+			return 1;
+		case GP1_VRES_512:
+			return 2;
+		default:
+			return 0;
+	}
+}
+
 DEF32 gp1_resetGPU(void) {
 	return GP1_CMD_RESET_GPU;
 }

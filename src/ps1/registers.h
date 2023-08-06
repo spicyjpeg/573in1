@@ -148,7 +148,7 @@ typedef enum {
 /* IRQ controller */
 
 typedef enum {
-	IRQ_VBLANK =  0,
+	IRQ_VSYNC  =  0,
 	IRQ_GPU    =  1,
 	IRQ_CDROM  =  2,
 	IRQ_DMA    =  3,

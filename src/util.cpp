@@ -47,7 +47,7 @@ void Logger::clear(void) {
 }
 
 void Logger::log(const char *format, ...) {
-	auto mask = setInterruptMask(0);
+	auto enable = disableInterrupts();
 
 	size_t  tail = _tail;
 	va_list ap;
@@ -60,8 +60,8 @@ void Logger::log(const char *format, ...) {
 
 	if (enableSyslog)
 		puts(_lines[tail]);
-	if (mask)
-		setInterruptMask(mask);
+	if (enable)
+		enableInterrupts();
 }
 
 /* CRC calculation */

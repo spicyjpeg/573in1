@@ -43,9 +43,9 @@ static const char _registerNames[] =
 	"t8" "t9" "gp" "sp" "fp" "ra" "hi" "lo";
 #endif
 
-void _unhandledException(ExceptionCause cause, uint32_t badv) {
+void _unhandledException(int cause, uint32_t badv) {
 #ifndef NDEBUG
-	if ((cause == CAUSE_AdEL) || (cause == CAUSE_AdES))
+	if (cause <= 5)
 		printf("Exception: %s (%08x)\nRegister dump:\n", _causeNames[cause - 4], badv);
 	else
 		printf("Exception: %s\nRegister dump:\n", _causeNames[cause - 4]);
