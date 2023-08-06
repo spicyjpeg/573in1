@@ -122,7 +122,7 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 			return NO_ERROR;
 
 		delayMicroseconds(1);
-		if (acknowledgeInterrupt(IRQ_VBLANK))
+		if (acknowledgeInterrupt(IRQ_VSYNC))
 			io::clearWatchdog();
 	}
 
@@ -167,7 +167,6 @@ DeviceError Device::_transferPIO(void *data, size_t length, bool write) {
 	return NO_ERROR;
 }
 
-// FIXME: DMA transfers are completely broken currently
 DeviceError Device::_transferDMA(void *data, size_t length, bool write) {
 	length /= 4;
 
@@ -222,7 +221,7 @@ DeviceError Device::enumerate(void) {
 		if (error)
 			return error;
 
-		error = _transferPIO(&block, sizeof(IdentifyBlock));
+		error = _transferDMA(&block, sizeof(IdentifyBlock));
 		if (error)
 			return error;
 
@@ -243,7 +242,7 @@ DeviceError Device::enumerate(void) {
 		if (error)
 			return error;
 
-		error = _transferPIO(&block, sizeof(IdentifyBlock));
+		error = _transferDMA(&block, sizeof(IdentifyBlock));
 		if (error)
 			return error;
 

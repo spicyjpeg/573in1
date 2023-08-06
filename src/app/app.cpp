@@ -39,7 +39,7 @@ void App::_unloadCartData(void) {
 void App::_setupWorker(bool (App::*func)(void)) {
 	LOG("restarting worker, func=0x%08x", func);
 
-	auto mask = setInterruptMask(0);
+	auto enable = disableInterrupts();
 
 	_workerStatus.reset();
 	_workerFunction = func;
@@ -49,8 +49,8 @@ void App::_setupWorker(bool (App::*func)(void)) {
 		&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
 		&_workerStack[(WORKER_STACK_SIZE - 1) & ~7]
 	);
-	if (mask)
-		setInterruptMask(mask);
+	if (enable)
+		enableInterrupts();
 }
 
 void App::_setupInterrupts(void) {
@@ -58,7 +58,8 @@ void App::_setupInterrupts(void) {
 		util::forcedCast<ArgFunction>(&App::_interruptHandler), this
 	);
 
-	setInterruptMask(1 << IRQ_VBLANK);
+	IRQ_MASK = 1 << IRQ_VSYNC;
+	enableInterrupts();
 }
 
 /* Worker functions */
@@ -552,7 +553,7 @@ void App::_worker(void) {
 }
 
 void App::_interruptHandler(void) {
-	if (acknowledgeInterrupt(IRQ_VBLANK)) {
+	if (acknowledgeInterrupt(IRQ_VSYNC)) {
 		_ctx->tick();
 
 		if (_workerStatus.status != WORKER_REBOOT)

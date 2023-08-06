@@ -47,38 +47,38 @@ public:
 		nextScreen    = nullptr;
 	}
 	inline void update(int part, int total, const char *text = nullptr) {
-		auto mask     = setInterruptMask(0);
+		auto enable   = disableInterrupts();
 		status        = WORKER_BUSY;
 		progress      = part;
 		progressTotal = total;
 
 		if (text)
 			message = text;
-		if (mask)
-			setInterruptMask(mask);
+		if (enable)
+			enableInterrupts();
 	}
 	inline void setStatus(WorkerStatusType value) {
-		auto mask = setInterruptMask(0);
-		status    = value;
+		auto enable = disableInterrupts();
+		status      = value;
 
-		if (mask)
-			setInterruptMask(mask);
+		if (enable)
+			enableInterrupts();
 	}
 	inline void setNextScreen(ui::Screen &next, bool goBack = false) {
-		auto mask   = setInterruptMask(0);
+		auto enable = disableInterrupts();
 		_nextGoBack = goBack;
 		_nextScreen = &next;
 
-		if (mask)
-			setInterruptMask(mask);
+		if (enable)
+			enableInterrupts();
 	}
 	inline void finish(void) {
-		auto mask  = setInterruptMask(0);
-		status     = _nextGoBack ? WORKER_NEXT_BACK : WORKER_NEXT;
-		nextScreen = _nextScreen;
+		auto enable = disableInterrupts();
+		status      = _nextGoBack ? WORKER_NEXT_BACK : WORKER_NEXT;
+		nextScreen  = _nextScreen;
 
-		if (mask)
-			setInterruptMask(mask);
+		if (enable)
+			enableInterrupts();
 	}
 };
 

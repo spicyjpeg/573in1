@@ -17,6 +17,7 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "ps1/cop0gte.h"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 
@@ -49,8 +50,7 @@ void installExceptionHandler(void) {
 	DMA_DICR = DMA_DICR_CH_STAT_BITMASK;
 
 	// Ensure interrupts and the GTE are enabled at the COP0 side.
-	uint32_t sr = SR_IEc | SR_Im2 | SR_CU0 | SR_CU2;
-	__asm__ volatile("mtc0 %0, $12;" :: "r"(sr));
+	cop0_setSR(COP0_SR_IEc | COP0_SR_Im2 | COP0_SR_CU0 | COP0_SR_CU2);
 
 	// Grab a direct pointer to the BIOS function to flush the instruction
 	// cache. This is the only function that must always run from the BIOS ROM
@@ -68,7 +68,7 @@ void installExceptionHandler(void) {
 }
 
 void setInterruptHandler(ArgFunction func, void *arg) {
-	setInterruptMask(0);
+	disableInterrupts();
 
 	interruptHandler    = func;
 	interruptHandlerArg = arg;
@@ -79,15 +79,15 @@ void flushCache(void) {
 	//if (!_flushCache)
 		//_flushCache = BIOS_API_TABLE[0x44];
 
-	uint32_t mask = setInterruptMask(0);
+	bool enable = disableInterrupts();
 
 	_flushCache();
-	if (mask)
-		setInterruptMask(mask);
+	if (enable)
+		enableInterrupts();
 }
 
 void softReset(void) {
-	setInterruptMask(0);
+	disableInterrupts();
 	BIOS_ENTRY_POINT();
 }
 
@@ -145,18 +145,4 @@ void switchThread(Thread *thread) {
 
 	nextThread = thread;
 	atomic_signal_fence(memory_order_release);
-}
-
-void switchThreadImmediate(Thread *thread) {
-	if (!thread)
-		thread = &_mainThread;
-
-	nextThread = thread;
-	atomic_signal_fence(memory_order_release);
-
-	// Execute a syscall to force the switch to happen. Note that the syscall
-	// handler will take a different path if $a0 is zero (see system.s), but
-	// that will never happen here since the check above is ensuring $a0 (i.e.
-	// the first argument) will always be a valid pointer.
-	__asm__ volatile("syscall 0;" :: "r"(thread) : "a0", "memory");
 }

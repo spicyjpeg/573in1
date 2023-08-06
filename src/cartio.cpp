@@ -118,11 +118,11 @@ static constexpr int _ZS01_SEND_DELAY   = 30000;
 static constexpr int _ZS01_PACKET_DELAY = 30000;
 
 DriverError CartDriver::readSystemID(void) {
-	auto mask = setInterruptMask(0);
+	auto enable = disableInterrupts();
 
 	if (!io::dsDIOReset()) {
-		if (mask)
-			setInterruptMask(mask);
+		if (enable)
+			enableInterrupts();
 
 		LOG("no 1-wire device found");
 		return DS2401_NO_RESP;
@@ -134,8 +134,8 @@ DriverError CartDriver::readSystemID(void) {
 	for (int i = 0; i < 8; i++)
 		_dump.systemID.data[i] = io::dsDIOReadByte();
 
-	if (mask)
-		setInterruptMask(mask);
+	if (enable)
+		enableInterrupts();
 	if (!_dump.systemID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
@@ -144,11 +144,11 @@ DriverError CartDriver::readSystemID(void) {
 }
 
 DriverError X76Driver::readCartID(void) {
-	auto mask = setInterruptMask(0);
+	auto enable = disableInterrupts();
 
 	if (!io::dsCartReset()) {
-		if (mask)
-			setInterruptMask(mask);
+		if (enable)
+			enableInterrupts();
 
 		LOG("no 1-wire device found");
 		return DS2401_NO_RESP;
@@ -160,8 +160,8 @@ DriverError X76Driver::readCartID(void) {
 	for (int i = 0; i < 8; i++)
 		_dump.cartID.data[i] = io::dsCartReadByte();
 
-	if (mask)
-		setInterruptMask(mask);
+	if (enable)
+		enableInterrupts();
 	if (!_dump.cartID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
