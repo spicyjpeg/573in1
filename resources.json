@@ -45,6 +45,11 @@
 		"compress": null
 	},
 	{
+		"type":   "palette",
+		"name":   "assets/app.palette",
+		"source": "assets/app.palette.json"
+	},
+	{
 		"type":   "strings",
 		"name":   "assets/app.strings",
 		"source": "assets/app.strings.json"

@@ -11,28 +11,29 @@ namespace ui {
 
 /* Public constants */
 
-enum Color : gpu::Color {
-	COLOR_DEFAULT    = 0x808080,
-	COLOR_SHADOW     = 0x000000,
-	COLOR_BACKDROP   = 0xb0b0b0,
-	COLOR_ACCENT1    = 0x50d0f0,
-	COLOR_ACCENT2    = 0x3088a0,
-	COLOR_WINDOW1    = 0x505050,
-	COLOR_WINDOW2    = 0x242424,
-	COLOR_WINDOW3    = 0x080808,
-	COLOR_HIGHLIGHT1 = 0x40b0c8,
-	COLOR_HIGHLIGHT2 = 0x3088a0,
-	COLOR_PROGRESS1  = 0x10c048,
-	COLOR_PROGRESS2  = 0x007820,
-	COLOR_BOX1       = 0x000000,
-	COLOR_BOX2       = 0x282828,
-	COLOR_TEXT1      = 0x707070,
-	COLOR_TEXT2      = 0x383838,
-	COLOR_TITLE      = 0x808080,
-	COLOR_SUBTITLE   = 0x4078a0
-};
-
+static constexpr int NUM_UI_COLORS = 18;
 static constexpr int NUM_UI_SOUNDS = 6;
+
+enum Color {
+	COLOR_DEFAULT    =  0,
+	COLOR_SHADOW     =  1,
+	COLOR_BACKDROP   =  2,
+	COLOR_ACCENT1    =  3,
+	COLOR_ACCENT2    =  4,
+	COLOR_WINDOW1    =  5,
+	COLOR_WINDOW2    =  6,
+	COLOR_WINDOW3    =  7,
+	COLOR_HIGHLIGHT1 =  8,
+	COLOR_HIGHLIGHT2 =  9,
+	COLOR_PROGRESS1  = 10,
+	COLOR_PROGRESS2  = 11,
+	COLOR_BOX1       = 12,
+	COLOR_BOX2       = 13,
+	COLOR_TEXT1      = 14,
+	COLOR_TEXT2      = 15,
+	COLOR_TITLE      = 16,
+	COLOR_SUBTITLE   = 17
+};
 
 enum Sound {
 	SOUND_STARTUP = 0,
@@ -127,6 +128,7 @@ public:
 
 	ButtonState(void);
 	void update(void);
+	bool bothPressed(Button buttonA, Button buttonB);
 };
 
 /* UI context */
@@ -144,6 +146,7 @@ public:
 	gpu::Context &gpuCtx;
 
 	gpu::Font  font;
+	gpu::Color colors[NUM_UI_COLORS];
 	spu::Sound sounds[NUM_UI_SOUNDS];
 
 	ButtonState buttons;

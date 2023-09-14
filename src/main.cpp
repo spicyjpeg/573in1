@@ -121,13 +121,11 @@ _fileInitDone:
 			goto _resourceInitDone;
 	}
 
-	if (fileProvider.fileExists(resPath)) {
-		zipFile = fileProvider.openFile(resPath, file::READ);
+	zipFile = fileProvider.openFile(resPath, file::READ);
 
-		if (zipFile) {
-			if (resourceProvider.init(zipFile))
-				goto _resourceInitDone;
-		}
+	if (zipFile) {
+		if (resourceProvider.init(zipFile))
+			goto _resourceInitDone;
 	}
 
 	resourceProvider.init(_resources, _resourcesSize);
@@ -135,7 +133,7 @@ _fileInitDone:
 _resourceInitDone:
 	io::clearWatchdog();
 
-	gpu::Context gpuCtx(GP1_MODE_NTSC, width, height, height > 256);
+	gpu::Context gpuCtx(GP1_MODE_NTSC, width, height);
 	ui::Context  uiCtx(gpuCtx);
 
 	ui::TiledBackground background;
@@ -152,6 +150,9 @@ _resourceInitDone:
 		) ||
 		!resourceProvider.loadStruct(
 			uiCtx.font.metrics, "assets/textures/font.metrics"
+		) ||
+		!resourceProvider.loadStruct(
+			uiCtx.colors, "assets/app.palette"
 		) ||
 		!resourceProvider.loadData(
 			strings, "assets/app.strings"

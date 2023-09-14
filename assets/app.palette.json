@@ -1,0 +1,20 @@
+{
+	"default":    "#808080",
+	"shadow":     "#000000",
+	"backdrop":   "#b0b0b0",
+	"accent1":    "#f0d050",
+	"accent2":    "#a08830",
+	"window1":    "#505050",
+	"window2":    "#242424",
+	"window3":    "#080808",
+	"highlight1": "#c8b040",
+	"highlight2": "#a08830",
+	"progress1":  "#48c010",
+	"progress2":  "#207800",
+	"box1":       "#000000",
+	"box2":       "#282828",
+	"text1":      "#707070",
+	"text2":      "#383838",
+	"title":      "#808080",
+	"subtitle":   "#a07840"
+}

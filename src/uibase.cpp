@@ -125,6 +125,15 @@ void ButtonState::update(void) {
 	}
 }
 
+bool ButtonState::bothPressed(Button buttonA, Button buttonB) {
+	if (pressed(buttonA) && held(buttonB))
+		return true;
+	if (held(buttonA) && pressed(buttonB))
+		return true;
+
+	return false;
+}
+
 /* UI context */
 
 Context::Context(gpu::Context &gpuCtx, void *screenData)
@@ -205,7 +214,7 @@ void TiledBackground::draw(Context &ctx) const {
 	rect.y    = ctx.gpuCtx.height - (8 + gpu::FONT_LINE_HEIGHT);
 	rect.w    = width;
 	rect.h    = gpu::FONT_LINE_HEIGHT;
-	ctx.font.draw(ctx.gpuCtx, text, rect, COLOR_TEXT2);
+	ctx.font.draw(ctx.gpuCtx, text, rect, ctx.colors[COLOR_TEXT2]);
 }
 
 LogOverlay::LogOverlay(util::Logger &logger)
@@ -222,7 +231,7 @@ void LogOverlay::draw(Context &ctx) const {
 		ctx, 0, offset - ctx.gpuCtx.height, ctx.gpuCtx.width,
 		ctx.gpuCtx.height
 	);
-	ctx.gpuCtx.drawBackdrop(COLOR_BACKDROP, GP0_BLEND_SUBTRACT);
+	ctx.gpuCtx.drawBackdrop(ctx.colors[COLOR_BACKDROP], GP0_BLEND_SUBTRACT);
 
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
 	int linesShown   = screenHeight / gpu::FONT_LINE_HEIGHT;
@@ -235,7 +244,9 @@ void LogOverlay::draw(Context &ctx) const {
 	rect.y2 = SCREEN_MARGIN_Y + gpu::FONT_LINE_HEIGHT;
 
 	for (int i = linesShown - 1; i >= 0; i--) {
-		ctx.font.draw(ctx.gpuCtx, _logger.getLine(i), rect, COLOR_TEXT1);
+		ctx.font.draw(
+			ctx.gpuCtx, _logger.getLine(i), rect, ctx.colors[COLOR_TEXT1]
+		);
 
 		rect.y1  = rect.y2;
 		rect.y2 += gpu::FONT_LINE_HEIGHT;
@@ -312,20 +323,20 @@ void ModalScreen::draw(Context &ctx, bool active) const {
 
 		// Window
 		ctx.gpuCtx.drawGradientRectD(
-			0, 0, _width, windowHeight, COLOR_WINDOW1, COLOR_WINDOW2,
-			COLOR_WINDOW3
+			0, 0, _width, windowHeight, ctx.colors[COLOR_WINDOW1],
+			ctx.colors[COLOR_WINDOW2], ctx.colors[COLOR_WINDOW3]
 		);
 		ctx.gpuCtx.drawGradientRectH(
 			0, 0, _titleBarAnim.getValue(ctx.time), TITLE_BAR_HEIGHT,
-			COLOR_ACCENT1, COLOR_ACCENT2
+			ctx.colors[COLOR_ACCENT1], ctx.colors[COLOR_ACCENT2]
 		);
 		ctx.gpuCtx.drawRect(
-			_width, SHADOW_OFFSET, SHADOW_OFFSET, windowHeight, COLOR_SHADOW,
-			true
+			_width, SHADOW_OFFSET, SHADOW_OFFSET, windowHeight,
+			ctx.colors[COLOR_SHADOW], true
 		);
 		ctx.gpuCtx.drawRect(
 			SHADOW_OFFSET, windowHeight, _width - SHADOW_OFFSET, SHADOW_OFFSET,
-			COLOR_SHADOW, true
+			ctx.colors[COLOR_SHADOW], true
 		);
 
 		// Text
@@ -336,11 +347,11 @@ void ModalScreen::draw(Context &ctx, bool active) const {
 		rect.x2 = _width - TITLE_BAR_PADDING;
 		rect.y2 = TITLE_BAR_PADDING + gpu::FONT_LINE_HEIGHT;
 		//rect.y2 = TITLE_BAR_HEIGHT - TITLE_BAR_PADDING;
-		ctx.font.draw(ctx.gpuCtx, _title, rect, COLOR_TITLE);
+		ctx.font.draw(ctx.gpuCtx, _title, rect, ctx.colors[COLOR_TITLE]);
 
 		rect.y1 = TITLE_BAR_HEIGHT + MODAL_PADDING;
 		rect.y2 = _height - MODAL_PADDING;
-		ctx.font.draw(ctx.gpuCtx, _body, rect, COLOR_TEXT1, true);
+		ctx.font.draw(ctx.gpuCtx, _body, rect, ctx.colors[COLOR_TEXT1], true);
 	}
 }
 
