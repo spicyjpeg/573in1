@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.3.1"
+__version__ = "0.3.4"
 __author__  = "spicyjpeg"
 
 import json, logging, os, re
 from argparse    import ArgumentParser, Namespace
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from operator    import methodcaller
 from pathlib     import Path
 from struct      import Struct
 from typing      import Any, Generator, Iterable, Mapping, Sequence, Type
@@ -265,30 +264,42 @@ _CARTDB_PATHS: Mapping[ChipType, str] = {
 
 def createParser() -> ArgumentParser:
 	parser = ArgumentParser(
-		description = "Recursively scans a directory for MAME dumps and generates cartdb files."
+		description = \
+			"Recursively scans a directory for MAME dumps of X76F041 and ZS01 "
+			"cartridges, analyzes them and generates .cartdb files.",
+		add_help    = False
 	)
-	parser.add_argument(
+
+	group = parser.add_argument_group("Tool options")
+	group.add_argument(
+		"-h", "--help",
+		action = "help",
+		help   = "Show this help message and exit"
+	)
+	group.add_argument(
 		"-v", "--verbose",
 		action = "count",
-		help   = "enable additional logging levels"
+		help   = "Enable additional logging levels"
 	)
-	parser.add_argument(
+
+	group = parser.add_argument_group("File paths")
+	group.add_argument(
 		"-o", "--output",
 		type    = Path,
 		default = os.curdir,
-		help    = "path to output directory (current directory by default)",
+		help    = "Path to output directory (current directory by default)",
 		metavar = "dir"
 	)
-	parser.add_argument(
+	group.add_argument(
 		"gameList",
 		type = Path,
-		help = "path to JSON file containing game list"
+		help = "Path to JSON file containing game list"
 	)
-	parser.add_argument(
+	group.add_argument(
 		"input",
 		type  = Path,
 		nargs = "+",
-		help  = "paths to input directories"
+		help  = "Paths to input directories"
 	)
 
 	return parser

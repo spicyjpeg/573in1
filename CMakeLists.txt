@@ -12,6 +12,10 @@ project(
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_program(
+	XORRISO_PATH xorriso
+	DOC "Path to xorriso tool (optional)"
+)
+find_program(
 	CHDMAN_PATH chdman
 	DOC "Path to MAME chdman tool (optional)"
 )
@@ -109,30 +113,46 @@ ps1_target_incbin(
 
 ## CD-ROM image
 
-#configure_file(assets/cdreadme.txt cdreadme.txt NEWLINE_STYLE CRLF)
-#add_custom_command(
-#	COMMAND
-#		"${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/buildCDImage.py"
-#		-s "${PROJECT_BINARY_DIR}"
-#		"${PROJECT_SOURCE_DIR}/cd.json" cart_tool.iso
-#	OUTPUT  cart_tool.iso
-#	DEPENDS cd.json cart_tool
-#	COMMENT "Building CD-ROM image"
-#	VERBATIM
-#)
+if(EXISTS "${XORRISO_PATH}")
+	configure_file(assets/cdreadme.txt cdreadme.txt NEWLINE_STYLE CRLF)
+	string(REPLACE "." "_" _version "${PROJECT_VERSION}")
 
-#if(EXISTS "${CHDMAN_PATH}")
-#	add_custom_command(
-#		COMMAND
-#			"${CHDMAN_PATH}" createcd -f -i cart_tool.iso -o cart_tool.chd
-#		OUTPUT  cart_tool.chd
-#		DEPENDS cart_tool.iso
-#		COMMENT "Building MAME CHD image"
-#		VERBATIM
-#	)
-#
-#	# Add a dummy target that depends on the CD image to ensure it gets built.
-#	add_custom_target(cd ALL DEPENDS cart_tool.iso cart_tool.chd)
-#else()
-#	add_custom_target(cd ALL DEPENDS cart_tool.iso)
-#endif()
+	add_custom_command(
+		COMMAND
+			"${XORRISO_PATH}"
+			-outdev cart_tool.iso -blank all
+			-rockridge off -joliet off -padding 2M
+			-volid "CART_TOOL_${_version}"
+			-volset_id "CART_TOOL_${_version}"
+			-publisher "SPICYJPEG"
+			-application_id "PLAYSTATION"
+			-system_id "PLAYSTATION"
+			-preparer_id "CART_TOOL BUILD SCRIPT"
+			-map cdreadme.txt README.TXT
+			-map cart_tool.psexe PSX.EXE
+			-clone PSX.EXE QSY.DXD
+			-clone PSX.EXE SSW.BXF
+			-clone PSX.EXE TSV.AXG
+			-clone PSX.EXE GSE.NXX
+			-clone PSX.EXE NSE.GXX
+		OUTPUT  cart_tool.iso
+		DEPENDS cart_tool
+		COMMENT "Building CD-ROM image"
+		VERBATIM
+	)
+
+	if(EXISTS "${CHDMAN_PATH}")
+		add_custom_command(
+			COMMAND
+				"${CHDMAN_PATH}" createcd -f -i cart_tool.iso -o cart_tool.chd
+			OUTPUT  cart_tool.chd
+			DEPENDS cart_tool.iso
+			COMMENT "Building MAME CHD image"
+			VERBATIM
+		)
+
+		add_custom_target(cd ALL DEPENDS cart_tool.iso cart_tool.chd)
+	else()
+		add_custom_target(cd ALL DEPENDS cart_tool.iso)
+	endif()
+endif()
