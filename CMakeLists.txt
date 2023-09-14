@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	cart_tool_private
 	LANGUAGES    C CXX ASM
-	VERSION      0.3.3
+	VERSION      0.3.4
 	DESCRIPTION  "Konami System 573 security cartridge tool"
 )
 

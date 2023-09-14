@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.3.0"
+__version__ = "0.3.4"
 __author__  = "spicyjpeg"
 
 import json, re
@@ -10,7 +10,7 @@ from collections import defaultdict
 from itertools   import chain
 from pathlib     import Path
 from struct      import Struct
-from typing      import Any, ByteString, Generator, Mapping
+from typing      import Any, ByteString, Generator, Mapping, Sequence
 from zipfile     import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import numpy
@@ -146,6 +146,50 @@ def generateFontMetrics(
 			METRICS_ENTRY_STRUCT.size * index:
 			METRICS_ENTRY_STRUCT.size * (index + 1)
 		] = METRICS_ENTRY_STRUCT.pack(x, y, w | (h << 7) | (i << 14))
+
+	return data
+
+## Color palette generator
+
+PALETTE_COLOR_REGEX: re.Pattern    = re.compile(r"^#?([0-9A-Fa-f]{6})$")
+PALETTE_COLORS:      Sequence[str] = (
+	"default",
+	"shadow",
+	"backdrop",
+	"accent1",
+	"accent2",
+	"window1",
+	"window2",
+	"window3",
+	"highlight1",
+	"highlight2",
+	"progress1",
+	"progress2",
+	"box1",
+	"box2",
+	"text1",
+	"text2",
+	"title",
+	"subtitle"
+)
+
+PALETTE_ENTRY_STRUCT: Struct = Struct("< 3s x")
+
+def generateColorPalette(palette: Mapping[str, str]) -> bytearray:
+	data: bytearray = bytearray()
+
+	for entry in PALETTE_COLORS:
+		color: str | None = palette.get(entry, None)
+
+		if color is None:
+			raise ValueError(f"no entry found for {entry}")
+
+		matched: re.Match | None = PALETTE_COLOR_REGEX.match(color)
+
+		if matched is None:
+			raise ValueError(f"invalid color value: {color}")
+
+		data.extend(PALETTE_ENTRY_STRUCT.pack(bytes.fromhex(matched.group(1))))
 
 	return data
 
@@ -353,7 +397,7 @@ def main():
 
 					if image.mode != "P":
 						image = image.quantize(
-							int(asset["quantize"]), dither = Image.Dither.NONE
+							int(asset["quantize"]), dither = Image.NONE
 						)
 
 					data: ByteString = generateIndexedTIM(image, ix, iy, cx, cy)
@@ -366,6 +410,15 @@ def main():
 							metrics: dict = json.load(_file)
 
 					data: ByteString = generateFontMetrics(metrics)
+
+				case "palette":
+					if "palette" in asset:
+						palette: dict = asset["palette"]
+					else:
+						with open(sourceDir / asset["source"], "rt") as _file:
+							palette: dict = json.load(_file)
+
+					data: ByteString = generateColorPalette(palette)
 
 				case "strings":
 					if "strings" in asset:
@@ -380,7 +433,8 @@ def main():
 					raise KeyError(f"unsupported asset type '{_type}'")
 
 			gzipLevel: int | None = asset.get("compress", args.compress_level)
-			disallow:  bool       = (gzipLevel is None) or args.no_compression
+			disallow:  bool       = \
+				(len(data) < 1024) or (gzipLevel is None) or args.no_compression
 
 			_zip.writestr(
 				asset["name"], data,

@@ -58,9 +58,9 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 
 void Context::_applyResolution(VideoMode mode, int shiftX, int shiftY) const {
 	GP1HorizontalRes hres;
-	GP1VerticalRes   vres = (height > 256) ? GP1_VRES_512 : GP1_VRES_256;
+	GP1VerticalRes   vres;
 
-	int span;
+	int span, is480;
 
 	if (width < 320) {
 		hres = GP1_HRES_256;
@@ -79,10 +79,18 @@ void Context::_applyResolution(VideoMode mode, int shiftX, int shiftY) const {
 		span = width * 4;
 	}
 
-	int x = shiftX + 0x760,                offsetX = span   / 2;
-	int y = shiftY + (mode ? 0xa3 : 0x88), offsetY = height / (vres ? 4 : 2);
+	if (height <= 256) {
+		vres  = GP1_VRES_256;
+		is480 = false;
+	} else {
+		vres  = GP1_VRES_512;
+		is480 = true;
+	}
 
-	GPU_GP1 = gp1_fbMode(hres, vres, mode, height > 256, GP1_COLOR_16BPP);
+	int x = shiftX + 0x760,                offsetX = span   / 2;
+	int y = shiftY + (mode ? 0xa3 : 0x88), offsetY = height / (2 << is480);
+
+	GPU_GP1 = gp1_fbMode(hres, vres, mode, is480, GP1_COLOR_16BPP);
 	GPU_GP1 = gp1_fbRangeH(x - offsetX, x + offsetX);
 	GPU_GP1 = gp1_fbRangeV(y - offsetY, y + offsetY);
 }
@@ -117,8 +125,17 @@ void Context::setResolution(
 	for (int fb = 1; fb >= 0; fb--) {
 		auto &clip = _buffers[fb].clip;
 
-		clip.x1 = sideBySide ? (_width * fb) : 0;
-		clip.y1 = sideBySide ? 0 : (_height * fb);
+		if (_height > 256) {
+			clip.x1 = 0;
+			clip.y1 = 0;
+		} else if (sideBySide) {
+			clip.x1 = fb ? _width : 0;
+			clip.y1 = 0;
+		} else {
+			clip.x1 = 0;
+			clip.y1 = fb ? _height : 0;
+		}
+
 		clip.x2 = clip.x1 + _width  - 1;
 		clip.y2 = clip.y1 + _height - 1;
 	}

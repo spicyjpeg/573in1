@@ -214,8 +214,7 @@ void AboutScreen::update(ui::Context &ctx) {
 
 	if (
 		ctx.buttons.pressed(ui::BTN_START) ||
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+		ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)
 	)
 		ctx.show(APP->_mainMenuScreen, true, true);
 }

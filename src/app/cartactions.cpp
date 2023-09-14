@@ -180,10 +180,7 @@ void CartActionsScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START))
 		(this->*action.target)(ctx);
-	if (
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
-	)
+	if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT))
 		ctx.show(APP->_cartInfoScreen, true, true);
 }
 
@@ -204,8 +201,7 @@ void QRCodeScreen::show(ui::Context &ctx, bool goBack) {
 void QRCodeScreen::update(ui::Context &ctx) {
 	if (
 		ctx.buttons.pressed(ui::BTN_START) ||
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+		ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)
 	)
 		ctx.show(APP->_cartActionsScreen, true, true);
 }
@@ -235,8 +231,7 @@ void HexdumpScreen::update(ui::Context &ctx) {
 
 	if (
 		ctx.buttons.pressed(ui::BTN_START) ||
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
+		ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)
 	)
 		ctx.show(APP->_cartActionsScreen, true, true);
 }
@@ -273,10 +268,7 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 
 		APP->_selectedEntry = APP->_db.get(_activeItem);
 		ctx.show(APP->_confirmScreen, false, true);
-	} else if (
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
-	) {
+	} else if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)) {
 		ctx.show(APP->_cartActionsScreen, true, true);
 	}
 }

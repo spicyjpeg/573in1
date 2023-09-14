@@ -213,10 +213,7 @@ void CartInfoScreen::update(ui::Context &ctx) {
 		else
 			ctx.show(APP->_unlockKeyScreen, false, true);
 	}
-	if (
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
-	)
+	if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT))
 		ctx.show(APP->_mainMenuScreen, true, true);
 }
 
@@ -344,10 +341,7 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 			ctx.show(APP->_confirmScreen, false, true);
 		}
 	}
-	if (
-		(ctx.buttons.held(ui::BTN_LEFT) && ctx.buttons.pressed(ui::BTN_RIGHT)) ||
-		(ctx.buttons.pressed(ui::BTN_LEFT) && ctx.buttons.held(ui::BTN_RIGHT))
-	) {
+	if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)) {
 		ctx.show(APP->_cartInfoScreen, true, true);
 	}
 }
