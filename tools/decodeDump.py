@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.3.1"
+__version__ = "0.3.4"
 __author__  = "spicyjpeg"
 
 import sys
 from argparse import ArgumentParser, FileType, Namespace
-from struct   import Struct
-from typing   import BinaryIO, ByteString, Mapping, Sequence, TextIO
+from typing   import ByteString, Mapping, Sequence, TextIO
 from zlib     import decompress
 
 from _common import *
@@ -112,23 +111,24 @@ def createParser() -> ArgumentParser:
 	group.add_argument(
 		"-i", "--input",
 		type    = FileType("rb"),
-		help    = "read dump or QR string from specified file",
+		help    = "Read dump (.573 file) or QR string from specified path",
 		metavar = "file"
 	)
 	group.add_argument(
 		"-l", "--log",
 		type    = FileType("at"),
 		default = sys.stdout,
-		help    = "log cartridge info to specified file (stdout by default)",
+		help    = "Log cartridge info to specified file (stdout by default)",
 		metavar = "file"
 	)
 	group.add_argument(
 		"-e", "--export",
 		type    = FileType("wb"),
-		help    = "export binary dump (.573 file) to specified path",
+		help    = "Export binary dump (.573 file) to specified path",
 		metavar = "file"
 	)
 
+	group = parser.add_argument_group("Input data")
 	group.add_argument(
 		"data",
 		type  = str,
