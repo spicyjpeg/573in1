@@ -10,19 +10,11 @@ namespace cart {
 
 /* Dummy cartridge driver */
 
-static Dump _dummyDump{ .chipType = NONE };
-
-DummyDriver::DummyDriver(Dump &dump)
-: Driver(dump) {
-	if (!_dummyDump.chipType)
-		__builtin_memcpy(&_dummyDump, &dump, sizeof(Dump));
-
-	dump.flags &= DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID;
-}
+Dump dummyDriverDump;
 
 DriverError DummyDriver::readSystemID(void) {
-	if (_dummyDump.flags & DUMP_SYSTEM_ID_OK) {
-		_dump.systemID.copyFrom(_dummyDump.systemID.data);
+	if (dummyDriverDump.flags & DUMP_SYSTEM_ID_OK) {
+		_dump.systemID.copyFrom(dummyDriverDump.systemID.data);
 		_dump.flags |= DUMP_SYSTEM_ID_OK;
 		return NO_ERROR;
 	}
@@ -31,12 +23,12 @@ DriverError DummyDriver::readSystemID(void) {
 }
 
 DriverError DummyDriver::readCartID(void) {
-	if (_dummyDump.flags & DUMP_ZS_ID_OK) {
-		_dump.zsID.copyFrom(_dummyDump.zsID.data);
+	if (dummyDriverDump.flags & DUMP_ZS_ID_OK) {
+		_dump.zsID.copyFrom(dummyDriverDump.zsID.data);
 		_dump.flags |= DUMP_ZS_ID_OK;
 	}
-	if (_dummyDump.flags & DUMP_CART_ID_OK) {
-		_dump.cartID.copyFrom(_dummyDump.cartID.data);
+	if (dummyDriverDump.flags & DUMP_CART_ID_OK) {
+		_dump.cartID.copyFrom(dummyDriverDump.cartID.data);
 		_dump.flags |= DUMP_CART_ID_OK;
 		return NO_ERROR;
 	}
@@ -45,11 +37,11 @@ DriverError DummyDriver::readCartID(void) {
 }
 
 DriverError DummyDriver::readPublicData(void) {
-	if (_dummyDump.chipType != ZS01)
+	if (dummyDriverDump.chipType != ZS01)
 		return UNSUPPORTED_OP;
 
-	if (_dummyDump.flags & DUMP_PUBLIC_DATA_OK) {
-		_dump.copyDataFrom(_dummyDump.data);
+	if (dummyDriverDump.flags & DUMP_PUBLIC_DATA_OK) {
+		_dump.copyDataFrom(dummyDriverDump.data);
 		_dump.flags |= DUMP_PUBLIC_DATA_OK;
 		return NO_ERROR;
 	}
@@ -58,11 +50,11 @@ DriverError DummyDriver::readPublicData(void) {
 }
 
 DriverError DummyDriver::readPrivateData(void) {
-	if ((_dummyDump.flags & DUMP_PRIVATE_DATA_OK) && !__builtin_memcmp(
-		_dump.dataKey, _dummyDump.dataKey, sizeof(_dump.dataKey)
+	if ((dummyDriverDump.flags & DUMP_PRIVATE_DATA_OK) && !__builtin_memcmp(
+		_dump.dataKey, dummyDriverDump.dataKey, sizeof(_dump.dataKey)
 	)) {
-		_dump.copyDataFrom(_dummyDump.data);
-		_dump.copyConfigFrom(_dummyDump.config);
+		_dump.copyDataFrom(dummyDriverDump.data);
+		_dump.copyConfigFrom(dummyDriverDump.config);
 		_dump.flags |= DUMP_PRIVATE_DATA_OK | DUMP_CONFIG_OK;
 		return NO_ERROR;
 	}
@@ -72,9 +64,9 @@ DriverError DummyDriver::readPrivateData(void) {
 
 DriverError DummyDriver::writeData(void) {
 	if (!__builtin_memcmp(
-		_dump.dataKey, _dummyDump.dataKey, sizeof(_dump.dataKey)
+		_dump.dataKey, dummyDriverDump.dataKey, sizeof(_dump.dataKey)
 	)) {
-		_dummyDump.copyDataFrom(_dump.data);
+		dummyDriverDump.copyDataFrom(_dump.data);
 		return NO_ERROR;
 	}
 
@@ -82,11 +74,17 @@ DriverError DummyDriver::writeData(void) {
 }
 
 DriverError DummyDriver::erase(void) {
+	char buf[128];
+	util::hexToString(buf,_dump.dataKey,8);
+	LOG("got %s",buf);
+	util::hexToString(buf,dummyDriverDump.dataKey,8);
+	LOG("exp %s",buf);
+
 	if (!__builtin_memcmp(
-		_dump.dataKey, _dummyDump.dataKey, sizeof(_dump.dataKey)
+		_dump.dataKey, dummyDriverDump.dataKey, sizeof(_dump.dataKey)
 	)) {
-		_dummyDump.clearData();
-		_dummyDump.clearKey();
+		dummyDriverDump.clearData();
+		dummyDriverDump.clearKey();
 		// TODO: clear config registers as well
 
 		_dump.clearKey();
@@ -98,9 +96,9 @@ DriverError DummyDriver::erase(void) {
 
 DriverError DummyDriver::setDataKey(const uint8_t *key) {
 	if (!__builtin_memcmp(
-		_dump.dataKey, _dummyDump.dataKey, sizeof(_dump.dataKey)
+		_dump.dataKey, dummyDriverDump.dataKey, sizeof(_dump.dataKey)
 	)) {
-		_dummyDump.copyKeyFrom(key);
+		dummyDriverDump.copyKeyFrom(key);
 
 		_dump.copyKeyFrom(key);
 		return NO_ERROR;

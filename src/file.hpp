@@ -106,9 +106,13 @@ public:
 class FATProvider : public Provider {
 private:
 	FATFS _fs;
-	char _drive[16];
+	char _drive[8];
 
 public:
+	inline FATProvider(void) {
+		_drive[0] = 0;
+	}
+
 	bool init(const char *drive);
 	void close(void);
 

@@ -121,13 +121,15 @@ void MessageBoxScreen::update(Context &ctx) {
 }
 
 HexEntryScreen::HexEntryScreen(void)
-: _bufferLength(0) {}
+: _bufferLength(0) {
+	__builtin_memset(_buffer, 0, _bufferLength);
+}
 
 void HexEntryScreen::show(Context &ctx, bool goBack) {
 	MessageBoxScreen::show(ctx, goBack);
 
 	_buttonIndexOffset = _bufferLength * 2;
-	__builtin_memset(_buffer, 0, _bufferLength);
+	//__builtin_memset(_buffer, 0, _bufferLength);
 
 	_charIndex = 0;
 	_cursorAnim.setValue(0);

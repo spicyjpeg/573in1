@@ -34,7 +34,7 @@
 typedef enum {
 	DEV0_BASE  = 0xbf000000,
 	EXP1_BASE  = 0xbf000000,
-	CACHE_BASE = 0x1f800000, // Cannot be accessed from KSEG1
+	CACHE_BASE = 0x9f800000, // Cannot be accessed from KSEG1
 	IO_BASE    = 0xbf801000,
 	EXP2_BASE  = 0xbf802000,
 	EXP3_BASE  = 0xbfa00000,

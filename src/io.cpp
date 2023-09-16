@@ -13,7 +13,11 @@ uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
 void init(void) {
 	_bankSwitchReg = 0;
 	_cartOutputReg = 0;
-	_miscOutputReg = 0x0107;
+	_miscOutputReg = 0
+		| SYS573_MISC_OUT_ADC_MOSI
+		| SYS573_MISC_OUT_ADC_CS
+		| SYS573_MISC_OUT_ADC_SCK
+		| SYS573_MISC_OUT_JVS_STAT;
 
 	BIU_DEV0_ADDR = DEV0_BASE & 0x1fffffff;
 	BIU_DEV0_CTRL = 0
@@ -32,7 +36,11 @@ void init(void) {
 	SYS573_WATCHDOG  = 0;
 	SYS573_BANK_CTRL = 0;
 	SYS573_CART_OUT  = 0;
-	SYS573_MISC_OUT  = 0x0107;
+	SYS573_MISC_OUT  = 0
+		| SYS573_MISC_OUT_ADC_MOSI
+		| SYS573_MISC_OUT_ADC_CS
+		| SYS573_MISC_OUT_ADC_SCK
+		| SYS573_MISC_OUT_JVS_STAT;
 
 	// Some of the digital I/O board's light outputs are controlled by the FPGA
 	// and cannot be turned off until the FPGA is initialized.

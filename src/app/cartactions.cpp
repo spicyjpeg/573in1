@@ -154,6 +154,7 @@ void CartActionsScreen::editSystemID(ui::Context &ctx) {
 		STR("CartActionsScreen.editSystemID.error")
 	);
 
+	APP->_systemIDEntryScreen.getSystemID(*(APP->_parser));
 	ctx.show(APP->_systemIDEntryScreen, false, true);
 }
 
@@ -286,8 +287,6 @@ void SystemIDEntryScreen::show(ui::Context &ctx, bool goBack) {
 	_separator    = '-';
 
 	HexEntryScreen::show(ctx, goBack);
-
-	APP->_parser->getIdentifiers()->systemID.copyTo(_buffer);
 }
 
 void SystemIDEntryScreen::update(ui::Context &ctx) {

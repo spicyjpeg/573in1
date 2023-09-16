@@ -25,10 +25,8 @@ void App::_unloadCartData(void) {
 		_parser = nullptr;
 	}
 
-	_dump.chipType     = cart::NONE;
-	_dump._reserved[0] = 0;
-	_dump._reserved[1] = 0;
-
+	_dump.chipType = cart::NONE;
+	_dump.flags    = 0;
 	_dump.clearIdentifiers();
 	_dump.clearData();
 
@@ -77,7 +75,10 @@ bool App::_cartDetectWorker(void) {
 	_unloadCartData();
 
 #ifdef ENABLE_DUMMY_DRIVER
-	if (_resourceProvider->loadStruct(_dump, "data/test.573")) {
+	if (!cart::dummyDriverDump.chipType)
+		_resourceProvider->loadStruct(cart::dummyDriverDump, "data/test.573");
+
+	if (cart::dummyDriverDump.chipType) {
 		LOG("using dummy cart driver");
 		_driver = new cart::DummyDriver(_dump);
 	} else {
@@ -101,7 +102,7 @@ bool App::_cartDetectWorker(void) {
 
 		if (error)
 			LOG("read error [%s]", util::getErrorString(error));
-		else
+		else if (!_dump.isReadableDataEmpty())
 			_parser = cart::newCartParser(_dump);
 
 		LOG("cart parser @ 0x%08x", _parser);

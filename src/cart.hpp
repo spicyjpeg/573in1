@@ -164,6 +164,12 @@ public:
 	uint8_t dataKey[8], config[8];
 	uint8_t data[512];
 
+	inline Dump(void)
+	: chipType(NONE), flags(0) {
+		_reserved[0] = 0;
+		_reserved[1] = 0;
+	}
+
 	inline const ChipSize &getChipSize(void) const {
 		return CHIP_SIZES[chipType];
 	}
