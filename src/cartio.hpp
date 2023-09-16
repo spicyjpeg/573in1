@@ -23,6 +23,8 @@ enum DriverError {
 
 /* Base classes */
 
+extern Dump dummyDriverDump;
+
 class Driver {
 protected:
 	Dump &_dump;
@@ -48,7 +50,16 @@ private:
 	}
 
 public:
-	DummyDriver(Dump &dump);
+	inline DummyDriver(Dump &dump)
+	: Driver(dump) {
+		//dump.clearIdentifiers();
+		//dump.clearKey();
+		//dump.clearData();
+
+		dump.chipType = dummyDriverDump.chipType;
+		dump.flags    = dummyDriverDump.flags &
+			(DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID);
+	}
 
 	DriverError readSystemID(void);
 	DriverError readCartID(void);
