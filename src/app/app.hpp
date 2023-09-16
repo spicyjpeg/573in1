@@ -147,6 +147,7 @@ private:
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
 	bool _romDumpWorker(void);
+	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);
 
 	void _worker(void);

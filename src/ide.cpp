@@ -132,18 +132,13 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 
 DeviceError Device::_command(uint8_t cmd, bool drdy) {
 	DeviceError error;
+	uint8_t     mask = drdy ? CS0_STATUS_DRDY : 0;
 
-	if (drdy)
-		error = _waitForStatus(
-			CS0_STATUS_BSY | CS0_STATUS_DRDY, CS0_STATUS_DRDY, _STATUS_TIMEOUT
-		);
-	else
-		error = _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
+	error = _waitForStatus(CS0_STATUS_BSY | mask, mask, _STATUS_TIMEOUT);
 	if (error)
 		return error;
 
 	_write(CS0_COMMAND, cmd);
-
 	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
 }
 
@@ -336,6 +331,25 @@ DeviceError Device::ideFlushCache(void) {
 	return _command(
 		(flags & DEVICE_HAS_LBA48) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE
 	);
+}
+
+DeviceError Device::atapiPacket(Packet &packet) {
+	if (!(flags & DEVICE_ATAPI))
+		return UNSUPPORTED_OP;
+
+	_select(0);
+
+	_write(CS0_CYLINDER_L, (2048 >> 0) & 0xff);
+	_write(CS0_CYLINDER_H, (2048 >> 8) & 0xff);
+	auto error = _command(ATA_PACKET, false);
+	if (error)
+		return error;
+
+	error = _transferPIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
+	if (error)
+		return error;
+
+	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
 }
 
 }

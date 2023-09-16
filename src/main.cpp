@@ -26,6 +26,68 @@ static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 	"assets/sounds/click.vag"    // ui::SOUND_CLICK
 };
 
+class Settings {
+public:
+	int        width, height;
+	int        baudRate;
+	char       resPath[64];
+	const void *resPtr;
+	size_t     resLength;
+
+	inline Settings(void)
+	: width(320), height(240), baudRate(0), resPtr(nullptr), resLength(0) {
+		__builtin_strncpy(resPath, _DEFAULT_RESOURCE_ZIP_PATH, sizeof(resPath));
+	}
+
+	bool parse(const char *arg);
+};
+
+bool Settings::parse(const char *arg) {
+	if (!arg)
+		return false;
+
+	switch (util::hash(arg, '=')) {
+		case "boot.rom"_h:
+			//LOG("boot.rom=%s", &arg[9]);
+			return true;
+
+		case "boot.from"_h:
+			//LOG("boot.from=%s", &arg[10]);
+			return true;
+
+		case "console"_h:
+			baudRate = int(strtol(&arg[8], nullptr, 0));
+			return true;
+
+		case "screen.width"_h:
+			width = int(strtol(&arg[13], nullptr, 0));
+			return true;
+
+		case "screen.height"_h:
+			height = int(strtol(&arg[14], nullptr, 0));
+			return true;
+
+		// Allow the default assets to be overridden by passing a path or a
+		// pointer to an in-memory ZIP file as a command-line argument.
+		case "resources.path"_h:
+			__builtin_strncpy(resPath, &arg[15], sizeof(resPath));
+			return true;
+
+		case "resources.ptr"_h:
+			resPtr = reinterpret_cast<const void *>(
+				strtol(&arg[14], nullptr, 16)
+			);
+			return true;
+
+		case "resources.length"_h:
+			resLength = size_t(strtol(&arg[17], nullptr, 16));
+			return true;
+
+		default:
+			return false;
+	}
+}
+
 int main(int argc, const char **argv) {
 	installExceptionHandler();
 	gpu::init();
@@ -33,65 +95,21 @@ int main(int argc, const char **argv) {
 	io::init();
 	util::initZipCRC32();
 
-	int width = 320, height = 240;
-
-	const char *resPath  = _DEFAULT_RESOURCE_ZIP_PATH;
-	const void *resPtr   = nullptr;
-	size_t     resLength = 0;
-
-#ifdef ENABLE_ARGV
-	for (; argc > 0; argc--) {
-		auto arg = *(argv++);
-
-		if (!arg)
-			continue;
-
-		switch (util::hash(arg, '=')) {
-			case "boot.rom"_h:
-				//LOG("boot.rom=%s", &arg[9]);
-				break;
-
-			case "boot.from"_h:
-				//LOG("boot.from=%s", &arg[10]);
-				break;
-
-			case "console"_h:
-				initSerialIO(strtol(&arg[8], nullptr, 0));
-				util::logger.enableSyslog = true;
-				break;
-
-			case "screen.width"_h:
-				width = int(strtol(&arg[13], nullptr, 0));
-				break;
-
-			case "screen.height"_h:
-				height = int(strtol(&arg[14], nullptr, 0));
-				break;
-
-			// Allow the default assets to be overridden by passing a path or a
-			// pointer to an in-memory ZIP file as a command-line argument.
-			case "resources.path"_h:
-				resPath = &arg[15];
-				break;
-
-			case "resources.ptr"_h:
-				resPtr = reinterpret_cast<const void *>(
-					strtol(&arg[14], nullptr, 16)
-				);
-				break;
-
-			case "resources.length"_h:
-				resLength = size_t(strtol(&arg[17], nullptr, 16));
-				break;
-		}
-	}
-#endif
+	Settings settings;
 
 #ifndef NDEBUG
 	// Enable serial port logging by default in debug builds.
-	initSerialIO(115200);
-	util::logger.enableSyslog = true;
+	settings.baudRate = 115200;
 #endif
+#ifdef ENABLE_ARGV
+	for (; argc > 0; argc--)
+		settings.parse(*(argv++));
+#endif
+
+	if (settings.baudRate) {
+		initSerialIO(settings.baudRate);
+		util::logger.enableSyslog = true;
+	}
 
 	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
 	LOG("(C) 2022-2023 spicyjpeg");
@@ -116,12 +134,12 @@ _fileInitDone:
 	file::ZIPProvider resourceProvider;
 	file::File        *zipFile;
 
-	if (resPtr && resLength) {
-		if (resourceProvider.init(resPtr, resLength))
+	if (settings.resPtr && settings.resLength) {
+		if (resourceProvider.init(settings.resPtr, settings.resLength))
 			goto _resourceInitDone;
 	}
 
-	zipFile = fileProvider.openFile(resPath, file::READ);
+	zipFile = fileProvider.openFile(settings.resPath, file::READ);
 
 	if (zipFile) {
 		if (resourceProvider.init(zipFile))
@@ -133,7 +151,7 @@ _fileInitDone:
 _resourceInitDone:
 	io::clearWatchdog();
 
-	gpu::Context gpuCtx(GP1_MODE_NTSC, width, height);
+	gpu::Context gpuCtx(GP1_MODE_NTSC, settings.width, settings.height);
 	ui::Context  uiCtx(gpuCtx);
 
 	ui::TiledBackground background;

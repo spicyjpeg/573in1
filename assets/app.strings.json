@@ -47,6 +47,11 @@
 			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 			"dumpError":   "An error occurred while writing dumps to the hard drive. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
 		},
+		"atapiEjectWorker": {
+			"eject":   "Sending eject command...",
+			"success": "The drive's tray has been opened.\n\nYou may safely remove or replace the disc and close the tray. All data has been loaded into RAM and the tool will keep running until the 573 is turned off.",
+			"error":   "Failed to open the drive's tray. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs."
+		},
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
 		}
@@ -212,6 +217,10 @@
 		"about": {
 			"name":   "About this tool",
 			"prompt": "View information about this tool, including open source licenses."
+		},
+		"ejectCD": {
+			"name":   "Eject CD-ROM",
+			"prompt": "Open the CD-ROM drive's tray. You may use this option if the drive's eject button is not easily accessible on your 573."
 		},
 		"reboot": {
 			"name":   "Reboot system",
