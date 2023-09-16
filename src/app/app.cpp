@@ -374,6 +374,7 @@ bool App::_cartEraseWorker(void) {
 }
 
 struct DumpRegion {
+public:
 	util::Hash     prompt;
 	const char     *path;
 	const uint16_t *ptr;
@@ -527,6 +528,31 @@ _writeError:
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
+}
+
+bool App::_atapiEjectWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
+
+	ide::Packet packet;
+	packet.setStartStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
+
+	auto error = ide::devices[0].atapiPacket(packet);
+
+	if (error) {
+		LOG("eject error [%s]", util::getErrorString(error));
+
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _mainMenuScreen, WSTR("App.atapiEjectWorker.error")
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
+
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _mainMenuScreen, WSTR("App.atapiEjectWorker.success")
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return true;
 }
 
 bool App::_rebootWorker(void) {

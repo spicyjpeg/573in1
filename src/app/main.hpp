@@ -36,6 +36,7 @@ public:
 	void restore(ui::Context &ctx);
 	void systemInfo(ui::Context &ctx);
 	void about(ui::Context &ctx);
+	void ejectCD(ui::Context &ctx);
 	void reboot(ui::Context &ctx);
 
 	void show(ui::Context &ctx, bool goBack = false);

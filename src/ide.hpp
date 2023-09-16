@@ -175,7 +175,7 @@ enum IdentifyCapabilitiesFlag : uint16_t {
 	IDENTIFY_CAP_FLAG_DMA_INTERLEAVE = 1 << 15
 };
 
-struct IdentifyBlock {
+class IdentifyBlock {
 public:
 	uint16_t deviceFlags;           // 0
 	uint16_t _reserved[9];
@@ -233,6 +233,43 @@ public:
 
 	bool validateChecksum(void) const;
 	int getHighestPIOMode(void) const;
+};
+
+class [[gnu::packed]] Packet {
+public:
+	uint8_t command;
+	uint8_t param[11];
+	uint8_t _reserved[4];
+
+	inline void clear(void) {
+		__builtin_memset(this, 0, sizeof(Packet));
+	}
+	inline void setStartStopUnit(ATAPIStartStopMode mode) {
+		clear();
+
+		command  = ATAPI_START_STOP_UNIT;
+		param[3] = mode & 3;
+	}
+	inline void setRead(uint32_t lba, size_t count) {
+		clear();
+
+		command  = ATAPI_READ12;
+		param[1] = (lba >> 24) & 0xff;
+		param[2] = (lba >> 16) & 0xff;
+		param[3] = (lba >>  8) & 0xff;
+		param[4] = (lba >>  0) & 0xff;
+		param[5] = (count >> 24) & 0xff;
+		param[6] = (count >> 16) & 0xff;
+		param[7] = (count >>  8) & 0xff;
+		param[8] = (count >>  0) & 0xff;
+	}
+	inline void setSetCDSpeed(uint16_t value) {
+		clear();
+
+		command  = ATAPI_SET_CD_SPEED;
+		param[1] = (value >> 8) & 0xff;
+		param[2] = (value >> 0) & 0xff;
+	}
 };
 
 /* Device class */
@@ -312,6 +349,7 @@ public:
 
 	DeviceError enumerate(void);
 	DeviceError ideFlushCache(void);
+	DeviceError atapiPacket(Packet &packet);
 };
 
 extern Device devices[2];

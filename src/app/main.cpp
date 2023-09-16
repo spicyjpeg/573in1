@@ -81,7 +81,7 @@ public:
 	void       (MainMenuScreen::*target)(ui::Context &ctx);
 };
 
-static constexpr int _NUM_MENU_ENTRIES = 4;
+static constexpr int _NUM_MENU_ENTRIES = 5;
 
 static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 	{
@@ -106,6 +106,10 @@ static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 		.name   = "MainMenuScreen.about.name"_h,
 		.prompt = "MainMenuScreen.about.prompt"_h,
 		.target = &MainMenuScreen::about
+	}, {
+		.name   = "MainMenuScreen.ejectCD.name"_h,
+		.prompt = "MainMenuScreen.ejectCD.prompt"_h,
+		.target = &MainMenuScreen::ejectCD
 	}, {
 		.name   = "MainMenuScreen.reboot.name"_h,
 		.prompt = "MainMenuScreen.reboot.prompt"_h,
@@ -149,6 +153,11 @@ void MainMenuScreen::systemInfo(ui::Context &ctx) {
 
 void MainMenuScreen::about(ui::Context &ctx) {
 	ctx.show(APP->_aboutScreen, false, true);
+}
+
+void MainMenuScreen::ejectCD(ui::Context &ctx) {
+	APP->_setupWorker(&App::_atapiEjectWorker);
+	ctx.show(APP->_workerStatusScreen, false, true);
 }
 
 void MainMenuScreen::reboot(ui::Context &ctx) {
