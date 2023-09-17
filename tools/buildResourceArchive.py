@@ -115,21 +115,29 @@ def generateIndexedTIM(
 
 ## Font metrics generator
 
-FONT_CHAR_OFFSET: int = ord(" ")
-FONT_CHAR_COUNT:  int = 120
-
-METRICS_ENTRY_STRUCT: Struct = Struct("< 2B H")
+METRICS_HEADER_STRUCT: Struct = Struct("< 3B x")
+METRICS_ENTRY_STRUCT:  Struct = Struct("< 2B H")
 
 def generateFontMetrics(
-	metrics: Mapping[str, Mapping[str, int | bool]]
+	metrics: Mapping[str, int | Mapping[str, Mapping[str, int | bool]]]
 ) -> bytearray:
-	data: bytearray = bytearray(FONT_CHAR_COUNT * METRICS_ENTRY_STRUCT.size)
+	data: bytearray = bytearray(
+		METRICS_HEADER_STRUCT.size + METRICS_ENTRY_STRUCT.size * 256
+	)
 
-	for ch, entry in metrics.items():
-		index: int = ord(ch) - FONT_CHAR_OFFSET
+	spaceWidth: int = int(metrics["spaceWidth"])
+	tabWidth:   int = int(metrics["tabWidth"])
+	lineHeight: int = int(metrics["lineHeight"])
 
-		if (index < 0) or (index > FONT_CHAR_COUNT):
-			raise ValueError(f"non-ASCII character {index} is not supported")
+	data[0:METRICS_HEADER_STRUCT.size] = \
+		METRICS_HEADER_STRUCT.pack(spaceWidth, tabWidth, lineHeight)
+
+	for ch, entry in metrics["characterSizes"].items():
+		index: int = ord(ch)
+		#index: int = ch.encode("ascii")[0]
+
+		if (index < 0) or (index > 255):
+			raise ValueError(f"extended character {index} is not supported")
 
 		x: int  = int(entry["x"])
 		y: int  = int(entry["y"])
@@ -141,11 +149,13 @@ def generateFontMetrics(
 			raise ValueError("all X/Y coordinates must be in 0-255 range")
 		if (w < 0) or (w > 127) or (h < 0) or (h > 127):
 			raise ValueError("all characters must be <=127x127 pixels")
+		if h > lineHeight:
+			raise ValueError("character height exceeds line height")
 
-		data[
-			METRICS_ENTRY_STRUCT.size * index:
-			METRICS_ENTRY_STRUCT.size * (index + 1)
-		] = METRICS_ENTRY_STRUCT.pack(x, y, w | (h << 7) | (i << 14))
+		offset: int = \
+			METRICS_HEADER_STRUCT.size + METRICS_ENTRY_STRUCT.size * index
+		data[offset:offset + METRICS_ENTRY_STRUCT.size] = \
+			METRICS_ENTRY_STRUCT.pack(x, y, w | (h << 7) | (i << 14))
 
 	return data
 

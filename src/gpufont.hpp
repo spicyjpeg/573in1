@@ -8,16 +8,26 @@ namespace gpu {
 
 /* Font class */
 
-static constexpr int FONT_CHAR_OFFSET = ' ';
-static constexpr int FONT_CHAR_COUNT  = 120;
-static constexpr int FONT_SPACE_WIDTH = 4;
-static constexpr int FONT_TAB_WIDTH   = 32;
-static constexpr int FONT_LINE_HEIGHT = 10;
+static constexpr char FONT_INVALID_CHAR = 0x7f;
+
+class [[gnu::packed]] FontMetrics {
+public:
+	uint8_t  spaceWidth, tabWidth, lineHeight, _reserved;
+	uint32_t characterSizes[256];
+
+	inline uint32_t getCharacterSize(uint8_t ch) const {
+		uint32_t sizes = characterSizes[ch];
+		if (!sizes)
+			return characterSizes[FONT_INVALID_CHAR];
+
+		return sizes;
+	}
+};
 
 class Font {
 public:
-	Image    image;
-	uint32_t metrics[FONT_CHAR_COUNT];
+	Image       image;
+	FontMetrics metrics;
 
 	void draw(
 		Context &ctx, const char *str, const Rect &rect, const Rect &clipRect,

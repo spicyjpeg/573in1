@@ -121,8 +121,10 @@ private:
 	}
 	inline int _getListHeight(Context &ctx) const {
 		int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
-		return screenHeight -
-			(gpu::FONT_LINE_HEIGHT + SCREEN_PROMPT_HEIGHT + SCREEN_BLOCK_MARGIN * 2);
+		return screenHeight - (
+			ctx.font.metrics.lineHeight + SCREEN_PROMPT_HEIGHT +
+			SCREEN_BLOCK_MARGIN * 2
+		);
 	}
 
 	void _drawItems(Context &ctx) const;

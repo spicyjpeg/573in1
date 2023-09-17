@@ -259,15 +259,14 @@ File *HostProvider::openFile(const char *path, uint32_t flags) {
 }
 
 bool FATProvider::init(const char *drive) {
+	__builtin_strncpy(_drive, drive, sizeof(_drive));
+
 	auto error = f_mount(&_fs, drive, 1);
 
 	if (error) {
 		LOG("%s, drive=%s", util::getErrorString(error), drive);
 		return false;
 	}
-
-	f_chdrive(drive);
-	__builtin_strncpy(_drive, drive, sizeof(_drive));
 
 	LOG("FAT mount ok, drive=%s", drive);
 	return true;
@@ -283,10 +282,14 @@ void FATProvider::close(void) {
 }
 
 bool FATProvider::fileExists(const char *path) {
+	f_chdrive(_drive);
+
 	return !f_stat(path, nullptr);
 }
 
 bool FATProvider::createDirectory(const char *path) {
+	f_chdrive(_drive);
+
 	auto error = f_mkdir(path);
 
 	if (error) {
@@ -298,6 +301,8 @@ bool FATProvider::createDirectory(const char *path) {
 }
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
+	f_chdrive(_drive);
+
 	auto file  = new FATFile();
 	auto error = f_open(&(file->_fd), path, uint8_t(flags));
 

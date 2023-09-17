@@ -1,5 +1,4 @@
 
-#include <assert.h>
 #include <stdint.h>
 #include "ps1/gpucmd.h"
 #include "gpu.hpp"
@@ -27,16 +26,15 @@ void Font::draw(
 	for (uint8_t ch = *_str; ch; ch = *(++_str)) {
 		bool wrap = wordWrap;
 
-		assert(ch < (FONT_CHAR_OFFSET + FONT_CHAR_COUNT));
 		switch (ch) {
 			case '\t':
-				x += FONT_TAB_WIDTH - 1;
-				x -= x % FONT_TAB_WIDTH;
+				x += metrics.tabWidth - 1;
+				x -= x % metrics.tabWidth;
 				break;
 
 			case '\n':
 				x  = rect.x1;
-				y += FONT_LINE_HEIGHT;
+				y += metrics.lineHeight;
 				break;
 
 			case '\r':
@@ -44,11 +42,11 @@ void Font::draw(
 				break;
 
 			case ' ':
-				x += FONT_SPACE_WIDTH;
+				x += metrics.spaceWidth;
 				break;
 
 			default:
-				uint32_t size = metrics[ch - FONT_CHAR_OFFSET];
+				uint32_t size = metrics.getCharacterSize(ch);
 
 				int u = size & 0xff; size >>= 8;
 				int v = size & 0xff; size >>= 8;
@@ -83,9 +81,9 @@ void Font::draw(
 
 		if (x > boundaryX) {
 			x  = rect.x1;
-			y += FONT_LINE_HEIGHT;
+			y += metrics.lineHeight;
 		}
-		if (y > (rect.y2 - FONT_LINE_HEIGHT))
+		if (y > (rect.y2 - metrics.lineHeight))
 			return;
 	}
 }
@@ -118,13 +116,13 @@ int Font::getCharacterWidth(char ch) const {
 			return 0;
 
 		case '\t':
-			return FONT_TAB_WIDTH;
+			return metrics.tabWidth;
 
 		case ' ':
-			return FONT_SPACE_WIDTH;
+			return metrics.spaceWidth;
 
 		default:
-			return (metrics[ch - FONT_CHAR_OFFSET] >> 16) & 0x7f;
+			return (metrics.getCharacterSize(ch) >> 16) & 0x7f;
 	}
 }
 
@@ -141,14 +139,13 @@ void Font::getStringBounds(
 	for (uint8_t ch = *_str; ch; ch = *(++_str)) {
 		bool wrap = wordWrap;
 
-		assert(ch < (FONT_CHAR_OFFSET + FONT_CHAR_COUNT));
 		switch (ch) {
 			case '\t':
 				if (breakOnSpace)
 					goto _break;
 
-				x += FONT_TAB_WIDTH - 1;
-				x -= x % FONT_TAB_WIDTH;
+				x += metrics.tabWidth - 1;
+				x -= x % metrics.tabWidth;
 				break;
 
 			case '\n':
@@ -158,7 +155,7 @@ void Font::getStringBounds(
 					maxX = x;
 
 				x  = rect.x1;
-				y += FONT_LINE_HEIGHT;
+				y += metrics.lineHeight;
 				break;
 
 			case '\r':
@@ -174,11 +171,11 @@ void Font::getStringBounds(
 				if (breakOnSpace)
 					goto _break;
 
-				x += FONT_SPACE_WIDTH;
+				x += metrics.spaceWidth;
 				break;
 
 			default:
-				x   += (metrics[ch - FONT_CHAR_OFFSET] >> 16) & 0x7f;
+				x   += (metrics.getCharacterSize(ch) >> 16) & 0x7f;
 				wrap = false;
 		}
 
@@ -193,15 +190,15 @@ void Font::getStringBounds(
 				maxX = x;
 
 			x  = rect.x1;
-			y += FONT_LINE_HEIGHT;
+			y += metrics.lineHeight;
 		}
-		if (y > (rect.y2 - FONT_LINE_HEIGHT))
+		if (y > (rect.y2 - metrics.lineHeight))
 			goto _break;
 	}
 
 _break:
 	rect.x2 = maxX;
-	rect.y2 = y + FONT_LINE_HEIGHT;
+	rect.y2 = y + metrics.lineHeight;
 }
 
 int Font::getStringWidth(const char *str, bool breakOnSpace) const {
@@ -212,14 +209,13 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 	int width = 0, maxWidth = 0;
 
 	for (uint8_t ch = *_str; ch; ch = *(++_str)) {
-		assert(ch < (FONT_CHAR_OFFSET + FONT_CHAR_COUNT));
 		switch (ch) {
 			case '\t':
 				if (breakOnSpace)
 					goto _break;
 
-				width += FONT_TAB_WIDTH - 1;
-				width -= width % FONT_TAB_WIDTH;
+				width += metrics.tabWidth - 1;
+				width -= width % metrics.tabWidth;
 				break;
 
 			case '\n':
@@ -236,11 +232,11 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 				if (breakOnSpace)
 					goto _break;
 
-				width += FONT_SPACE_WIDTH;
+				width += metrics.spaceWidth;
 				break;
 
 			default:
-				width += (metrics[ch - FONT_CHAR_OFFSET] >> 16) & 0x7f;
+				width += (metrics.getCharacterSize(ch) >> 16) & 0x7f;
 		}
 	}
 
