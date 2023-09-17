@@ -1,7 +1,8 @@
 /*
  * This library has been modified to output QR codes in a 4bpp format suitable
- * for use as a texture without any additional conversion. The original license
- * and copyright notice is below.
+ * for use as a texture without any additional conversion, and to leave a margin
+ * on all sides as a workaround for GPU polygon scaling artifacts. The original
+ * license and copyright notice is below.
  * ----------------------------------------------------------------------------
  *
  * QR Code generator library (C)
@@ -787,6 +788,8 @@ bool qrcodegen_getModule(const uint32_t qrcode[], int x, int y) {
 testable bool getModuleBounded(const uint32_t qrcode[], int x, int y) {
 	int qrsize = qrcode[0] & 0xFFFF, stride = qrcode[0] >> 16;
 	assert(21 <= qrsize && qrsize <= 177 && 0 <= x && x < qrsize && 0 <= y && y < qrsize);
+	x += qrcodegen_MARGIN_X;
+	y += qrcodegen_MARGIN_Y;
 	int bitIndex = (x % 8) * 4;
 	int wordIndex = y * stride + x / 8;
 	return (qrcode[wordIndex + 1] >> bitIndex) & 1;
@@ -797,6 +800,8 @@ testable bool getModuleBounded(const uint32_t qrcode[], int x, int y) {
 testable void setModuleBounded(uint32_t qrcode[], int x, int y, bool isDark) {
 	int qrsize = qrcode[0] & 0xFFFF, stride = qrcode[0] >> 16;
 	assert(21 <= qrsize && qrsize <= 177 && 0 <= x && x < qrsize && 0 <= y && y < qrsize);
+	x += qrcodegen_MARGIN_X;
+	y += qrcodegen_MARGIN_Y;
 	int bitIndex = (x % 8) * 4;
 	int wordIndex = y * stride + x / 8;
 	if (isDark)

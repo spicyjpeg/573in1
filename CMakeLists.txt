@@ -13,11 +13,13 @@ project(
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_program(
 	XORRISO_PATH xorriso
-	DOC "Path to xorriso tool (optional)"
+	PATHS "C:/msys64/usr/bin"
+	DOC   "Path to xorriso tool (optional)"
 )
 find_program(
 	CHDMAN_PATH chdman
-	DOC "Path to MAME chdman tool (optional)"
+	PATHS "C:/Program Files/MAME" "C:/Program Files (x86)/MAME"
+	DOC   "Path to MAME chdman tool (optional)"
 )
 
 ## Main executable

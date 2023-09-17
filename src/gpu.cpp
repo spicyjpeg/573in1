@@ -13,7 +13,7 @@ namespace gpu {
 
 /* Basic API */
 
-static constexpr int _DMA_CHUNK_SIZE = 8;
+static constexpr int _DMA_CHUNK_SIZE = 1;
 static constexpr int _DMA_TIMEOUT    = 10000;
 
 size_t upload(const RectWH &rect, const void *data, bool wait) {
@@ -321,7 +321,7 @@ void Image::draw(Context &ctx, int x, int y, bool blend) const {
 /* QR code encoder */
 
 static void _loadQRCode(Image &output, int x, int y, const uint32_t *qrCode) {
-	int size = qrcodegen_getSize(qrCode);
+	int    size = qrcodegen_getSize(qrCode) + 2;
 	RectWH rect;
 
 	// Generate a 16-color (only 2 colors used) palette and place it below the
@@ -329,26 +329,23 @@ static void _loadQRCode(Image &output, int x, int y, const uint32_t *qrCode) {
 	const uint32_t palette[8]{ 0x8000ffff };
 
 	rect.x = x;
-	rect.y = y + size + 2;
+	rect.y = y + size;
 	rect.w = 16;
 	rect.h = 1;
 	upload(rect, palette, true);
 
-	// Leave one pixel of margin on all sides as a workaround for GPU polygon
-	// scaling artifacts.
-	rect.x = x + 1;
-	rect.y = y + 1;
+	rect.y = y;
 	rect.w = qrcodegen_getStride(qrCode) * 2;
 	rect.h = size;
 	upload(rect, &qrCode[1], true);
 
-	output.u       = (x & 0x3f) * 4 + 3;
+	output.u       = (x & 0x3f) * 4;
 	output.v       = y & 0xff;
-	output.width   = size + 1;
-	output.height  = size + 1;
+	output.width   = size - 1;
+	output.height  = size - 1;
 	output.texpage =
 		gp0_page(x / 64, y / 256, GP0_BLEND_SEMITRANS, GP0_COLOR_4BPP);
-	output.palette = gp0_clut(x / 16, y + size + 2);
+	output.palette = gp0_clut(x / 16, y + size);
 
 	LOG("loaded at (%d,%d), size=%d", x, y, size);
 }

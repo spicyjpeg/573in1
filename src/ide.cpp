@@ -41,11 +41,11 @@ static void _copyString(char *output, const uint16_t *input, size_t length) {
 		uint16_t packed = *(--input);
 		char a = packed & 0xff, b = packed >> 8;
 
-		if (isPadding && __builtin_isspace(a))
+		if (isPadding && !__builtin_isgraph(a))
 			a = 0;
 		else
 			isPadding = false;
-		if (isPadding && __builtin_isspace(b))
+		if (isPadding && !__builtin_isgraph(b))
 			b = 0;
 		else
 			isPadding = false;
@@ -216,7 +216,7 @@ DeviceError Device::enumerate(void) {
 		if (error)
 			return error;
 
-		error = _transferDMA(&block, sizeof(IdentifyBlock));
+		error = _transferPIO(&block, sizeof(IdentifyBlock));
 		if (error)
 			return error;
 
@@ -237,7 +237,7 @@ DeviceError Device::enumerate(void) {
 		if (error)
 			return error;
 
-		error = _transferDMA(&block, sizeof(IdentifyBlock));
+		error = _transferPIO(&block, sizeof(IdentifyBlock));
 		if (error)
 			return error;
 
@@ -301,7 +301,7 @@ DeviceError Device::_ideReadWrite(
 		// Data must be transferred one sector at a time as the drive may
 		// deassert DRQ between sectors.
 		for (size_t i = length; i; i--) {
-			error = _transferDMA(
+			error = _transferPIO(
 				reinterpret_cast<void *>(ptr), ATA_SECTOR_SIZE, write
 			);
 			if (error)

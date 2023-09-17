@@ -1,7 +1,8 @@
 /*
  * This library has been modified to output QR codes in a 4bpp format suitable
- * for use as a texture without any additional conversion. The original license
- * and copyright notice is below.
+ * for use as a texture without any additional conversion, and to leave a margin
+ * on all sides as a workaround for GPU polygon scaling artifacts. The original
+ * license and copyright notice is below.
  * ----------------------------------------------------------------------------
  *
  * QR Code generator library (C)
@@ -140,13 +141,16 @@ extern const char *qrcodegen_ALPHANUMERIC_CHARSET;
 #define qrcodegen_VERSION_MIN   1  // The minimum version number supported in the QR Code Model 2 standard
 #define qrcodegen_VERSION_MAX  40  // The maximum version number supported in the QR Code Model 2 standard
 
+#define qrcodegen_MARGIN_X  1
+#define qrcodegen_MARGIN_Y  1
+
 // Calculates the number of uint32s needed to store any QR Code up to and including the given version number,
 // as a compile-time constant. For example, 'uint32_t buffer[qrcodegen_BUFFER_LEN_FOR_VERSION(25)];'
 // can store any single QR Code from version 1 to 25 (inclusive). The result fits in an int (or int16).
 // Requires qrcodegen_VERSION_MIN <= n <= qrcodegen_VERSION_MAX.
 #define qrcodegen_SIZE_FOR_VERSION(n)        ((n) * 4 + 17)
-#define qrcodegen_STRIDE_FOR_VERSION(n)      ((qrcodegen_SIZE_FOR_VERSION(n) + 7) / 8)
-#define qrcodegen_BUFFER_LEN_FOR_VERSION(n)  (qrcodegen_SIZE_FOR_VERSION(n) * qrcodegen_STRIDE_FOR_VERSION(n) + 1)
+#define qrcodegen_STRIDE_FOR_VERSION(n)      ((qrcodegen_SIZE_FOR_VERSION(n) + qrcodegen_MARGIN_X * 2 + 7) / 8)
+#define qrcodegen_BUFFER_LEN_FOR_VERSION(n)  ((qrcodegen_SIZE_FOR_VERSION(n) + qrcodegen_MARGIN_Y * 2) * qrcodegen_STRIDE_FOR_VERSION(n) + 1)
 
 // The worst-case number of bytes needed to store one QR Code, up to and including
 // version 40. This value equals 3918, which is just under 4 kilobytes.
