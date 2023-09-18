@@ -29,6 +29,11 @@ void Identifier::updateDSCRC(void) {
 }
 
 bool Identifier::validateDSCRC(void) const {
+	if (!data[0] || (data[0] == 0xff)) {
+		LOG("invalid 1-wire prefix 0x%02x", data[0]);
+		return false;
+	}
+
 	uint8_t value = util::dsCRC8(data, 7);
 
 	if (value != data[7]) {

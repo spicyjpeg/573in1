@@ -207,14 +207,16 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 void CartInfoScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
-	if (APP->_dump.chipType && ctx.buttons.pressed(ui::BTN_START)) {
-		if (APP->_dump.flags & cart::DUMP_PRIVATE_DATA_OK)
-			ctx.show(APP->_cartActionsScreen, false, true);
-		else
-			ctx.show(APP->_unlockKeyScreen, false, true);
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
+			ctx.show(APP->_mainMenuScreen, true, true);
+		} else if (APP->_dump.chipType) {
+			if (APP->_dump.flags & cart::DUMP_PRIVATE_DATA_OK)
+				ctx.show(APP->_cartActionsScreen, false, true);
+			else
+				ctx.show(APP->_unlockKeyScreen, false, true);
+		}
 	}
-	if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT))
-		ctx.show(APP->_mainMenuScreen, true, true);
 }
 
 enum SpecialEntryIndex {
@@ -313,36 +315,37 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
-		int index = _activeItem + _getSpecialEntryOffset(ctx);
-
-		APP->_confirmScreen.setMessage(
-			APP->_unlockKeyScreen,
-			[](ui::Context &ctx) {
-				APP->_setupWorker(&App::_cartUnlockWorker);
-				ctx.show(APP->_workerStatusScreen, false, true);
-			},
-			STRH(_CART_TYPES[APP->_dump.chipType].warning)
-		);
-
-		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, APP->_cartInfoScreen,
-			STRH(_CART_TYPES[APP->_dump.chipType].error)
-		);
-
-		if (index < 0) {
-			(this->*_SPECIAL_ENTRIES[-index].target)(ctx);
+		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
+			ctx.show(APP->_cartInfoScreen, true, true);
 		} else {
-			__builtin_memcpy(
-				APP->_dump.dataKey, APP->_db.get(index)->dataKey,
-				sizeof(APP->_dump.dataKey)
+			int index = _activeItem + _getSpecialEntryOffset(ctx);
+
+			APP->_confirmScreen.setMessage(
+				APP->_unlockKeyScreen,
+				[](ui::Context &ctx) {
+					APP->_setupWorker(&App::_cartUnlockWorker);
+					ctx.show(APP->_workerStatusScreen, false, true);
+				},
+				STRH(_CART_TYPES[APP->_dump.chipType].warning)
 			);
 
-			APP->_selectedEntry = APP->_db.get(index);
-			ctx.show(APP->_confirmScreen, false, true);
+			APP->_messageScreen.setMessage(
+				MESSAGE_ERROR, APP->_cartInfoScreen,
+				STRH(_CART_TYPES[APP->_dump.chipType].error)
+			);
+
+			if (index < 0) {
+				(this->*_SPECIAL_ENTRIES[-index].target)(ctx);
+			} else {
+				__builtin_memcpy(
+					APP->_dump.dataKey, APP->_db.get(index)->dataKey,
+					sizeof(APP->_dump.dataKey)
+				);
+
+				APP->_selectedEntry = APP->_db.get(index);
+				ctx.show(APP->_confirmScreen, false, true);
+			}
 		}
-	}
-	if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)) {
-		ctx.show(APP->_cartInfoScreen, true, true);
 	}
 }
 

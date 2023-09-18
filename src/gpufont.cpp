@@ -28,7 +28,7 @@ void Font::draw(
 
 		switch (ch) {
 			case '\t':
-				x += metrics.tabWidth - 1;
+				x += metrics.tabWidth;
 				x -= x % metrics.tabWidth;
 				break;
 
@@ -144,7 +144,7 @@ void Font::getStringBounds(
 				if (breakOnSpace)
 					goto _break;
 
-				x += metrics.tabWidth - 1;
+				x += metrics.tabWidth;
 				x -= x % metrics.tabWidth;
 				break;
 
@@ -214,7 +214,7 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 				if (breakOnSpace)
 					goto _break;
 
-				width += metrics.tabWidth - 1;
+				width += metrics.tabWidth;
 				width -= width % metrics.tabWidth;
 				break;
 

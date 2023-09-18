@@ -128,7 +128,6 @@ public:
 
 	ButtonState(void);
 	void update(void);
-	bool bothPressed(Button buttonA, Button buttonB);
 };
 
 /* UI context */

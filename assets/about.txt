@@ -1,10 +1,22 @@
 Konami System 573 security cartridge tool
 
+# Credits
+
+Lead developer:		spicyjpeg 
+Cartridge database:	smf 
+Testing:			Naoki Saito 
+
+# Disclaimer
+
+This tool is experimental and provided with no warranty whatsoever. It is not
+guaranteed to work and improper usage can PERMANENTLY BRICK your System 573
+security cartridges. Use this tool at your own risk.
+
+# License
+
 (C) 2022-2023 spicyjpeg
 
-WARNING: This tool is experimental and provided with no warranty whatsoever. It
-is not guaranteed to work and improper usage can PERMANENTLY BRICK your System
-573 security cartridges. Use this tool at your own risk.
+TODO: add a license
 
 # Third-party licenses
 
@@ -22,14 +34,14 @@ that the following condition is met:
 this condition and the following disclaimer.
 
 This software is provided by the copyright holder and contributors "AS IS"
-and any warranties related to this software are DISCLAIMED.
+and any warranties related to this software are DISCLAIMED. 
 The copyright owner or contributors be NOT LIABLE for any damages caused
-by use of this software.
+by use of this software. 
 
 ## miniz (https://github.com/richgel999/miniz)
 
-Copyright 2013-2014 RAD Game Tools and Valve Software
-Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC
+Copyright 2013-2014 RAD Game Tools and Valve Software 
+Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC 
 
 All Rights Reserved.
 
@@ -100,15 +112,13 @@ this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
 use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
 the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-* The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-* The Software is provided "as is", without warranty of any kind, express or
+subject to the following conditions: 
+- The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software. 
+- The Software is provided "as is", without warranty of any kind, express or
 implied, including but not limited to the warranties of merchantability,
 fitness for a particular purpose and noninfringement. In no event shall the
 authors or copyright holders be liable for any claim, damages or other
 liability, whether in an action of contract, tort or otherwise, arising from,
 out of or in connection with the Software or the use or other dealings in the
-Software.
+Software. 
