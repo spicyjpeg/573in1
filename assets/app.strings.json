@@ -7,7 +7,6 @@
 	"App": {
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
-			"identifyCart":  "Identifying security cartridge...",
 			"readCart":      "Reading security cartridge...",
 			"identifyGame":  "Attempting to identify game..."
 		},
@@ -48,9 +47,10 @@
 			"dumpError":   "An error occurred while writing dumps to the hard drive. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
 		},
 		"atapiEjectWorker": {
-			"eject":   "Sending eject command...",
-			"success": "The drive's tray has been opened.\n\nYou may safely remove or replace the disc and close the tray. All data has been loaded into RAM and the tool will keep running until the 573 is turned off.",
-			"error":   "Failed to open the drive's tray. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs."
+			"eject":      "Sending eject command...",
+			"success":    "The drive's tray has been opened.\n\nYou may safely remove or replace the disc and close the tray. All data has been loaded into RAM and the tool will keep running until the 573 is turned off.",
+			"atapiError": "The drive currently configured as primary on the IDE bus is not an ATAPI CD-ROM drive and does not support ejecting.\n\nPress the Test button to view debug logs.",
+			"ejectError": "Failed to open the drive's tray. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs."
 		},
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
@@ -71,7 +71,7 @@
 
 	"CartActionsScreen": {
 		"title":      "{CART_ICON} Cartridge options",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"qrDump": {
 			"name":   "Dump cartridge as QR code",
@@ -157,9 +157,9 @@
 			}
 		},
 		"prompt": {
-			"locked":   "Press {START_BUTTON} to unlock the cartridge, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back.",
-			"unlocked": "Press {START_BUTTON} to continue, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back.",
-			"error":    "Hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back."
+			"locked":   "Press {START_BUTTON} to unlock, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
+			"unlocked": "Press {START_BUTTON} to continue, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
+			"error":    "Hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back."
 		},
 
 		"x76f041": {
@@ -245,7 +245,7 @@
 	"ReflashGameScreen": {
 		"title":      "{CART_ICON} Select game to convert cartridge to",
 		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back"
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back"
 	},
 
 	"SystemIDEntryScreen": {
@@ -263,7 +263,7 @@
 	"UnlockKeyScreen": {
 		"title":      "{CART_ICON} Select unlocking key",
 		"prompt":     "If the cartridge has been converted before, select the game it was last converted to. If it is currently blank, select 00-00-00-00-00-00-00-00.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON} + {RIGHT_BUTTON} to go back",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"autoUnlock":   "Use key from identified game (recommended)",
 		"useCustomKey": "Enter key manually...",

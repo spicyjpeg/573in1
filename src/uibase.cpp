@@ -125,15 +125,6 @@ void ButtonState::update(void) {
 	}
 }
 
-bool ButtonState::bothPressed(Button buttonA, Button buttonB) {
-	if (pressed(buttonA) && held(buttonB))
-		return true;
-	if (held(buttonA) && pressed(buttonB))
-		return true;
-
-	return false;
-}
-
 /* UI context */
 
 Context::Context(gpu::Context &gpuCtx, void *screenData)

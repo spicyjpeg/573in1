@@ -18,7 +18,7 @@ public:
 	inline uint32_t getCharacterSize(uint8_t ch) const {
 		uint32_t sizes = characterSizes[ch];
 		if (!sizes)
-			return characterSizes[FONT_INVALID_CHAR];
+			return characterSizes[int(FONT_INVALID_CHAR)];
 
 		return sizes;
 	}

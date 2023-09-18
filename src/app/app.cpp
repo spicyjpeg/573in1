@@ -71,7 +71,7 @@ static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 
 bool App::_cartDetectWorker(void) {
 	_workerStatus.setNextScreen(_cartInfoScreen);
-	_workerStatus.update(0, 4, WSTR("App.cartDetectWorker.identifyCart"));
+	_workerStatus.update(0, 3, WSTR("App.cartDetectWorker.readCart"));
 	_unloadCartData();
 
 #ifdef ENABLE_DUMMY_DRIVER
@@ -81,6 +81,7 @@ bool App::_cartDetectWorker(void) {
 	if (cart::dummyDriverDump.chipType) {
 		LOG("using dummy cart driver");
 		_driver = new cart::DummyDriver(_dump);
+		_driver->readSystemID();
 	} else {
 		_driver = cart::newCartDriver(_dump);
 	}
@@ -91,7 +92,6 @@ bool App::_cartDetectWorker(void) {
 	if (_dump.chipType) {
 		LOG("cart dump @ 0x%08x", &_dump);
 		LOG("cart driver @ 0x%08x", _driver);
-		_workerStatus.update(1, 4, WSTR("App.cartDetectWorker.readCart"));
 
 		auto error = _driver->readCartID();
 
@@ -106,7 +106,7 @@ bool App::_cartDetectWorker(void) {
 			_parser = cart::newCartParser(_dump);
 
 		LOG("cart parser @ 0x%08x", _parser);
-		_workerStatus.update(2, 4, WSTR("App.cartDetectWorker.identifyGame"));
+		_workerStatus.update(1, 3, WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!_db.ptr) {
 			if (!_resourceProvider->loadData(
@@ -137,9 +137,13 @@ bool App::_cartDetectWorker(void) {
 	}
 
 _cartInitDone:
-	_workerStatus.update(3, 4, WSTR("App.cartDetectWorker.readDigitalIO"));
+	_workerStatus.update(2, 3, WSTR("App.cartDetectWorker.readDigitalIO"));
 
+#ifdef ENABLE_DUMMY_DRIVER
+	if (io::isDigitalIOPresent() && !(_dump.flags & cart::DUMP_SYSTEM_ID_OK)) {
+#else
 	if (io::isDigitalIOPresent()) {
+#endif
 		util::Data bitstream;
 		bool       ready;
 
@@ -158,14 +162,12 @@ _cartInitDone:
 
 		delayMicroseconds(5000); // Probably not necessary
 		io::initKonamiBitstream();
+
+		auto error = _driver->readSystemID();
+
+		if (error)
+			LOG("XID error [%s]", util::getErrorString(error));
 	}
-
-	// This must be outside of the if block above to make sure the system ID
-	// gets read with the dummy driver.
-	auto error = _driver->readSystemID();
-
-	if (error)
-		LOG("XID error [%s]", util::getErrorString(error));
 
 	return true;
 }
@@ -330,8 +332,6 @@ bool App::_cartReflashWorker(void) {
 	_parser->flush();
 
 	auto error = _driver->setDataKey(_selectedEntry->dataKey);
-	delayMicroseconds(1000000); // TODO: does this fix ZS01 bricking?
-
 	if (error)
 		LOG("key error [%s]", util::getErrorString(error));
 	else
@@ -356,8 +356,6 @@ bool App::_cartEraseWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartEraseWorker.erase"));
 
 	auto error = _driver->erase();
-	delayMicroseconds(1000000); // TODO: does this fix ZS01 bricking?
-
 	_cartDetectWorker();
 
 	if (error) {
@@ -533,6 +531,17 @@ _writeError:
 bool App::_atapiEjectWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
 
+	if (!(ide::devices[0].flags & ide::DEVICE_ATAPI)) {
+		LOG("primary drive is not ATAPI");
+
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _mainMenuScreen,
+			WSTR("App.atapiEjectWorker.atapiError")
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
+
 	ide::Packet packet;
 	packet.setStartStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
 
@@ -542,7 +551,8 @@ bool App::_atapiEjectWorker(void) {
 		LOG("eject error [%s]", util::getErrorString(error));
 
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _mainMenuScreen, WSTR("App.atapiEjectWorker.error")
+			MESSAGE_ERROR, _mainMenuScreen,
+			WSTR("App.atapiEjectWorker.ejectError")
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;

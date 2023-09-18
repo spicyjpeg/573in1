@@ -179,10 +179,12 @@ void CartActionsScreen::update(ui::Context &ctx) {
 
 	ListScreen::update(ctx);
 
-	if (ctx.buttons.pressed(ui::BTN_START))
-		(this->*action.target)(ctx);
-	if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT))
-		ctx.show(APP->_cartInfoScreen, true, true);
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT))
+			ctx.show(APP->_cartInfoScreen, true, true);
+		else
+			(this->*action.target)(ctx);
+	}
 }
 
 static constexpr int _QR_CODE_SCALE   = 2;
@@ -200,10 +202,7 @@ void QRCodeScreen::show(ui::Context &ctx, bool goBack) {
 }
 
 void QRCodeScreen::update(ui::Context &ctx) {
-	if (
-		ctx.buttons.pressed(ui::BTN_START) ||
-		ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)
-	)
+	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_cartActionsScreen, true, true);
 }
 
@@ -230,10 +229,7 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 void HexdumpScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
-	if (
-		ctx.buttons.pressed(ui::BTN_START) ||
-		ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)
-	)
+	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_cartActionsScreen, true, true);
 }
 
@@ -258,19 +254,21 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
-		APP->_confirmScreen.setMessage(
-			*this,
-			[](ui::Context &ctx) {
-				APP->_setupWorker(&App::_cartReflashWorker);
-				ctx.show(APP->_workerStatusScreen, false, true);
-			},
-			STR("CartActionsScreen.reflash.confirm")
-		);
+		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
+			ctx.show(APP->_cartActionsScreen, true, true);
+		} else {
+			APP->_confirmScreen.setMessage(
+				*this,
+				[](ui::Context &ctx) {
+					APP->_setupWorker(&App::_cartReflashWorker);
+					ctx.show(APP->_workerStatusScreen, false, true);
+				},
+				STR("CartActionsScreen.reflash.confirm")
+			);
 
-		APP->_selectedEntry = APP->_db.get(_activeItem);
-		ctx.show(APP->_confirmScreen, false, true);
-	} else if (ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)) {
-		ctx.show(APP->_cartActionsScreen, true, true);
+			APP->_selectedEntry = APP->_db.get(_activeItem);
+			ctx.show(APP->_confirmScreen, false, true);
+		}		
 	}
 }
 

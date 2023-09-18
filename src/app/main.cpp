@@ -81,14 +81,20 @@ public:
 	void       (MainMenuScreen::*target)(ui::Context &ctx);
 };
 
+#ifdef ENABLE_CART_MENU
 static constexpr int _NUM_MENU_ENTRIES = 5;
+#else
+static constexpr int _NUM_MENU_ENTRIES = 4;
+#endif
 
 static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 	{
+#ifdef ENABLE_CART_MENU
 		.name   = "MainMenuScreen.cartInfo.name"_h,
 		.prompt = "MainMenuScreen.cartInfo.prompt"_h,
 		.target = &MainMenuScreen::cartInfo
 	}, {
+#endif
 		.name   = "MainMenuScreen.dump.name"_h,
 		.prompt = "MainMenuScreen.dump.prompt"_h,
 		.target = &MainMenuScreen::dump
@@ -194,10 +200,13 @@ void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	auto ptr = reinterpret_cast<char *>(_text.ptr);
 	_body    = ptr;
 
-	// Replace single newlines with spaces to reflow the text. The last
-	// character is also cut off and replaced with a null terminator.
+	// Replace single newlines with spaces to reflow the text, unless the line
+	// preceding the newline ends with a space. The last character is also cut
+	// off and replaced with a null terminator.
 	for (size_t i = _text.length - 1; i; i--, ptr++) {
 		if (*ptr != '\n')
+			continue;
+		if (__builtin_isspace(ptr[-1]))
 			continue;
 
 		if (ptr[1] == '\n')
@@ -221,9 +230,6 @@ void AboutScreen::hide(ui::Context &ctx, bool goBack) {
 void AboutScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
-	if (
-		ctx.buttons.pressed(ui::BTN_START) ||
-		ctx.buttons.bothPressed(ui::BTN_LEFT, ui::BTN_RIGHT)
-	)
+	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_mainMenuScreen, true, true);
 }
