@@ -10,10 +10,12 @@
 extern "C" DSTATUS disk_initialize(uint8_t drive) {
 	auto &dev = ide::devices[drive];
 
+#if 0
 	if (!(dev.flags & ide::DEVICE_READY)) {
 		if (dev.enumerate())
 			return RES_NOTRDY;
 	}
+#endif
 
 	return disk_status(drive);
 }

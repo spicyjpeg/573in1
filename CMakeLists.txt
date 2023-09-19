@@ -43,6 +43,7 @@ add_executable(
 	src/util.cpp
 	src/zs01.cpp
 	src/app/app.cpp
+	src/app/appworkers.cpp
 	src/app/cartactions.cpp
 	src/app/cartunlock.cpp
 	src/app/main.cpp
