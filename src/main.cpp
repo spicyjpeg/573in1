@@ -7,6 +7,7 @@
 #include "defs.hpp"
 #include "file.hpp"
 #include "gpu.hpp"
+#include "ide.hpp"
 #include "io.hpp"
 #include "spu.hpp"
 #include "uibase.hpp"
@@ -116,16 +117,18 @@ int main(int argc, const char **argv) {
 
 	io::clearWatchdog();
 
+	ide::devices[0].enumerate();
+	ide::devices[1].enumerate();
+
+	io::clearWatchdog();
+
 	file::FATProvider fileProvider;
 
-	// Attempt to initialize the secondary drive first, then in case of failure
-	// try to initialize the primary drive instead.
-	if (fileProvider.init("1:"))
-		goto _fileInitDone;
-	if (fileProvider.init("0:"))
-		goto _fileInitDone;
+	// Attempt to mount the secondary drive first, then in case of failure try
+	// mounting the primary drive instead.
+	if (!fileProvider.init("1:"))
+		fileProvider.init("0:");
 
-_fileInitDone:
 	io::clearWatchdog();
 
 	// Load the resource archive, first from memory if a pointer was given and

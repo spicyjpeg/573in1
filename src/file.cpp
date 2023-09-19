@@ -13,6 +13,10 @@ namespace file {
 
 /* File classes */
 
+File::~File(void) {
+	close();
+}
+
 size_t HostFile::read(void *output, size_t length) {
 	int actualLength = pcdrvRead(_fd, output, length);
 
@@ -107,6 +111,10 @@ void FATFile::close(void) {
 /* File and asset provider classes */
 
 uint32_t currentSPUOffset = spu::DUMMY_BLOCK_END;
+
+Provider::~Provider(void) {
+	close();
+}
 
 bool Provider::fileExists(const char *path) {
 	auto file = openFile(path, READ);
@@ -281,14 +289,23 @@ void FATProvider::close(void) {
 		LOG("FAT unmount ok, drive=%s", _drive);
 }
 
+bool FATProvider::_selectDrive(void) {
+	if (!_drive[0])
+		return false;
+
+	return !f_chdrive(_drive);
+}
+
 bool FATProvider::fileExists(const char *path) {
-	f_chdrive(_drive);
+	if (!_selectDrive())
+		return false;
 
 	return !f_stat(path, nullptr);
 }
 
 bool FATProvider::createDirectory(const char *path) {
-	f_chdrive(_drive);
+	if (!_selectDrive())
+		return false;
 
 	auto error = f_mkdir(path);
 
@@ -301,13 +318,15 @@ bool FATProvider::createDirectory(const char *path) {
 }
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
-	f_chdrive(_drive);
+	if (!_selectDrive())
+		return nullptr;
 
 	auto file  = new FATFile();
 	auto error = f_open(&(file->_fd), path, uint8_t(flags));
 
 	if (error) {
 		LOG("%s, drive=%s", util::getErrorString(error), _drive);
+		delete file;
 		return nullptr;
 	}
 

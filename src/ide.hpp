@@ -349,7 +349,9 @@ public:
 
 	DeviceError enumerate(void);
 	DeviceError ideFlushCache(void);
-	DeviceError atapiPacket(Packet &packet);
+	DeviceError atapiPacket(
+		Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
+	);
 };
 
 extern Device devices[2];

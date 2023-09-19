@@ -59,9 +59,10 @@ bool IdentifyBlock::validateChecksum(void) const {
 	if ((checksum & 0xff) != 0xa5)
 		return true;
 
-	uint8_t value = (util::sum(
+	// FIXME: is this right?
+	uint8_t value = (-int(util::sum(
 		reinterpret_cast<const uint8_t *>(&deviceFlags), ATA_SECTOR_SIZE - 1
-	) & 0xff) ^ 0xff;
+	))) & 0xff;
 
 	if (value != (checksum >> 8)) {
 		LOG("mismatch, exp=0x%02x, got=0x%02x", value, checksum >> 8);
@@ -333,14 +334,14 @@ DeviceError Device::ideFlushCache(void) {
 	);
 }
 
-DeviceError Device::atapiPacket(Packet &packet) {
+DeviceError Device::atapiPacket(Packet &packet, size_t transferLength) {
 	if (!(flags & DEVICE_ATAPI))
 		return UNSUPPORTED_OP;
 
 	_select(0);
 
-	_write(CS0_CYLINDER_L, (2048 >> 0) & 0xff);
-	_write(CS0_CYLINDER_H, (2048 >> 8) & 0xff);
+	_write(CS0_CYLINDER_L, (transferLength >> 0) & 0xff);
+	_write(CS0_CYLINDER_H, (transferLength >> 8) & 0xff);
 	auto error = _command(ATA_PACKET, false);
 	if (error)
 		return error;

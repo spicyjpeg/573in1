@@ -51,7 +51,7 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 };
 
 ButtonState::ButtonState(void)
-: _held(0), _repeatTimer(0) {}
+: _held(0), _repeatTimer(0), buttonMap(MAP_JOYSTICK) {}
 
 void ButtonState::update(void) {
 	_prevHeld = _held;
