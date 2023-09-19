@@ -195,7 +195,7 @@ void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	_title  = STR("AboutScreen.title");
 	_prompt = STR("AboutScreen.prompt");
 
-	APP->_resourceProvider->loadData(_text, "assets/about.txt");
+	APP->_resourceProvider.loadData(_text, "assets/about.txt");
 
 	auto ptr = reinterpret_cast<char *>(_text.ptr);
 	_body    = ptr;

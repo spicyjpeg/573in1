@@ -5,6 +5,11 @@
 	},
 
 	"App": {
+		"startupWorker": {
+			"initIDE":       "Initializing IDE devices...",
+			"initFAT":       "Attempting to mount FAT filesystem...",
+			"loadResources": "Loading resource pack..."
+		},
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
 			"readCart":      "Reading security cartridge...",

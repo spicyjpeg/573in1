@@ -7,7 +7,6 @@
 #include "defs.hpp"
 #include "file.hpp"
 #include "gpu.hpp"
-#include "ide.hpp"
 #include "io.hpp"
 #include "spu.hpp"
 #include "uibase.hpp"
@@ -16,29 +15,15 @@
 extern "C" const uint8_t _resources[];
 extern "C" const size_t  _resourcesSize;
 
-static const char _DEFAULT_RESOURCE_ZIP_PATH[]{ "cart_tool_resources.zip" };
-
-static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
-	"assets/sounds/startup.vag", // ui::SOUND_STARTUP
-	"assets/sounds/error.vag",   // ui::SOUND_ERROR
-	"assets/sounds/move.vag",    // ui::SOUND_MOVE
-	"assets/sounds/enter.vag",   // ui::SOUND_ENTER
-	"assets/sounds/exit.vag",    // ui::SOUND_EXIT
-	"assets/sounds/click.vag"    // ui::SOUND_CLICK
-};
-
 class Settings {
 public:
 	int        width, height;
 	int        baudRate;
-	char       resPath[64];
 	const void *resPtr;
 	size_t     resLength;
 
 	inline Settings(void)
-	: width(320), height(240), baudRate(0), resPtr(nullptr), resLength(0) {
-		__builtin_strncpy(resPath, _DEFAULT_RESOURCE_ZIP_PATH, sizeof(resPath));
-	}
+	: width(320), height(240), baudRate(0), resPtr(nullptr), resLength(0) {}
 
 	bool parse(const char *arg);
 };
@@ -68,12 +53,8 @@ bool Settings::parse(const char *arg) {
 			height = int(strtol(&arg[14], nullptr, 0));
 			return true;
 
-		// Allow the default assets to be overridden by passing a path or a
-		// pointer to an in-memory ZIP file as a command-line argument.
-		case "resources.path"_h:
-			__builtin_strncpy(resPath, &arg[15], sizeof(resPath));
-			return true;
-
+		// Allow the default assets to be overridden by passing a pointer to an
+		// in-memory ZIP file as a command-line argument.
 		case "resources.ptr"_h:
 			resPtr = reinterpret_cast<const void *>(
 				strtol(&arg[14], nullptr, 16)
@@ -115,37 +96,13 @@ int main(int argc, const char **argv) {
 	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
 	LOG("(C) 2022-2023 spicyjpeg");
 
-	io::clearWatchdog();
-
-	ide::devices[0].enumerate();
-	ide::devices[1].enumerate();
-
-	io::clearWatchdog();
-
-	file::FATProvider fileProvider;
-
-	// Attempt to mount the secondary drive first, then in case of failure try
-	// mounting the primary drive instead.
-	if (!fileProvider.init("1:"))
-		fileProvider.init("0:");
-
-	io::clearWatchdog();
-
 	// Load the resource archive, first from memory if a pointer was given and
 	// then from the HDD. If both attempts fail, fall back to the archive
 	// embedded into the executable.
 	file::ZIPProvider resourceProvider;
-	file::File        *zipFile;
 
 	if (settings.resPtr && settings.resLength) {
 		if (resourceProvider.init(settings.resPtr, settings.resLength))
-			goto _resourceInitDone;
-	}
-
-	zipFile = fileProvider.openFile(settings.resPath, file::READ);
-
-	if (zipFile) {
-		if (resourceProvider.init(zipFile))
 			goto _resourceInitDone;
 	}
 
@@ -156,51 +113,12 @@ _resourceInitDone:
 
 	gpu::Context gpuCtx(GP1_MODE_NTSC, settings.width, settings.height);
 	ui::Context  uiCtx(gpuCtx);
-
-	ui::TiledBackground background;
-	ui::LogOverlay      overlay(util::logger);
-
-	file::StringTable strings;
-
-	if (
-		!resourceProvider.loadTIM(
-			background.tile, "assets/textures/background.tim"
-		) ||
-		!resourceProvider.loadTIM(
-			uiCtx.font.image, "assets/textures/font.tim"
-		) ||
-		!resourceProvider.loadStruct(
-			uiCtx.font.metrics, "assets/textures/font.metrics"
-		) ||
-		!resourceProvider.loadStruct(
-			uiCtx.colors, "assets/app.palette"
-		) ||
-		!resourceProvider.loadData(
-			strings, "assets/app.strings"
-		)
-	) {
-		LOG("required assets not found, exiting");
-		return 1;
-	}
-
-	io::clearWatchdog();
-
-	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
-		resourceProvider.loadVAG(uiCtx.sounds[i], _UI_SOUND_PATHS[i]);
-
-	io::clearWatchdog();
-
-	background.text = "v" VERSION_STRING;
-	uiCtx.setBackgroundLayer(background);
-	uiCtx.setOverlayLayer(overlay);
-
-	App app;
+	App          app(uiCtx, resourceProvider);
 
 	gpu::enableDisplay(true);
 	spu::setVolume(0x3fff);
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
-	io::clearWatchdog();
 
-	app.run(uiCtx, resourceProvider, fileProvider, strings);
+	app.run();
 	return 0;
 }

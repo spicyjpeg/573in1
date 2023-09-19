@@ -6,7 +6,6 @@
 #include "app/main.hpp"
 #include "app/misc.hpp"
 #include "app/cartunlock.hpp"
-#include "ps1/system.h"
 #include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
@@ -39,47 +38,11 @@ public:
 	const char *volatile message;
 	ui::Screen *volatile nextScreen;
 
-	inline void reset(void) {
-		status        = WORKER_IDLE;
-		progress      = 0;
-		progressTotal = 1;
-		message       = nullptr;
-		nextScreen    = nullptr;
-	}
-	inline void update(int part, int total, const char *text = nullptr) {
-		auto enable   = disableInterrupts();
-		status        = WORKER_BUSY;
-		progress      = part;
-		progressTotal = total;
-
-		if (text)
-			message = text;
-		if (enable)
-			enableInterrupts();
-	}
-	inline void setStatus(WorkerStatusType value) {
-		auto enable = disableInterrupts();
-		status      = value;
-
-		if (enable)
-			enableInterrupts();
-	}
-	inline void setNextScreen(ui::Screen &next, bool goBack = false) {
-		auto enable = disableInterrupts();
-		_nextGoBack = goBack;
-		_nextScreen = &next;
-
-		if (enable)
-			enableInterrupts();
-	}
-	inline void finish(void) {
-		auto enable = disableInterrupts();
-		status      = _nextGoBack ? WORKER_NEXT_BACK : WORKER_NEXT;
-		nextScreen  = _nextScreen;
-
-		if (enable)
-			enableInterrupts();
-	}
+	void reset(void);
+	void update(int part, int total, const char *text = nullptr);
+	void setStatus(WorkerStatusType value);
+	void setNextScreen(ui::Screen &next, bool goBack = false);
+	void finish(void);
 };
 
 /* App class */
@@ -120,9 +83,14 @@ private:
 	ReflashGameScreen   _reflashGameScreen;
 	SystemIDEntryScreen _systemIDEntryScreen;
 
-	ui::Context       *_ctx;
-	file::Provider    *_resourceProvider, *_fileProvider;
-	file::StringTable *_stringTable;
+	ui::TiledBackground _backgroundLayer;
+	ui::LogOverlay      _overlayLayer;
+
+	ui::Context       &_ctx;
+	file::ZIPProvider &_resourceProvider;
+	file::File        *_resourceFile;
+	file::FATProvider _fileProvider;
+	file::StringTable _stringTable;
 
 	cart::Dump   _dump;
 	cart::CartDB _db;
@@ -138,7 +106,9 @@ private:
 	void _unloadCartData(void);
 	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
+	void _loadResources(void);
 
+	bool _startupWorker(void);
 	bool _cartDetectWorker(void);
 	bool _cartUnlockWorker(void);
 	bool _qrCodeWorker(void);
@@ -154,26 +124,21 @@ private:
 	void _interruptHandler(void);
 
 public:
-	inline App(void)
-	: _driver(nullptr), _parser(nullptr), _identified(nullptr) {
+	inline App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
+	: _overlayLayer(util::logger), _ctx(ctx),
+	_resourceProvider(resourceProvider), _resourceFile(nullptr),
+	_driver(nullptr), _parser(nullptr), _identified(nullptr) {
 		_workerStack = new uint8_t[WORKER_STACK_SIZE];
 	}
-	inline ~App(void) {
-		_unloadCartData();
 
-		delete[] _workerStack;
-	}
-
-	void run(
-		ui::Context &ctx, file::Provider &resourceProvider,
-		file::Provider &fileProvider, file::StringTable &stringTable
-	);
+	~App(void);
+	void run(void);
 };
 
 #define APP      (reinterpret_cast<App *>(ctx.screenData))
-#define STR(id)  (APP->_stringTable->get(id ## _h))
-#define STRH(id) (APP->_stringTable->get(id))
+#define STR(id)  (APP->_stringTable.get(id ## _h))
+#define STRH(id) (APP->_stringTable.get(id))
 
-#define WAPP      (reinterpret_cast<App *>(_ctx->screenData))
-#define WSTR(id)  (WAPP->_stringTable->get(id ## _h))
-#define WSTRH(id) (WAPP->_stringTable->get(id))
+#define WAPP      (reinterpret_cast<App *>(_ctx.screenData))
+#define WSTR(id)  (WAPP->_stringTable.get(id ## _h))
+#define WSTRH(id) (WAPP->_stringTable.get(id))
