@@ -25,9 +25,7 @@ class File {
 public:
 	uint64_t length;
 
-	inline ~File(void) {
-		close();
-	}
+	virtual ~File(void);
 
 	virtual size_t read(void *output, size_t length) { return 0; }
 	virtual size_t write(const void *input, size_t length) { return 0; }
@@ -70,16 +68,14 @@ extern uint32_t currentSPUOffset;
 
 class Provider {
 public:
-	inline ~Provider(void) {
-		close();
-	}
-
 	template<class T> inline size_t loadStruct(T &output, const char *path) {
 		return loadData(&output, sizeof(output), path);
 	}
 	template<class T> inline size_t saveStruct(const T &input, const char *path) {
 		return saveData(&input, sizeof(input), path);
 	}
+
+	virtual ~Provider(void);
 
 	virtual void close(void) {}
 
@@ -107,6 +103,8 @@ class FATProvider : public Provider {
 private:
 	FATFS _fs;
 	char _drive[8];
+
+	bool _selectDrive(void);
 
 public:
 	inline FATProvider(void) {
