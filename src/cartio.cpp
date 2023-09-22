@@ -109,11 +109,14 @@ DriverError DummyDriver::setDataKey(const uint8_t *key) {
 
 /* Functions common to all cartridge drivers */
 
+// TODO: _ZS01_SEND_DELAY and _ZS01_PACKET_DELAY could be tweaked to make the
+// tool faster, however setting both to 30000 results in bricked carts when
+// attempting to reflash.
 static constexpr int _X76_MAX_ACK_POLLS = 5;
 static constexpr int _X76_WRITE_DELAY   = 12000;
 static constexpr int _X76_PACKET_DELAY  = 12000;
-static constexpr int _ZS01_SEND_DELAY   = 30000;
-static constexpr int _ZS01_PACKET_DELAY = 30000;
+static constexpr int _ZS01_SEND_DELAY   = 100000;
+static constexpr int _ZS01_PACKET_DELAY = 300000;
 
 DriverError CartDriver::readSystemID(void) {
 	auto enable = disableInterrupts();

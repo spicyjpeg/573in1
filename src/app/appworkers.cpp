@@ -7,14 +7,13 @@
 #include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
+#include "defs.hpp"
 #include "file.hpp"
 #include "ide.hpp"
 #include "io.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
 #include "utilerror.hpp"
-
-static const char _RESOURCE_ZIP_PATH[]{ "cart_tool_resources.zip" };
 
 bool App::_startupWorker(void) {
 #ifdef NDEBUG
@@ -37,10 +36,12 @@ bool App::_startupWorker(void) {
 
 	_workerStatus.update(2, 3, WSTR("App.startupWorker.loadResources"));
 
-	_resourceFile = _fileProvider.openFile(_RESOURCE_ZIP_PATH, file::READ);
+	_resourceFile = _fileProvider.openFile(
+		EXTERNAL_DATA_DIR "/resource.zip", file::READ
+	);
 
 	if (_resourceFile) {
-		//_resourceProvider.close();
+		_resourceProvider.close();
 		if (_resourceProvider.init(_resourceFile))
 			_loadResources();
 	}
@@ -227,23 +228,23 @@ bool App::_qrCodeWorker(void) {
 bool App::_cartDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
-	char code[8], region[8], path[32];
+	char   code[8], region[8], path[32];
+	size_t length = _dump.getDumpLength();
+
+	if (!_fileProvider.fileExists(EXTERNAL_DATA_DIR)) {
+		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
+			goto _error;
+	}
 
 	if (_identified && _parser->getCode(code) && _parser->getRegion(region))
-		snprintf(path, sizeof(path), "%s%s.573", code, region);
+		snprintf(path, sizeof(path), EXTERNAL_DATA_DIR "/%s%s.573", code, region);
 	else
-		__builtin_strcpy(path, "unknown.573");
+		__builtin_strcpy(path, EXTERNAL_DATA_DIR "/unknown.573");
 
-	size_t length = _dump.getDumpLength();
 	LOG("saving %s, length=%d", path, length);
 
-	if (_fileProvider.saveData(&_dump, length, path) != length) {
-		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartDumpWorker.error")
-		);
-		_workerStatus.setNextScreen(_messageScreen);
-		return false;
-	}
+	if (_fileProvider.saveData(&_dump, length, path) != length)
+		goto _error;
 
 	_messageScreen.setMessage(
 		MESSAGE_SUCCESS, _cartInfoScreen, WSTR("App.cartDumpWorker.success"),
@@ -251,6 +252,13 @@ bool App::_cartDumpWorker(void) {
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return true;
+
+_error:
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartDumpWorker.error")
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
 }
 
 bool App::_cartWriteWorker(void) {
@@ -279,11 +287,21 @@ bool App::_cartWriteWorker(void) {
 }
 
 bool App::_cartReflashWorker(void) {
+	// Make sure a valid cart ID is present if required by the new data.
+	if (
+		_selectedEntry->requiresCartID() &&
+		!(_dump.flags & cart::DUMP_CART_ID_OK)
+	) {
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen,
+			WSTR("App.cartReflashWorker.idError")
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
+
 	if (!_cartEraseWorker())
 		return false;
-
-	_workerStatus.update(1, 2, WSTR("App.cartReflashWorker.flash"));
-
 	if (_parser)
 		delete _parser;
 
@@ -301,7 +319,8 @@ bool App::_cartReflashWorker(void) {
 			pri->cartID.copyFrom(_dump.cartID.data);
 		if (_selectedEntry->flags & cart::DATA_HAS_TRACE_ID)
 			pri->updateTraceID(
-				_selectedEntry->traceIDType, _selectedEntry->traceIDParam
+				_selectedEntry->traceIDType, _selectedEntry->traceIDParam,
+				&_dump.cartID
 			);
 		if (_selectedEntry->flags & cart::DATA_HAS_INSTALL_ID) {
 			// The private installation ID seems to be unused on carts with a
@@ -318,11 +337,15 @@ bool App::_cartReflashWorker(void) {
 	_parser->setYear(_selectedEntry->year);
 	_parser->flush();
 
+	_workerStatus.update(1, 3, WSTR("App.cartReflashWorker.setDataKey"));
 	auto error = _driver->setDataKey(_selectedEntry->dataKey);
-	if (error)
+
+	if (error) {
 		LOG("key error [%s]", util::getErrorString(error));
-	else
+	} else {
+		_workerStatus.update(2, 3, WSTR("App.cartReflashWorker.write"));
 		error = _driver->writeData();
+	}
 
 	_cartDetectWorker();
 
@@ -330,7 +353,8 @@ bool App::_cartReflashWorker(void) {
 		LOG("write error [%s]", util::getErrorString(error));
 
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartReflashWorker.error")
+			MESSAGE_ERROR, _cartInfoScreen,
+			WSTR("App.cartReflashWorker.writeError")
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -378,35 +402,35 @@ static constexpr int _NUM_DUMP_REGIONS = 5;
 static const DumpRegion _DUMP_REGIONS[_NUM_DUMP_REGIONS]{
 	{
 		.prompt = "App.romDumpWorker.dumpBIOS"_h,
-		.path   = "dump_%d/bios.bin",
+		.path   = EXTERNAL_DATA_DIR "/dump%d/bios.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV2_BASE),
 		.length = 0x80000,
 		.bank   = BANK_NONE_16BIT,
 		.inputs = 0
 	}, {
 		.prompt = "App.romDumpWorker.dumpRTC"_h,
-		.path   = "dump_%d/rtc.bin",
+		.path   = EXTERNAL_DATA_DIR "/dump%d/rtc.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE | 0x620000),
 		.length = 0x2000,
 		.bank   = BANK_NONE_8BIT,
 		.inputs = 0
 	}, {
 		.prompt = "App.romDumpWorker.dumpFlash"_h,
-		.path   = "dump_%d/flash.bin",
+		.path   = EXTERNAL_DATA_DIR "/dump%d/flash.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
 		.length = 0x1000000,
 		.bank   = SYS573_BANK_FLASH,
 		.inputs = 0
 	}, {
 		.prompt = "App.romDumpWorker.dumpPCMCIA1"_h,
-		.path   = "dump_%d/pcmcia1.bin",
+		.path   = EXTERNAL_DATA_DIR "/dump%d/pcmcia1.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
 		.length = 0x4000000,
 		.bank   = SYS573_BANK_PCMCIA1,
 		.inputs = io::JAMMA_PCMCIA_CD1
 	}, {
 		.prompt = "App.romDumpWorker.dumpPCMCIA2"_h,
-		.path   = "dump_%d/pcmcia2.bin",
+		.path   = EXTERNAL_DATA_DIR "/dump%d/pcmcia2.bin",
 		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
 		.length = 0x4000000,
 		.bank   = SYS573_BANK_PCMCIA2,
@@ -417,26 +441,27 @@ static const DumpRegion _DUMP_REGIONS[_NUM_DUMP_REGIONS]{
 bool App::_romDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romDumpWorker.init"));
 
-	// Store all dumps in a directory named "dump_N".
+	uint32_t inputs = io::getJAMMAInputs();
+
+	// Store all dumps in a subdirectory named "dumpN" within the main data
+	// folder.
 	int  index = 0;
-	char directoryPath[32], filePath[32];
+	char dirPath[32], filePath[32];
+
+	if (!_fileProvider.fileExists(EXTERNAL_DATA_DIR)) {
+		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
+			goto _initError;
+	}
 
 	do {
 		index++;
-		snprintf(directoryPath, sizeof(directoryPath), "dump_%d", index);
-	} while (_fileProvider.fileExists(directoryPath));
+		snprintf(dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%d", index);
+	} while (_fileProvider.fileExists(dirPath));
 
-	LOG("saving dumps to %s", directoryPath);
+	LOG("saving dumps to %s", dirPath);
 
-	if (!_fileProvider.createDirectory(directoryPath)) {
-		_messageScreen.setMessage(
-			MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.initError")
-		);
-		_workerStatus.setNextScreen(_messageScreen);
-		return false;
-	}
-
-	uint32_t inputs = io::getJAMMAInputs();
+	if (!_fileProvider.createDirectory(dirPath))
+		goto _initError;
 
 	for (int i = 0; i < _NUM_DUMP_REGIONS; i++) {
 		auto &region = _DUMP_REGIONS[i];
@@ -502,10 +527,17 @@ bool App::_romDumpWorker(void) {
 
 	_messageScreen.setMessage(
 		MESSAGE_SUCCESS, _mainMenuScreen, WSTR("App.romDumpWorker.success"),
-		directoryPath
+		dirPath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return true;
+
+_initError:
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.initError")
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
 
 _writeError:
 	_messageScreen.setMessage(

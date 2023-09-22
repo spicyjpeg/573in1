@@ -89,7 +89,6 @@ public:
 
 class [[gnu::packed]] X76Driver : public CartDriver {
 protected:
-	DriverError _readDS2401(void);
 	DriverError _x76Command(uint8_t cmd, uint8_t param, uint8_t pollByte) const;
 
 public:

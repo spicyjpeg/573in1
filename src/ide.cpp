@@ -4,7 +4,6 @@
 #include "ps1/registers.h"
 #include "ps1/system.h"
 #include "ide.hpp"
-#include "io.hpp"
 #include "util.hpp"
 
 /*
@@ -123,8 +122,6 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 			return NO_ERROR;
 
 		delayMicroseconds(1);
-		if (acknowledgeInterrupt(IRQ_VSYNC))
-			io::clearWatchdog();
 	}
 
 	LOG("IDE timeout, stat=0x%02x, err=0x%02x", _read(CS0_STATUS), _read(CS0_ERROR));
