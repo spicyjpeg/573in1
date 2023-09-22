@@ -37,6 +37,9 @@ class GameEntry:
 	def getFullName(self) -> str:
 		return f"{self.name} [{self.code} {self.region}]"
 
+	def hasCartID(self) -> bool:
+		return self.gameCart.endswith("DS2401")
+
 	def hasSystemID(self) -> bool:
 		return (self.ioBoard in SYSTEM_ID_IO_BOARDS)
 
@@ -242,6 +245,13 @@ def processDump(
 			continue
 
 		# TODO: handle separate installation/game carts
+		if game.hasCartID():
+			#parser.flags |= DataFlag.DATA_HAS_CART_ID
+			assert parser.flags & DataFlag.DATA_HAS_CART_ID
+		else:
+			#parser.flags &= ~DataFlag.DATA_HAS_CART_ID
+			assert not (parser.flags & DataFlag.DATA_HAS_CART_ID)
+
 		if game.hasSystemID():
 			parser.flags |= DataFlag.DATA_HAS_SYSTEM_ID
 		else:
@@ -250,7 +260,7 @@ def processDump(
 		games[game.name] = \
 			DBEntry(parser.code, parser.region, game.name, dump, parser)
 
-		logging.info(f"imported {dump.chipType.name}: {game.name}")
+		logging.info(f"imported {dump.chipType.name}: {game.getFullName()}")
 
 	yield from games.values()
 
