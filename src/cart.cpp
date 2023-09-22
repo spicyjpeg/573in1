@@ -66,11 +66,13 @@ void IdentifierSet::setInstallID(uint8_t prefix) {
 	installID.updateChecksum();
 }
 
-void IdentifierSet::updateTraceID(TraceIDType type, int param) {
+void IdentifierSet::updateTraceID(
+	TraceIDType type, int param, const Identifier *_cartID
+) {
 	traceID.clear();
 
-	uint8_t  *input   = &cartID.data[1];
-	uint16_t checksum = 0;
+	const uint8_t *input   = _cartID ? &_cartID->data[1] : &cartID.data[1];
+	uint16_t      checksum = 0;
 
 	switch (type) {
 		case TID_NONE:

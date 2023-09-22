@@ -104,7 +104,9 @@ public:
 
 	uint8_t getFlags(void) const;
 	void setInstallID(uint8_t prefix);
-	void updateTraceID(TraceIDType type, int param);
+	void updateTraceID(
+		TraceIDType type, int param, const Identifier *_cartID = nullptr
+	);
 };
 
 class [[gnu::packed]] PublicIdentifierSet {

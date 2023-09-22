@@ -127,6 +127,14 @@ public:
 	inline int getDisplayName(char *output, size_t length) const {
 		return snprintf(output, length, "%s %s\t%s", code, region, name);
 	}
+	inline bool requiresCartID(void) const {
+		if (flags & DATA_HAS_CART_ID)
+			return true;
+		if ((flags & DATA_HAS_TRACE_ID) && (traceIDType != TID_81))
+			return true;
+
+		return false;
+	}
 	inline void copyKeyTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, dataKey, sizeof(dataKey));
 	}

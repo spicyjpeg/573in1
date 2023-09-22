@@ -11,6 +11,8 @@
 #define VERSION_STRING VERSION "-debug"
 #endif
 
+#define EXTERNAL_DATA_DIR "cartdata"
+
 #define CH_UP_ARROW     "\x80"
 #define CH_DOWN_ARROW   "\x81"
 #define CH_LEFT_ARROW   "\x82"
