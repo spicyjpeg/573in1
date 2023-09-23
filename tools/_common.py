@@ -388,6 +388,15 @@ class DBEntry:
 		return ( self.code, self.region, self.name ) < \
 			( entry.code, entry.region, entry.name )
 
+	def requiresCartID(self) -> bool:
+		if self.flags & DataFlag.DATA_HAS_CART_ID:
+			return True
+		if (self.flags & DataFlag.DATA_HAS_TRACE_ID) and \
+			(self.traceIDType >= TraceIDType.TID_82_BIG_ENDIAN):
+			return True
+
+		return False
+
 	def serialize(self) -> bytes:
 		return DB_ENTRY_STRUCT.pack(
 			self.chipType,

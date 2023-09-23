@@ -5,12 +5,12 @@ __version__ = "0.3.4"
 __author__  = "spicyjpeg"
 
 import json, logging, os, re
-from argparse    import ArgumentParser, Namespace
+from argparse    import ArgumentParser, FileType, Namespace
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib     import Path
 from struct      import Struct
-from typing      import Any, Generator, Iterable, Mapping, Sequence, Type
+from typing      import Any, Generator, Iterable, Mapping, Sequence, TextIO, Type
 
 from _common import *
 
@@ -21,6 +21,7 @@ class GameEntry:
 	code:   str
 	region: str
 	name:   str
+	mameID: str
 
 	installCart: str | None = None
 	gameCart:    str | None = None
@@ -55,6 +56,7 @@ class GameDB:
 		code:   str = entryObj["code"].strip().upper()
 		region: str = entryObj["region"].strip().upper()
 		name:   str = entryObj["name"]
+		mameID: str = entryObj["id"]
 
 		installCart: str | None = entryObj.get("installCart", None)
 		gameCart:    str | None = entryObj.get("gameCart", None)
@@ -66,7 +68,7 @@ class GameDB:
 			raise ValueError(f"invalid game region: {region}")
 
 		entry: GameEntry = GameEntry(
-			code, region, name, installCart, gameCart, ioBoard
+			code, region, name, mameID, installCart, gameCart, ioBoard
 		)
 
 		# Store all entries indexed by their game code and first two characters
@@ -97,7 +99,7 @@ _MAME_DUMP_SIZES: Sequence[int] = (
 	_MAME_X76F041_STRUCT.size, _MAME_X76F100_STRUCT.size, _MAME_ZS01_STRUCT.size
 )
 
-def parseMAMEDump(dump: bytes):
+def parseMAMEDump(dump: bytes) -> Dump:
 	systemID: bytes = bytes(8)
 	cartID:   bytes = bytes(8)
 	zsID:     bytes = bytes(8)
@@ -216,8 +218,8 @@ def newCartParser(dump: Dump) -> Parser:
 ## Dump processing
 
 def processDump(
-	dump: Dump, db: GameDB, nameHint: str = ""
-) -> Generator[DBEntry, None, None]:
+	dump: Dump, db: GameDB, nameHint: str = "", exportFile: TextIO | None = None
+) -> DBEntry:
 	parser: Parser = newCartParser(dump)
 
 	# If the parser could not find a valid game code in the dump, attempt to
@@ -234,43 +236,38 @@ def processDump(
 		else:
 			parser.code = code.group().decode("ascii")
 
-	matches: list[GameEntry]    = sorted(db.lookup(parser.code, parser.region))
-	games:   dict[str, DBEntry] = {}
+	matches: list[GameEntry] = sorted(db.lookup(parser.code, parser.region))
 
+	if exportFile:
+		matchList: str = " ".join(game.mameID for game in matches)
+		_, flags       = str(parser.flags).split(".", 1)
+
+		exportFile.write(
+			f"{dump.chipType.name},{nameHint},{parser.code},{parser.region},"
+			f"{matchList},{parser.formatType.name},{flags}\n"
+		)
 	if not matches:
 		raise RuntimeError(f"{parser.code} {parser.region} not found in game list")
 
-	for game in matches:
-		if game.name in games:
-			continue
+	# If more than one match is found, use the first result.
+	game: GameEntry = matches[0]
 
-		# TODO: handle separate installation/game carts
-		if game.hasCartID():
-			#parser.flags |= DataFlag.DATA_HAS_CART_ID
-			assert parser.flags & DataFlag.DATA_HAS_CART_ID
-		else:
-			#parser.flags &= ~DataFlag.DATA_HAS_CART_ID
-			assert not (parser.flags & DataFlag.DATA_HAS_CART_ID)
+	if game.hasCartID():
+		if not (parser.flags & DataFlag.DATA_HAS_CART_ID):
+			raise RuntimeError("dump has a cartridge ID but game does not")
+	else:
+		if parser.flags & DataFlag.DATA_HAS_CART_ID:
+			raise RuntimeError("game has a cartridge ID but dump does not")
 
-		if game.hasSystemID():
-			parser.flags |= DataFlag.DATA_HAS_SYSTEM_ID
-		else:
-			parser.flags &= ~DataFlag.DATA_HAS_SYSTEM_ID
+	if game.hasSystemID():
+		parser.flags |= DataFlag.DATA_HAS_SYSTEM_ID
+	else:
+		parser.flags &= ~DataFlag.DATA_HAS_SYSTEM_ID
 
-		games[game.name] = \
-			DBEntry(parser.code, parser.region, game.name, dump, parser)
-
-		logging.info(f"imported {dump.chipType.name}: {game.getFullName()}")
-
-	yield from games.values()
+	logging.info(f"imported {dump.chipType.name}: {game.getFullName()}")
+	return DBEntry(parser.code, parser.region, game.name, dump, parser)
 
 ## Main
-
-_CARTDB_PATHS: Mapping[ChipType, str] = {
-	ChipType.X76F041: "x76f041.cartdb",
-	ChipType.X76F100: "x76f100.cartdb",
-	ChipType.ZS01:    "zs01.cartdb"
-}
 
 def createParser() -> ArgumentParser:
 	parser = ArgumentParser(
@@ -299,6 +296,12 @@ def createParser() -> ArgumentParser:
 		default = os.curdir,
 		help    = "Path to output directory (current directory by default)",
 		metavar = "dir"
+	)
+	group.add_argument(
+		"-e", "--export",
+		type    = FileType("wt"),
+		help    = "Export CSV table of all dumps parsed to specified path",
+		metavar = "file"
 	)
 	group.add_argument(
 		"gameList",
@@ -341,8 +344,7 @@ def main():
 	for inputPath in args.input:
 		for rootDir, _, files in os.walk(inputPath):
 			for dumpName in files:
-				path: Path        = Path(rootDir, dumpName)
-				dump: Dump | None = None
+				path: Path = Path(rootDir, dumpName)
 
 				# Skip files whose size does not match any of the known dump
 				# formats.
@@ -352,17 +354,21 @@ def main():
 
 				try:
 					with open(path, "rb") as _file:
-						dump = parseMAMEDump(_file.read())
+						dump: Dump = parseMAMEDump(_file.read())
+				except RuntimeError as exc:
+					logging.error(f"failed to import: {path}, {exc}")
+					continue
 
-					entries[dump.chipType].extend(
-						processDump(dump, db, dumpName)
+				try:
+					entries[dump.chipType].append(
+						processDump(dump, db, dumpName, args.export)
 					)
 				except RuntimeError as exc:
-					if dump is None:
-						logging.error(f"failed to import: {path}, {exc}")
-					else:
-						logging.error(f"failed to import {dump.chipType.name}: {path}, {exc}")
-						failures[dump.chipType] += 1
+					logging.error(f"failed to import {dump.chipType.name}: {path}, {exc}")
+					failures[dump.chipType] += 1
+
+	if args.export:
+		args.export.close()
 
 	# Sort all entries and generate the cartdb files.
 	for chipType, dbEntries in entries.items():
@@ -371,8 +377,9 @@ def main():
 			continue
 
 		dbEntries.sort()
+		path: Path = args.output / f"{chipType.name.lower()}.cartdb"
 
-		with open(args.output / _CARTDB_PATHS[chipType], "wb") as _file:
+		with open(path, "wb") as _file:
 			for entry in dbEntries:
 				_file.write(entry.serialize())
 
