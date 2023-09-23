@@ -295,6 +295,29 @@ bool isValidRegion(const char *region) {
 	return true;
 }
 
+bool isValidUpgradeRegion(const char *region) {
+	if (!region[0] || !__builtin_strchr("aejksu", region[0]))
+		return false;
+	if (!region[1] || !__builtin_strchr("abcdefrstuvwxyz", region[1]))
+		return false;
+
+	if (region[2]) {
+		if (!__builtin_strchr("abcdz", region[2]))
+			return false;
+
+		if (region[2] == 'z') {
+			if (!__builtin_isdigit(region[3]) || !__builtin_isdigit(region[4]))
+				return false;
+
+			region += 2;
+		}
+		if (region[3])
+			return false;
+	}
+
+	return true;
+}
+
 Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
 	switch (formatType) {
 		case SIMPLE:

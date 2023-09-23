@@ -21,16 +21,18 @@ class GameEntry:
 	code:   str
 	region: str
 	name:   str
-	mameID: str
 
-	installCart: str | None = None
-	gameCart:    str | None = None
-	ioBoard:     str | None = None
+	mameID:          str | None = None
+	installCart:     str | None = None
+	gameCart:        str | None = None
+	ioBoard:         str | None = None
+	lockedToIOBoard: bool       = False
 
-	# Implement the comparison overload so sorting will work.
+	# Implement the comparison overload so sorting will work. The 3-digit number
+	# in the game code is used as a key.
 	def __lt__(self, entry: Any) -> bool:
-		return ( self.code, self.region, self.name ) < \
-			( entry.code, entry.region, entry.name )
+		return ( self.code[2:], self.code[0:2], self.region, self.name ) < \
+			( entry.code[2:], entry.code[0:2], entry.region, entry.name )
 
 	def __str__(self) -> str:
 		return f"{self.code} {self.region}"
@@ -56,11 +58,12 @@ class GameDB:
 		code:   str = entryObj["code"].strip().upper()
 		region: str = entryObj["region"].strip().upper()
 		name:   str = entryObj["name"]
-		mameID: str = entryObj["id"]
 
-		installCart: str | None = entryObj.get("installCart", None)
-		gameCart:    str | None = entryObj.get("gameCart", None)
-		ioBoard:     str | None = entryObj.get("ioBoard", None)
+		mameID:          str | None = entryObj.get("id",              None)
+		installCart:     str | None = entryObj.get("installCart",     None)
+		gameCart:        str | None = entryObj.get("gameCart",        None)
+		ioBoard:         str | None = entryObj.get("ioBoard",         None)
+		lockedToIOBoard: bool       = entryObj.get("lockedToIOBoard", False)
 
 		if GAME_CODE_REGEX.fullmatch(code.encode("ascii")) is None:
 			raise ValueError(f"invalid game code: {code}")
@@ -68,7 +71,8 @@ class GameDB:
 			raise ValueError(f"invalid game region: {region}")
 
 		entry: GameEntry = GameEntry(
-			code, region, name, mameID, installCart, gameCart, ioBoard
+			code, region, name, mameID, installCart, gameCart, ioBoard,
+			lockedToIOBoard
 		)
 
 		# Store all entries indexed by their game code and first two characters
@@ -239,8 +243,10 @@ def processDump(
 	matches: list[GameEntry] = sorted(db.lookup(parser.code, parser.region))
 
 	if exportFile:
-		matchList: str = " ".join(game.mameID for game in matches)
 		_, flags       = str(parser.flags).split(".", 1)
+		matchList: str = " ".join(
+			(game.mameID or f"[{game}]") for game in matches
+		)
 
 		exportFile.write(
 			f"{dump.chipType.name},{nameHint},{parser.code},{parser.region},"
@@ -254,15 +260,17 @@ def processDump(
 
 	if game.hasCartID():
 		if not (parser.flags & DataFlag.DATA_HAS_CART_ID):
-			raise RuntimeError("dump has a cartridge ID but game does not")
+			raise RuntimeError("game has a cartridge ID but dump does not")
 	else:
 		if parser.flags & DataFlag.DATA_HAS_CART_ID:
-			raise RuntimeError("game has a cartridge ID but dump does not")
+			raise RuntimeError("dump has a cartridge ID but game does not")
 
-	if game.hasSystemID():
-		parser.flags |= DataFlag.DATA_HAS_SYSTEM_ID
+	if game.hasSystemID() and game.lockedToIOBoard:
+		if not (parser.flags & DataFlag.DATA_HAS_SYSTEM_ID):
+			raise RuntimeError("game has a system ID but dump does not")
 	else:
-		parser.flags &= ~DataFlag.DATA_HAS_SYSTEM_ID
+		if parser.flags & DataFlag.DATA_HAS_SYSTEM_ID:
+			raise RuntimeError("dump has a system ID but game does not")
 
 	logging.info(f"imported {dump.chipType.name}: {game.getFullName()}")
 	return DBEntry(parser.code, parser.region, game.name, dump, parser)
