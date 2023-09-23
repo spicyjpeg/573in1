@@ -11,9 +11,10 @@ namespace cart {
 
 /* Cartridge data parsers */
 
-static constexpr size_t CODE_LENGTH       = 5;
-static constexpr size_t REGION_MIN_LENGTH = 2;
-static constexpr size_t REGION_MAX_LENGTH = 5;
+static constexpr size_t CODE_LENGTH        = 5;
+static constexpr size_t CODE_PREFIX_LENGTH = 2;
+static constexpr size_t REGION_MIN_LENGTH  = 2;
+static constexpr size_t REGION_MAX_LENGTH  = 5;
 
 class Parser {
 protected:
@@ -100,6 +101,7 @@ public:
 };
 
 bool isValidRegion(const char *region);
+bool isValidUpgradeRegion(const char *region);
 Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags = 0);
 Parser *newCartParser(Dump &dump);
 
@@ -118,7 +120,14 @@ public:
 	char     code[8], region[8], name[96];
 
 	inline int compare(const char *_code, const char *_region) const {
-		int diff = __builtin_strncmp(code, _code, CODE_LENGTH + 1);
+		int diff = __builtin_strncmp(
+			&code[CODE_PREFIX_LENGTH], &_code[CODE_PREFIX_LENGTH],
+			CODE_LENGTH - CODE_PREFIX_LENGTH + 1
+		);
+		if (diff)
+			return diff;
+
+		diff = __builtin_strncmp(code, _code, CODE_PREFIX_LENGTH);
 		if (diff)
 			return diff;
 
@@ -130,7 +139,7 @@ public:
 	inline bool requiresCartID(void) const {
 		if (flags & DATA_HAS_CART_ID)
 			return true;
-		if ((flags & DATA_HAS_TRACE_ID) && (traceIDType != TID_81))
+		if ((flags & DATA_HAS_TRACE_ID) && (traceIDType >= TID_82_BIG_ENDIAN))
 			return true;
 
 		return false;

@@ -383,10 +383,11 @@ class DBEntry:
 		else:
 			self.installIDPrefix = 0
 
-	# Implement the comparison overload so sorting will work.
+	# Implement the comparison overload so sorting will work. The 3-digit number
+	# in the game code is used as a key.
 	def __lt__(self, entry: Any) -> bool:
-		return ( self.code, self.region, self.name ) < \
-			( entry.code, entry.region, entry.name )
+		return ( self.code[2:], self.code[0:2], self.region, self.name ) < \
+			( entry.code[2:], entry.code[0:2], entry.region, entry.name )
 
 	def requiresCartID(self) -> bool:
 		if self.flags & DataFlag.DATA_HAS_CART_ID:

@@ -8,7 +8,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "strgchmp",
@@ -19,7 +20,8 @@
 		"installCart": null,
 		"gameCart": null,
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "hndlchmp",
@@ -30,7 +32,8 @@
 		"installCart": null,
 		"gameCart": null,
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "hndlchmpj",
@@ -41,7 +44,20 @@
 		"installCart": null,
 		"gameCart": null,
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
+	},
+	{
+		"id": null,
+		"code": "GE765",
+		"region": "UAA",
+		"name": "Fisherman's Bait: A Bass Challenge",
+		"year": 1998,
+		"installCart": null,
+		"gameCart": "X76F041",
+		"ioBoard": "GE765-PWB(B)",
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fbaitbc",
@@ -52,7 +68,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "bassangl",
@@ -63,7 +80,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "powyakex",
@@ -74,7 +92,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "jppyex98",
@@ -85,7 +104,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "konam80s",
@@ -96,7 +116,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "konam80su",
@@ -107,7 +128,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "konam80sa",
@@ -118,7 +140,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "konam80sk",
@@ -129,7 +152,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "konam80sj",
@@ -140,7 +164,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr",
@@ -151,7 +176,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddrja",
@@ -162,7 +188,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddrjb",
@@ -173,7 +200,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddru",
@@ -184,7 +212,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dstageea",
@@ -195,18 +224,20 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dstage",
-		"code": "GC845",
+		"code": "GN845",
 		"region": "EBA",
 		"name": "Dancing Stage: INTERNET R@NKING",
 		"year": 1999,
 		"installCart": null,
-		"gameCart": "X76F041",
+		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddra",
@@ -217,7 +248,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fbait2bc",
@@ -228,18 +260,20 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "bassang2",
-		"code": "GE865",
+		"code": "GC865",
 		"region": "JAA",
 		"name": "Bass Angler 2",
 		"year": 1998,
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dmx",
@@ -250,7 +284,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.6"
+		"bootloaderVersion": "1.6",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dmxa",
@@ -261,7 +296,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.6"
+		"bootloaderVersion": "1.6",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dncfrks",
@@ -272,7 +308,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.6"
+		"bootloaderVersion": "1.6",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "hyperbbc",
@@ -283,7 +320,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "hyperbbca",
@@ -294,7 +332,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "hyperbbck",
@@ -305,7 +344,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gchgchmp",
@@ -316,7 +356,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "drmn",
@@ -327,7 +368,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "drmnja",
@@ -338,7 +380,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "drmnu",
@@ -349,7 +392,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pcnfrks",
@@ -360,7 +404,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pcnfrksa",
@@ -371,7 +416,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pcnfrksk",
@@ -382,7 +428,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2m",
@@ -393,7 +440,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2mja",
@@ -404,7 +452,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2mu",
@@ -415,7 +464,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2me",
@@ -426,7 +476,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2ma",
@@ -437,7 +488,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2mk",
@@ -448,7 +500,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dsftkd",
@@ -459,7 +512,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr2ml",
@@ -470,7 +524,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr2mlja",
@@ -481,7 +536,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr2mljb",
@@ -492,7 +548,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrks",
@@ -503,7 +560,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksu",
@@ -514,7 +572,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrkse",
@@ -525,7 +584,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksa",
@@ -536,7 +596,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksja",
@@ -547,7 +608,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksua",
@@ -558,7 +620,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksea",
@@ -569,7 +632,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksaa",
@@ -580,7 +644,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksjb",
@@ -591,7 +656,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksub",
@@ -602,7 +668,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrkseb",
@@ -613,7 +680,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrksab",
@@ -624,7 +692,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr3m",
@@ -635,7 +704,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.0"
+		"bootloaderVersion": "1.0",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3mja",
@@ -646,7 +716,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.0"
+		"bootloaderVersion": "1.0",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3ma",
@@ -657,7 +728,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.1"
+		"bootloaderVersion": "1.1",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3maa",
@@ -668,7 +740,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.1"
+		"bootloaderVersion": "1.1",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3mk",
@@ -679,7 +752,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.3"
+		"bootloaderVersion": "1.3",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3mka",
@@ -690,7 +764,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.0"
+		"bootloaderVersion": "1.0",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3mkb",
@@ -701,7 +776,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.3"
+		"bootloaderVersion": "1.3",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr3mkc",
@@ -712,7 +788,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.3"
+		"bootloaderVersion": "1.3",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "fbaitmc",
@@ -723,7 +800,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fbaitmcu",
@@ -734,7 +812,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fbaitmca",
@@ -745,7 +824,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fbaitmcj",
@@ -756,7 +836,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GE765-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr2m",
@@ -767,7 +848,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddrbocd",
@@ -778,7 +860,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddrsbm",
@@ -789,7 +872,20 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
+	},
+	{
+		"id": null,
+		"code": "GQ894",
+		"region": "AAA",
+		"name": "Dance Dance Revolution Solo Bass Mix",
+		"year": 1999,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
+		"ioBoard": "GX894-PWB(B)",
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr2mc",
@@ -800,7 +896,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddrs2000",
@@ -811,7 +908,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.2"
+		"bootloaderVersion": "1.2",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrs2000a",
@@ -822,7 +920,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.2"
+		"bootloaderVersion": "1.2",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gunmania",
@@ -833,18 +932,20 @@
 		"installCart": null,
 		"gameCart": null,
 		"ioBoard": "PWB0000073070",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "hypbbc2p",
-		"code": "GX908",
+		"code": "GC908",
 		"region": "JAA",
 		"name": "Hyper Bishi Bashi Champ [2-player]",
 		"year": 1999,
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "hypbbc2pk",
@@ -855,18 +956,20 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dsfdct",
 		"code": "GC910",
 		"region": "JCA",
-		"name": "Dancing Stage featuring Dreams Come True",
+		"name": "Dancing Stage featuring Dreams Come True [digital I/O]",
 		"year": 1999,
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dsfdctja",
@@ -876,8 +979,9 @@
 		"year": 1999,
 		"installCart": "X76F041+DS2401",
 		"gameCart": "X76F041+DS2401",
-		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": null
+		"ioBoard": "GX700-PWB(F)",
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "drmn2m",
@@ -888,7 +992,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.5"
+		"bootloaderVersion": "1.5",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn2mja",
@@ -899,7 +1004,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.5"
+		"bootloaderVersion": "1.5",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk2m",
@@ -910,7 +1016,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.5"
+		"bootloaderVersion": "1.5",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk2maa",
@@ -921,7 +1028,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.5"
+		"bootloaderVersion": "1.5",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk2mk",
@@ -932,7 +1040,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.5"
+		"bootloaderVersion": "1.5",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "fghtmn",
@@ -943,7 +1052,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fghtmnu",
@@ -954,7 +1064,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fghtmna",
@@ -965,7 +1076,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "fghtmnk",
@@ -976,7 +1088,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pnchmn",
@@ -987,7 +1100,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pnchmnja",
@@ -998,7 +1112,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddrkara",
@@ -1009,7 +1124,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX921-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2ml1",
@@ -1020,7 +1136,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "gtrfrk2ml2",
@@ -1031,7 +1148,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "stepchmp",
@@ -1042,7 +1160,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "dsem",
@@ -1053,7 +1172,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.7"
+		"bootloaderVersion": "1.7",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dsemea",
@@ -1064,18 +1184,32 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.7"
+		"bootloaderVersion": "1.7",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrkara2",
-		"code": "GQ947",
+		"code": "GC947",
 		"region": "JAA",
 		"name": "Dance Dance Revolution Karaoke MIX 2",
 		"year": 2000,
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": "GX921-PWB(B)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
+	},
+	{
+		"id": null,
+		"code": "GE949",
+		"region": "JAA",
+		"name": "GuitarFreaks 3rdMIX",
+		"year": 2000,
+		"installCart": "X76F041+DS2401",
+		"gameCart": "ZS01+DS2401",
+		"ioBoard": "GX894-PWB(B)",
+		"bootloaderVersion": "1.4",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk3m",
@@ -1086,7 +1220,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.4"
+		"bootloaderVersion": "1.4",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk3mja",
@@ -1097,7 +1232,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.4"
+		"bootloaderVersion": "1.4",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk3mjb",
@@ -1108,7 +1244,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.4"
+		"bootloaderVersion": "1.4",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr2mc2",
@@ -1119,7 +1256,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "animechmp",
@@ -1130,7 +1268,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pnchmn2",
@@ -1141,7 +1280,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "pnchmn2ja",
@@ -1152,7 +1292,8 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "salarymc",
@@ -1163,7 +1304,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "ddr3mp",
@@ -1174,7 +1316,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.6"
+		"bootloaderVersion": "1.6",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn3m",
@@ -1185,7 +1328,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk3m",
@@ -1196,7 +1340,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk3mk",
@@ -1207,7 +1352,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk4m",
@@ -1218,7 +1364,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn4m",
@@ -1229,7 +1376,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn4mja",
@@ -1240,7 +1388,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn4mjb",
@@ -1251,7 +1400,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk4m",
@@ -1262,7 +1412,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk4maa",
@@ -1273,7 +1424,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk4mab",
@@ -1284,7 +1436,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk4mk",
@@ -1295,7 +1448,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk4mka",
@@ -1306,7 +1460,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5m",
@@ -1317,7 +1472,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mja",
@@ -1328,7 +1484,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mjb",
@@ -1339,7 +1496,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mjc",
@@ -1350,7 +1508,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mjd",
@@ -1361,7 +1520,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mje",
@@ -1372,7 +1532,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5ma",
@@ -1383,7 +1544,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5maa",
@@ -1394,7 +1556,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mab",
@@ -1405,7 +1568,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mac",
@@ -1416,7 +1580,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mad",
@@ -1427,7 +1592,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk5mae",
@@ -1438,7 +1604,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr5m",
@@ -1449,7 +1616,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr4m",
@@ -1460,7 +1628,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr4mja",
@@ -1471,7 +1640,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr4ma",
@@ -1482,7 +1652,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr4maa",
@@ -1493,7 +1664,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrs4m",
@@ -1504,7 +1676,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrs4mja",
@@ -1515,7 +1688,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrs4ma",
@@ -1526,7 +1700,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrs4maa",
@@ -1537,7 +1712,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddr4mp",
@@ -1548,7 +1724,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrs4mp",
@@ -1559,7 +1736,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "kicknkick",
@@ -1570,7 +1748,8 @@
 		"installCart": null,
 		"gameCart": null,
 		"ioBoard": "GX700-PWB(K)",
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dsfdr",
@@ -1581,7 +1760,8 @@
 		"installCart": "X76F041+DS2401",
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dmx2mapp",
@@ -1592,7 +1772,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dmx2mappja",
@@ -1603,7 +1784,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dmx2mappjb",
@@ -1614,7 +1796,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dmx2m",
@@ -1625,7 +1808,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dmx2mja",
@@ -1636,7 +1820,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "mamboagg",
@@ -1647,7 +1832,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "mamboaggja",
@@ -1658,7 +1844,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrusa",
@@ -1669,7 +1856,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrusaa",
@@ -1680,7 +1868,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.8"
+		"bootloaderVersion": "1.8",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn5m",
@@ -1691,7 +1880,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn5mja",
@@ -1702,7 +1892,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn5mjb",
@@ -1713,7 +1904,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk5m",
@@ -1724,7 +1916,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk5maa",
@@ -1735,7 +1928,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk5mab",
@@ -1746,7 +1940,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk5mk",
@@ -1757,7 +1952,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk5mka",
@@ -1768,7 +1964,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk6m",
@@ -1779,7 +1976,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk6mja",
@@ -1790,7 +1988,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk6mjb",
@@ -1801,7 +2000,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn6m",
@@ -1812,7 +2012,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn6mja",
@@ -1823,7 +2024,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn6mjb",
@@ -1834,7 +2036,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk6m",
@@ -1845,7 +2048,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk6maa",
@@ -1856,7 +2060,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk6mab",
@@ -1867,7 +2072,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk7m",
@@ -1878,7 +2084,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk7mja",
@@ -1889,7 +2096,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk7mjb",
@@ -1900,7 +2108,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrmax",
@@ -1911,7 +2120,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrmax2",
@@ -1922,7 +2132,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "mrtlbeat",
@@ -1933,7 +2144,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "mrtlbeatja",
@@ -1944,7 +2156,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "mrtlbeatjb",
@@ -1955,7 +2168,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "mrtlbeatjc",
@@ -1966,7 +2180,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.9"
+		"bootloaderVersion": "1.9",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gbbchmp",
@@ -1977,7 +2192,8 @@
 		"installCart": null,
 		"gameCart": "X76F041+DS2401",
 		"ioBoard": null,
-		"bootloaderVersion": null
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "drmn7m",
@@ -1988,7 +2204,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn7mja",
@@ -1999,7 +2216,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn7mjb",
@@ -2010,7 +2228,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn7mjc",
@@ -2021,7 +2240,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk7m",
@@ -2032,7 +2252,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk7maa",
@@ -2043,7 +2264,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk7mab",
@@ -2054,7 +2276,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk8m",
@@ -2065,7 +2288,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk8mja",
@@ -2076,7 +2300,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk8mjb",
@@ -2087,7 +2312,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk8mjc",
@@ -2098,7 +2324,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dsem2",
@@ -2109,7 +2336,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "dsem2ea",
@@ -2120,7 +2348,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "ddrextrm",
@@ -2131,7 +2360,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn8m",
@@ -2142,7 +2372,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn8mja",
@@ -2153,7 +2384,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk8m",
@@ -2164,7 +2396,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk9m",
@@ -2175,7 +2408,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk9mja",
@@ -2186,7 +2420,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn9m",
@@ -2197,7 +2432,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn9mja",
@@ -2208,7 +2444,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn9mjb",
@@ -2219,7 +2456,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn9mjc",
@@ -2230,7 +2468,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn9mjd",
@@ -2241,7 +2480,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn9mje",
@@ -2252,7 +2492,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk9m",
@@ -2263,7 +2504,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk9maa",
@@ -2274,7 +2516,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk9mab",
@@ -2285,7 +2528,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk9mac",
@@ -2296,7 +2540,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk10m",
@@ -2307,7 +2552,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk10mja",
@@ -2318,7 +2564,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk10mjb",
@@ -2329,7 +2576,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk10mjc",
@@ -2340,7 +2588,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk10mjd",
@@ -2351,7 +2600,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk10mje",
@@ -2362,7 +2612,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11m",
@@ -2373,7 +2624,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11mja",
@@ -2384,7 +2636,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11mjb",
@@ -2395,7 +2648,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11mjc",
@@ -2406,7 +2660,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11ma",
@@ -2417,7 +2672,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11maa",
@@ -2428,7 +2684,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11mab",
@@ -2439,7 +2696,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "gtrfrk11mac",
@@ -2450,7 +2708,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn10m",
@@ -2461,7 +2720,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn10mja",
@@ -2472,7 +2732,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn10mjb",
@@ -2483,7 +2744,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "drmn10mjc",
@@ -2494,7 +2756,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk10m",
@@ -2505,7 +2768,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk10maa",
@@ -2516,7 +2780,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk10mab",
@@ -2527,7 +2792,8 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	},
 	{
 		"id": "pcnfrk10mac",
@@ -2538,6 +2804,7 @@
 		"installCart": null,
 		"gameCart": "ZS01+DS2401",
 		"ioBoard": "GX894-PWB(B)",
-		"bootloaderVersion": "1.95"
+		"bootloaderVersion": "1.95",
+		"lockedToIOBoard": true
 	}
 ]
