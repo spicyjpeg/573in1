@@ -1,7 +1,7 @@
 {
 	"AboutScreen": {
 		"title":  "{CART_ICON} About this tool",
-		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
 	"App": {
@@ -164,9 +164,9 @@
 			}
 		},
 		"prompt": {
-			"locked":   "Press {START_BUTTON} to unlock, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
-			"unlocked": "Press {START_BUTTON} to continue, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
-			"error":    "Hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back."
+			"locked":   "{RIGHT_ARROW} Press {START_BUTTON} to unlock, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
+			"unlocked": "{RIGHT_ARROW} Press {START_BUTTON} to continue, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
+			"error":    "{RIGHT_ARROW} Hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back."
 		},
 
 		"x76f041": {
@@ -194,7 +194,7 @@
 
 	"HexdumpScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
-		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
 	"KeyEntryScreen": {
@@ -264,7 +264,7 @@
 
 	"SystemInfoScreen": {
 		"title":  "System information",
-		"prompt": "Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
 	"UnlockKeyScreen": {

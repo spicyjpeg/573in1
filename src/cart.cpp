@@ -239,6 +239,7 @@ size_t Dump::toQRString(char *output) const {
 	size_t  uncompLength = getDumpLength();
 	size_t  compLength   = MAX_QR_STRING_LENGTH;
 
+	__builtin_memset(compressed, 0, MAX_QR_STRING_LENGTH);
 	int error = mz_compress2(
 		compressed, reinterpret_cast<mz_ulong *>(&compLength),
 		reinterpret_cast<const uint8_t *>(this), uncompLength,

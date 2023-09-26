@@ -9,7 +9,7 @@ namespace spu {
 
 /* Basic API */
 
-static constexpr int _DMA_CHUNK_SIZE = 8;
+static constexpr int _DMA_CHUNK_SIZE = 4;
 static constexpr int _DMA_TIMEOUT    = 10000;
 static constexpr int _STATUS_TIMEOUT = 1000;
 

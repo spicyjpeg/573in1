@@ -37,7 +37,7 @@ enum Color {
 
 enum Sound {
 	SOUND_STARTUP = 0,
-	SOUND_ERROR   = 1,
+	SOUND_ALERT   = 1,
 	SOUND_MOVE    = 2,
 	SOUND_ENTER   = 3,
 	SOUND_EXIT    = 4,
@@ -187,6 +187,9 @@ class TiledBackground : public Layer {
 public:
 	gpu::Image tile;
 	const char *text;
+
+	inline TiledBackground(void)
+	: text(nullptr) {}
 
 	void draw(Context &ctx) const;
 };

@@ -198,6 +198,9 @@ void TiledBackground::draw(Context &ctx) const {
 			tile.draw(ctx.gpuCtx, x, y);
 	}
 
+	if (!text)
+		return;
+
 	gpu::RectWH rect;
 
 	int width = ctx.font.getStringWidth(text);

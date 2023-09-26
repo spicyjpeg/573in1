@@ -31,10 +31,10 @@ public:
 class QRCodeScreen : public ui::ImageScreen {
 public:
 	inline bool generateCode(const char *textInput) {
-		return gpu::generateQRCode(_image, 960, 128, textInput);
+		return gpu::generateQRCode(_image, 960, 256, textInput);
 	}
 	inline bool generateCode(const uint8_t *binaryInput, size_t length) {
-		return gpu::generateQRCode(_image, 960, 128, binaryInput, length);
+		return gpu::generateQRCode(_image, 960, 256, binaryInput, length);
 	}
 
 	void show(ui::Context &ctx, bool goBack = false);

@@ -22,6 +22,12 @@
 	},
 	{
 		"type":     "binary",
+		"name":     "assets/sounds/alert.vag",
+		"source":   "assets/sounds/alert.vag",
+		"compress": null
+	},
+	{
+		"type":     "binary",
 		"name":     "assets/sounds/move.vag",
 		"source":   "assets/sounds/move.vag",
 		"compress": null
