@@ -116,7 +116,7 @@ void App::_setupInterrupts(void) {
 
 static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 	"assets/sounds/startup.vag", // ui::SOUND_STARTUP
-	"assets/sounds/error.vag",   // ui::SOUND_ERROR
+	"assets/sounds/alert.vag",   // ui::SOUND_ALERT
 	"assets/sounds/move.vag",    // ui::SOUND_MOVE
 	"assets/sounds/enter.vag",   // ui::SOUND_ENTER
 	"assets/sounds/exit.vag",    // ui::SOUND_EXIT

@@ -32,8 +32,8 @@ def decodeBase41(data: str) -> bytearray:
 def serialNumberToString(_id: ByteString) -> str:
 	value: int = int.from_bytes(_id[1:7], "little")
 
-	if value >= 100000000:
-		return "xxxx-xxxx"
+	#if value >= 100000000:
+		#return "xxxx-xxxx"
 
 	return f"{(value // 10000) % 10000:04d}-{value % 10000:04d}"
 

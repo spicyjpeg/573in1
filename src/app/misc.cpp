@@ -57,6 +57,7 @@ void MessageScreen::show(ui::Context &ctx, bool goBack) {
 	_locked     = _prevScreen ? false : true;
 
 	MessageBoxScreen::show(ctx, goBack);
+	ctx.sounds[ui::SOUND_ALERT].play();
 }
 
 void MessageScreen::update(ui::Context &ctx) {
@@ -89,7 +90,7 @@ void ConfirmScreen::show(ui::Context &ctx, bool goBack) {
 	_numButtons = 2;
 
 	MessageBoxScreen::show(ctx, goBack);
-	ctx.sounds[ui::SOUND_ERROR].play();
+	//ctx.sounds[ui::SOUND_ALERT].play();
 }
 
 void ConfirmScreen::update(ui::Context &ctx) {

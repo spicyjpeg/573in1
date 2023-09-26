@@ -295,6 +295,9 @@ void Image::drawScaled(
 	int x2 = x + w, u2 = u + width;
 	int y2 = y + h, v2 = v + height;
 
+	// Even though the packet has a texpage field, setTexturePage() is required
+	// here in order to update _lastTexpage and ensure dithering is disabled.
+	ctx.setTexturePage(texpage);
 	auto cmd = ctx.newPacket(9);
 
 	cmd[0] = gp0_quad(true, blend);
