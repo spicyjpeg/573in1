@@ -6,35 +6,35 @@
 
 	"App": {
 		"startupWorker": {
-			"initIDE":       "Initializing IDE devices...",
-			"initFAT":       "Attempting to mount FAT filesystem...",
+			"initIDE":       "Initializing IDE devices...\nDo not turn off the 573.",
+			"initFAT":       "Attempting to mount FAT filesystem...\nDo not turn off the 573.",
 			"loadResources": "Loading resource pack..."
 		},
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
-			"readCart":      "Reading security cartridge...",
+			"readCart":      "Reading security cartridge...\nDo not turn off the 573.",
 			"identifyGame":  "Attempting to identify game..."
 		},
 		"cartEraseWorker": {
-			"erase":  "Erasing cartridge...",
+			"erase":  "Erasing cartridge...\nDo not turn off the 573.",
 			"error":  "An error occurred while erasing the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
 		},
 		"cartReflashWorker": {
-			"setDataKey": "Setting new unlocking key...",
-			"write":      "Writing new data to cartridge...",
+			"setDataKey": "Setting new unlocking key...\nDo not turn off the 573.",
+			"write":      "Writing new data to cartridge...\nDo not turn off the 573.",
 			"idError":    "The selected game is not compatible with the currently inserted cartridge, as it requires one with a valid DS2401 identifier.",
 			"writeError": "An error occurred while reflashing the cartridge. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
 		},
 		"cartUnlockWorker": {
-			"read":         "Dumping cartridge...",
+			"read":         "Dumping cartridge...\nDo not turn off the 573.",
 			"identifyGame": "Attempting to identify game..."
 		},
 		"cartWriteWorker": {
-			"write": "Writing new data to cartridge...",
+			"write": "Writing new data to cartridge...\nDo not turn off the 573.",
 			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
 		},
 		"cartDumpWorker": {
-			"save":    "Saving cartridge dump...",
+			"save":    "Saving cartridge dump...\nDo not turn off the 573.",
 			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with this tool.",
 			"error":   "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
 		},
@@ -43,12 +43,12 @@
 			"generate": "Generating QR code..."
 		},
 		"romDumpWorker": {
-			"init":        "Creating dump directory...",
-			"dumpBIOS":    "Dumping BIOS ROM...",
-			"dumpRTC":     "Dumping RTC RAM...",
-			"dumpFlash":   "Dumping internal flash...",
-			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...",
-			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...",
+			"init":        "Creating dump directory...\nDo not turn off the 573.",
+			"dumpBIOS":    "Dumping BIOS ROM...\nDo not turn off the 573.",
+			"dumpRTC":     "Dumping RTC RAM...\nDo not turn off the 573.",
+			"dumpFlash":   "Dumping internal flash...\nDo not turn off the 573.",
+			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...\nDo not turn off the 573.",
+			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573.",
 			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
 			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 			"dumpError":   "An error occurred while writing dumps to the hard drive. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
