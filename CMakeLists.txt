@@ -135,11 +135,25 @@ if(EXISTS "${XORRISO_PATH}")
 			-preparer_id "CART_TOOL BUILD SCRIPT"
 			-map cdreadme.txt README.TXT
 			-map cart_tool.psexe PSX.EXE
-			-clone PSX.EXE QSY.DXD
-			-clone PSX.EXE SSW.BXF
-			-clone PSX.EXE TSV.AXG
 			-clone PSX.EXE GSE.NXX
 			-clone PSX.EXE NSE.GXX
+			-clone PSX.EXE OSE.FXX
+			-clone PSX.EXE QSU.DXH
+			-clone PSX.EXE QSX.DXE
+			-clone PSX.EXE QSY.DXD
+			-clone PSX.EXE QSZ.DXC
+			-clone PSX.EXE RSU.CXH
+			-clone PSX.EXE RSV.CXG
+			-clone PSX.EXE RSW.CXF
+			-clone PSX.EXE RSZ.CXC
+			-clone PSX.EXE SSW.BXF
+			-clone PSX.EXE SSX.BXE
+			-clone PSX.EXE SSY.BXD
+			-clone PSX.EXE TSV.AXG
+			-clone PSX.EXE TSW.AXF
+			-clone PSX.EXE TSX.AXE
+			-clone PSX.EXE TSY.AXD
+			-clone PSX.EXE TSZ.AXC
 		OUTPUT  cart_tool.iso
 		DEPENDS cart_tool
 		COMMENT "Building CD-ROM image"
