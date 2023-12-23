@@ -88,7 +88,6 @@ function(ps1_target_incbin
 )
 	string(MAKE_C_IDENTIFIER "${symbolName}"     _symbolName)
 	string(MAKE_C_IDENTIFIER "${sizeSymbolName}" _sizeSymbolName)
-	string(MAKE_C_IDENTIFIER "${section}"        _section)
 
 	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE _path)
 
@@ -101,7 +100,7 @@ function(ps1_target_incbin
 		CONFIGURE
 		OUTPUT  "${_assemblyFile}"
 		CONTENT [[
-.section ${_section}.${_symbolName}, "aw"
+.section ${section}.${_symbolName}, "aw"
 .balign 8
 
 .global ${_symbolName}
@@ -113,7 +112,7 @@ ${_symbolName}:
 	.incbin "${_path}"
 ${_symbolName}_end:
 
-.section ${_section}.${_sizeSymbolName}, "aw"
+.section ${section}.${_sizeSymbolName}, "aw"
 .balign 4
 
 .global ${_sizeSymbolName}

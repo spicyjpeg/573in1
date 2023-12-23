@@ -34,13 +34,9 @@ void init(void) {
 		| BIU_CTRL_DMA_DELAY;
 
 	SYS573_WATCHDOG  = 0;
-	SYS573_BANK_CTRL = 0;
-	SYS573_CART_OUT  = 0;
-	SYS573_MISC_OUT  = 0
-		| SYS573_MISC_OUT_ADC_MOSI
-		| SYS573_MISC_OUT_ADC_CS
-		| SYS573_MISC_OUT_ADC_SCK
-		| SYS573_MISC_OUT_JVS_STAT;
+	SYS573_BANK_CTRL = _bankSwitchReg;
+	SYS573_CART_OUT  = _cartOutputReg;
+	SYS573_MISC_OUT  = _miscOutputReg;
 
 	// Some of the digital I/O board's light outputs are controlled by the FPGA
 	// and cannot be turned off until the FPGA is initialized.
@@ -202,11 +198,13 @@ void i2cStart(void) {
 
 void i2cStartWithCS(int csDelay) {
 	_SDA(true);
-	_SCL(true);
+	_SCL(false);
 	CS(true);
 
 	CS(false);
 	delayMicroseconds(csDelay);
+	SCL(true);
+
 	SDA(false); // START: SDA falling, SCL high
 	SCL(false);
 }
@@ -223,6 +221,8 @@ void i2cStopWithCS(int csDelay) {
 	SCL(true);
 
 	SDA(true); // STOP: SDA rising, SCL high
+
+	SCL(false);
 	delayMicroseconds(csDelay);
 	CS(true);
 }
@@ -311,8 +311,8 @@ uint32_t i2cResetX76(void) {
 		SCL(false);
 	}
 
-	SCL(true);
 	CS(true);
+	SCL(true);
 	return value;
 }
 
@@ -347,34 +347,43 @@ uint32_t i2cResetZS01(void) {
 
 /* 1-wire driver */
 
-static constexpr int _DS_RESET_DELAY = 480;
+static constexpr int _DS_RESET_LOW_TIME     = 480;
+static constexpr int _DS_RESET_SAMPLE_DELAY = 70;
+static constexpr int _DS_RESET_DELAY        = 410;
+
+static constexpr int _DS_READ_LOW_TIME     = 3;
+static constexpr int _DS_READ_SAMPLE_DELAY = 10;
+static constexpr int _DS_READ_DELAY        = 53;
+
+static constexpr int _DS_ZERO_LOW_TIME  = 65;
+static constexpr int _DS_ZERO_HIGH_TIME = 5;
+static constexpr int _DS_ONE_LOW_TIME   = 10;
+static constexpr int _DS_ONE_HIGH_TIME  = 55;
 
 #define _CART1WIRE(value) setCartOutput(OUT_1WIRE, !(value))
 #define _DIO1WIRE(value)  setDIO1Wire(value)
 
 bool dsCartReset(void) {
 	_CART1WIRE(false);
-	delayMicroseconds(_DS_RESET_DELAY);
+	delayMicroseconds(_DS_RESET_LOW_TIME);
 	_CART1WIRE(true);
 
-	delayMicroseconds(60);
+	delayMicroseconds(_DS_RESET_SAMPLE_DELAY);
 	bool present = !getCartInput(IN_1WIRE);
-	delayMicroseconds(60);
+	delayMicroseconds(_DS_RESET_DELAY);
 
-	delayMicroseconds(1000);
 	return present;
 }
 
 bool dsDIOReset(void) {
 	_DIO1WIRE(false);
-	delayMicroseconds(_DS_RESET_DELAY);
+	delayMicroseconds(_DS_RESET_LOW_TIME);
 	_DIO1WIRE(true);
 
-	delayMicroseconds(60);
+	delayMicroseconds(_DS_RESET_SAMPLE_DELAY);
 	bool present = !getDIO1Wire();
-	delayMicroseconds(60);
+	delayMicroseconds(_DS_RESET_DELAY);
 
-	delayMicroseconds(1000);
 	return present;
 }
 
@@ -383,12 +392,12 @@ uint8_t dsCartReadByte(void) {
 
 	for (int bit = 0; bit < 8; bit++) { // LSB first
 		_CART1WIRE(false);
-		delayMicroseconds(2);
+		delayMicroseconds(_DS_READ_LOW_TIME);
 		_CART1WIRE(true);
-		delayMicroseconds(10);
+		delayMicroseconds(_DS_READ_SAMPLE_DELAY);
 		if (getCartInput(IN_1WIRE))
 			value |= (1 << bit);
-		delayMicroseconds(50);
+		delayMicroseconds(_DS_READ_DELAY);
 	}
 
 	return value;
@@ -399,12 +408,12 @@ uint8_t dsDIOReadByte(void) {
 
 	for (int bit = 0; bit < 8; bit++) { // LSB first
 		_DIO1WIRE(false);
-		delayMicroseconds(2);
+		delayMicroseconds(_DS_READ_LOW_TIME);
 		_DIO1WIRE(true);
-		delayMicroseconds(10);
+		delayMicroseconds(_DS_READ_SAMPLE_DELAY);
 		if (getDIO1Wire())
 			value |= (1 << bit);
-		delayMicroseconds(50);
+		delayMicroseconds(_DS_READ_DELAY);
 	}
 
 	return value;
@@ -414,14 +423,14 @@ void dsCartWriteByte(uint8_t value) {
 	for (int bit = 0; bit < 8; bit++) { // LSB first
 		if (value & (1 << bit)) {
 			_CART1WIRE(false);
-			delayMicroseconds(2);
+			delayMicroseconds(_DS_ONE_LOW_TIME);
 			_CART1WIRE(true);
-			delayMicroseconds(60);
+			delayMicroseconds(_DS_ONE_HIGH_TIME);
 		} else {
 			_CART1WIRE(false);
-			delayMicroseconds(60);
+			delayMicroseconds(_DS_ZERO_LOW_TIME);
 			_CART1WIRE(true);
-			delayMicroseconds(2);
+			delayMicroseconds(_DS_ZERO_HIGH_TIME);
 		}
 	}
 }
@@ -430,14 +439,14 @@ void dsDIOWriteByte(uint8_t value) {
 	for (int bit = 0; bit < 8; bit++) { // LSB first
 		if (value & (1 << bit)) {
 			_DIO1WIRE(false);
-			delayMicroseconds(2);
+			delayMicroseconds(_DS_ONE_LOW_TIME);
 			_DIO1WIRE(true);
-			delayMicroseconds(60);
+			delayMicroseconds(_DS_ONE_HIGH_TIME);
 		} else {
 			_DIO1WIRE(false);
-			delayMicroseconds(60);
+			delayMicroseconds(_DS_ZERO_LOW_TIME);
 			_DIO1WIRE(true);
-			delayMicroseconds(2);
+			delayMicroseconds(_DS_ZERO_HIGH_TIME);
 		}
 	}
 }

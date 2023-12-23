@@ -933,7 +933,7 @@
 		"gameCart": null,
 		"ioBoard": "PWB0000073070",
 		"bootloaderVersion": null,
-		"lockedToIOBoard": true
+		"lockedToIOBoard": false
 	},
 	{
 		"id": "hypbbc2p",
@@ -1292,6 +1292,18 @@
 		"installCart": null,
 		"gameCart": "X76F041",
 		"ioBoard": "GX700-PWB(F)",
+		"bootloaderVersion": null,
+		"lockedToIOBoard": false
+	},
+	{
+		"id": null,
+		"code": "GCA15",
+		"region": "JAA",
+		"name": "GunMania Zone Plus",
+		"year": 2000,
+		"installCart": null,
+		"gameCart": "X76F041+DS2401",
+		"ioBoard": "PWB0000073070",
 		"bootloaderVersion": null,
 		"lockedToIOBoard": false
 	},

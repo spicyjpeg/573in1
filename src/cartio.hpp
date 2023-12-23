@@ -89,7 +89,9 @@ public:
 
 class [[gnu::packed]] X76Driver : public CartDriver {
 protected:
-	DriverError _x76Command(uint8_t cmd, uint8_t param, uint8_t pollByte) const;
+	DriverError _x76Command(
+		uint8_t pollByte, uint8_t cmd, int param = -1
+	) const;
 
 public:
 	inline X76Driver(Dump &dump, ChipType chipType)
