@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include "ps1/registers.h"
+#include "ps1/system.h"
 #include "spu.hpp"
 #include "util.hpp"
 

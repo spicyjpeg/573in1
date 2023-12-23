@@ -13,10 +13,9 @@ public:
 	void       (CartActionsScreen::*target)(ui::Context &ctx);
 };
 
-static constexpr int _NUM_SYSTEM_ID_ACTIONS    = 8;
-static constexpr int _NUM_NO_SYSTEM_ID_ACTIONS = 5;
+static constexpr int _NUM_SYSTEM_ID_ACTIONS = 3;
 
-static const Action _ACTIONS[_NUM_SYSTEM_ID_ACTIONS]{
+static const Action _ACTIONS[]{
 	{
 		.name   = "CartActionsScreen.qrDump.name"_h,
 		.prompt = "CartActionsScreen.qrDump.prompt"_h,
@@ -163,11 +162,11 @@ void CartActionsScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = STRH(_ACTIONS[0].prompt);
 	_itemPrompt = STR("CartActionsScreen.itemPrompt");
 
-	_listLength = _NUM_NO_SYSTEM_ID_ACTIONS;
+	_listLength = util::countOf(_ACTIONS) - _NUM_SYSTEM_ID_ACTIONS;
 
 	if (APP->_parser) {
 		if (APP->_parser->flags & cart::DATA_HAS_SYSTEM_ID)
-			_listLength = _NUM_SYSTEM_ID_ACTIONS;
+			_listLength = util::countOf(_ACTIONS);
 	}
 
 	ListScreen::show(ctx, goBack);

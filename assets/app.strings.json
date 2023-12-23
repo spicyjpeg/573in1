@@ -221,6 +221,10 @@
 			"name":   "Restore flash, PCMCIA cards or RTC from dump",
 			"prompt": "Restore the contents of the internal ROMs or any PCMCIA cards from the IDE hard drive or CF card connected as secondary drive (if any)."
 		},
+		"setResolution": {
+			"name":   "Change screen resolution",
+			"prompt": "Switch to a different screen resolution and aspect ratio."
+		},
 		"about": {
 			"name":   "About this tool",
 			"prompt": "View information about this tool, including open source licenses."
@@ -253,6 +257,22 @@
 		"title":      "{CART_ICON} Select game to convert cartridge to",
 		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back"
+	},
+
+	"ResolutionScreen": {
+		"title":      "{CART_ICON} Change screen resolution",
+		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+
+		"320x240p": "320x240 (4:3), progressive",
+		"320x240i": "320x240 (4:3), interlaced (line doubled)",
+		"368x240p": "368x240 (~16:10), progressive",
+		"368x240i": "368x240 (~16:10), interlaced (line doubled)",
+		"512x240p": "512x240 (~20:9), progressive",
+		"512x240i": "512x240 (~20:9), interlaced (line doubled)",
+		"640x240p": "640x240 (24:9), progressive",
+		"640x240i": "640x240 (24:9), interlaced (line doubled)",
+		"640x480i": "640x480 (4:3), interlaced"
 	},
 
 	"SystemIDEntryScreen": {

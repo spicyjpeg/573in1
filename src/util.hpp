@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "ps1/system.h"
 
 namespace util {
 
@@ -45,6 +44,10 @@ template<typename T> static inline T roundUpToMultiple(T value, T length) {
 
 template<typename T, typename X> static inline void assertAligned(X *ptr) {
 	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
+}
+
+template<typename T> static constexpr inline size_t countOf(T &array) {
+	return sizeof(array) / sizeof(array[0]);
 }
 
 template<typename T, typename X> static constexpr inline T forcedCast(X item) {
@@ -91,14 +94,14 @@ public:
 		if (ptr)
 			free(ptr);
 
-		ptr    = malloc(_length);
+		ptr    = new uint8_t[length];
 		length = _length;
 
 		return ptr;
 	}
 	inline void destroy(void) {
 		if (ptr) {
-			free(ptr);
+			delete[] as<uint8_t>();
 			ptr = nullptr;
 		}
 	}
@@ -265,9 +268,12 @@ extern const char *const MINIZ_ZIP_ERROR_NAMES[];
 
 }
 
-//#define LOG(...) util::logger.log(__VA_ARGS__)
+#ifdef ENABLE_LOGGING
 #define LOG(fmt, ...) \
 	util::logger.log("%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+#else
+#define LOG(fmt, ...)
+#endif
 
 static constexpr inline util::Hash operator""_h(
 	const char *const literal, size_t length

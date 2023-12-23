@@ -138,11 +138,11 @@ class Screen;
 class Context {
 private:
 	Screen *_screens[2];
-	Layer  *_background, *_overlay;
 	int    _currentScreen;
 
 public:
 	gpu::Context &gpuCtx;
+	Layer        *background, *overlay;
 
 	gpu::Font  font;
 	gpu::Color colors[NUM_UI_COLORS];
@@ -156,12 +156,6 @@ public:
 	inline void tick(void) {
 		//buttons.update();
 		time++;
-	}
-	inline void setBackgroundLayer(Layer &layer) {
-		_background = &layer;
-	}
-	inline void setOverlayLayer(Layer &layer) {
-		_overlay = &layer;
 	}
 
 	Context(gpu::Context &gpuCtx, void *screenData = nullptr);

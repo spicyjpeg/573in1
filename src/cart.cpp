@@ -4,6 +4,7 @@
 #include "vendor/miniz.h"
 #include "cart.hpp"
 #include "util.hpp"
+#include "utilerror.hpp"
 
 namespace cart {
 
@@ -247,7 +248,7 @@ size_t Dump::toQRString(char *output) const {
 	);
 
 	if (error != MZ_OK) {
-		LOG("compression error, code=%d", error);
+		LOG("%s, ptr=0x%08x", util::getErrorString(error), this);
 		return 0;
 	}
 	LOG(

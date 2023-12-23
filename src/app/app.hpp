@@ -6,6 +6,7 @@
 #include "app/main.hpp"
 #include "app/misc.hpp"
 #include "app/cartunlock.hpp"
+#include "ps1/system.h"
 #include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
@@ -56,6 +57,7 @@ class App {
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
+	friend class ResolutionScreen;
 	friend class AboutScreen;
 	friend class CartInfoScreen;
 	friend class UnlockKeyScreen;
@@ -73,6 +75,7 @@ private:
 	WarningScreen       _warningScreen;
 	ButtonMappingScreen	_buttonMappingScreen;
 	MainMenuScreen      _mainMenuScreen;
+	ResolutionScreen    _resolutionScreen;
 	AboutScreen         _aboutScreen;
 	CartInfoScreen      _cartInfoScreen;
 	UnlockKeyScreen     _unlockKeyScreen;
@@ -132,7 +135,7 @@ public:
 	}
 
 	~App(void);
-	void run(void);
+	[[noreturn]] void run(void);
 };
 
 #define APP      (reinterpret_cast<App *>(ctx.screenData))

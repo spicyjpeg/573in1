@@ -402,9 +402,7 @@ enum DumpBank {
 	BANK_NONE_16BIT = -2
 };
 
-static constexpr int _NUM_DUMP_REGIONS = 5;
-
-static const DumpRegion _DUMP_REGIONS[_NUM_DUMP_REGIONS]{
+static const DumpRegion _DUMP_REGIONS[]{
 	{
 		.prompt = "App.romDumpWorker.dumpBIOS"_h,
 		.path   = EXTERNAL_DATA_DIR "/dump%d/bios.bin",
@@ -468,7 +466,7 @@ bool App::_romDumpWorker(void) {
 	if (!_fileProvider.createDirectory(dirPath))
 		goto _initError;
 
-	for (int i = 0; i < _NUM_DUMP_REGIONS; i++) {
+	for (int i = 0; i < util::countOf(_DUMP_REGIONS); i++) {
 		auto &region = _DUMP_REGIONS[i];
 
 		// Skip PCMCIA slots if a card is not inserted.
