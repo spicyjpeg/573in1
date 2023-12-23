@@ -79,15 +79,19 @@ private:
 		return _buffers[_currentBuffer ^ 1];
 	}
 
-	void _applyResolution(VideoMode mode, int shiftX = 0, int shiftY = 0) const;
+	void _applyResolution(
+		VideoMode mode, bool forceInterlace = false, int shiftX = 0,
+		int shiftY = 0
+	) const;
 
 public:
 	int width, height, refreshRate;
 
 	inline Context(
-		VideoMode mode, int width, int height, bool sideBySide = false
+		VideoMode mode, int width, int height, bool forceInterlace = false,
+		bool sideBySide = false
 	) : _lastTexpage(0) {
-		setResolution(mode, width, height, sideBySide);
+		setResolution(mode, width, height, forceInterlace, sideBySide);
 	}
 	inline void newLayer(int x, int y) {
 		newLayer(x, y, width, height);
@@ -115,7 +119,8 @@ public:
 	}
 
 	void setResolution(
-		VideoMode mode, int width, int height, bool sideBySide = false
+		VideoMode mode, int width, int height, bool forceInterlace = false,
+		bool sideBySide = false
 	);
 	void flip(void);
 

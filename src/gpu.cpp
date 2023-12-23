@@ -56,11 +56,13 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 
 /* Rendering context */
 
-void Context::_applyResolution(VideoMode mode, int shiftX, int shiftY) const {
+void Context::_applyResolution(
+	VideoMode mode, bool forceInterlace, int shiftX, int shiftY
+) const {
 	GP1HorizontalRes hres;
 	GP1VerticalRes   vres;
 
-	int span, is480;
+	int span, vdiv;
 
 	if (width < 320) {
 		hres = GP1_HRES_256;
@@ -80,17 +82,19 @@ void Context::_applyResolution(VideoMode mode, int shiftX, int shiftY) const {
 	}
 
 	if (height <= 256) {
-		vres  = GP1_VRES_256;
-		is480 = false;
+		vres = GP1_VRES_256;
+		vdiv = 1;
 	} else {
-		vres  = GP1_VRES_512;
-		is480 = true;
+		vres = GP1_VRES_512;
+		vdiv = 2;
+
+		forceInterlace = true;
 	}
 
-	int x = shiftX + 0x760,                offsetX = span   / 2;
-	int y = shiftY + (mode ? 0xa3 : 0x88), offsetY = height / (2 << is480);
+	int x = shiftX + 0x760,                offsetX = span   >> 1;
+	int y = shiftY + (mode ? 0xa3 : 0x88), offsetY = height >> vdiv;
 
-	GPU_GP1 = gp1_fbMode(hres, vres, mode, is480, GP1_COLOR_16BPP);
+	GPU_GP1 = gp1_fbMode(hres, vres, mode, forceInterlace, GP1_COLOR_16BPP);
 	GPU_GP1 = gp1_fbRangeH(x - offsetX, x + offsetX);
 	GPU_GP1 = gp1_fbRangeV(y - offsetY, y + offsetY);
 }
@@ -114,7 +118,8 @@ void Context::flip(void) {
 }
 
 void Context::setResolution(
-	VideoMode mode, int _width, int _height, bool sideBySide
+	VideoMode mode, int _width, int _height, bool forceInterlace,
+	bool sideBySide
 ) {
 	auto enable = disableInterrupts();
 
@@ -143,7 +148,7 @@ void Context::setResolution(
 	_currentListPtr = _buffers[0].displayList;
 	_currentBuffer  = 0;
 
-	_applyResolution(mode);
+	_applyResolution(mode, forceInterlace);
 	if (enable)
 		enableInterrupts();
 }

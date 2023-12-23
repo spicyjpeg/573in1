@@ -1,12 +1,13 @@
 
 #include "app/app.hpp"
 #include "app/main.hpp"
+#include "ps1/gpucmd.h"
 #include "uibase.hpp"
 #include "util.hpp"
 
 /* Main menu screens */
 
-static constexpr int WARNING_COOLDOWN = 15;
+static constexpr int WARNING_COOLDOWN = 10;
 
 void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("WarningScreen.title");
@@ -81,13 +82,7 @@ public:
 	void       (MainMenuScreen::*target)(ui::Context &ctx);
 };
 
-#ifdef ENABLE_CART_MENU
-static constexpr int _NUM_MENU_ENTRIES = 5;
-#else
-static constexpr int _NUM_MENU_ENTRIES = 4;
-#endif
-
-static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
+static const MenuEntry _MENU_ENTRIES[]{
 	{
 #ifdef ENABLE_CART_MENU
 		.name   = "MainMenuScreen.cartInfo.name"_h,
@@ -109,6 +104,10 @@ static const MenuEntry _MENU_ENTRIES[_NUM_MENU_ENTRIES]{
 		.target = &MainMenuScreen::systemInfo
 	}, {
 #endif
+		.name   = "MainMenuScreen.setResolution.name"_h,
+		.prompt = "MainMenuScreen.setResolution.prompt"_h,
+		.target = &MainMenuScreen::setResolution
+	}, {
 		.name   = "MainMenuScreen.about.name"_h,
 		.prompt = "MainMenuScreen.about.prompt"_h,
 		.target = &MainMenuScreen::about
@@ -157,6 +156,10 @@ void MainMenuScreen::systemInfo(ui::Context &ctx) {
 	//ctx.show(APP->systemInfoScreen, false, true);
 }
 
+void MainMenuScreen::setResolution(ui::Context &ctx) {
+	ctx.show(APP->_resolutionScreen, false, true);
+}
+
 void MainMenuScreen::about(ui::Context &ctx) {
 	ctx.show(APP->_aboutScreen, false, true);
 }
@@ -176,7 +179,7 @@ void MainMenuScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = STRH(_MENU_ENTRIES[0].prompt);
 	_itemPrompt = STR("MainMenuScreen.itemPrompt");
 
-	_listLength = _NUM_MENU_ENTRIES;
+	_listLength = util::countOf(_MENU_ENTRIES);
 
 	ListScreen::show(ctx, goBack);
 }
@@ -189,6 +192,91 @@ void MainMenuScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START))
 		(this->*action.target)(ctx);
+}
+
+struct Resolution {
+public:
+	util::Hash name;
+	int        width, height;
+	bool       forceInterlace;
+};
+
+static const Resolution _RESOLUTIONS[]{
+	{
+		.name           = "ResolutionScreen.320x240p"_h,
+		.width          = 320,
+		.height         = 240,
+		.forceInterlace = false
+	}, {
+		.name           = "ResolutionScreen.320x240i"_h,
+		.width          = 320,
+		.height         = 240,
+		.forceInterlace = true
+	}, {
+		.name           = "ResolutionScreen.368x240p"_h,
+		.width          = 368,
+		.height         = 240,
+		.forceInterlace = false
+	}, {
+		.name           = "ResolutionScreen.368x240i"_h,
+		.width          = 368,
+		.height         = 240,
+		.forceInterlace = true
+	}, {
+		.name           = "ResolutionScreen.512x240p"_h,
+		.width          = 512,
+		.height         = 240,
+		.forceInterlace = false
+	}, {
+		.name           = "ResolutionScreen.512x240i"_h,
+		.width          = 512,
+		.height         = 240,
+		.forceInterlace = true
+	}, {
+		.name           = "ResolutionScreen.640x240p"_h,
+		.width          = 640,
+		.height         = 240,
+		.forceInterlace = false
+	}, {
+		.name           = "ResolutionScreen.640x240i"_h,
+		.width          = 640,
+		.height         = 240,
+		.forceInterlace = true
+	}, {
+		.name           = "ResolutionScreen.640x480i"_h,
+		.width          = 640,
+		.height         = 480,
+		.forceInterlace = true
+	}
+};
+
+const char *ResolutionScreen::_getItemName(ui::Context &ctx, int index) const {
+	return STRH(_RESOLUTIONS[index].name);
+}
+
+void ResolutionScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("ResolutionScreen.title");
+	_prompt     = STR("ResolutionScreen.prompt");
+	_itemPrompt = STR("ResolutionScreen.itemPrompt");
+
+	_listLength = util::countOf(_RESOLUTIONS);
+
+	ListScreen::show(ctx, goBack);
+}
+
+void ResolutionScreen::update(ui::Context &ctx) {
+	auto &res = _RESOLUTIONS[_activeItem];
+
+	ListScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (!ctx.buttons.held(ui::BTN_LEFT) && !ctx.buttons.held(ui::BTN_RIGHT))			
+			ctx.gpuCtx.setResolution(
+				GP1_MODE_NTSC, res.width, res.height, res.forceInterlace
+			);
+
+		ctx.show(APP->_mainMenuScreen, true, true);
+	}
 }
 
 void AboutScreen::show(ui::Context &ctx, bool goBack) {

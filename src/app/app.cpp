@@ -156,7 +156,7 @@ void App::_interruptHandler(void) {
 	}
 }
 
-void App::run(void) {
+[[noreturn]] void App::run(void) {
 	LOG("starting app @ 0x%08x", this);
 
 	_ctx.screenData = this;
@@ -165,8 +165,10 @@ void App::run(void) {
 	_loadResources();
 
 	_backgroundLayer.text = "v" VERSION_STRING;
-	_ctx.setBackgroundLayer(_backgroundLayer);
-	_ctx.setOverlayLayer(_overlayLayer);
+	_ctx.background       = &_backgroundLayer;
+#ifdef ENABLE_LOGGING
+	_ctx.overlay          = &_overlayLayer;
+#endif
 	_ctx.show(_workerStatusScreen);
 
 	for (;;) {

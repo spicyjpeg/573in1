@@ -18,12 +18,14 @@ extern "C" const size_t  _resourcesSize;
 class Settings {
 public:
 	int        width, height;
+	bool       forceInterlace;
 	int        baudRate;
 	const void *resPtr;
 	size_t     resLength;
 
 	inline Settings(void)
-	: width(320), height(240), baudRate(0), resPtr(nullptr), resLength(0) {}
+	: width(320), height(240), forceInterlace(false), baudRate(0),
+	resPtr(nullptr), resLength(0) {}
 
 	bool parse(const char *arg);
 };
@@ -51,6 +53,10 @@ bool Settings::parse(const char *arg) {
 
 		case "screen.height"_h:
 			height = int(strtol(&arg[14], nullptr, 0));
+			return true;
+
+		case "screen.interlace"_h:
+			forceInterlace = bool(strtol(&arg[17], nullptr, 0));
 			return true;
 
 		// Allow the default assets to be overridden by passing a pointer to an
@@ -99,26 +105,31 @@ int main(int argc, const char **argv) {
 	// Load the resource archive, first from memory if a pointer was given and
 	// then from the HDD. If both attempts fail, fall back to the archive
 	// embedded into the executable.
-	file::ZIPProvider resourceProvider;
+	auto resourceProvider = new file::ZIPProvider;
 
 	if (settings.resPtr && settings.resLength) {
-		if (resourceProvider.init(settings.resPtr, settings.resLength))
+		if (resourceProvider->init(settings.resPtr, settings.resLength))
 			goto _resourceInitDone;
 	}
 
-	resourceProvider.init(_resources, _resourcesSize);
+	resourceProvider->init(_resources, _resourcesSize);
 
 _resourceInitDone:
 	io::clearWatchdog();
 
-	gpu::Context gpuCtx(GP1_MODE_NTSC, settings.width, settings.height);
-	ui::Context  uiCtx(gpuCtx);
-	App          app(uiCtx, resourceProvider);
+	auto gpuCtx = new gpu::Context(
+		GP1_MODE_NTSC, settings.width, settings.height, settings.forceInterlace
+	);
+	auto uiCtx  = new ui::Context(*gpuCtx);
+	auto app    = new App(*uiCtx, *resourceProvider);
 
 	gpu::enableDisplay(true);
 	spu::setVolume(0x3fff);
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
+	app->run();
 
-	app.run();
+	delete app;
+	delete uiCtx;
+	delete gpuCtx;
 	return 0;
 }

@@ -128,7 +128,7 @@ void ButtonState::update(void) {
 /* UI context */
 
 Context::Context(gpu::Context &gpuCtx, void *screenData)
-: _background(nullptr), _overlay(nullptr), _currentScreen(0), gpuCtx(gpuCtx),
+: _currentScreen(0), gpuCtx(gpuCtx), background(nullptr), overlay(nullptr),
 time(0), screenData(screenData) {
 	_screens[0] = nullptr;
 	_screens[1] = nullptr;
@@ -151,21 +151,21 @@ void Context::draw(void) {
 	auto oldScreen = _screens[_currentScreen ^ 1];
 	auto newScreen = _screens[_currentScreen];
 
-	if (_background)
-		_background->draw(*this);
+	if (background)
+		background->draw(*this);
 	if (oldScreen)
 		oldScreen->draw(*this, false);
 	if (newScreen)
 		newScreen->draw(*this, true);
-	if (_overlay)
-		_overlay->draw(*this);
+	if (overlay)
+		overlay->draw(*this);
 }
 
 void Context::update(void) {
 	buttons.update();
 
-	if (_overlay)
-		_overlay->update(*this);
+	if (overlay)
+		overlay->update(*this);
 	if (_screens[_currentScreen])
 		_screens[_currentScreen]->update(*this);
 }
