@@ -21,8 +21,9 @@
 
 namespace ide {
 
-static constexpr int _STATUS_TIMEOUT       = 100000;
-static constexpr int _RESET_STATUS_TIMEOUT = 3000000;
+static constexpr int _STATUS_TIMEOUT       = 1000000;
+static constexpr int _RESET_STATUS_TIMEOUT = 2000000;
+static constexpr int _DATA_STATUS_TIMEOUT  = 2000000;
 static constexpr int _DMA_TIMEOUT          = 10000;
 
 /* Utilities */
@@ -143,7 +144,9 @@ DeviceError Device::_command(uint8_t cmd, bool drdy) {
 DeviceError Device::_transferPIO(void *data, size_t length, bool write) {
 	util::assertAligned<uint16_t>(data);
 
-	auto error = _waitForStatus(CS0_STATUS_DRQ, CS0_STATUS_DRQ, _STATUS_TIMEOUT);
+	auto error = _waitForStatus(
+		CS0_STATUS_DRQ, CS0_STATUS_DRQ, _DATA_STATUS_TIMEOUT
+	);
 	if (error)
 		return error;
 
@@ -165,7 +168,9 @@ DeviceError Device::_transferDMA(void *data, size_t length, bool write) {
 
 	util::assertAligned<uint32_t>(data);
 
-	auto error = _waitForStatus(CS0_STATUS_DRQ, CS0_STATUS_DRQ, _STATUS_TIMEOUT);
+	auto error = _waitForStatus(
+		CS0_STATUS_DRQ, CS0_STATUS_DRQ, _DATA_STATUS_TIMEOUT
+	);
 	if (error)
 		return error;
 

@@ -74,12 +74,6 @@ DriverError DummyDriver::writeData(void) {
 }
 
 DriverError DummyDriver::erase(void) {
-	char buf[128];
-	util::hexToString(buf,_dump.dataKey,8);
-	LOG("got %s",buf);
-	util::hexToString(buf,dummyDriverDump.dataKey,8);
-	LOG("exp %s",buf);
-
 	if (!__builtin_memcmp(
 		_dump.dataKey, dummyDriverDump.dataKey, sizeof(_dump.dataKey)
 	)) {
@@ -171,7 +165,7 @@ DriverError X76Driver::readCartID(void) {
 }
 
 DriverError X76Driver::_x76Command(
-	uint8_t cmd, uint8_t param, uint8_t pollByte
+	uint8_t pollByte, uint8_t cmd, int param
 ) const {
 	delayMicroseconds(_X76_PACKET_DELAY);
 	io::i2cStartWithCS();
@@ -183,11 +177,13 @@ DriverError X76Driver::_x76Command(
 		return X76_NACK;
 	}
 
-	io::i2cWriteByte(param);
-	if (!io::i2cGetACK()) {
-		io::i2cStopWithCS();
-		LOG("NACK while sending param=0x%02x", param);
-		return X76_NACK;
+	if (param >= 0) {
+		io::i2cWriteByte(param);
+		if (!io::i2cGetACK()) {
+			io::i2cStopWithCS();
+			LOG("NACK while sending param=0x%02x", param);
+			return X76_NACK;
+		}
 	}
 
 	if (!io::i2cWriteBytes(_dump.dataKey, sizeof(_dump.dataKey))) {
@@ -200,7 +196,10 @@ DriverError X76Driver::_x76Command(
 	char buffer[48];
 
 	util::hexToString(buffer, _dump.dataKey, sizeof(_dump.dataKey), ' ');
-	LOG("S: %02X %02X %s", cmd, param, buffer);
+	if (param >= 0)
+		LOG("S: %02X %02X %s", cmd, param, buffer);
+	else
+		LOG("S: %02X %s", cmd, buffer);
 #endif
 
 	for (int i = _X76_MAX_ACK_POLLS; i; i--) {
@@ -237,7 +236,7 @@ DriverError X76F041Driver::readPrivateData(void) {
 	// cross 128-byte block boundaries.
 	for (int i = 0; i < 512; i += 128) {
 		auto error = _x76Command(
-			_X76F041_READ | (i >> 8), i & 0xff, _X76F041_ACK_POLL
+			_X76F041_ACK_POLL, _X76F041_READ | (i >> 8), i & 0xff
 		);
 		if (error)
 			return error;
@@ -256,8 +255,10 @@ DriverError X76F041Driver::readPrivateData(void) {
 		io::i2cStopWithCS();
 	}
 
+	_dump.flags |= DUMP_PRIVATE_DATA_OK;
+
 	auto error = _x76Command(
-		_X76F041_CONFIG, _X76F041_CFG_READ_CONFIG, _X76F041_ACK_POLL
+		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_READ_CONFIG
 	);
 	if (error)
 		return error;
@@ -272,10 +273,10 @@ DriverError X76F041Driver::readPrivateData(void) {
 		return X76_NACK;
 	}
 
-	io::i2cReadBytes(_dump.config, 5);
+	io::i2cReadBytes(_dump.config, 8);
 	io::i2cStopWithCS();
 
-	_dump.flags |= DUMP_PRIVATE_DATA_OK;
+	_dump.flags |= DUMP_CONFIG_OK;
 	return NO_ERROR;
 }
 
@@ -283,7 +284,7 @@ DriverError X76F041Driver::writeData(void) {
 	// Writes can only be done in 8-byte blocks.
 	for (int i = 0; i < 512; i += 8) {
 		auto error = _x76Command(
-			_X76F041_WRITE | (i >> 8), i & 0xff, _X76F041_ACK_POLL
+			_X76F041_ACK_POLL, _X76F041_WRITE | (i >> 8), i & 0xff
 		);
 		if (error)
 			return error;
@@ -298,7 +299,7 @@ DriverError X76F041Driver::writeData(void) {
 	}
 
 	auto error = _x76Command(
-		_X76F041_CONFIG, _X76F041_CFG_WRITE_CONFIG, _X76F041_ACK_POLL
+		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_WRITE_CONFIG
 	);
 	if (error)
 		return error;
@@ -316,7 +317,7 @@ DriverError X76F041Driver::writeData(void) {
 
 DriverError X76F041Driver::erase(void) {
 	auto error = _x76Command(
-		_X76F041_CONFIG, _X76F041_CFG_MASS_PROGRAM, _X76F041_ACK_POLL
+		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_MASS_PROGRAM
 	);
 	if (error)
 		return error;
@@ -329,7 +330,7 @@ DriverError X76F041Driver::erase(void) {
 
 DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 	auto error = _x76Command(
-		_X76F041_CONFIG, _X76F041_CFG_SET_DATA_KEY, _X76F041_ACK_POLL
+		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_SET_DATA_KEY
 	);
 	if (error)
 		return error;
@@ -353,29 +354,91 @@ DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 /* X76F100 driver */
 
 enum X76F100Command : uint8_t {
-	_X76F100_READ          = 0x81,
-	_X76F100_WRITE         = 0x80,
-	_X76F100_SET_READ_KEY  = 0xfe,
-	_X76F100_SET_WRITE_KEY = 0xfc,
-	_X76F100_ACK_POLL      = 0x55
+	_X76F100_READ     = 0x81,
+	_X76F100_WRITE    = 0x80,
+	_X76F100_SET_KEY  = 0xfc,
+	_X76F100_ACK_POLL = 0x55
 };
 
-// TODO: actually implement this (even though no X76F100 carts were ever made)
-
 DriverError X76F100Driver::readPrivateData(void) {
-	return UNSUPPORTED_OP;
+	auto error = _x76Command(_X76F100_ACK_POLL, _X76F100_READ);
+	if (error)
+		return error;
+
+	//io::i2cStart();
+	io::i2cReadBytes(_dump.data, 112);
+	io::i2cStopWithCS();
+
+	_dump.flags |= DUMP_PRIVATE_DATA_OK;
+	return NO_ERROR;
 }
 
 DriverError X76F100Driver::writeData(void) {
-	return UNSUPPORTED_OP;
+	// Writes can only be done in 8-byte blocks.
+	for (int i = 0; i < 112; i += 8) {
+		auto error = _x76Command(
+			_X76F100_ACK_POLL, _X76F100_WRITE | (i >> 2)
+		);
+		if (error)
+			return error;
+
+		if (!io::i2cWriteBytes(&_dump.data[i], 8)) {
+			io::i2cStopWithCS(_X76_WRITE_DELAY);
+			LOG("NACK while sending data bytes");
+			return X76_NACK;
+		}
+
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+	}
+
+	return NO_ERROR;
 }
 
 DriverError X76F100Driver::erase(void) {
-	return UNSUPPORTED_OP;
+	// The chip does not have an erase command, so erasing must be performed
+	// manually one block at a time.
+	uint8_t dummy[8]{ 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	for (int i = 0; i < 112; i += 8) {
+		auto error = _x76Command(
+			_X76F100_ACK_POLL, _X76F100_WRITE | (i >> 2)
+		);
+		if (error)
+			return error;
+
+		if (!io::i2cWriteBytes(dummy, 8)) {
+			io::i2cStopWithCS(_X76_WRITE_DELAY);
+			LOG("NACK while sending data bytes");
+			return X76_NACK;
+		}
+
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+	}
+
+	return setDataKey(dummy);
 }
 
 DriverError X76F100Driver::setDataKey(const uint8_t *key) {
-	return UNSUPPORTED_OP;
+	// There are two separate keys, one for read commands and one for write
+	// commands.
+	for (int i = 0; i < 2; i++) {
+		auto error = _x76Command(
+			_X76F100_ACK_POLL, _X76F100_SET_KEY | (i << 1)
+		);
+		if (error)
+			return error;
+
+		if (!io::i2cWriteBytes(key, sizeof(_dump.dataKey))) {
+			io::i2cStopWithCS(_X76_WRITE_DELAY);
+			LOG("NACK while setting new data key");
+			return X76_NACK;
+		}
+
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+	}
+
+	_dump.copyKeyFrom(key);
+	return NO_ERROR;
 }
 
 /* ZS01 driver */
@@ -597,8 +660,10 @@ CartDriver *newCartDriver(Dump &dump) {
 		case _ID_X76F041:
 			return new X76F041Driver(dump);
 
-		//case _ID_X76F100:
-			//return new X76F100Driver(dump);
+#ifdef ENABLE_X76F100_DRIVER
+		case _ID_X76F100:
+			return new X76F100Driver(dump);
+#endif
 
 		default:
 			return new CartDriver(dump);

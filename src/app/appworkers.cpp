@@ -22,19 +22,20 @@ bool App::_startupWorker(void) {
 	// Skip the warning screen in debug builds.
 	_workerStatus.setNextScreen(_buttonMappingScreen);
 #endif
-	_workerStatus.update(0, 3, WSTR("App.startupWorker.initIDE"));
 
-	ide::devices[0].enumerate();
-	ide::devices[1].enumerate();
+	for (int i = 0; i < 2; i++) {
+		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
+		ide::devices[i].enumerate();
+	}
 
-	_workerStatus.update(1, 3, WSTR("App.startupWorker.initFAT"));
+	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFAT"));
 
 	// Attempt to mount the secondary drive first, then in case of failure try
 	// mounting the primary drive instead.
 	if (!_fileProvider.init("1:"))
 		_fileProvider.init("0:");
 
-	_workerStatus.update(2, 3, WSTR("App.startupWorker.loadResources"));
+	_workerStatus.update(3, 4, WSTR("App.startupWorker.loadResources"));
 
 	_resourceFile = _fileProvider.openFile(
 		EXTERNAL_DATA_DIR "/resource.zip", file::READ
@@ -299,6 +300,10 @@ bool App::_cartReflashWorker(void) {
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
+
+	// TODO: preserve 0x81 traceid if possible
+	//uint8_t traceID[8];
+	//_parser->getIdentifiers()->traceID.copyTo(traceID);
 
 	if (!_cartEraseWorker())
 		return false;
