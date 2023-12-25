@@ -336,6 +336,7 @@ Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
 
 Parser *newCartParser(Dump &dump) {
 	// Try all formats from the most complex one to the simplest.
+	//for (auto &format : _KNOWN_FORMATS) {
 	for (int i = util::countOf(_KNOWN_FORMATS) - 1; i >= 0; i--) {
 		auto   &format = _KNOWN_FORMATS[i];
 		Parser *parser = newCartParser(dump, format.format, format.flags);

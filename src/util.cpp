@@ -42,8 +42,8 @@ Logger::Logger(void)
 }
 
 void Logger::clear(void) {
-	for (int i = 0; i < MAX_LOG_LINES; i++)
-		_lines[i][0] = 0;
+	for (auto line : _lines)
+		line[0] = 0;
 }
 
 void Logger::log(const char *format, ...) {
@@ -114,8 +114,10 @@ uint32_t zipCRC32(const uint8_t *data, size_t length, uint32_t crc) {
 	crc        = ~crc;
 
 	for (; length; length--) {
+		uint32_t temp = crc;
+
 		crc >>= 8;
-		crc  ^= table[(crc ^ *(data++)) & 0xff];
+		crc  ^= table[(temp ^ *(data++)) & 0xff];
 	}
 
 	return ~crc;

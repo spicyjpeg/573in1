@@ -89,22 +89,10 @@ void flushCache(void) {
 void softReset(void) {
 	disableInterrupts();
 	BIOS_ENTRY_POINT();
+	__builtin_unreachable();
 }
 
-/* IRQ acknowledgement and blocking delay */
-
-void delayMicroseconds(int us) {
-	// 1 us = 33.8688 cycles = 17 loop iterations (2 cycles per iteration)
-	us *= (F_CPU + 1000000) / 2000000;
-
-	__asm__ volatile(
-		".set noreorder;"
-		"bgtz  %0, .;"
-		"addiu %0, -1;"
-		".set reorder;"
-		: "=r"(us) : "r"(us)
-	);
-}
+/* IRQ acknowledgement */
 
 bool acknowledgeInterrupt(IRQChannel irq) {
 	if (IRQ_STAT & (1 << irq)) {
@@ -116,22 +104,22 @@ bool acknowledgeInterrupt(IRQChannel irq) {
 }
 
 bool waitForInterrupt(IRQChannel irq, int timeout) {
-	for (; timeout > 0; timeout--) {
+	for (; timeout > 0; timeout -= 10) {
 		if (acknowledgeInterrupt(irq))
 			return true;
 
-		delayMicroseconds(1);
+		delayMicroseconds(10);
 	}
 
 	return false;
 }
 
 bool waitForDMATransfer(DMAChannel dma, int timeout) {
-	for (; timeout > 0; timeout--) {
+	for (; timeout > 0; timeout -= 10) {
 		if (!(DMA_CHCR(dma) & DMA_CHCR_ENABLE))
 			return true;
 
-		delayMicroseconds(1);
+		delayMicroseconds(10);
 	}
 
 	return false;

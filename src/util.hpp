@@ -224,7 +224,7 @@ public:
 /* Logger (basically a ring buffer of lines) */
 
 static constexpr int MAX_LOG_LINE_LENGTH = 128;
-static constexpr int MAX_LOG_LINES       = 32;
+static constexpr int MAX_LOG_LINES       = 64;
 
 class Logger {
 private:
