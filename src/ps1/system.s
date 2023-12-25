@@ -15,6 +15,8 @@
 .set noreorder
 .set noat
 
+## Exception handler
+
 .set BADV,  $8
 .set SR,    $12
 .set CAUSE, $13
@@ -179,3 +181,96 @@ _exceptionHandler:
 
 	jr    $k1
 	rfe
+
+## Delay functions
+
+.set IO_BASE, 0xbf801000
+
+.set TIMER2_VALUE,  IO_BASE | 0x120
+.set TIMER2_CTRL,   IO_BASE | 0x124
+.set TIMER2_RELOAD, IO_BASE | 0x128
+
+.section .text.delayMicroseconds, "ax", @progbits
+.global delayMicroseconds
+.type delayMicroseconds, @function
+
+delayMicroseconds:
+	# Calculate the approximate number of CPU cycles that need to be burned,
+	# assuming a 33.8688 MHz clock (1 us = 33.8688 = ~33.875 cycles).
+	sll   $a1, $a0, 8 # cycles = ((us * 271) + 4) / 8
+	sll   $a2, $a0, 4
+	addu  $a1, $a2
+	subu  $a1, $a0
+	addiu $a1, 4
+	sra   $a0, $a1, 3
+
+	# Compensate for the overhead of calculating the cycle count, entering the
+	# loop and returning.
+	addiu $a0, -(6 + 1 + 2 + 3 + 2)
+
+	# Reset timer 2 to its default setting of counting system clock edges.
+	lui   $v1, %hi(IO_BASE)
+	sh    $0,  %lo(TIMER2_CTRL)($v1) # TIMER2_CTRL = 0
+
+	# Wait for up to 0xff00 cycles at a time (resetting the timer and waiting
+	# for it to count up each time), as the counter is only 16 bits wide. We
+	# have to wait 0xff00 cycles rather than 0x10000 since the counter wraps
+	# around rather than saturating on overflow.
+	li    $a1, 0xff00
+	slt   $v0, $a1, $a0
+	#beqz  $v0, .LshortDelay
+	#nop
+	beqz  $v0, .LskipLongDelay
+
+.LlongDelay: # for (; cycles > 0xff00; cycles -= 0xff00)
+	sh    $0,  %lo(TIMER2_VALUE)($v1) # TIMER2_VALUE = 0
+	li    $v0, 0
+
+.LlongDelayLoop: # while (TIMER2_VALUE < 0xff00);
+	nop
+	slt   $v0, $v0, $a1
+	bnez  $v0, .LlongDelayLoop
+	lhu   $v0, %lo(TIMER2_VALUE)($v1)
+
+	slt   $v0, $a1, $a0
+	bnez  $v0, .LlongDelay
+	subu  $a0, $a1
+
+.LshortDelay:
+	# Run the last busy loop once less than 0xff00 cycles are remaining.
+	sh    $0,  %lo(TIMER2_VALUE)($v1) # TIMER2_VALUE = 0
+.LskipLongDelay:
+	li    $v0, 0
+
+.LshortDelayLoop: # while (TIMER2_VALUE < cycles);
+	nop
+	slt   $v0, $v0, $a0
+	bnez  $v0, .LshortDelayLoop
+	lhu   $v0, %lo(TIMER2_VALUE)($v1)
+
+	jr    $ra
+	nop
+
+.section .text.delayMicrosecondsBusy, "ax", @progbits
+.global delayMicrosecondsBusy
+.type delayMicrosecondsBusy, @function
+
+delayMicrosecondsBusy:
+	# Calculate the approximate number of CPU cycles that need to be burned,
+	# assuming a 33.8688 MHz clock (1 us = 33.8688 = ~33.875 cycles).
+	sll   $a1, $a0, 8 # cycles = ((us * 271) + 4) / 8
+	sll   $a2, $a0, 4
+	addu  $a1, $a2
+	subu  $a1, $a0
+	addiu $a1, 4
+	sra   $a0, $a1, 3
+
+	# Compensate for the overhead of calculating the cycle count and returning.
+	addiu $a0, -(6 + 1 + 2)
+
+.Lloop: # while (cycles > 0) cycles -= 2
+	bgtz  $a0, .Lloop
+	addiu $a0, -2
+
+	jr    $ra
+	nop

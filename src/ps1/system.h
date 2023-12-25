@@ -136,12 +136,23 @@ void softReset(void);
 
 /**
  * @brief Blocks for (roughly) the specified number of microseconds. This
- * function does not rely on a hardware timer, so interrupts may throw off
- * timings if not explicitly disabled prior to calling delayMicroseconds().
+ * function will reset hardware timer 2 and use it for timing. Disabling
+ * interrupts prior to calling delayMicroseconds() is highly recommended to
+ * prevent jitter, but not strictly necessary unless the interrupt handler
+ * accesses timer 2.
  *
  * @param time
  */
 void delayMicroseconds(int time);
+
+/**
+ * @brief Blocks for (roughly) the specified number of microseconds. This
+ * function does not rely on a hardware timer, so interrupts may throw off
+ * timings if not explicitly disabled prior to calling delayMicrosecondsBusy().
+ *
+ * @param time
+ */
+void delayMicrosecondsBusy(int time);
 
 /**
  * @brief Checks if the specified interrupt was fired but not yet acknowledged;
@@ -162,9 +173,9 @@ bool acknowledgeInterrupt(IRQChannel irq);
 
 /**
  * @brief Waits for the specified interrupt to be fired for up to the specified
- * number of microseconds. This function will work with interrupts that are not
- * explicitly enabled in the IRQ_MASK register, but will *not* work with
- * interrupts that have been enabled if any callback set using
+ * number of microseconds (with 10 us granularity). This function will work with
+ * interrupts that are not explicitly enabled in the IRQ_MASK register, but will
+ * *not* work with interrupts that have been enabled if any callback set using
  * setInterruptHandler() acknowledges them.
  *
  * @param irq
@@ -175,7 +186,7 @@ bool waitForInterrupt(IRQChannel irq, int timeout);
 
 /**
  * @brief Waits for the specified DMA channel to finish any ongoing transfer for
- * up to the specified number of microseconds.
+ * up to the specified number of microseconds (with 10 us granularity).
  *
  * @param dma
  * @param timeout
@@ -207,7 +218,7 @@ static inline void switchThreadImmediate(Thread *thread) {
 	switchThread(thread);
 
 	// Execute a syscall to force the switch to happen.
-	__asm__ volatile("syscall 0;" ::: "memory");
+	__asm__ volatile("syscall 0\n" ::: "memory");
 }
 
 #ifdef __cplusplus
