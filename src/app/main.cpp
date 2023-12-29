@@ -1,7 +1,10 @@
 
+#include <stdint.h>
 #include "app/app.hpp"
 #include "app/main.hpp"
 #include "ps1/gpucmd.h"
+#include "ide.hpp"
+#include "rom.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
 
@@ -99,11 +102,11 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.prompt = "MainMenuScreen.restore.prompt"_h,
 		.target = &MainMenuScreen::restore
 	}, {
+#endif
 		.name   = "MainMenuScreen.systemInfo.name"_h,
 		.prompt = "MainMenuScreen.systemInfo.prompt"_h,
 		.target = &MainMenuScreen::systemInfo
 	}, {
-#endif
 		.name   = "MainMenuScreen.setResolution.name"_h,
 		.prompt = "MainMenuScreen.setResolution.prompt"_h,
 		.target = &MainMenuScreen::setResolution
@@ -112,6 +115,12 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.prompt = "MainMenuScreen.about.prompt"_h,
 		.target = &MainMenuScreen::about
 	}, {
+#if 0
+		.name   = "MainMenuScreen.launchEXE.name"_h,
+		.prompt = "MainMenuScreen.launchEXE.prompt"_h,
+		.target = &MainMenuScreen::launchEXE
+	}, {
+#endif
 		.name   = "MainMenuScreen.ejectCD.name"_h,
 		.prompt = "MainMenuScreen.ejectCD.prompt"_h,
 		.target = &MainMenuScreen::ejectCD
@@ -153,7 +162,12 @@ void MainMenuScreen::restore(ui::Context &ctx) {
 }
 
 void MainMenuScreen::systemInfo(ui::Context &ctx) {
-	//ctx.show(APP->systemInfoScreen, false, true);
+	if (APP->_systemInfo.flags & SYSTEM_INFO_VALID) {
+		ctx.show(APP->_systemInfoScreen, false, true);
+	} else {
+		APP->_setupWorker(&App::_systemInfoWorker);
+		ctx.show(APP->_workerStatusScreen, false, true);
+	}
 }
 
 void MainMenuScreen::setResolution(ui::Context &ctx) {
@@ -162,6 +176,10 @@ void MainMenuScreen::setResolution(ui::Context &ctx) {
 
 void MainMenuScreen::about(ui::Context &ctx) {
 	ctx.show(APP->_aboutScreen, false, true);
+}
+
+void MainMenuScreen::launchEXE(ui::Context &ctx) {
+	//ctx.show(APP->_aboutScreen, false, true);
 }
 
 void MainMenuScreen::ejectCD(ui::Context &ctx) {
@@ -192,6 +210,163 @@ void MainMenuScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START))
 		(this->*action.target)(ctx);
+}
+
+static const util::Hash _SYSTEM_INFO_IDE_HEADERS[]{
+	"SystemInfoScreen.ide.header.primary"_h,
+	"SystemInfoScreen.ide.header.secondary"_h
+};
+
+#define _PRINT(...) (ptr += snprintf(ptr, end - ptr, __VA_ARGS__))
+#define _PRINTLN()  (*(ptr++) = '\n')
+
+void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
+	_title  = STR("SystemInfoScreen.title");
+	_body   = _bodyText;
+	_prompt = STR("SystemInfoScreen.prompt");
+
+	char id1[32], id2[32];
+	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
+
+	// Digital I/O board
+	auto &dump = APP->_dump;
+
+	_PRINT(STR("SystemInfoScreen.digitalIO.header"));
+
+	if (dump.flags & cart::DUMP_SYSTEM_ID_OK) {
+		dump.systemID.toString(id1);
+		dump.systemID.toSerialNumber(id2);
+
+		_PRINT(STR("SystemInfoScreen.digitalIO.info"), id1, id2);
+	} else if (dump.flags & cart::DUMP_HAS_SYSTEM_ID) {
+		_PRINT(STR("SystemInfoScreen.digitalIO.error"));
+	} else {
+		_PRINT(STR("SystemInfoScreen.digitalIO.noBoard"));
+	}
+
+	_PRINTLN();
+
+	// IDE drives
+	for (int i = 0; i < 2; i++) {
+		auto &dev = ide::devices[i];
+
+		_PRINT(STRH(_SYSTEM_INFO_IDE_HEADERS[i]));
+
+		if (dev.flags & ide::DEVICE_READY) {
+			_PRINT(
+				STR("SystemInfoScreen.ide.commonInfo"), dev.model, dev.revision,
+				dev.serialNumber
+			);
+
+			if (dev.flags & ide::DEVICE_ATAPI) {
+				_PRINT(
+					STR("SystemInfoScreen.ide.atapiInfo"),
+					(dev.flags & ide::DEVICE_HAS_PACKET16) ? 16 : 12
+				);
+			} else {
+				_PRINT(
+					STR("SystemInfoScreen.ide.ataInfo"),
+					uint64_t(dev.capacity / (0x100000 / ide::ATA_SECTOR_SIZE)),
+					(dev.flags & ide::DEVICE_HAS_LBA48) ? 48 : 28
+				);
+
+				if (dev.flags & ide::DEVICE_HAS_TRIM)
+					_PRINT(STR("SystemInfoScreen.ide.hasTrim"));
+				if (dev.flags & ide::DEVICE_HAS_FLUSH)
+					_PRINT(STR("SystemInfoScreen.ide.hasFlush"));
+			}
+		} else {
+			_PRINT(STR("SystemInfoScreen.ide.error"));
+		}
+
+		_PRINTLN();
+	}
+
+	// BIOS ROM
+	auto &info = APP->_systemInfo;
+
+	_PRINT(STR("SystemInfoScreen.bios.header"));
+	_PRINT(STR("SystemInfoScreen.bios.commonInfo"), info.biosCRC);
+
+	if (rom::sonyKernelHeader.validateMagic()) {
+		_PRINT(
+			STR("SystemInfoScreen.bios.kernelInfo.sony"),
+			rom::sonyKernelHeader.version, rom::sonyKernelHeader.year,
+			rom::sonyKernelHeader.month, rom::sonyKernelHeader.day
+		);
+	} else if (rom::openBIOSHeader.validateMagic()) {
+		char buildID[64];
+
+		rom::openBIOSHeader.getBuildID(buildID);
+
+		_PRINT(STR("SystemInfoScreen.bios.kernelInfo.openbios"), buildID);
+	} else {
+		_PRINT(STR("SystemInfoScreen.bios.kernelInfo.unknown"));
+	}
+
+	if (info.shell)
+		_PRINT(
+			STR("SystemInfoScreen.bios.shellInfo.konami"), info.shell->name,
+			info.shell->bootFileName
+		);
+	else
+		_PRINT(STR("SystemInfoScreen.bios.shellInfo.unknown"));
+
+	_PRINTLN();
+
+	// RTC RAM
+	_PRINT(STR("SystemInfoScreen.rtc.header"));
+	_PRINT(STR("SystemInfoScreen.rtc.info"), info.rtcCRC);
+
+	if (info.flags & SYSTEM_INFO_RTC_BATTERY_LOW)
+		_PRINT(STR("SystemInfoScreen.rtc.batteryLow"));
+
+	_PRINTLN();
+
+	// Flash
+	_PRINT(STR("SystemInfoScreen.flash.header"));
+	_PRINT(
+		STR("SystemInfoScreen.flash.info"), info.flash.manufacturerID,
+		info.flash.deviceID, info.flash.crc[0]
+	);
+
+	if (info.flash.flags & FLASH_REGION_INFO_BOOTABLE)
+		_PRINT(STR("SystemInfoScreen.flash.bootable"));
+
+	_PRINTLN();
+
+	// PCMCIA cards
+	for (int i = 0; i < 2; i++) {
+		auto card = info.pcmcia[i];
+
+		_PRINT(STR("SystemInfoScreen.pcmcia.header"), i + 1);
+
+		if (card.flags & FLASH_REGION_INFO_PRESENT) {
+			_PRINT(
+				STR("SystemInfoScreen.pcmcia.info"), card.manufacturerID,
+				card.deviceID, card.crc[0], card.crc[1], card.crc[3]
+			);
+
+			if (card.flags & FLASH_REGION_INFO_BOOTABLE)
+				_PRINT(STR("SystemInfoScreen.pcmcia.bootable"));
+		} else {
+			_PRINT(STR("SystemInfoScreen.pcmcia.noCard"));
+		}
+
+		_PRINTLN();
+	}
+
+	*(--ptr) = 0;
+	LOG("remaining=%d", end - ptr);
+
+	TextScreen::show(ctx, goBack);
+}
+
+void SystemInfoScreen::update(ui::Context &ctx) {
+	TextScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START))
+		ctx.show(APP->_mainMenuScreen, true, true);
 }
 
 struct Resolution {

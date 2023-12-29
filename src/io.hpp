@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 #include "ps1/registers.h"
 
@@ -158,6 +159,7 @@ static inline void setDIO1Wire(bool value) {
 void init(void);
 uint32_t getJAMMAInputs(void);
 uint32_t getRTCTime(void);
+bool isRTCBatteryLow(void);
 
 bool loadBitstream(const uint8_t *data, size_t length);
 void initKonamiBitstream(void);

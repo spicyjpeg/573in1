@@ -113,12 +113,8 @@ uint32_t zipCRC32(const uint8_t *data, size_t length, uint32_t crc) {
 	auto table = reinterpret_cast<const uint32_t *>(CACHE_BASE);
 	crc        = ~crc;
 
-	for (; length; length--) {
-		uint32_t temp = crc;
-
-		crc >>= 8;
-		crc  ^= table[(temp ^ *(data++)) & 0xff];
-	}
+	for (; length; length--)
+		crc = (crc >> 8) ^ table[(crc ^ *(data++)) & 0xff];
 
 	return ~crc;
 }
@@ -221,6 +217,12 @@ size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 
 	*output = 0;
 	return outLength;
+}
+
+/* PS1 executable header */
+
+bool ExecutableHeader::validateMagic(void) const {
+	return (hash(magic, sizeof(magic)) == "PS-X EXE"_h);
 }
 
 /* Error strings */

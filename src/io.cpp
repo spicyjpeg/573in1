@@ -69,6 +69,8 @@ uint32_t getRTCTime(void) {
 	int year = SYS573_RTC_YEAR, month = SYS573_RTC_MONTH,  day = SYS573_RTC_DAY;
 	int hour = SYS573_RTC_HOUR, min   = SYS573_RTC_MINUTE, sec = SYS573_RTC_SECOND;
 
+	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_READ;
+
 	year  = (year  & 15) + 10 * ((year  >> 4) & 15); // 0-99
 	month = (month & 15) + 10 * ((month >> 4) &  1); // 1-12
 	day   = (day   & 15) + 10 * ((day   >> 4) &  3); // 1-31
@@ -87,6 +89,12 @@ uint32_t getRTCTime(void) {
 		| (hour  << 11)
 		| (min   <<  5)
 		| (sec   >>  1);
+}
+
+bool isRTCBatteryLow(void) {
+	SYS573_RTC_DAY |= SYS573_RTC_DAY_BATTERY_MONITOR;
+
+	return (SYS573_RTC_DAY / SYS573_RTC_DAY_LOW_BATTERY) & 1;
 }
 
 /* Digital I/O board driver */

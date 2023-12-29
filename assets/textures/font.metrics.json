@@ -104,14 +104,19 @@
 		"\u0080": { "x":  0, "y": 54, "width":  6, "height": 9 },
 		"\u0081": { "x":  6, "y": 54, "width":  6, "height": 9 },
 		"\u0082": { "x": 12, "y": 54, "width":  4, "height": 9 },
+		"\u0083": { "x": 18, "y": 54, "width":  4, "height": 9 },
 
-		"\u0083": { "x": 18, "y": 54, "width":  4, "height":  9 },
-		"\u0084": { "x": 24, "y": 54, "width":  7, "height":  9, "icon": true },
-		"\u0085": { "x": 31, "y": 54, "width":  7, "height":  9, "icon": true },
-		"\u0086": { "x": 38, "y": 54, "width":  9, "height":  9, "icon": true },
-		"\u0087": { "x": 47, "y": 54, "width":  8, "height": 10, "icon": true },
-		"\u0088": { "x": 55, "y": 54, "width": 11, "height": 10, "icon": true },
-		"\u0089": { "x": 66, "y": 54, "width": 12, "height": 10, "icon": true },
-		"\u008a": { "x": 78, "y": 54, "width": 14, "height": 10, "icon": true }
+		"\u0090": { "x":  0, "y": 63, "width":  7, "height":  9, "icon": true },
+		"\u0091": { "x":  7, "y": 63, "width":  7, "height":  9, "icon": true },
+		"\u0092": { "x": 14, "y": 63, "width":  9, "height":  9, "icon": true },
+		"\u0093": { "x": 23, "y": 63, "width":  8, "height": 10, "icon": true },
+		"\u0094": { "x": 31, "y": 63, "width": 11, "height": 10, "icon": true },
+		"\u0095": { "x": 42, "y": 63, "width":  9, "height":  9, "icon": true },
+		"\u0096": { "x": 51, "y": 63, "width":  9, "height":  9, "icon": true },
+		"\u0097": { "x": 60, "y": 63, "width":  9, "height": 10, "icon": true },
+		"\u0098": { "x": 69, "y": 63, "width":  9, "height": 10, "icon": true },
+		"\u0099": { "x": 78, "y": 63, "width":  9, "height": 10, "icon": true },
+		"\u009a": { "x":  0, "y": 73, "width": 12, "height": 10, "icon": true },
+		"\u009b": { "x": 12, "y": 73, "width": 14, "height": 10, "icon": true }
 	}
 }

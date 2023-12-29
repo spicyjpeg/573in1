@@ -128,8 +128,8 @@ _resourceInitDone:
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
 	app->run();
 
-	delete app;
-	delete uiCtx;
-	delete gpuCtx;
+	delete app, uiCtx, gpuCtx;
+
+	uninstallExceptionHandler();
 	return 0;
 }

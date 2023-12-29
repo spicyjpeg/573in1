@@ -90,22 +90,21 @@ size_t Port::exchangePacket(
 	uint8_t address, const uint8_t *request, uint8_t *response,
 	size_t reqLength, size_t maxRespLength
 ) const {
-	if (!start(address))
-		return 0;
-
 	size_t respLength = 0;
 
-	while (respLength < maxRespLength) {
-		if (reqLength) {
-			*(response++) = exchangeByte(*(request++));
-			reqLength--;
-		} else {
-			*(response++) = exchangeByte(0);
-		}
+	if (start(address)) {
+		while (respLength < maxRespLength) {
+			if (reqLength) {
+				*(response++) = exchangeByte(*(request++));
+				reqLength--;
+			} else {
+				*(response++) = exchangeByte(0);
+			}
 
-		respLength++;
-		if (!waitForInterrupt(IRQ_SIO0, _ACK_TIMEOUT))
-			break;
+			respLength++;
+			if (!waitForInterrupt(IRQ_SIO0, _ACK_TIMEOUT))
+				break;
+		}
 	}
 
 	stop();

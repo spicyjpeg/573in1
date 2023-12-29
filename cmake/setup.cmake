@@ -100,7 +100,7 @@ function(ps1_target_incbin
 		CONFIGURE
 		OUTPUT  "${_assemblyFile}"
 		CONTENT [[
-.section ${section}.${_symbolName}, "aw"
+.section ${section}.${_symbolName}, "a"
 .balign 8
 
 .global ${_symbolName}
@@ -112,7 +112,7 @@ ${_symbolName}:
 	.incbin "${_path}"
 ${_symbolName}_end:
 
-.section ${section}.${_sizeSymbolName}, "aw"
+.section ${section}.${_sizeSymbolName}, "a"
 .balign 4
 
 .global ${_sizeSymbolName}

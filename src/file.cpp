@@ -108,6 +108,39 @@ void FATFile::close(void) {
 	f_close(&_fd);
 }
 
+/* Directory classes */
+
+Directory::~Directory(void) {
+	close();
+}
+
+bool FATDirectory::getEntry(
+	FileInfo &output, uint32_t attrMask, uint32_t attrValue
+) {
+	FILINFO info;
+	auto    error = f_readdir(&_fd, &info);
+
+	if (error) {
+		LOG("%s", util::getErrorString(error));
+		return false;
+	}
+	if (!info.fname[0])
+		return false;
+
+	__builtin_strncpy(
+		output.name, info.fname,
+		util::min(sizeof(output.name), sizeof(info.fname))
+	);
+	output.length     = info.fsize;
+	output.attributes = info.fattrib;
+
+	return true;
+}
+
+void FATDirectory::close(void) {
+	f_closedir(&_fd);
+}
+
 /* File and asset provider classes */
 
 uint32_t currentSPUOffset = spu::DUMMY_BLOCK_END;
@@ -116,29 +149,22 @@ Provider::~Provider(void) {
 	close();
 }
 
-bool Provider::fileExists(const char *path) {
-	auto file = openFile(path, READ);
-
-	if (!file)
-		return false;
-
-	file->close();
-	return true;
-}
-
 size_t Provider::loadData(util::Data &output, const char *path) {
 	auto file = openFile(path, READ);
 
 	if (!file)
 		return 0;
 
-	//assert(file.length <= SIZE_MAX);
-	if (!output.allocate(size_t(file->length)))
+	//assert(file->length <= SIZE_MAX);
+	if (!output.allocate(size_t(file->length))) {
+		delete file;
 		return 0;
+	}
 
 	size_t actualLength = file->read(output.ptr, output.length);
 	file->close();
 
+	delete file;
 	return actualLength;
 }
 
@@ -148,10 +174,11 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 	if (!file)
 		return 0;
 
-	//assert(file.length >= length);
+	//assert(file->length >= length);
 	size_t actualLength = file->read(output, length);
 	file->close();
 
+	delete file;
 	return actualLength;
 }
 
@@ -164,6 +191,7 @@ size_t Provider::saveData(const void *input, size_t length, const char *path) {
 	size_t actualLength = file->write(input, length);
 	file->close();
 
+	delete file;
 	return actualLength;
 }
 
@@ -231,7 +259,7 @@ bool HostProvider::init(void) {
 }
 
 bool HostProvider::createDirectory(const char *path) {
-	int fd = pcdrvCreate(path, PCDRV_ATTR_DIRECTORY);
+	int fd = pcdrvCreate(path, DIRECTORY);
 
 	if (fd < 0) {
 		LOG("PCDRV error, code=%d", fd);
@@ -296,11 +324,42 @@ bool FATProvider::_selectDrive(void) {
 	return !f_chdrive(_drive);
 }
 
-bool FATProvider::fileExists(const char *path) {
+bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 	if (!_selectDrive())
 		return false;
 
-	return !f_stat(path, nullptr);
+	FILINFO info;
+	auto    error = f_stat(path, &info);
+
+	if (error) {
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
+		return false;
+	}
+
+	__builtin_strncpy(
+		output.name, info.fname,
+		util::min(sizeof(output.name), sizeof(info.fname))
+	);
+	output.length     = info.fsize;
+	output.attributes = info.fattrib;
+
+	return true;
+}
+
+Directory *FATProvider::openDirectory(const char *path) {
+	if (!_selectDrive())
+		return nullptr;
+
+	auto dir   = new FATDirectory();
+	auto error = f_opendir(&(dir->_fd), path);
+
+	if (error) {
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
+		delete dir;
+		return nullptr;
+	}
+
+	return dir;
 }
 
 bool FATProvider::createDirectory(const char *path) {
@@ -384,12 +443,35 @@ bool ZIPProvider::init(const void *zipData, size_t length) {
 void ZIPProvider::close(void) {
 	mz_zip_reader_end(&_zip);
 
-	if (_file)
+	if (_file) {
 		_file->close();
+		delete _file;
+	}
 }
 
-bool ZIPProvider::fileExists(const char *path) {
-	return (mz_zip_reader_locate_file(&_zip, path, nullptr, 0) >= 0);
+bool ZIPProvider::getFileInfo(FileInfo &output, const char *path) {
+	mz_zip_archive_file_stat info;
+
+	int index = mz_zip_reader_locate_file(&_zip, path, nullptr, 0);
+
+	if (index < 0)
+		return false;
+	if (!mz_zip_reader_file_stat(&_zip, index, &info))
+		return false;
+	if (!info.m_is_supported)
+		return false;
+
+	__builtin_strncpy(
+		output.name, info.m_filename,
+		util::min(sizeof(output.name), sizeof(info.m_filename))
+	);
+	output.length     = info.m_uncomp_size;
+	output.attributes = READ_ONLY | ARCHIVE;
+
+	if (info.m_is_directory)
+		output.attributes |= DIRECTORY;
+
+	return true;
 }
 
 size_t ZIPProvider::loadData(util::Data &output, const char *path) {
