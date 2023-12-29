@@ -96,11 +96,17 @@ static inline void initThread(
 }
 
 /**
- * @brief Sets up the exception handler, removes the BIOS from memory and
- * flushes the instruction cache. Must be called only once, before *any* other
- * function in this header is used.
+ * @brief Sets up the exception handler, disables the one provided by the BIOS
+ * kernel and flushes the instruction cache. Must be called only once, before
+ * *any* other function in this header is used.
  */
 void installExceptionHandler(void);
+
+/**
+ * @brief Restores the BIOS kernel's exception handler. Must be called before
+ * returning to the kernel or launching another executable.
+ */
+void uninstallExceptionHandler(void);
 
 /**
  * @brief Disables interrupts and sets the function that will be called whenever

@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "file.hpp"
 #include "vendor/ff.h"
 #include "vendor/miniz.h"
 #include "gpu.hpp"
@@ -13,12 +14,31 @@ namespace file {
 
 /* File classes */
 
+static constexpr size_t MAX_PATH_LENGTH = 256;
+
 // These are functionally equivalent to the FA_* flags used by FatFs.
 enum FileModeFlag {
 	READ         = 1 << 0,
 	WRITE        = 1 << 1,
 	FORCE_CREATE = 1 << 3, // Create file if missing, truncate if it exists
 	ALLOW_CREATE = 1 << 4  // Create file if missing
+};
+
+// These are equivalent to the standard MS-DOS file attributes (as well as PCDRV
+// attributes and the AM_* flags used by FatFs).
+enum FileAttributeFlag {
+	READ_ONLY = 1 << 0,
+	HIDDEN    = 1 << 1,
+	SYSTEM    = 1 << 2,
+	DIRECTORY = 1 << 4,
+	ARCHIVE   = 1 << 5
+};
+
+struct FileInfo {
+public:
+	char     name[MAX_PATH_LENGTH];
+	uint64_t length;
+	uint32_t attributes;
 };
 
 class File {
@@ -62,8 +82,32 @@ public:
 	void close(void);
 };
 
+/* Directory classes */
+
+class Directory {
+public:
+	virtual ~Directory(void);
+
+	virtual bool getEntry(
+		FileInfo &output, uint32_t attrMask, uint32_t attrValue
+	) { return false; }
+	virtual void close(void) {}
+};
+
+class FATDirectory : public Directory {
+	friend class FATProvider;
+
+private:
+	DIR _fd;
+
+public:
+	bool getEntry(FileInfo &output, uint32_t attrMask, uint32_t attrValue);
+	void close(void);
+};
+
 /* File and asset provider classes */
 
+// TODO: move this (and loadTIM/loadVAG) somewhere else
 extern uint32_t currentSPUOffset;
 
 class Provider {
@@ -79,7 +123,8 @@ public:
 
 	virtual void close(void) {}
 
-	virtual bool fileExists(const char *path);
+	virtual bool getFileInfo(FileInfo &output, const char *path) { return false; }
+	virtual Directory *openDirectory(const char *path) { return nullptr; }
 	virtual bool createDirectory(const char *path) { return false; }
 
 	virtual File *openFile(const char *path, uint32_t flags) { return nullptr; }
@@ -102,7 +147,7 @@ public:
 class FATProvider : public Provider {
 private:
 	FATFS _fs;
-	char _drive[8];
+	char  _drive[8];
 
 	bool _selectDrive(void);
 
@@ -114,7 +159,8 @@ public:
 	bool init(const char *drive);
 	void close(void);
 
-	bool fileExists(const char *path);
+	bool getFileInfo(FileInfo &output, const char *path);
+	Directory *openDirectory(const char *path);
 	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
@@ -131,7 +177,7 @@ public:
 	bool init(const void *zipData, size_t length);
 	void close(void);
 
-	bool fileExists(const char *path);
+	bool getFileInfo(FileInfo &output, const char *path);
 
 	size_t loadData(util::Data &output, const char *path);
 	size_t loadData(void *output, size_t length, const char *path);

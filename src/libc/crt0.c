@@ -70,7 +70,7 @@ int _start(int argc, const char **argv) {
 
 	int returnValue = main(argc, argv);
 
-	for (const Function *dtor = _initArrayStart; dtor < _initArrayEnd; dtor++)
+	for (const Function *dtor = _finiArrayStart; dtor < _finiArrayEnd; dtor++)
 		(*dtor)();
 
 	return returnValue;

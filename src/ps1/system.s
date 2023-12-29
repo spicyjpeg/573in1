@@ -206,7 +206,7 @@ delayMicroseconds:
 
 	# Compensate for the overhead of calculating the cycle count, entering the
 	# loop and returning.
-	addiu $a0, -(6 + 1 + 2 + 3 + 2)
+	addiu $a0, -(6 + 1 + 2 + 4 + 2)
 
 	# Reset timer 2 to its default setting of counting system clock edges.
 	lui   $v1, %hi(IO_BASE)
@@ -218,11 +218,10 @@ delayMicroseconds:
 	# around rather than saturating on overflow.
 	li    $a1, 0xff00
 	slt   $v0, $a1, $a0
-	#beqz  $v0, .LshortDelay
-	#nop
-	beqz  $v0, .LskipLongDelay
+	beqz  $v0, .LshortDelay
+	li    $a2, 0xff00 + 3
 
-.LlongDelay: # for (; cycles > 0xff00; cycles -= 0xff00)
+.LlongDelay: # for (; cycles > 0xff00; cycles -= (0xff00 + 3))
 	sh    $0,  %lo(TIMER2_VALUE)($v1) # TIMER2_VALUE = 0
 	li    $v0, 0
 
@@ -234,12 +233,11 @@ delayMicroseconds:
 
 	slt   $v0, $a1, $a0
 	bnez  $v0, .LlongDelay
-	subu  $a0, $a1
+	subu  $a0, $a2
 
 .LshortDelay:
 	# Run the last busy loop once less than 0xff00 cycles are remaining.
 	sh    $0,  %lo(TIMER2_VALUE)($v1) # TIMER2_VALUE = 0
-.LskipLongDelay:
 	li    $v0, 0
 
 .LshortDelayLoop: # while (TIMER2_VALUE < cycles);

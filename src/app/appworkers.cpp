@@ -11,6 +11,7 @@
 #include "file.hpp"
 #include "ide.hpp"
 #include "io.hpp"
+#include "rom.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
 #include "utilerror.hpp"
@@ -232,7 +233,9 @@ bool App::_cartDumpWorker(void) {
 	char   code[8], region[8], path[32];
 	size_t length = _dump.getDumpLength();
 
-	if (!_fileProvider.fileExists(EXTERNAL_DATA_DIR)) {
+	file::FileInfo info;
+
+	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR)) {
 		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
 			goto _error;
 	}
@@ -387,71 +390,62 @@ bool App::_cartEraseWorker(void) {
 	return _cartUnlockWorker();
 }
 
-struct DumpRegion {
+struct DumpEntry {
 public:
-	util::Hash     prompt;
-	const char     *path;
-	const uint16_t *ptr;
-	size_t         length;
-	int            bank;
-	uint32_t       inputs;
+	util::Hash        dumpPrompt, hashPrompt;
+	const char        *path;
+	const rom::Region &region;
+	size_t            hashOffset;
 };
 
-enum DumpBank {
-	BANK_NONE_8BIT  = -1,
-	BANK_NONE_16BIT = -2
-};
-
-static const DumpRegion _DUMP_REGIONS[]{
+static const DumpEntry _DUMP_ENTRIES[]{
 	{
-		.prompt = "App.romDumpWorker.dumpBIOS"_h,
-		.path   = EXTERNAL_DATA_DIR "/dump%d/bios.bin",
-		.ptr    = reinterpret_cast<const uint16_t *>(DEV2_BASE),
-		.length = 0x80000,
-		.bank   = BANK_NONE_16BIT,
-		.inputs = 0
+		.dumpPrompt = "App.romDumpWorker.dumpBIOS"_h,
+		.hashPrompt = "App.systemInfoWorker.hashBIOS"_h,
+		.path       = "%s/bios.bin",
+		.region     = rom::bios,
+		.hashOffset = offsetof(SystemInfo, biosCRC)
 	}, {
-		.prompt = "App.romDumpWorker.dumpRTC"_h,
-		.path   = EXTERNAL_DATA_DIR "/dump%d/rtc.bin",
-		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE | 0x620000),
-		.length = 0x2000,
-		.bank   = BANK_NONE_8BIT,
-		.inputs = 0
+		.dumpPrompt = "App.romDumpWorker.dumpRTC"_h,
+		.hashPrompt = "App.systemInfoWorker.hashRTC"_h,
+		.path       = "%s/rtc.bin",
+		.region     = rom::rtc,
+		.hashOffset = offsetof(SystemInfo, rtcCRC)
 	}, {
-		.prompt = "App.romDumpWorker.dumpFlash"_h,
-		.path   = EXTERNAL_DATA_DIR "/dump%d/flash.bin",
-		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
-		.length = 0x1000000,
-		.bank   = SYS573_BANK_FLASH,
-		.inputs = 0
+		.dumpPrompt = "App.romDumpWorker.dumpFlash"_h,
+		.hashPrompt = "App.systemInfoWorker.hashFlash"_h,
+		.path       = "%s/flash.bin",
+		.region     = rom::flash,
+		.hashOffset = offsetof(SystemInfo, flash.crc)
 	}, {
-		.prompt = "App.romDumpWorker.dumpPCMCIA1"_h,
-		.path   = EXTERNAL_DATA_DIR "/dump%d/pcmcia1.bin",
-		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
-		.length = 0x4000000,
-		.bank   = SYS573_BANK_PCMCIA1,
-		.inputs = io::JAMMA_PCMCIA_CD1
+		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA1"_h,
+		.hashPrompt = "App.systemInfoWorker.hashPCMCIA1"_h,
+		.path       = "%s/pcmcia1.bin",
+		.region     = rom::pcmcia[0],
+		.hashOffset = offsetof(SystemInfo, pcmcia[0].crc)
 	}, {
-		.prompt = "App.romDumpWorker.dumpPCMCIA2"_h,
-		.path   = EXTERNAL_DATA_DIR "/dump%d/pcmcia2.bin",
-		.ptr    = reinterpret_cast<const uint16_t *>(DEV0_BASE),
-		.length = 0x4000000,
-		.bank   = SYS573_BANK_PCMCIA2,
-		.inputs = io::JAMMA_PCMCIA_CD2
+		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA2"_h,
+		.hashPrompt = "App.systemInfoWorker.hashPCMCIA2"_h,
+		.path       = "%s/pcmcia2.bin",
+		.region     = rom::pcmcia[1],
+		.hashOffset = offsetof(SystemInfo, pcmcia[1].crc)
 	}
 };
 
+static constexpr size_t _DUMP_CHUNK_LENGTH   = 0x80000;
+static constexpr size_t _DUMP_CHUNKS_PER_CRC = 32; // Save CRC32 every 16 MB
+
 bool App::_romDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romDumpWorker.init"));
-
-	uint32_t inputs = io::getJAMMAInputs();
 
 	// Store all dumps in a subdirectory named "dumpN" within the main data
 	// folder.
 	int  index = 0;
 	char dirPath[32], filePath[32];
 
-	if (!_fileProvider.fileExists(EXTERNAL_DATA_DIR)) {
+	file::FileInfo info;
+
+	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR)) {
 		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
 			goto _initError;
 	}
@@ -459,21 +453,28 @@ bool App::_romDumpWorker(void) {
 	do {
 		index++;
 		snprintf(dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%d", index);
-	} while (_fileProvider.fileExists(dirPath));
+	} while (_fileProvider.getFileInfo(info, dirPath));
 
 	LOG("saving dumps to %s", dirPath);
 
 	if (!_fileProvider.createDirectory(dirPath))
 		goto _initError;
 
-	for (int i = 0; i < util::countOf(_DUMP_REGIONS); i++) {
-		auto &region = _DUMP_REGIONS[i];
-
-		// Skip PCMCIA slots if a card is not inserted.
-		if (region.inputs && !(inputs & region.inputs))
+	for (auto &entry : _DUMP_ENTRIES) {
+		if (!entry.region.isPresent())
 			continue;
 
-		snprintf(filePath, sizeof(filePath), region.path, index);
+		size_t chunkLength, numChunks;
+
+		if (entry.region.regionLength < _DUMP_CHUNK_LENGTH) {
+			chunkLength = entry.region.regionLength;
+			numChunks   = 1;
+		} else {
+			chunkLength = _DUMP_CHUNK_LENGTH;
+			numChunks   = entry.region.regionLength / _DUMP_CHUNK_LENGTH;
+		}
+
+		snprintf(filePath, sizeof(filePath), entry.path, dirPath);
 
 		auto _file = _fileProvider.openFile(
 			filePath, file::WRITE | file::ALLOW_CREATE
@@ -482,49 +483,30 @@ bool App::_romDumpWorker(void) {
 		if (!_file)
 			goto _writeError;
 
-		// The buffer has to be 8 KB to match the size of RTC RAM.
-		uint8_t buffer[0x2000];
+		auto     buffer = new uint8_t[chunkLength];
+		uint32_t offset = 0;
 
-		const uint16_t *ptr  = region.ptr;
-		int            count = region.length / sizeof(buffer);
-		int            bank  = region.bank;
+		//assert(buffer);
 
-		if (bank >= 0)
-			io::setFlashBank(bank++);
+		for (size_t i = 0; i < numChunks; i++) {
+			_workerStatus.update(i, numChunks, WSTRH(entry.dumpPrompt));
+			entry.region.read(buffer, offset, chunkLength);
 
-		for (int j = 0; j < count; j++) {
-			_workerStatus.update(j, count, WSTRH(region.prompt));
-
-			// The RTC is an 8-bit device connected to a 16-bit bus, i.e. each
-			// byte must be read as a 16-bit value and then the upper 8 bits
-			// must be discarded.
-			if (bank == BANK_NONE_8BIT) {
-				uint8_t *output = buffer;
-
-				for (size_t k = sizeof(buffer); k; k--)
-					*(output++) = static_cast<uint8_t>(*(ptr++));
-			} else {
-				uint16_t *output = reinterpret_cast<uint16_t *>(buffer);
-
-				for (size_t k = sizeof(buffer); k; k -= 2)
-					*(output++) = *(ptr++);
-			}
-
-			if (
-				(bank >= 0) &&
-				(ptr  >= reinterpret_cast<const void *>(DEV0_BASE | 0x400000))
-			) {
-				ptr = region.ptr;
-				io::setFlashBank(bank++);
-			}
-
-			if (_file->write(buffer, sizeof(buffer)) < sizeof(buffer)) {
+			if (_file->write(buffer, chunkLength) < chunkLength) {
 				_file->close();
+				delete   _file;
+				delete[] buffer;
+
 				goto _writeError;
 			}
+
+			offset += chunkLength;
 		}
 
 		_file->close();
+		delete   _file;
+		delete[] buffer;
+
 		LOG("%s saved", filePath);
 	}
 
@@ -537,17 +519,94 @@ bool App::_romDumpWorker(void) {
 
 _initError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.initError")
+		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.initError"),
+		dirPath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 
 _writeError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.dumpError")
+		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.dumpError"),
+		filePath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
+}
+
+bool App::_systemInfoWorker(void) {
+	// This is necessary to ensure the digital I/O ID is read at least once.
+	if (!_driver)
+		_cartDetectWorker();
+
+	_workerStatus.setNextScreen(_systemInfoScreen);
+	_systemInfo.clearFlags();
+
+	for (auto &entry : _DUMP_ENTRIES) {
+		if (!entry.region.isPresent())
+			continue;
+
+		size_t chunkLength, numChunks;
+
+		if (entry.region.regionLength < _DUMP_CHUNK_LENGTH) {
+			chunkLength = entry.region.regionLength;
+			numChunks   = 1;
+		} else {
+			chunkLength = _DUMP_CHUNK_LENGTH;
+			numChunks   = entry.region.regionLength / _DUMP_CHUNK_LENGTH;
+		}
+
+		uint32_t offset = 0;
+		uint32_t crc    = 0;
+		auto     crcPtr = reinterpret_cast<uint32_t *>(
+			reinterpret_cast<uintptr_t>(&_systemInfo) + entry.hashOffset
+		);
+
+		// Flash cards can be 16, 32 or 64 MB, so copies of the current CRC are
+		// saved after the first 16, then 32, 48 and finally 64 MB are read.
+		for (size_t i = 0; i < numChunks; i += _DUMP_CHUNKS_PER_CRC) {
+			size_t end = util::min(i + _DUMP_CHUNKS_PER_CRC, numChunks);
+
+			for (size_t j = i; j < end; j++) {
+				_workerStatus.update(j, numChunks, WSTRH(entry.hashPrompt));
+
+				crc     = entry.region.zipCRC32(offset, chunkLength, crc);
+				offset += chunkLength;
+			}
+
+			*(crcPtr++) = crc;
+		}
+	}
+
+	_systemInfo.flags       = SYSTEM_INFO_VALID;
+	_systemInfo.flash.flags = FLASH_REGION_INFO_PRESENT;
+	_systemInfo.shell       = rom::getShellInfo();
+
+	if (io::isRTCBatteryLow())
+		_systemInfo.flags |= SYSTEM_INFO_RTC_BATTERY_LOW;
+	if (rom::flash.hasBootExecutable())
+		_systemInfo.flash.flags |= FLASH_REGION_INFO_BOOTABLE;
+
+	// TODO: actually read the JEDEC IDs
+	_systemInfo.flash.manufacturerID = 0;
+	_systemInfo.flash.deviceID       = 0;
+
+	for (int i = 0; i < 2; i++) {
+		auto &region = rom::pcmcia[i];
+		auto &card   = _systemInfo.pcmcia[i];
+
+		if (region.isPresent()) {
+			card.flags |= FLASH_REGION_INFO_PRESENT;
+
+			if (region.hasBootExecutable())
+				card.flags |= FLASH_REGION_INFO_BOOTABLE;
+
+			card.manufacturerID = 0;
+			card.deviceID       = 0;
+		}
+	}
+
+	return true;
 }
 
 bool App::_atapiEjectWorker(void) {

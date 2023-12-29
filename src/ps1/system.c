@@ -28,6 +28,8 @@
 
 /* Internal state */
 
+static uint32_t     _savedBreakpointVector[4];
+static uint32_t     _savedExceptionVector[4];
 static VoidFunction _flushCache = 0;
 static Thread       _mainThread;
 
@@ -59,12 +61,31 @@ void installExceptionHandler(void) {
 
 	// Overwrite the default breakpoint and exception handlers placed into RAM
 	// by the BIOS with a function that will jump to our custom handler.
+	__builtin_memcpy(_savedBreakpointVector, BIOS_BP_VECTOR,  16);
+	__builtin_memcpy(_savedExceptionVector,  BIOS_EXC_VECTOR, 16);
 	__builtin_memcpy(BIOS_BP_VECTOR,  &_exceptionVector, 16);
 	__builtin_memcpy(BIOS_EXC_VECTOR, &_exceptionVector, 16);
 	_flushCache();
 
 	DMA_DPCR = 0x0bbbbbbb;
 	DMA_DICR = DMA_DICR_IRQ_ENABLE;
+}
+
+void uninstallExceptionHandler(void) {
+	// Clear all pending IRQ flags and prevent the interrupt controller from
+	// generating further IRQs.
+	IRQ_MASK = 0;
+	IRQ_STAT = 0;
+	DMA_DPCR = 0;
+	DMA_DICR = DMA_DICR_CH_STAT_BITMASK;
+
+	// Disable interrupts and the GTE at the COP0 side.
+	cop0_setSR(COP0_SR_CU0);
+
+	// Restore the original BIOS breakpoint and exception handlers.
+	__builtin_memcpy(BIOS_BP_VECTOR,  _savedBreakpointVector, 16);
+	__builtin_memcpy(BIOS_EXC_VECTOR, _savedExceptionVector,  16);
+	_flushCache();
 }
 
 void setInterruptHandler(ArgFunction func, void *arg) {

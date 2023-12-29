@@ -37,9 +37,19 @@ public:
 	void systemInfo(ui::Context &ctx);
 	void setResolution(ui::Context &ctx);
 	void about(ui::Context &ctx);
+	void launchEXE(ui::Context &ctx);
 	void ejectCD(ui::Context &ctx);
 	void reboot(ui::Context &ctx);
 
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class SystemInfoScreen : public ui::TextScreen {
+private:
+	char _bodyText[2048];
+
+public:
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };

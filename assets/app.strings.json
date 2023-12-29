@@ -50,8 +50,15 @@
 			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...\nDo not turn off the 573.",
 			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573.",
 			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
-			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
-			"dumpError":   "An error occurred while writing dumps to the hard drive. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
+			"initError":   "An error occurred while creating the dump directory (%s). Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
+			"dumpError":   "An error occurred while saving one of the dumps (%s). Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nPress the Test button to view debug logs."
+		},
+		"systemInfoWorker": {
+			"hashBIOS":    "Calculating BIOS ROM checksum...",
+			"hashRTC":     "Calculating RTC RAM checksum...",
+			"hashFlash":   "Calculating internal flash checksum...",
+			"hashPCMCIA1": "Calculating PCMCIA card 1 checksum...",
+			"hashPCMCIA2": "Calculating PCMCIA card 2 checksum..."
 		},
 		"atapiEjectWorker": {
 			"eject":      "Sending eject command...",
@@ -123,24 +130,30 @@
 	},
 
 	"CartInfoScreen": {
-		"title":          "{CART_ICON} Cartridge information",
-		"digitalIOInfo":  "Digital I/O ID:\t%s\nDigital I/O SN:\t%s\n\n",
-		"cartInfo":       "Cartridge type:\t%s\nUnlock status:\t%s\nDS2401 identifier:\t%s\nZS01 identifier:\t%s\nConfiguration:\t%s\n\n",
+		"title": "{CART_ICON} Cartridge information",
 
-		"id": {
-			"error":      "read failure",
-			"noSystemID": "no digital I/O board",
-			"noCartID":   "cartridge has no DS2401",
-			"noZSID":     "not a ZS01 cartridge"
+		"digitalIO": {
+			"header":  "Digital I/O board:\n",
+			"info":    "  DS2401 ID:\t\t%s\n  Serial number:\t%s\n",
+			"error":   "  Failed to read the board's DS2401\n",
+			"noBoard": "  No digital I/O board installed\n"
 		},
-		"config": {
-			"error":  "read failure",
-			"locked": "unlock required"
+		"cart": {
+			"header":      "Security cartridge:\n",
+			"x76f041Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F041\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  Configuration:\t%s\n",
+			"x76f100Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F041\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n",
+			"zs01Info":    "  Chip type:\t\t{CHIP_ICON} Konami ZS01 (PIC16CE625)\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  ZS01 ID:\t\t%s\n  Configuration:\t%s\n"
 		},
 		"unlockStatus": {
 			"locked":   "{CLOSED_LOCK} locked, game key required",
 			"unlocked": "{OPEN_LOCK} unlocked"
 		},
+		"id": {
+			"error":    "read failure",
+			"noCartID": "cartridge has no DS2401",
+			"locked":   "unlock required"
+		},
+
 		"pairing": {
 			"unsupported": "This game does not pair to I/O boards",
 			"unknown":     "Unlock required to view pairing status",
@@ -154,12 +167,12 @@
 
 			"locked": {
 				"unidentified": "This cartridge contains data for an unsupported game.\n\nAs the cartridge is currently locked, you will have to manually select which game it belongs to in order to dump its contents or reflash it for use with a supported game, as each game has a different unlocking key.",
-				"identified":   "This cartridge has been identified as:\n  %s\n  %s\n\nIf this is correct, you may proceed to unlock the cartridge using the appropriate key for this game in order to access and modify its contents.",
+				"identified":   "This cartridge has been identified as:\n  %s\n  %s\n\nIf this is correct, you may proceed to unlock the cartridge using the appropriate key for this game.",
 				"unknown":      "This cartridge cannot be identified without unlocking it first.\n\nYou will have to manually select which game it belongs to in order to dump its contents or reflash it for use with a supported game, as each game has a different unlocking key."
 			},
 			"unlocked": {
 				"unidentified": "This cartridge contains data for an unsupported game.\n\nThe system identifier (if any) cannot be reset or edited, however you may still dump the cartridge's contents or reflash it for use with a supported game.",
-				"identified":   "This cartridge has been identified as:\n  %s\n  %s\n\nYou may now proceed to reset the system identifier, edit it or erase and reflash the cartridge for use with another game.",
+				"identified":   "This cartridge has been identified as:\n  %s\n  %s\n\nYou may now proceed to reset the system identifier, edit it or reflash the cartridge for use with another game.",
 				"blank":        "This cartridge has been previously erased and is now blank.\n\nIt must be flashed and optionally initialized with a system identifier in order to be used with a supported game."
 			}
 		},
@@ -170,17 +183,14 @@
 		},
 
 		"x76f041": {
-			"name":    "{CHIP_ICON} Xicor X76F041",
 			"warning": "X76F041 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, they will lock out any further access and thus become PERMANENTLY BRICKED, with no way to restore access.\n\nAre you sure the key is correct?",
 			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the maximum allowed number of failed unlocking attempts may have been exceeded (and thus the cartridge may have been bricked).\n\nPress the Test button to view debug logs."
 		},
 		"x76f100": {
-			"name":    "{CHIP_ICON} Xicor X76F100",
 			"warning": "X76F100 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
 			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nPress the Test button to view debug logs."
 		},
 		"zs01": {
-			"name":    "{CHIP_ICON} Konami ZS01 (PIC16CE625)",
 			"warning": "ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
 			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nPress the Test button to view debug logs."
 		}
@@ -221,13 +231,21 @@
 			"name":   "Restore flash, PCMCIA cards or RTC from dump",
 			"prompt": "Restore the contents of the internal ROMs or any PCMCIA cards from the IDE hard drive or CF card connected as secondary drive (if any)."
 		},
+		"systemInfo": {
+			"name":   "View system information",
+			"prompt": "Display information about the system's I/O board, IDE drives, BIOS ROM, internal flash and PCMCIA flash cards."
+		},
 		"setResolution": {
 			"name":   "Change screen resolution",
-			"prompt": "Switch to a different screen resolution and aspect ratio."
+			"prompt": "Switch to a different screen resolution and aspect ratio. Some monitors and upscalers may not support all resolutions."
 		},
 		"about": {
 			"name":   "About this tool",
 			"prompt": "View information about this tool, including open source licenses."
+		},
+		"launchEXE": {
+			"name":   "Launch executable from hard drive",
+			"prompt": "Load and run a System 573 executable file from the IDE hard drive or CF card connected as secondary drive (if any)."
 		},
 		"ejectCD": {
 			"name":   "Eject CD-ROM",
@@ -235,7 +253,7 @@
 		},
 		"reboot": {
 			"name":   "Reboot system",
-			"prompt": "Restart the system. Swap out the CD-ROM and toggle DIP switch 4 before selecting this option to boot the installed game."
+			"prompt": "Restart the system. Swap out the CD-ROM and toggle DIP switch 4 before selecting this option to boot the game installed on this system."
 		}
 	},
 
@@ -260,7 +278,7 @@
 	},
 
 	"ResolutionScreen": {
-		"title":      "{CART_ICON} Change screen resolution",
+		"title":      "{CART_ICON} Select screen resolution",
 		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
@@ -283,8 +301,58 @@
 	},
 
 	"SystemInfoScreen": {
-		"title":  "System information",
-		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+		"title":  "{CART_ICON} System information",
+		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back.",
+
+		"digitalIO": {
+			"header":  "Digital I/O board:\n",
+			"info":    "  DS2401 ID:\t\t%s\n  Serial number:\t%s\n",
+			"error":   "  Failed to read the board's DS2401\n",
+			"noBoard": "  No digital I/O board installed\n"
+		},
+		"ide": {
+			"header": {
+				"primary":   "Primary IDE drive:\n",
+				"secondary": "Secondary IDE drive:\n"
+			},
+
+			"commonInfo": "  Model name:\t\t%s\n  Revision number:\t%s\n  Serial number:\t%s\n",
+			"ataInfo":    "  Device type:\tATA\n  Capacity:\t\t%llu MB (%d-bit LBA)\n",
+			"atapiInfo":  "  Device type:\tATAPI\n  Packet length:\t%d bytes\n",
+			"hasTrim":    "  Supports trim command\n",
+			"hasFlush":   "  Supports cache flushing\n",
+			"error":      "  No drive present or initialization failed\n"
+		},
+		"bios": {
+			"header":     "BIOS ROM:\n",
+			"commonInfo": "  CRC32:\t\t%08X\n",
+
+			"kernelInfo": {
+				"sony":     "  Kernel type:\tSony PS1 kernel\n  Kernel version:\t%s\n  Kernel date:\t%04X-%02X-%02X\n",
+				"openbios": "  Kernel type:\tOpenBIOS\n  Kernel build ID:\n    %s\n",
+				"unknown":  "  Kernel type:\tUnknown\n"
+			},
+			"shellInfo": {
+				"konami":  "  Shell type:\t\t%s\n  Boot file name:\t%s\n",
+				"unknown": "  Shell type:\t\tUnknown\n"
+			}
+		},
+		"rtc": {
+			"header":     "RTC:\n",
+			"info":       "  CRC32:\t\t%08X\n",
+			"batteryLow": "  Battery voltage is below 2.5V\n"
+		},
+		"flash": {
+			"header":   "Internal flash memory:\n",
+			"info":     "  JEDEC ID:\t\t%02X, %02X\n  CRC32:\t\t%08X\n",
+			"bootable": "  Valid boot executable present\n"
+		},
+		"pcmcia": {
+			"header":   "PCMCIA card in slot %d:\n",
+			"info":     "  JEDEC ID:\t\t%02X, %02X\n  CRC32 (16 MB):\t%08X\n  CRC32 (32 MB):\t%08X\n  CRC32 (64 MB):\t%08X\n",
+			"bootable": "  Valid boot executable present\n",
+			"noCard":   "  No card inserted\n"
+		}
 	},
 
 	"UnlockKeyScreen": {

@@ -246,6 +246,22 @@ public:
 
 extern Logger logger;
 
+/* PS1 executable header */
+
+struct [[gnu::packed]] ExecutableHeader {
+public:
+	uint8_t magic[8], _pad[8];
+
+	uint32_t entryPoint, initialGP;
+	uint32_t textOffset, textLength;
+	uint32_t dataOffset, dataLength;
+	uint32_t bssOffset, bssLength;
+	uint32_t stackOffset, stackLength;
+	uint32_t _reserved[5];
+
+	bool validateMagic(void) const;
+};
+
 /* Other APIs */
 
 uint8_t dsCRC8(const uint8_t *data, size_t length);

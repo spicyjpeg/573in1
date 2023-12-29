@@ -3,14 +3,15 @@
 
 #include <stdint.h>
 #include "app/cartactions.hpp"
+#include "app/cartunlock.hpp"
 #include "app/main.hpp"
 #include "app/misc.hpp"
-#include "app/cartunlock.hpp"
 #include "ps1/system.h"
 #include "cart.hpp"
 #include "cartdata.hpp"
 #include "cartio.hpp"
 #include "file.hpp"
+#include "rom.hpp"
 #include "uibase.hpp"
 
 /* Worker status class */
@@ -46,6 +47,48 @@ public:
 	void finish(void);
 };
 
+/* System information buffer */
+
+enum FlashRegionInfoFlag : uint8_t {
+	FLASH_REGION_INFO_PRESENT  = 1 << 0,
+	FLASH_REGION_INFO_BOOTABLE = 1 << 1
+};
+
+class FlashRegionInfo {
+public:
+	uint8_t  flags, manufacturerID, deviceID;
+	uint32_t crc[4];
+
+	inline void clearFlags(void) {
+		flags = 0;
+	}
+};
+
+enum SystemInfoFlag : uint32_t {
+	SYSTEM_INFO_VALID           = 1 << 0,
+	SYSTEM_INFO_RTC_BATTERY_LOW = 1 << 1
+};
+
+class SystemInfo {
+public:
+	uint32_t flags;
+	uint32_t biosCRC, rtcCRC;
+
+	const rom::ShellInfo *shell;
+	FlashRegionInfo      flash, pcmcia[2];
+
+	inline SystemInfo(void) {
+		clearFlags();
+	}
+
+	inline void clearFlags(void) {
+		flags       = 0;
+		flash.flags = 0;
+		pcmcia[0].clearFlags();
+		pcmcia[1].clearFlags();
+	}
+};
+
 /* App class */
 
 static constexpr size_t WORKER_STACK_SIZE = 0x20000;
@@ -57,6 +100,7 @@ class App {
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
+	friend class SystemInfoScreen;
 	friend class ResolutionScreen;
 	friend class AboutScreen;
 	friend class CartInfoScreen;
@@ -75,6 +119,7 @@ private:
 	WarningScreen       _warningScreen;
 	ButtonMappingScreen	_buttonMappingScreen;
 	MainMenuScreen      _mainMenuScreen;
+	SystemInfoScreen    _systemInfoScreen;
 	ResolutionScreen    _resolutionScreen;
 	AboutScreen         _aboutScreen;
 	CartInfoScreen      _cartInfoScreen;
@@ -97,6 +142,7 @@ private:
 
 	cart::Dump   _dump;
 	cart::CartDB _db;
+	SystemInfo   _systemInfo;
 	Thread       _workerThread;
 	WorkerStatus _workerStatus;
 	bool         (App::*_workerFunction)(void);
@@ -120,6 +166,7 @@ private:
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
 	bool _romDumpWorker(void);
+	bool _systemInfoWorker(void);
 	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);
 
