@@ -25,6 +25,7 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	MessageBoxScreen::show(ctx, goBack);
 
 	ctx.buttons.buttonMap = ui::MAP_SINGLE_BUTTON;
+	ctx.buttons.reset();
 }
 
 void WarningScreen::update(ui::Context &ctx) {
@@ -68,6 +69,7 @@ void ButtonMappingScreen::show(ui::Context &ctx, bool goBack) {
 	ListScreen::show(ctx, goBack);
 
 	ctx.buttons.buttonMap = ui::MAP_SINGLE_BUTTON;
+	ctx.buttons.reset();
 }
 
 void ButtonMappingScreen::update(ui::Context &ctx) {
@@ -75,6 +77,8 @@ void ButtonMappingScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		ctx.buttons.buttonMap = ui::ButtonMap(_activeItem);
+		ctx.buttons.reset();
+
 		ctx.show(APP->_mainMenuScreen, false, true);
 	}
 }
@@ -217,6 +221,14 @@ static const util::Hash _SYSTEM_INFO_IDE_HEADERS[]{
 	"SystemInfoScreen.ide.header.secondary"_h
 };
 
+static const char *const _FILE_SYSTEM_TYPES[]{
+	nullptr,
+	"FAT12",
+	"FAT16",
+	"FAT32",
+	"exFAT"
+};
+
 #define _PRINT(...) (ptr += snprintf(ptr, end - ptr, __VA_ARGS__))
 #define _PRINTLN()  (*(ptr++) = '\n')
 
@@ -282,6 +294,27 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINTLN();
 	}
 
+	// FAT file system
+	auto &fs    = APP->_fileProvider;
+	auto fsType = fs.getFileSystemType();
+
+	_PRINT(STR("SystemInfoScreen.fat.header"));
+
+	if (fsType) {
+		char label[32];
+
+		fs.getVolumeLabel(label, sizeof(label));
+		_PRINT(
+			STR("SystemInfoScreen.fat.info"), _FILE_SYSTEM_TYPES[fsType], label,
+			fs.getSerialNumber(), fs.getCapacity() / 0x100000,
+			fs.getFreeSpace() / 0x100000
+		);
+	} else {
+		_PRINT(STR("SystemInfoScreen.fat.error"));
+	}
+
+	_PRINTLN();
+
 	// BIOS ROM
 	auto &info = APP->_systemInfo;
 
@@ -298,7 +331,6 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 		char buildID[64];
 
 		rom::openBIOSHeader.getBuildID(buildID);
-
 		_PRINT(STR("SystemInfoScreen.bios.kernelInfo.openbios"), buildID);
 	} else {
 		_PRINT(STR("SystemInfoScreen.bios.kernelInfo.unknown"));
@@ -326,8 +358,8 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 	// Flash
 	_PRINT(STR("SystemInfoScreen.flash.header"));
 	_PRINT(
-		STR("SystemInfoScreen.flash.info"), info.flash.manufacturerID,
-		info.flash.deviceID, info.flash.crc[0]
+		STR("SystemInfoScreen.flash.info"), info.flash.jedecID & 0xff,
+		info.flash.jedecID >> 8, info.flash.crc[0]
 	);
 
 	if (info.flash.flags & FLASH_REGION_INFO_BOOTABLE)
@@ -343,8 +375,8 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 		if (card.flags & FLASH_REGION_INFO_PRESENT) {
 			_PRINT(
-				STR("SystemInfoScreen.pcmcia.info"), card.manufacturerID,
-				card.deviceID, card.crc[0], card.crc[1], card.crc[3]
+				STR("SystemInfoScreen.pcmcia.info"), card.jedecID & 0xff,
+				card.jedecID >> 8, card.crc[0], card.crc[1], card.crc[3]
 			);
 
 			if (card.flags & FLASH_REGION_INFO_BOOTABLE)

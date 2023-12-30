@@ -51,24 +51,16 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 };
 
 ButtonState::ButtonState(void)
-: _held(0), _repeatTimer(0), buttonMap(MAP_JOYSTICK) {}
+: _held(0), _prevHeld(0), _pressed(0), _released(0), _repeating(0),
+_repeatTimer(0), buttonMap(MAP_JOYSTICK) {}
 
-void ButtonState::update(void) {
-	_prevHeld = _held;
-	_held     = 0;
-
+uint8_t ButtonState::_getHeld(void) const {
 	uint32_t inputs = io::getJAMMAInputs();
+	uint8_t  held   = 0;
 	auto     map    = _BUTTON_MAPPINGS[buttonMap];
-
-	for (int i = 0; i < NUM_BUTTONS; i++) {
-		if (inputs & map[i])
-			_held |= 1 << i;
-	}
 
 #ifdef ENABLE_PS1_CONTROLLER
 	if (pad::ports[0].pollPad() || pad::ports[1].pollPad()) {
-		_held = 0; // Ignore JAMMA inputs
-
 		for (int i = 1; i >= 0; i--) {
 			auto &port = pad::ports[i];
 
@@ -80,16 +72,40 @@ void ButtonState::update(void) {
 				continue;
 
 			if (port.buttons & (pad::BTN_LEFT | pad::BTN_UP))
-				_held |= 1 << BTN_LEFT;
+				held |= 1 << BTN_LEFT;
 			if (port.buttons & (pad::BTN_RIGHT | pad::BTN_DOWN))
-				_held |= 1 << BTN_RIGHT;
+				held |= 1 << BTN_RIGHT;
 			if (port.buttons & (pad::BTN_CIRCLE | pad::BTN_CROSS))
-				_held |= 1 << BTN_START;
+				held |= 1 << BTN_START;
 			if (port.buttons & pad::BTN_SELECT)
-				_held |= 1 << BTN_DEBUG;
+				held |= 1 << BTN_DEBUG;
 		}
+
+		return held; // Ignore JAMMA inputs
 	}
 #endif
+
+	for (int i = 0; i < NUM_BUTTONS; i++) {
+		if (inputs & map[i])
+			held |= 1 << i;
+	}
+
+	return held;
+}
+
+void ButtonState::reset(void) {
+	_held     = _getHeld();
+	_prevHeld = _held;
+
+	_pressed     = 0;
+	_released    = 0;
+	_repeating   = 0;
+	_repeatTimer = 0;
+}
+
+void ButtonState::update(void) {
+	_prevHeld = _held;
+	_held     = _getHeld();
 
 	uint32_t changed = _prevHeld ^ _held;
 

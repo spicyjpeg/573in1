@@ -8,9 +8,9 @@
 /* FatFs library API glue */
 
 extern "C" DSTATUS disk_initialize(uint8_t drive) {
+#if 0
 	auto &dev = ide::devices[drive];
 
-#if 0
 	if (!(dev.flags & ide::DEVICE_READY)) {
 		if (dev.enumerate())
 			return RES_NOTRDY;

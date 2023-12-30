@@ -53,11 +53,46 @@ public:
 	uint32_t zipCRC32(uint32_t offset, size_t length, uint32_t crc = 0) const;
 
 	bool hasBootExecutable(void) const;
+	uint16_t getJEDECID(void) const;
 };
 
 extern const BIOSRegion  bios;
 extern const RTCRegion   rtc;
 extern const FlashRegion flash, pcmcia[2];
+
+/* Flash memory driver */
+
+enum FlashManufacturer : uint8_t {
+	MANUF_FUJITSU = 0x04,
+	MANUF_SHARP   = 0x89
+};
+
+enum FlashJEDECID : uint16_t {
+	ID_FUJITSU_MBM29F016A     = MANUF_FUJITSU | (0xad << 8),
+	ID_FUJITSU_MBM29F016A_ALT = MANUF_FUJITSU | (0x3d << 8),
+	ID_FUJITSU_UNKNOWN        = MANUF_FUJITSU | (0xa4 << 8),
+	ID_SHARP_LH28F016S        = MANUF_SHARP   | (0xaa << 8)
+};
+
+enum FlashCommand : uint16_t {
+	SHARP_ERASE_SECTOR = 0x2020,
+	SHARP_WRITE        = 0x4040,
+	SHARP_CLEAR_STATUS = 0x5050,
+	SHARP_GET_STATUS   = 0x7070,
+	SHARP_GET_JEDEC_ID = 0x9090,
+	SHARP_SUSPEND      = 0xb0b0,
+	SHARP_RESUME       = 0xd0d0,
+	SHARP_RESET        = 0xffff,
+
+	FUJITSU_ERASE_CHIP   = 0x1010,
+	FUJITSU_ERASE_SECTOR = 0x3030,
+	FUJITSU_HANDSHAKE2   = 0x5555,
+	FUJITSU_ERASE        = 0x8080,
+	FUJITSU_GET_JEDEC_ID = 0x9090,
+	FUJITSU_WRITE        = 0xa0a0,
+	FUJITSU_HANDSHAKE1   = 0xaaaa,
+	FUJITSU_RESET        = 0xf0f0
+};
 
 /* BIOS ROM headers */
 

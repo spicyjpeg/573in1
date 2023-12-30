@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 __author__  = "spicyjpeg"
 
 import sys
@@ -77,16 +77,19 @@ def parseDumpString(data: str) -> Dump:
 
 def printDumpInfo(dump: Dump, output: TextIO):
 	if dump.flags & DumpFlag.DUMP_SYSTEM_ID_OK:
-		output.write(f"Digital I/O ID:    {dump.systemID.hex('-')}\n")
-		output.write(f"Digital I/O SN:    {serialNumberToString(dump.systemID)}\n\n")
+		output.write("Digital I/O board:\n")
+		output.write(f"  DS2401 ID:     {dump.systemID.hex('-')}\n")
+		output.write(f"  Serial number: {serialNumberToString(dump.systemID)}\n\n")
 
-	output.write(f"Cartridge type:    {_CHIP_NAMES[dump.chipType]}\n")
+	output.write("Security cartridge:\n")
+	output.write(f"  Chip type:     {_CHIP_NAMES[dump.chipType]}\n")
+
 	if dump.flags & DumpFlag.DUMP_CART_ID_OK:
-		output.write(f"DS2401 identifier: {dump.cartID.hex('-')}\n")
+		output.write(f"  DS2401 ID:     {dump.cartID.hex('-')}\n")
 	if dump.flags & DumpFlag.DUMP_ZS_ID_OK:
-		output.write(f"ZS01 identifier:   {dump.zsID.hex('-')}\n")
+		output.write(f"  ZS01 ID:       {dump.zsID.hex('-')}\n")
 	if dump.flags & DumpFlag.DUMP_CONFIG_OK:
-		output.write(f"Configuration:     {dump.config.hex('-')}\n")
+		output.write(f"  Configuration: {dump.config.hex('-')}\n")
 
 	output.write("\nEEPROM dump:\n")
 	hexdump(dump.data, output)

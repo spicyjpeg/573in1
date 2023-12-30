@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "file.hpp"
 #include "vendor/ff.h"
 #include "vendor/miniz.h"
 #include "gpu.hpp"
@@ -15,6 +14,17 @@ namespace file {
 /* File classes */
 
 static constexpr size_t MAX_PATH_LENGTH = 256;
+
+// The first 4 of these map to the FS_* enum used by FatFs.
+enum FileSystemType {
+	NONE       = 0,
+	FAT12      = 1,
+	FAT16      = 2,
+	FAT32      = 3,
+	HOST       = 4,
+	ZIP_MEMORY = 5,
+	ZIP_FILE   = 6
+};
 
 // These are functionally equivalent to the FA_* flags used by FatFs.
 enum FileModeFlag {
@@ -123,6 +133,10 @@ public:
 
 	virtual void close(void) {}
 
+	virtual FileSystemType getFileSystemType(void) { return NONE; }
+	virtual uint64_t getCapacity(void) { return 0; }
+	virtual uint64_t getFreeSpace(void) { return 0; }
+
 	virtual bool getFileInfo(FileInfo &output, const char *path) { return false; }
 	virtual Directory *openDirectory(const char *path) { return nullptr; }
 	virtual bool createDirectory(const char *path) { return false; }
@@ -139,6 +153,8 @@ class HostProvider : public Provider {
 public:
 	bool init(void);
 
+	FileSystemType getFileSystemType(void);
+
 	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
@@ -153,11 +169,18 @@ private:
 
 public:
 	inline FATProvider(void) {
-		_drive[0] = 0;
+		_fs.fs_type = 0;
+		_drive[0]   = 0;
 	}
 
 	bool init(const char *drive);
 	void close(void);
+
+	FileSystemType getFileSystemType(void);
+	uint64_t getCapacity(void);
+	uint64_t getFreeSpace(void);
+	size_t getVolumeLabel(char *output, size_t length);
+	uint32_t getSerialNumber(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);
 	Directory *openDirectory(const char *path);
@@ -176,6 +199,9 @@ public:
 	bool init(File *file);
 	bool init(const void *zipData, size_t length);
 	void close(void);
+
+	FileSystemType getFileSystemType(void);
+	uint64_t getCapacity(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);
 

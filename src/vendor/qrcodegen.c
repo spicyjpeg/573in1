@@ -786,8 +786,9 @@ bool qrcodegen_getModule(const uint32_t qrcode[], int x, int y) {
 
 // Returns the color of the module at the given coordinates, which must be in bounds.
 testable bool getModuleBounded(const uint32_t qrcode[], int x, int y) {
-	int qrsize = qrcode[0] & 0xFFFF, stride = qrcode[0] >> 16;
-	assert(21 <= qrsize && qrsize <= 177 && 0 <= x && x < qrsize && 0 <= y && y < qrsize);
+	//int qrsize = qrcode[0] & 0xFFFF;
+	int stride = qrcode[0] >> 16;
+	//assert(21 <= qrsize && qrsize <= 177 && 0 <= x && x < qrsize && 0 <= y && y < qrsize);
 	x += qrcodegen_MARGIN_X;
 	y += qrcodegen_MARGIN_Y;
 	int bitIndex = (x % 8) * 4;
@@ -798,8 +799,9 @@ testable bool getModuleBounded(const uint32_t qrcode[], int x, int y) {
 
 // Sets the color of the module at the given coordinates, which must be in bounds.
 testable void setModuleBounded(uint32_t qrcode[], int x, int y, bool isDark) {
-	int qrsize = qrcode[0] & 0xFFFF, stride = qrcode[0] >> 16;
-	assert(21 <= qrsize && qrsize <= 177 && 0 <= x && x < qrsize && 0 <= y && y < qrsize);
+	//int qrsize = qrcode[0] & 0xFFFF;
+	int stride = qrcode[0] >> 16;
+	//assert(21 <= qrsize && qrsize <= 177 && 0 <= x && x < qrsize && 0 <= y && y < qrsize);
 	x += qrcodegen_MARGIN_X;
 	y += qrcodegen_MARGIN_Y;
 	int bitIndex = (x % 8) * 4;
