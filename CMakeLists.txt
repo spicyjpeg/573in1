@@ -22,33 +22,20 @@ find_program(
 	DOC   "Path to MAME chdman tool (optional)"
 )
 
-## Main executable
+## Files common to all executables
 
-add_executable(
-	cart_tool
-	src/cart.cpp
-	src/cartdata.cpp
-	src/cartio.cpp
-	src/file.cpp
-	src/gpu.cpp
-	src/gpufont.cpp
-	src/ide.cpp
-	src/ideglue.cpp
-	src/io.cpp
-	src/main.cpp
-	src/pad.cpp
-	src/rom.cpp
-	src/spu.cpp
-	src/uibase.cpp
-	src/uicommon.cpp
-	src/util.cpp
-	src/zs01.cpp
-	src/app/app.cpp
-	src/app/appworkers.cpp
-	src/app/cartactions.cpp
-	src/app/cartunlock.cpp
-	src/app/main.cpp
-	src/app/misc.cpp
+add_library(
+	common OBJECT
+	src/common/file.cpp
+	src/common/gpu.cpp
+	src/common/gpufont.cpp
+	src/common/ide.cpp
+	src/common/ideglue.cpp
+	src/common/io.cpp
+	src/common/pad.cpp
+	src/common/rom.cpp
+	src/common/spu.cpp
+	src/common/util.cpp
 	src/libc/crt0.c
 	src/libc/cxxsupport.cpp
 	src/libc/malloc.c
@@ -67,12 +54,40 @@ add_executable(
 	src/vendor/qrcodegen.c
 )
 target_include_directories(
-	cart_tool PRIVATE
+	common PUBLIC
 	src
 	src/libc
 )
 target_compile_definitions(
-	cart_tool PRIVATE
+	common PUBLIC
+	VERSION="${PROJECT_VERSION}"
+	$<IF:$<CONFIG:Debug>,
+		ENABLE_LOGGING=1
+	,
+		ENABLE_LOGGING=1
+	>
+)
+
+## Main executable
+
+add_executable(
+	main
+	src/main/cart.cpp
+	src/main/cartdata.cpp
+	src/main/cartio.cpp
+	src/main/main.cpp
+	src/main/uibase.cpp
+	src/main/uicommon.cpp
+	src/main/zs01.cpp
+	src/main/app/app.cpp
+	src/main/app/appworkers.cpp
+	src/main/app/cartactions.cpp
+	src/main/app/cartunlock.cpp
+	src/main/app/main.cpp
+	src/main/app/misc.cpp
+)
+target_compile_definitions(
+	main PRIVATE
 	VERSION="${PROJECT_VERSION}"
 	$<IF:$<CONFIG:Debug>,
 		#ENABLE_ARGV=1
@@ -80,7 +95,6 @@ target_compile_definitions(
 		ENABLE_CART_MENU=1
 		#ENABLE_X76F100_DRIVER=1
 		ENABLE_DUMMY_DRIVER=1
-		ENABLE_LOGGING=1
 		ENABLE_I2C_LOGGING=1
 	,
 		#ENABLE_ARGV=1
@@ -88,20 +102,20 @@ target_compile_definitions(
 		ENABLE_CART_MENU=1
 		#ENABLE_X76F100_DRIVER=1
 		#ENABLE_DUMMY_DRIVER=1
-		ENABLE_LOGGING=1
 		#ENABLE_I2C_LOGGING=1
 	>
 )
+target_link_libraries(main PRIVATE common)
 
 add_custom_command(
-	TARGET cart_tool POST_BUILD
+	TARGET main POST_BUILD
 	COMMAND
 		"${Python3_EXECUTABLE}"
 		"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
 		-r "cart_tool build ${PROJECT_VERSION} - (C) 2022-2023 spicyjpeg"
 		-s 0x801dfff0
-		$<TARGET_FILE:cart_tool> cart_tool.psexe
-	BYPRODUCTS cart_tool.psexe
+		$<TARGET_FILE:main> main.psexe
+	BYPRODUCTS main.psexe
 	COMMENT    "Converting executable"
 	VERBATIM
 )
@@ -119,7 +133,7 @@ add_custom_command(
 	VERBATIM
 )
 ps1_target_incbin(
-	cart_tool PRIVATE
+	main PRIVATE
 	.rodata _resources _resourcesSize
 	"${PROJECT_BINARY_DIR}/resources.zip"
 )
@@ -142,7 +156,7 @@ if(EXISTS "${XORRISO_PATH}")
 			-system_id "PLAYSTATION"
 			-preparer_id "CART_TOOL BUILD SCRIPT"
 			-map cdreadme.txt README.TXT
-			-map cart_tool.psexe PSX.EXE
+			-map main.psexe PSX.EXE
 			-clone PSX.EXE GSE.NXX
 			-clone PSX.EXE NSE.GXX
 			-clone PSX.EXE OSE.FXX
@@ -163,7 +177,7 @@ if(EXISTS "${XORRISO_PATH}")
 			-clone PSX.EXE TSY.AXD
 			-clone PSX.EXE TSZ.AXC
 		OUTPUT  cart_tool.iso
-		DEPENDS cart_tool
+		DEPENDS main
 		COMMENT "Building CD-ROM image"
 		VERBATIM
 	)
