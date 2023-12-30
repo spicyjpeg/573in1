@@ -162,6 +162,13 @@ _cartInitDone:
 	return true;
 }
 
+static const util::Hash _UNLOCK_ERRORS[cart::NUM_CHIP_TYPES]{
+	0,
+	"App.cartUnlockWorker.x76f041Error"_h,
+	"App.cartUnlockWorker.x76f100Error"_h,
+	"App.cartUnlockWorker.zs01Error"_h
+};
+
 bool App::_cartUnlockWorker(void) {
 	_workerStatus.setNextScreen(_cartInfoScreen, true);
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
@@ -169,11 +176,11 @@ bool App::_cartUnlockWorker(void) {
 	auto error = _driver->readPrivateData();
 
 	if (error) {
-		LOG("read error [%s]", util::getErrorString(error));
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _cartInfoScreen,
+			WSTRH(_UNLOCK_ERRORS[_dump.chipType]), util::getErrorString(error)
+		);
 
-		/*_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartUnlockWorker.error")
-		);*/
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
@@ -259,7 +266,7 @@ bool App::_cartDumpWorker(void) {
 
 _error:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartDumpWorker.error")
+		MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartDumpWorker.error"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
@@ -277,10 +284,9 @@ bool App::_cartWriteWorker(void) {
 	_cartDetectWorker();
 
 	if (error) {
-		LOG("write error [%s]", util::getErrorString(error));
-
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartWriteWorker.error")
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartWriteWorker.error"),
+			util::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -358,11 +364,10 @@ bool App::_cartReflashWorker(void) {
 	_cartDetectWorker();
 
 	if (error) {
-		LOG("write error [%s]", util::getErrorString(error));
-
 		_messageScreen.setMessage(
 			MESSAGE_ERROR, _cartInfoScreen,
-			WSTR("App.cartReflashWorker.writeError")
+			WSTR("App.cartReflashWorker.writeError"),
+			util::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -378,10 +383,9 @@ bool App::_cartEraseWorker(void) {
 	_cartDetectWorker();
 
 	if (error) {
-		LOG("erase error [%s]", util::getErrorString(error));
-
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartEraseWorker.error")
+			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartEraseWorker.error"),
+			util::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -578,31 +582,28 @@ bool App::_systemInfoWorker(void) {
 		}
 	}
 
-	_systemInfo.flags       = SYSTEM_INFO_VALID;
-	_systemInfo.flash.flags = FLASH_REGION_INFO_PRESENT;
-	_systemInfo.shell       = rom::getShellInfo();
+	_systemInfo.flags = SYSTEM_INFO_VALID;
+	_systemInfo.shell = rom::getShellInfo();
 
 	if (io::isRTCBatteryLow())
 		_systemInfo.flags |= SYSTEM_INFO_RTC_BATTERY_LOW;
+
+	_systemInfo.flash.jedecID = rom::flash.getJEDECID();
+	_systemInfo.flash.flags   = FLASH_REGION_INFO_PRESENT;
+
 	if (rom::flash.hasBootExecutable())
 		_systemInfo.flash.flags |= FLASH_REGION_INFO_BOOTABLE;
-
-	// TODO: actually read the JEDEC IDs
-	_systemInfo.flash.manufacturerID = 0;
-	_systemInfo.flash.deviceID       = 0;
 
 	for (int i = 0; i < 2; i++) {
 		auto &region = rom::pcmcia[i];
 		auto &card   = _systemInfo.pcmcia[i];
 
 		if (region.isPresent()) {
-			card.flags |= FLASH_REGION_INFO_PRESENT;
+			card.jedecID = region.getJEDECID();
+			card.flags   = FLASH_REGION_INFO_PRESENT;
 
 			if (region.hasBootExecutable())
 				card.flags |= FLASH_REGION_INFO_BOOTABLE;
-
-			card.manufacturerID = 0;
-			card.deviceID       = 0;
 		}
 	}
 
@@ -629,11 +630,9 @@ bool App::_atapiEjectWorker(void) {
 	auto error = ide::devices[0].atapiPacket(packet);
 
 	if (error) {
-		LOG("eject error [%s]", util::getErrorString(error));
-
 		_messageScreen.setMessage(
 			MESSAGE_ERROR, _mainMenuScreen,
-			WSTR("App.atapiEjectWorker.ejectError")
+			WSTR("App.atapiEjectWorker.ejectError"), util::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;

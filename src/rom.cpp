@@ -107,6 +107,8 @@ void FlashRegion::read(void *data, uint32_t offset, size_t length) const {
 uint32_t FlashRegion::zipCRC32(
 	uint32_t offset, size_t length, uint32_t crc
 ) const {
+	// FIXME: this implementation will not handle reads that cross bank
+	// boundaries properly
 	int bankOffset = offset / _FLASH_BANK_LENGTH;
 	int ptrOffset  = offset % _FLASH_BANK_LENGTH;
 
@@ -133,6 +135,8 @@ uint32_t FlashRegion::zipCRC32(
 }
 
 bool FlashRegion::hasBootExecutable(void) const {
+	// FIXME: this implementation will not detect executables that cross bank
+	// boundaries (but it shouldn't matter as executables must be <4 MB anyway)
 	auto data   = reinterpret_cast<const uint8_t *>(ptr + _FLASH_EXE_OFFSET);
 	auto crcPtr = reinterpret_cast<const uint32_t *>(ptr + _FLASH_CRC_OFFSET);
 	auto table  = reinterpret_cast<const uint32_t *>(CACHE_BASE);
@@ -146,8 +150,10 @@ bool FlashRegion::hasBootExecutable(void) const {
 
 	// The integrity of the executable is verified by calculating the CRC32 of
 	// its bytes whose offsets are powers of 2 (i.e. the bytes at indices 0, 1,
-	// 2, 4, 8 and so on).
-	size_t   length = header.textLength + 2048;
+	// 2, 4, 8 and so on). Note that the actual size of the executable is
+	// header.textLength + 2048, as the CRC is also calculated on the header,
+	// but Konami's shell ignores the last 2048 bytes due to a bug.
+	size_t   length = header.textLength;
 	uint32_t crc    = ~0;
 
 	crc = (crc >> 8) ^ table[(crc ^ *data) & 0xff];
@@ -156,6 +162,27 @@ bool FlashRegion::hasBootExecutable(void) const {
 		crc = (crc >> 8) ^ table[(crc ^ data[i]) & 0xff];
 
 	return (~crc == *crcPtr);
+}
+
+uint16_t FlashRegion::getJEDECID(void) const {
+	auto flash = reinterpret_cast<volatile uint16_t *>(ptr);
+
+	io::setFlashBank(bank);
+
+	flash[0x000] = SHARP_RESET;
+	flash[0x000] = SHARP_RESET;
+	flash[0x555] = FUJITSU_HANDSHAKE1;
+	flash[0x2aa] = FUJITSU_HANDSHAKE2;
+	flash[0x555] = FUJITSU_GET_JEDEC_ID;
+
+	uint16_t id = (flash[0] & 0xff) | ((flash[1] & 0xff) << 8);
+
+	if (id == ID_SHARP_LH28F016S)
+		flash[0x000] = SHARP_RESET;
+	else
+		flash[0x000] = FUJITSU_RESET;
+
+	return id;
 }
 
 const BIOSRegion  bios;

@@ -8,7 +8,7 @@
 
 class CartInfoScreen : public ui::TextScreen {
 private:
-	char _bodyText[1024];
+	char _bodyText[2048];
 
 public:
 	void show(ui::Context &ctx, bool goBack = false);

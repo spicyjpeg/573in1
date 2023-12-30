@@ -1,35 +1,18 @@
 
 #include <stdio.h>
-#include <string.h>
 #include "app/app.hpp"
 #include "app/cartunlock.hpp"
 #include "cartdata.hpp"
-#include "cartio.hpp"
-#include "defs.hpp"
 #include "uibase.hpp"
 #include "util.hpp"
 
 /* Pre-unlock cartridge screens */
 
-struct CartType {
-public:
-	util::Hash warning, error;
-};
-
-static const CartType _CART_TYPES[cart::NUM_CHIP_TYPES]{
-	{
-		.warning = 0,
-		.error   = 0
-	}, {
-		.warning = "CartInfoScreen.x76f041.warning"_h,
-		.error   = "CartInfoScreen.x76f041.error"_h
-	}, {
-		.warning = "CartInfoScreen.x76f100.warning"_h,
-		.error   = "CartInfoScreen.x76f100.error"_h
-	}, {
-		.warning = "CartInfoScreen.zs01.warning"_h,
-		.error   = "CartInfoScreen.zs01.error"_h
-	}
+static const util::Hash _UNLOCK_WARNINGS[cart::NUM_CHIP_TYPES]{
+	0,
+	"CartInfoScreen.unlockWarning.x76f041"_h,
+	"CartInfoScreen.unlockWarning.x76f100"_h,
+	"CartInfoScreen.unlockWarning.zs01"_h
 };
 
 enum IdentifyState {
@@ -340,12 +323,7 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 					APP->_setupWorker(&App::_cartUnlockWorker);
 					ctx.show(APP->_workerStatusScreen, false, true);
 				},
-				STRH(_CART_TYPES[APP->_dump.chipType].warning)
-			);
-
-			APP->_messageScreen.setMessage(
-				MESSAGE_ERROR, APP->_cartInfoScreen,
-				STRH(_CART_TYPES[APP->_dump.chipType].error)
+				STRH(_UNLOCK_WARNINGS[APP->_dump.chipType])
 			);
 
 			if (index < 0) {
@@ -392,12 +370,7 @@ void KeyEntryScreen::update(ui::Context &ctx) {
 					APP->_setupWorker(&App::_cartUnlockWorker);
 					ctx.show(APP->_workerStatusScreen, false, true);
 				},
-				STRH(_CART_TYPES[APP->_dump.chipType].warning)
-			);
-
-			APP->_messageScreen.setMessage(
-				MESSAGE_ERROR, APP->_cartInfoScreen,
-				STRH(_CART_TYPES[APP->_dump.chipType].error)
+				STRH(_UNLOCK_WARNINGS[APP->_dump.chipType])
 			);
 
 			__builtin_memcpy(

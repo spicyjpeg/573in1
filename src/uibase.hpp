@@ -107,6 +107,8 @@ private:
 
 	int _repeatTimer;
 
+	uint8_t _getHeld(void) const;
+
 public:
 	ButtonMap buttonMap;
 
@@ -127,6 +129,7 @@ public:
 	}
 
 	ButtonState(void);
+	void reset(void);
 	void update(void);
 };
 

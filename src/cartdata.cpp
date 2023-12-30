@@ -64,8 +64,8 @@ void BasicParser::setCode(const char *input) {
 
 	auto header = _getHeader();
 
-	header->region[2] = input[0];
-	header->region[3] = input[1];
+	header->codePrefix[0] = input[0];
+	header->codePrefix[1] = input[1];
 }
 
 size_t BasicParser::getRegion(char *output) const {

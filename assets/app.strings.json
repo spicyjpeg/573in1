@@ -17,26 +17,29 @@
 		},
 		"cartEraseWorker": {
 			"erase":  "Erasing cartridge...\nDo not turn off the 573.",
-			"error":  "An error occurred while erasing the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
+			"error":  "An error occurred while erasing the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"cartReflashWorker": {
 			"setDataKey": "Setting new unlocking key...\nDo not turn off the 573.",
 			"write":      "Writing new data to cartridge...\nDo not turn off the 573.",
 			"idError":    "The selected game is not compatible with the currently inserted cartridge, as it requires one with a valid DS2401 identifier.",
-			"writeError": "An error occurred while reflashing the cartridge. The unlocking key may or may not have been successfully changed.\n\nPress the Test button to view debug logs."
+			"writeError": "An error occurred while reflashing the cartridge. The unlocking key may or may not have been successfully changed.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"cartUnlockWorker": {
 			"read":         "Dumping cartridge...\nDo not turn off the 573.",
-			"identifyGame": "Attempting to identify game..."
+			"identifyGame": "Attempting to identify game...",
+			"x76f041Error": "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the maximum allowed number of failed unlocking attempts may have been exceeded (and thus the cartridge may have been bricked).\n\nError code: %s\nPress the Test button to view debug logs.",
+			"x76f100Error": "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nError code: %s\nPress the Test button to view debug logs.",
+			"zs01Error":    "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"cartWriteWorker": {
 			"write": "Writing new data to cartridge...\nDo not turn off the 573.",
-			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nPress the Test button to view debug logs."
+			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"cartDumpWorker": {
 			"save":    "Saving cartridge dump...\nDo not turn off the 573.",
 			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with this tool.",
-			"error":   "An error occurred while saving the dump to the hard drive. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
+			"error":   "An error occurred while saving the dump (%s). Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
@@ -64,7 +67,7 @@
 			"eject":      "Sending eject command...",
 			"success":    "The drive's tray has been opened.\n\nYou may safely remove or replace the disc and close the tray. All data has been loaded into RAM and the tool will keep running until the 573 is turned off.",
 			"atapiError": "The drive currently configured as primary on the IDE bus is not an ATAPI CD-ROM drive and does not support ejecting.\n\nPress the Test button to view debug logs.",
-			"ejectError": "Failed to open the drive's tray. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs."
+			"ejectError": "Failed to open the drive's tray. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
@@ -141,7 +144,7 @@
 		"cart": {
 			"header":      "Security cartridge:\n",
 			"x76f041Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F041\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  Configuration:\t%s\n",
-			"x76f100Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F041\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n",
+			"x76f100Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F100\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n",
 			"zs01Info":    "  Chip type:\t\t{CHIP_ICON} Konami ZS01 (PIC16CE625)\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  ZS01 ID:\t\t%s\n  Configuration:\t%s\n"
 		},
 		"unlockStatus": {
@@ -182,17 +185,10 @@
 			"error":    "{RIGHT_ARROW} Hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back."
 		},
 
-		"x76f041": {
-			"warning": "X76F041 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, they will lock out any further access and thus become PERMANENTLY BRICKED, with no way to restore access.\n\nAre you sure the key is correct?",
-			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the maximum allowed number of failed unlocking attempts may have been exceeded (and thus the cartridge may have been bricked).\n\nPress the Test button to view debug logs."
-		},
-		"x76f100": {
-			"warning": "X76F100 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
-			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nPress the Test button to view debug logs."
-		},
-		"zs01": {
-			"warning": "ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
-			"error":   "An error occurred while attempting to unlock the cartridge; the key is probably incorrect. If you are sure you selected the proper key, the cartridge may have self-erased and reset the key to a null key due to too many failed unlocking attempts.\n\nPress the Test button to view debug logs."
+		"unlockWarning": {
+			"x76f041": "X76F041 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, they will lock out any further access and thus become PERMANENTLY BRICKED, with no way to restore access.\n\nAre you sure the key is correct?",
+			"x76f100": "X76F100 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?",
+			"zs01":    "ZS01 cartridges keep track of how many times a wrong key has been used. If too many unlock attempts fail, the cartridge will self-erase and will have to be reinitialized to factory data and paired to the system again if the game requires it.\n\nAre you sure the key is correct?"
 		}
 	},
 
@@ -323,6 +319,11 @@
 			"hasFlush":   "  Supports cache flushing\n",
 			"error":      "  No drive present or initialization failed\n"
 		},
+		"fat": {
+			"header": "FAT file system:\n",
+			"info":   "  Type:\t\t%s\n  Volume label:\t%s\n  Serial number:\t%08X\n  Formatted:\t\t%llu MB\n  Free space:\t%llu MB\n",
+			"error":  "  No file system mounted\n"
+		},
 		"bios": {
 			"header":     "BIOS ROM:\n",
 			"commonInfo": "  CRC32:\t\t%08X\n",
@@ -339,17 +340,17 @@
 		},
 		"rtc": {
 			"header":     "RTC:\n",
-			"info":       "  CRC32:\t\t%08X\n",
+			"info":       "  CRC32:\t\t%08X (excl. clock registers)\n",
 			"batteryLow": "  Battery voltage is below 2.5V\n"
 		},
 		"flash": {
 			"header":   "Internal flash memory:\n",
-			"info":     "  JEDEC ID:\t\t%02X, %02X\n  CRC32:\t\t%08X\n",
+			"info":     "  JEDEC ID:\t\tmanufacturer %02X, device %02X\n  CRC32:\t\t%08X\n",
 			"bootable": "  Valid boot executable present\n"
 		},
 		"pcmcia": {
 			"header":   "PCMCIA card in slot %d:\n",
-			"info":     "  JEDEC ID:\t\t%02X, %02X\n  CRC32 (16 MB):\t%08X\n  CRC32 (32 MB):\t%08X\n  CRC32 (64 MB):\t%08X\n",
+			"info":     "  JEDEC ID:\t\tmanufacturer %02X, device %02X\n  CRC32 (16 MB):\t%08X\n  CRC32 (32 MB):\t%08X\n  CRC32 (64 MB):\t%08X\n",
 			"bootable": "  Valid boot executable present\n",
 			"noCard":   "  No card inserted\n"
 		}

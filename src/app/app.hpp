@@ -49,14 +49,14 @@ public:
 
 /* System information buffer */
 
-enum FlashRegionInfoFlag : uint8_t {
+enum FlashRegionInfoFlag : uint16_t {
 	FLASH_REGION_INFO_PRESENT  = 1 << 0,
 	FLASH_REGION_INFO_BOOTABLE = 1 << 1
 };
 
 class FlashRegionInfo {
 public:
-	uint8_t  flags, manufacturerID, deviceID;
+	uint16_t flags, jedecID;
 	uint32_t crc[4];
 
 	inline void clearFlags(void) {

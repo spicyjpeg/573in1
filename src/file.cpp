@@ -258,6 +258,10 @@ bool HostProvider::init(void) {
 	return true;
 }
 
+FileSystemType HostProvider::getFileSystemType(void) {
+	return HOST;
+}
+
 bool HostProvider::createDirectory(const char *path) {
 	int fd = pcdrvCreate(path, DIRECTORY);
 
@@ -311,14 +315,78 @@ bool FATProvider::init(const char *drive) {
 void FATProvider::close(void) {
 	auto error = f_unmount(_drive);
 
-	if (error)
+	if (error) {
 		LOG("%s, drive=%s", util::getErrorString(error), _drive);
-	else
-		LOG("FAT unmount ok, drive=%s", _drive);
+		return;
+	}
+
+	LOG("FAT unmount ok, drive=%s", _drive);
+}
+
+FileSystemType FATProvider::getFileSystemType(void) {
+	return FileSystemType(_fs.fs_type);
+}
+
+uint64_t FATProvider::getCapacity(void) {
+	if (!_fs.fs_type)
+		return 0;
+
+	size_t clusterSize = size_t(_fs.csize) * size_t(_fs.ssize);
+
+	return uint64_t(_fs.n_fatent - 2) * uint64_t(clusterSize);
+}
+
+uint64_t FATProvider::getFreeSpace(void) {
+	if (!_fs.fs_type)
+		return 0;
+
+	uint32_t count;
+	FATFS    *dummy;
+	auto     error = f_getfree(_drive, &count, &dummy);
+
+	if (error) {
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
+		return 0;
+	}
+
+	size_t clusterSize = size_t(_fs.csize) * size_t(_fs.ssize);
+
+	return uint64_t(count) * uint64_t(clusterSize);
+}
+
+size_t FATProvider::getVolumeLabel(char *output, size_t length) {
+	//assert(length >= 23);
+
+	if (!_fs.fs_type)
+		return 0;
+
+	auto error = f_getlabel(_drive, output, nullptr);
+
+	if (error) {
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
+		return 0;
+	}
+
+	return __builtin_strlen(output);
+}
+
+uint32_t FATProvider::getSerialNumber(void) {
+	if (!_fs.fs_type)
+		return 0;
+
+	uint32_t serial;
+	auto     error = f_getlabel(_drive, nullptr, &serial);
+
+	if (error) {
+		LOG("%s, drive=%s", util::getErrorString(error), _drive);
+		return 0;
+	}
+
+	return serial;
 }
 
 bool FATProvider::_selectDrive(void) {
-	if (!_drive[0])
+	if (!_fs.fs_type)
 		return false;
 
 	return !f_chdrive(_drive);
@@ -447,6 +515,17 @@ void ZIPProvider::close(void) {
 		_file->close();
 		delete _file;
 	}
+}
+
+FileSystemType ZIPProvider::getFileSystemType(void) {
+	if (!_zip.m_zip_mode)
+		return NONE;
+
+	return _file ? ZIP_FILE : ZIP_MEMORY;
+}
+
+uint64_t ZIPProvider::getCapacity(void) {
+	return _zip.m_archive_size;
 }
 
 bool ZIPProvider::getFileInfo(FileInfo &output, const char *path) {

@@ -987,7 +987,7 @@ enum
 {
     /* Note: These enums can be reduced as needed to save memory or stack space - they are pretty conservative. */
     MZ_ZIP_MAX_IO_BUF_SIZE = 64 * 1024,
-    MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE = 512,
+    MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE = 128,
     MZ_ZIP_MAX_ARCHIVE_FILE_COMMENT_SIZE = 512
 };
 

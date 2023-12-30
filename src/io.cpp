@@ -4,7 +4,6 @@
 #include "ps1/registers.h"
 #include "ps1/system.h"
 #include "io.hpp"
-#include "util.hpp"
 
 namespace io {
 
