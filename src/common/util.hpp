@@ -221,34 +221,53 @@ public:
 	}
 };
 
-/* Logger (basically a ring buffer of lines) */
+/* Logging framework */
 
 static constexpr int MAX_LOG_LINE_LENGTH = 128;
 static constexpr int MAX_LOG_LINES       = 64;
 
-class Logger {
+class LogBuffer {
 private:
 	char _lines[MAX_LOG_LINES][MAX_LOG_LINE_LENGTH];
 	int  _tail;
 
 public:
-	bool enableSyslog;
+	inline LogBuffer(void)
+	: _tail(0) {
+		clear();
+	}
 
 	// 0 = last line, 1 = second to last, etc.
 	inline const char *getLine(int line) const {
 		return _lines[size_t(_tail - (line + 1)) % MAX_LOG_LINES];
 	}
 
-	Logger(void);
 	void clear(void);
+	char *allocateLine(void);
+};
+
+class Logger {
+private:
+	LogBuffer *_buffer;
+	bool      _enableSyslog;
+
+public:
+	inline Logger(void)
+	: _buffer(nullptr), _enableSyslog(false) {}
+
+	void setLogBuffer(LogBuffer *buffer);
+	void setupSyslog(int baudRate);
 	void log(const char *format, ...);
 };
 
 extern Logger logger;
 
-/* PS1 executable header */
+/* PS1 executable loader */
 
-struct [[gnu::packed]] ExecutableHeader {
+static constexpr size_t EXECUTABLE_BODY_OFFSET = 2048;
+static constexpr size_t MAX_EXECUTABLE_ARGS    = 32;
+
+class [[gnu::packed]] ExecutableHeader {
 public:
 	uint8_t magic[8], _pad[8];
 
@@ -260,6 +279,20 @@ public:
 	uint32_t _reserved[5];
 
 	bool validateMagic(void) const;
+};
+
+class ExecutableLoader {
+private:
+	const ExecutableHeader &_header;
+
+	int  _argCount;
+	char **_argListPtr;
+	char *_currentStackPtr;
+
+public:
+	ExecutableLoader(const ExecutableHeader &header, void *defaultStackTop);
+	void addArgument(const char *arg);
+	[[noreturn]] void run(void);
 };
 
 /* Other APIs */

@@ -26,16 +26,6 @@ find_program(
 
 add_library(
 	common OBJECT
-	src/common/file.cpp
-	src/common/gpu.cpp
-	src/common/gpufont.cpp
-	src/common/ide.cpp
-	src/common/ideglue.cpp
-	src/common/io.cpp
-	src/common/pad.cpp
-	src/common/rom.cpp
-	src/common/spu.cpp
-	src/common/util.cpp
 	src/libc/crt0.c
 	src/libc/cxxsupport.cpp
 	src/libc/malloc.c
@@ -47,31 +37,44 @@ add_library(
 	src/ps1/system.c
 	src/ps1/system.s
 	src/ps1/unhandledexc.c
-	src/vendor/ff.c
-	src/vendor/ffunicode.c
-	src/vendor/miniz.c
-	src/vendor/printf.c
-	src/vendor/qrcodegen.c
 )
 target_include_directories(
 	common PUBLIC
 	src
 	src/libc
 )
-target_compile_definitions(
-	common PUBLIC
-	VERSION="${PROJECT_VERSION}"
-	$<IF:$<CONFIG:Debug>,
-		ENABLE_LOGGING=1
-	,
-		ENABLE_LOGGING=1
-	>
-)
+target_compile_definitions(common PUBLIC VERSION="${PROJECT_VERSION}")
+
+function(addExecutable name stackTop)
+	add_executable(${name} ${ARGN})
+	target_link_libraries(${name} PRIVATE common)
+
+	add_custom_command(
+		TARGET     ${name} POST_BUILD
+		BYPRODUCTS ${name}.psexe
+		COMMAND
+			"${Python3_EXECUTABLE}"
+			"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
+			-r "cart_tool build ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg"
+			-s 0x${stackTop} "$<TARGET_FILE:${name}>" ${name}.psexe
+		VERBATIM
+	)
+endfunction()
 
 ## Main executable
 
-add_executable(
-	main
+addExecutable(
+	main 801dfff0
+	src/common/file.cpp
+	src/common/gpu.cpp
+	src/common/gpufont.cpp
+	src/common/ide.cpp
+	src/common/ideglue.cpp
+	src/common/io.cpp
+	src/common/pad.cpp
+	src/common/rom.cpp
+	src/common/spu.cpp
+	src/common/util.cpp
 	src/main/cart.cpp
 	src/main/cartdata.cpp
 	src/main/cartio.cpp
@@ -85,19 +88,29 @@ add_executable(
 	src/main/app/cartunlock.cpp
 	src/main/app/main.cpp
 	src/main/app/misc.cpp
+	src/vendor/ff.c
+	src/vendor/ffunicode.c
+	src/vendor/miniz.c
+	src/vendor/printf.c
+	src/vendor/qrcodegen.c
 )
 target_compile_definitions(
 	main PRIVATE
-	VERSION="${PROJECT_VERSION}"
 	$<IF:$<CONFIG:Debug>,
+		ENABLE_LOGGING=1
+		ENABLE_FILE_WRITING=1
 		#ENABLE_ARGV=1
+		ENABLE_LOG_BUFFER=1
 		ENABLE_PS1_CONTROLLER=1
 		ENABLE_CART_MENU=1
 		#ENABLE_X76F100_DRIVER=1
 		ENABLE_DUMMY_DRIVER=1
 		ENABLE_I2C_LOGGING=1
 	,
+		ENABLE_LOGGING=1
+		ENABLE_FILE_WRITING=1
 		#ENABLE_ARGV=1
+		ENABLE_LOG_BUFFER=1
 		ENABLE_PS1_CONTROLLER=1
 		ENABLE_CART_MENU=1
 		#ENABLE_X76F100_DRIVER=1
@@ -105,30 +118,49 @@ target_compile_definitions(
 		#ENABLE_I2C_LOGGING=1
 	>
 )
-target_link_libraries(main PRIVATE common)
 
-add_custom_command(
-	TARGET main POST_BUILD
-	COMMAND
-		"${Python3_EXECUTABLE}"
-		"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
-		-r "cart_tool build ${PROJECT_VERSION} - (C) 2022-2023 spicyjpeg"
-		-s 0x801dfff0
-		$<TARGET_FILE:main> main.psexe
-	BYPRODUCTS main.psexe
-	COMMENT    "Converting executable"
-	VERBATIM
-)
+## Executable launchers
+
+function(addLauncher address stackTop)
+	addExecutable(
+		launcher${address} ${stackTop}
+		src/common/ide.cpp
+		src/common/ideglue.cpp
+		src/common/io.cpp
+		src/common/util.cpp
+		src/launcher/main.cpp
+		src/vendor/ff.c
+		src/vendor/ffunicode.c
+		src/vendor/printf.c
+	)
+	target_compile_definitions(
+		launcher${address} PRIVATE
+		$<IF:$<CONFIG:Debug>,
+			ENABLE_LOGGING=1
+			#ENABLE_FILE_WRITING=1
+		,
+			#ENABLE_LOGGING=1
+			#ENABLE_FILE_WRITING=1
+		>
+	)
+	target_link_options(launcher${address} PRIVATE -Ttext=0x${address})
+endfunction()
+
+# Note that the launchers must be <48 KB (0xc000 bytes) in order for this to
+# work properly.
+addLauncher(801f4000 801ffff0)
+addLauncher(803f4000 803ffff0)
 
 ## Default resource archive
 
+configure_file(resources.json resources.json ESCAPE_QUOTES)
 add_custom_command(
 	COMMAND
 		"${Python3_EXECUTABLE}"
 		"${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
-		"${PROJECT_SOURCE_DIR}/resources.json" resources.zip
+		resources.json resources.zip
 	OUTPUT  resources.zip
-	DEPENDS resources.json
+	DEPENDS resources.json launcher801f4000 launcher803f4000
 	COMMENT "Building resource archive"
 	VERBATIM
 )

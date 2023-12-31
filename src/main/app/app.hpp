@@ -131,8 +131,11 @@ private:
 	ReflashGameScreen   _reflashGameScreen;
 	SystemIDEntryScreen _systemIDEntryScreen;
 
-	ui::TiledBackground _backgroundLayer;
+#ifdef ENABLE_LOG_BUFFER
+	util::LogBuffer     _logBuffer;
 	ui::LogOverlay      _overlayLayer;
+#endif
+	ui::TiledBackground _backgroundLayer;
 
 	ui::Context       &_ctx;
 	file::ZIPProvider &_resourceProvider;
@@ -174,13 +177,8 @@ private:
 	void _interruptHandler(void);
 
 public:
-	inline App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
-	: _overlayLayer(util::logger), _ctx(ctx),
-	_resourceProvider(resourceProvider), _resourceFile(nullptr),
-	_driver(nullptr), _parser(nullptr), _identified(nullptr) {
-		_workerStack = new uint8_t[WORKER_STACK_SIZE];
-	}
 
+	App(ui::Context &ctx, file::ZIPProvider &resourceProvider);
 	~App(void);
 	[[noreturn]] void run(void);
 };

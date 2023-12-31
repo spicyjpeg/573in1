@@ -31,35 +31,64 @@ Hash hash(const uint8_t *data, size_t length) {
 	return value;
 }
 
-/* Logger */
+/* Logging framework */
 
 // Global state, I know, but it's a necessary evil.
 Logger logger;
 
-Logger::Logger(void)
-: _tail(0), enableSyslog(false) {
-	clear();
-}
-
-void Logger::clear(void) {
+void LogBuffer::clear(void) {
 	for (auto line : _lines)
 		line[0] = 0;
 }
 
-void Logger::log(const char *format, ...) {
+char *LogBuffer::allocateLine(void) {
+	size_t tail = _tail;
+	_tail       = (tail + 1) % MAX_LOG_LINES;
+
+	return _lines[tail];
+}
+
+void Logger::setLogBuffer(LogBuffer *buffer) {
+	auto enable = disableInterrupts();
+	_buffer     = buffer;
+
+	if (enable)
+		enableInterrupts();
+}
+
+void Logger::setupSyslog(int baudRate) {
 	auto enable = disableInterrupts();
 
-	size_t  tail = _tail;
+	if (baudRate) {
+		initSerialIO(baudRate);
+		_enableSyslog = true;
+	} else {
+		_enableSyslog = false;
+	}
+
+	if (enable)
+		enableInterrupts();
+}
+
+void Logger::log(const char *format, ...) {
+	auto    enable = disableInterrupts();
 	va_list ap;
 
-	_tail = size_t(tail + 1) % MAX_LOG_LINES;
+	if (_buffer) {
+		auto line = _buffer->allocateLine();
 
-	va_start(ap, format);
-	vsnprintf(_lines[tail], MAX_LOG_LINE_LENGTH, format, ap);
-	va_end(ap);
+		va_start(ap, format);
+		vsnprintf(line, MAX_LOG_LINE_LENGTH, format, ap);
+		va_end(ap);
 
-	if (enableSyslog)
-		puts(_lines[tail]);
+		if (_enableSyslog)
+			puts(line);
+	} else if (_enableSyslog) {
+		va_start(ap, format);
+		vprintf(format, ap);
+		va_end(ap);
+	}
+
 	if (enable)
 		enableInterrupts();
 }
@@ -219,10 +248,59 @@ size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 	return outLength;
 }
 
-/* PS1 executable header */
+/* PS1 executable loader */
 
 bool ExecutableHeader::validateMagic(void) const {
 	return (hash(magic, sizeof(magic)) == "PS-X EXE"_h);
+}
+
+ExecutableLoader::ExecutableLoader(
+	const ExecutableHeader &header, void *defaultStackTop
+) : _header(header), _argCount(0) {
+	uintptr_t stackTop = header.stackOffset + header.stackLength;
+
+	if (!stackTop)
+		stackTop = reinterpret_cast<uintptr_t>(defaultStackTop);
+
+	_argListPtr      = reinterpret_cast<char **>(stackTop & ~7)
+		- MAX_EXECUTABLE_ARGS;
+	_currentStackPtr = reinterpret_cast<char *>(_argListPtr);
+}
+
+void ExecutableLoader::addArgument(const char *arg) {
+	// Command-line arguments must be copied to the top of the new stack in
+	// order to ensure the executable is going to be able to access them at any
+	// time.
+	size_t length  = __builtin_strlen(arg) + 1;
+	size_t aligned = (length + 7) & ~7;
+
+	_currentStackPtr        -= aligned;
+	_argListPtr[_argCount++] = _currentStackPtr;
+
+	__builtin_memcpy(_currentStackPtr, arg, length);
+	//assert(_argCount <= MAX_EXECUTABLE_ARGS);
+}
+
+[[noreturn]] void ExecutableLoader::run(void) {
+	disableInterrupts();
+
+	register int       a0   __asm__("a0") = _argCount;
+	register char      **a1 __asm__("a1") = _argListPtr;
+	register uintptr_t gp   __asm__("gp") = _header.initialGP;
+
+	// Changing the stack pointer and return address is not something that
+	// should be done in a C++ function, but hopefully it's fine here since
+	// we're jumping out right after setting it.
+	__asm__ volatile(
+		".set noreorder\n"
+		"li    $ra, %0\n"
+		"jr    %1\n"
+		"addiu $sp, %2, -8\n"
+		".set reorder\n"
+		:: "i"(DEV2_BASE), "r"(_header.entryPoint), "r"(_currentStackPtr),
+		"r"(a0), "r"(a1), "r"(gp)
+	);
+	__builtin_unreachable();
 }
 
 }

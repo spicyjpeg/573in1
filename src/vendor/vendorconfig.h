@@ -3,7 +3,12 @@
 
 /* FatFs configuration */
 
-#define FF_FS_READONLY  0
+#ifdef ENABLE_FILE_WRITING
+#define FF_FS_READONLY 0
+#else
+#define FF_FS_READONLY 1
+#endif
+
 #define FF_FS_MINIMIZE  0
 #define FF_USE_FIND     0
 #define FF_USE_MKFS     0
