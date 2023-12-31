@@ -51,8 +51,8 @@ void installExceptionHandler(void) {
 	DMA_DPCR = 0;
 	DMA_DICR = DMA_DICR_CH_STAT_BITMASK;
 
-	// Ensure interrupts and the GTE are enabled at the COP0 side.
-	cop0_setSR(COP0_SR_IEc | COP0_SR_Im2 | COP0_SR_CU0 | COP0_SR_CU2);
+	// Disable interrupts and the GTE at the COP0 side.
+	cop0_setSR(COP0_SR_CU0);
 
 	// Grab a direct pointer to the BIOS function to flush the instruction
 	// cache. This is the only function that must always run from the BIOS ROM
@@ -69,6 +69,9 @@ void installExceptionHandler(void) {
 
 	DMA_DPCR = 0x0bbbbbbb;
 	DMA_DICR = DMA_DICR_IRQ_ENABLE;
+
+	// Ensure interrupts and the GTE are enabled at the COP0 side.
+	cop0_setSR(COP0_SR_IEc | COP0_SR_Im2 | COP0_SR_CU0 | COP0_SR_CU2);
 }
 
 void uninstallExceptionHandler(void) {

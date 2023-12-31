@@ -72,7 +72,9 @@ private:
 
 public:
 	size_t read(void *output, size_t length);
+#ifdef ENABLE_FILE_WRITING
 	size_t write(const void *input, size_t length);
+#endif
 	uint64_t seek(uint64_t offset);
 	uint64_t tell(void) const;
 	void close(void);
@@ -86,7 +88,9 @@ private:
 
 public:
 	size_t read(void *output, size_t length);
+#ifdef ENABLE_FILE_WRITING
 	size_t write(const void *input, size_t length);
+#endif
 	uint64_t seek(uint64_t offset);
 	uint64_t tell(void) const;
 	void close(void);
@@ -155,7 +159,9 @@ public:
 
 	FileSystemType getFileSystemType(void);
 
+#ifdef ENABLE_FILE_WRITING
 	bool createDirectory(const char *path);
+#endif
 
 	File *openFile(const char *path, uint32_t flags);
 };
@@ -178,13 +184,17 @@ public:
 
 	FileSystemType getFileSystemType(void);
 	uint64_t getCapacity(void);
+#ifdef ENABLE_FILE_WRITING
 	uint64_t getFreeSpace(void);
+#endif
 	size_t getVolumeLabel(char *output, size_t length);
 	uint32_t getSerialNumber(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);
 	Directory *openDirectory(const char *path);
+#ifdef ENABLE_FILE_WRITING
 	bool createDirectory(const char *path);
+#endif
 
 	File *openFile(const char *path, uint32_t flags);
 };

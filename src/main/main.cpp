@@ -12,7 +12,6 @@
 #include "ps1/gpucmd.h"
 #include "ps1/system.h"
 
-
 extern "C" const uint8_t _resources[];
 extern "C" const size_t  _resourcesSize;
 
@@ -90,18 +89,13 @@ int main(int argc, const char **argv) {
 	// Enable serial port logging by default in debug builds.
 	settings.baudRate = 115200;
 #endif
+
 #ifdef ENABLE_ARGV
 	for (; argc > 0; argc--)
 		settings.parse(*(argv++));
 #endif
 
-	if (settings.baudRate) {
-		initSerialIO(settings.baudRate);
-		util::logger.enableSyslog = true;
-	}
-
-	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
-	LOG("(C) 2022-2023 spicyjpeg");
+	util::logger.setupSyslog(settings.baudRate);
 
 	// Load the resource archive, first from memory if a pointer was given and
 	// then from the HDD. If both attempts fail, fall back to the archive

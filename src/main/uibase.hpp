@@ -193,11 +193,11 @@ public:
 
 class LogOverlay : public Layer {
 private:
-	util::Logger &_logger;
+	util::LogBuffer &_buffer;
 	util::Tween<int, util::QuadOutEasing> _slideAnim;
 
 public:
-	LogOverlay(util::Logger &logger);
+	LogOverlay(util::LogBuffer &buffer);
 	void draw(Context &ctx) const;
 	void update(Context &ctx);
 };

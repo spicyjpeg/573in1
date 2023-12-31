@@ -227,8 +227,8 @@ void TiledBackground::draw(Context &ctx) const {
 	ctx.font.draw(ctx.gpuCtx, text, rect, ctx.colors[COLOR_TEXT2]);
 }
 
-LogOverlay::LogOverlay(util::Logger &logger)
-: _logger(logger) {
+LogOverlay::LogOverlay(util::LogBuffer &buffer)
+: _buffer(buffer) {
 	_slideAnim.setValue(0);
 }
 
@@ -255,7 +255,7 @@ void LogOverlay::draw(Context &ctx) const {
 
 	for (int i = linesShown - 1; i >= 0; i--) {
 		ctx.font.draw(
-			ctx.gpuCtx, _logger.getLine(i), rect, ctx.colors[COLOR_TEXT1]
+			ctx.gpuCtx, _buffer.getLine(i), rect, ctx.colors[COLOR_TEXT1]
 		);
 
 		rect.y1  = rect.y2;

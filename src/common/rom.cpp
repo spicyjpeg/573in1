@@ -153,8 +153,9 @@ bool FlashRegion::hasBootExecutable(void) const {
 	// The integrity of the executable is verified by calculating the CRC32 of
 	// its bytes whose offsets are powers of 2 (i.e. the bytes at indices 0, 1,
 	// 2, 4, 8 and so on). Note that the actual size of the executable is
-	// header.textLength + 2048, as the CRC is also calculated on the header,
-	// but Konami's shell ignores the last 2048 bytes due to a bug.
+	// header.textLength + util::EXECUTABLE_BODY_OFFSET, as the CRC is also
+	// calculated on the header, but Konami's shell ignores the last 2048 bytes
+	// due to a bug.
 	size_t   length = header.textLength;
 	uint32_t crc    = ~0;
 

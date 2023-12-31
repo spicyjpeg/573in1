@@ -58,6 +58,17 @@ void WorkerStatus::finish(void) {
 
 /* App class */
 
+App::App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
+#ifdef ENABLE_LOG_BUFFER
+: _overlayLayer(_logBuffer),
+#else
+:
+#endif
+_ctx(ctx), _resourceProvider(resourceProvider), _resourceFile(nullptr),
+_driver(nullptr), _parser(nullptr), _identified(nullptr) {
+	_workerStack = new uint8_t[WORKER_STACK_SIZE];
+}
+
 App::~App(void) {
 	_unloadCartData();
 
@@ -157,7 +168,12 @@ void App::_interruptHandler(void) {
 }
 
 [[noreturn]] void App::run(void) {
-	LOG("starting app @ 0x%08x", this);
+#ifdef ENABLE_LOG_BUFFER
+	util::logger.setLogBuffer(&_logBuffer);
+#endif
+
+	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
+	LOG("(C) 2022-2024 spicyjpeg");
 
 	_ctx.screenData = this;
 	_setupWorker(&App::_startupWorker);
@@ -166,7 +182,7 @@ void App::_interruptHandler(void) {
 
 	_backgroundLayer.text = "v" VERSION_STRING;
 	_ctx.background       = &_backgroundLayer;
-#ifdef ENABLE_LOGGING
+#ifdef ENABLE_LOG_BUFFER
 	_ctx.overlay          = &_overlayLayer;
 #endif
 	_ctx.show(_workerStatusScreen);

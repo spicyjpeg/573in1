@@ -2,7 +2,7 @@
 	{
 		"type":     "tim",
 		"name":     "assets/textures/background.tim",
-		"source":   "assets/textures/background.png",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/textures/background.png",
 		"quantize": 16,
 		"imagePos": { "x":  960, "y": 0 },
 		"clutPos":  { "x": 1008, "y": 0 }
@@ -10,7 +10,7 @@
 	{
 		"type":     "tim",
 		"name":     "assets/textures/font.tim",
-		"source":   "assets/textures/font.png",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/textures/font.png",
 		"quantize": 16,
 		"imagePos": { "x":  984, "y": 0 },
 		"clutPos":  { "x": 1008, "y": 1 }
@@ -18,63 +18,63 @@
 	{
 		"type":   "metrics",
 		"name":   "assets/textures/font.metrics",
-		"source": "assets/textures/font.metrics.json"
+		"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.metrics.json"
 	},
 	{
 		"type":     "binary",
 		"name":     "assets/sounds/alert.vag",
-		"source":   "assets/sounds/alert.vag",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/alert.vag",
 		"compress": null
 	},
 	{
 		"type":     "binary",
 		"name":     "assets/sounds/move.vag",
-		"source":   "assets/sounds/move.vag",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/move.vag",
 		"compress": null
 	},
 	{
 		"type":     "binary",
 		"name":     "assets/sounds/enter.vag",
-		"source":   "assets/sounds/enter.vag",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/enter.vag",
 		"compress": null
 	},
 	{
 		"type":     "binary",
 		"name":     "assets/sounds/exit.vag",
-		"source":   "assets/sounds/exit.vag",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/exit.vag",
 		"compress": null
 	},
 	{
 		"type":     "binary",
 		"name":     "assets/sounds/click.vag",
-		"source":   "assets/sounds/click.vag",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/click.vag",
 		"compress": null
 	},
 	{
 		"type":   "palette",
 		"name":   "assets/app.palette",
-		"source": "assets/app.palette.json"
+		"source": "${PROJECT_SOURCE_DIR}/assets/app.palette.json"
 	},
 	{
 		"type":   "strings",
 		"name":   "assets/app.strings",
-		"source": "assets/app.strings.json"
+		"source": "${PROJECT_SOURCE_DIR}/assets/app.strings.json"
 	},
 	{
 		"type":   "text",
 		"name":   "assets/about.txt",
-		"source": "assets/about.txt"
+		"source": "${PROJECT_SOURCE_DIR}/assets/about.txt"
 	},
 
 	{
 		"type":   "binary",
 		"name":   "data/fpga.bit",
-		"source": "data/fpga.bit"
+		"source": "${PROJECT_SOURCE_DIR}/data/fpga.bit"
 	},
 	{
 		"type":   "binary",
 		"name":   "data/x76f041.cartdb",
-		"source": "data/x76f041.cartdb"
+		"source": "${PROJECT_SOURCE_DIR}/data/x76f041.cartdb"
 	},
 	{
 		"type": "empty",
@@ -83,6 +83,17 @@
 	{
 		"type":   "binary",
 		"name":   "data/zs01.cartdb",
-		"source": "data/zs01.cartdb"
+		"source": "${PROJECT_SOURCE_DIR}/data/zs01.cartdb"
+	},
+
+	{
+		"type":   "binary",
+		"name":   "launchers/801f4000.psexe",
+		"source": "launcher801f4000.psexe"
+	},
+	{
+		"type":   "binary",
+		"name":   "launchers/803f4000.psexe",
+		"source": "launcher803f4000.psexe"
 	}
 ]

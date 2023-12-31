@@ -85,6 +85,7 @@ size_t HostFile::read(void *output, size_t length) {
 	return size_t(actualLength);
 }
 
+#ifdef ENABLE_FILE_WRITING
 size_t HostFile::write(const void *input, size_t length) {
 	int actualLength = pcdrvWrite(_fd, input, length);
 
@@ -95,6 +96,7 @@ size_t HostFile::write(const void *input, size_t length) {
 
 	return size_t(actualLength);
 }
+#endif
 
 uint64_t HostFile::seek(uint64_t offset) {
 	int actualOffset = pcdrvSeek(_fd, int(offset), PCDRV_SEEK_SET);
@@ -134,6 +136,7 @@ size_t FATFile::read(void *output, size_t length) {
 	return uint64_t(actualLength);
 }
 
+#ifdef ENABLE_FILE_WRITING
 size_t FATFile::write(const void *input, size_t length) {
 	size_t actualLength;
 	auto   error = f_write(&_fd, input, length, &actualLength);
@@ -145,6 +148,7 @@ size_t FATFile::write(const void *input, size_t length) {
 
 	return uint64_t(actualLength);
 }
+#endif
 
 uint64_t FATFile::seek(uint64_t offset) {
 	auto error = f_lseek(&_fd, offset);
@@ -240,6 +244,7 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 }
 
 size_t Provider::saveData(const void *input, size_t length, const char *path) {
+#ifdef ENABLE_FILE_WRITING
 	auto file = openFile(path, WRITE | ALLOW_CREATE);
 
 	if (!file)
@@ -250,6 +255,9 @@ size_t Provider::saveData(const void *input, size_t length, const char *path) {
 
 	delete file;
 	return actualLength;
+#else
+	return 0;
+#endif
 }
 
 size_t Provider::loadTIM(gpu::Image &output, const char *path) {
@@ -319,6 +327,7 @@ FileSystemType HostProvider::getFileSystemType(void) {
 	return HOST;
 }
 
+#ifdef ENABLE_FILE_WRITING
 bool HostProvider::createDirectory(const char *path) {
 	int fd = pcdrvCreate(path, DIRECTORY);
 
@@ -330,6 +339,7 @@ bool HostProvider::createDirectory(const char *path) {
 	pcdrvClose(fd);
 	return true;
 }
+#endif
 
 File *HostProvider::openFile(const char *path, uint32_t flags) {
 	PCDRVOpenMode mode = PCDRV_MODE_READ;
@@ -393,6 +403,7 @@ uint64_t FATProvider::getCapacity(void) {
 	return uint64_t(_fs.n_fatent - 2) * uint64_t(clusterSize);
 }
 
+#ifdef ENABLE_FILE_WRITING
 uint64_t FATProvider::getFreeSpace(void) {
 	if (!_fs.fs_type)
 		return 0;
@@ -410,6 +421,7 @@ uint64_t FATProvider::getFreeSpace(void) {
 
 	return uint64_t(count) * uint64_t(clusterSize);
 }
+#endif
 
 size_t FATProvider::getVolumeLabel(char *output, size_t length) {
 	//assert(length >= 23);
@@ -487,6 +499,7 @@ Directory *FATProvider::openDirectory(const char *path) {
 	return dir;
 }
 
+#ifdef ENABLE_FILE_WRITING
 bool FATProvider::createDirectory(const char *path) {
 	if (!_selectDrive())
 		return false;
@@ -500,6 +513,7 @@ bool FATProvider::createDirectory(const char *path) {
 
 	return true;
 }
+#endif
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
 	if (!_selectDrive())
