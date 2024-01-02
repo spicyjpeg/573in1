@@ -8,6 +8,7 @@
 #include "main/app/cartunlock.hpp"
 #include "main/app/main.hpp"
 #include "main/app/misc.hpp"
+#include "main/app/modals.hpp"
 #include "main/cart.hpp"
 #include "main/cartdata.hpp"
 #include "main/cartio.hpp"
@@ -160,7 +161,6 @@ private:
 	void _setupInterrupts(void);
 	void _loadResources(void);
 
-	bool _startupWorker(void);
 	bool _cartDetectWorker(void);
 	bool _cartUnlockWorker(void);
 	bool _qrCodeWorker(void);
@@ -168,8 +168,11 @@ private:
 	bool _cartWriteWorker(void);
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
+
+	bool _startupWorker(void);
 	bool _romDumpWorker(void);
 	bool _systemInfoWorker(void);
+	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);
 

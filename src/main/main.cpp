@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/gpu.hpp"
 #include "common/io.hpp"
@@ -35,13 +34,15 @@ bool Settings::parse(const char *arg) {
 		return false;
 
 	switch (util::hash(arg, '=')) {
+#if 0
 		case "boot.rom"_h:
-			//LOG("boot.rom=%s", &arg[9]);
+			LOG("boot.rom=%s", &arg[9]);
 			return true;
 
 		case "boot.from"_h:
-			//LOG("boot.from=%s", &arg[10]);
+			LOG("boot.from=%s", &arg[10]);
 			return true;
+#endif
 
 		case "console"_h:
 			baudRate = int(strtol(&arg[8], nullptr, 0));

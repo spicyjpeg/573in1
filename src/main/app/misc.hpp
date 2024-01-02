@@ -1,49 +1,38 @@
 
 #pragma once
 
+#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 
-/* Common screens */
+/* System information screen */
 
-class WorkerStatusScreen : public ui::ProgressScreen {
+class SystemInfoScreen : public ui::TextScreen {
+private:
+	char _bodyText[2048];
+
 public:
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };
 
-enum MessageType {
-	MESSAGE_SUCCESS = 0,
-	MESSAGE_ERROR   = 1
-};
+/* Misc. screens */
 
-class MessageScreen : public ui::MessageBoxScreen {
-private:
-	MessageType _type;
-	char        _bodyText[512];
-	ui::Screen  *_prevScreen;
+class ResolutionScreen : public ui::ListScreen {
+protected:
+	const char *_getItemName(ui::Context &ctx, int index) const;
 
 public:
-	void setMessage(
-		MessageType type, ui::Screen &prev, const char *format, ...
-	);
-
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };
 
-class ConfirmScreen : public ui::MessageBoxScreen {
+class AboutScreen : public ui::TextScreen {
 private:
-	char       _bodyText[512];
-	ui::Screen *_prevScreen;
-	void       (*_callback)(ui::Context &ctx);
+	util::Data _text;
 
 public:
-	void setMessage(
-		ui::Screen &prev, void (*callback)(ui::Context &ctx),
-		const char *format, ...
-	);
-
 	void show(ui::Context &ctx, bool goBack = false);
+	void hide(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };
