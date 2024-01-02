@@ -83,11 +83,13 @@ addExecutable(
 	src/main/uicommon.cpp
 	src/main/zs01.cpp
 	src/main/app/app.cpp
-	src/main/app/appworkers.cpp
 	src/main/app/cartactions.cpp
 	src/main/app/cartunlock.cpp
+	src/main/app/cartworkers.cpp
 	src/main/app/main.cpp
 	src/main/app/misc.cpp
+	src/main/app/miscworkers.cpp
+	src/main/app/modals.cpp
 	src/vendor/ff.c
 	src/vendor/ffunicode.c
 	src/vendor/miniz.c
@@ -136,7 +138,7 @@ function(addLauncher address stackTop)
 	target_compile_definitions(
 		launcher${address} PRIVATE
 		$<IF:$<CONFIG:Debug>,
-			ENABLE_LOGGING=1
+			#ENABLE_LOGGING=1
 			#ENABLE_FILE_WRITING=1
 		,
 			#ENABLE_LOGGING=1

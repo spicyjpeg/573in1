@@ -87,6 +87,8 @@ void Logger::log(const char *format, ...) {
 		va_start(ap, format);
 		vprintf(format, ap);
 		va_end(ap);
+
+		putchar('\n');
 	}
 
 	if (enable)
@@ -257,12 +259,12 @@ bool ExecutableHeader::validateMagic(void) const {
 ExecutableLoader::ExecutableLoader(
 	const ExecutableHeader &header, void *defaultStackTop
 ) : _header(header), _argCount(0) {
-	uintptr_t stackTop = header.stackOffset + header.stackLength;
+	auto stackTop = header.getStackPtr();
 
 	if (!stackTop)
-		stackTop = reinterpret_cast<uintptr_t>(defaultStackTop);
+		stackTop = defaultStackTop;
 
-	_argListPtr      = reinterpret_cast<char **>(stackTop & ~7)
+	_argListPtr      = reinterpret_cast<char **>(uintptr_t(stackTop) & ~7)
 		- MAX_EXECUTABLE_ARGS;
 	_currentStackPtr = reinterpret_cast<char *>(_argListPtr);
 }

@@ -26,17 +26,20 @@ bool Settings::parse(const char *arg) {
 		return false;
 
 	switch (util::hash(arg, '=')) {
+#if 0
 		case "boot.rom"_h:
-			//LOG("boot.rom=%s", &arg[9]);
+			LOG("boot.rom=%s", &arg[9]);
 			return true;
 
 		case "boot.from"_h:
-			//LOG("boot.from=%s", &arg[10]);
+			LOG("boot.from=%s", &arg[10]);
 			return true;
 
 		case "console"_h:
+			// Disabled to avoid pulling in strtol.
 			baudRate = int(strtol(&arg[8], nullptr, 0));
 			return true;
+#endif
 
 		case "launcher.drive"_h:
 			drive = &arg[15];
@@ -130,26 +133,23 @@ bool Launcher::readHeader(void) {
 		return false;
 	}
 
-	auto ptr = reinterpret_cast<void *>(_header.textOffset);
-
-	if (ptr >= _textStart) {
+	if (_header.getTextPtr() >= _textStart) {
 		LOG("executable overlaps launcher");
 		return false;
 	}
 
-	LOG("ptr=0x%08x, length=0x%08x", ptr, _header.textLength);
+	LOG("ptr=0x%08x, length=0x%x", _header.textOffset, _header.textLength);
 	return true;
 }
 
 bool Launcher::readBody(void) {
-	auto   ptr = reinterpret_cast<void *>(_header.textOffset);
 	size_t length;
 
 	if (f_lseek(&_file, util::EXECUTABLE_BODY_OFFSET)) {
 		LOG("seek to body failed, path=%s", _settings.path);
 		return false;
 	}
-	if (f_read(&_file, ptr, _header.textLength, &length)) {
+	if (f_read(&_file, _header.getTextPtr(), _header.textLength, &length)) {
 		LOG("body read failed, path=%s", _settings.path);
 		return false;
 	}
@@ -203,7 +203,7 @@ int main(int argc, const char **argv) {
 	for (; argc > 0; argc--)
 		settings.parse(*(argv++));
 
-	util::logger.setupSyslog(settings.baudRate);
+	//util::logger.setupSyslog(settings.baudRate);
 
 	if (!launcher.openFile())
 		return 1;

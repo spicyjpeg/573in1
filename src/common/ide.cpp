@@ -209,6 +209,7 @@ DeviceError Device::enumerate(void) {
 	delayMicroseconds(5000);
 	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN);
 	delayMicroseconds(5000);
+	_select(0);
 
 	auto error = _waitForStatus(CS0_STATUS_BSY, 0, _RESET_STATUS_TIMEOUT);
 	if (error)
@@ -218,8 +219,6 @@ DeviceError Device::enumerate(void) {
 	// not assert DRDY until the first command is issued.
 	// FIXME: some drives may not provide the signature immediately
 	IdentifyBlock block;
-
-	_select(0);
 
 	if ((_read(CS0_CYLINDER_L) == 0x14) && (_read(CS0_CYLINDER_H) == 0xeb)) {
 		flags |= DEVICE_ATAPI;
@@ -269,7 +268,7 @@ DeviceError Device::enumerate(void) {
 	_copyString(revision, block.revision, sizeof(revision));
 	_copyString(serialNumber, block.serialNumber, sizeof(serialNumber));
 
-	LOG("%s=%s", (flags & DEVICE_SECONDARY) ? "sec" : "pri", model);
+	LOG("drive %d: %s", (flags / DEVICE_SECONDARY) & 1, model);
 
 	// Find out the fastest PIO transfer mode supported and enable it.
 	int mode = block.getHighestPIOMode();

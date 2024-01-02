@@ -179,6 +179,10 @@ public:
 		_drive[0]   = 0;
 	}
 
+	inline const char *getDriveString(void) {
+		return _drive;
+	}
+
 	bool init(const char *drive);
 	void close(void);
 

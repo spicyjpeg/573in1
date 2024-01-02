@@ -43,7 +43,7 @@ template<typename T> static inline T roundUpToMultiple(T value, T length) {
 }
 
 template<typename T, typename X> static inline void assertAligned(X *ptr) {
-	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
+	//assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
 }
 
 template<typename T> static constexpr inline size_t countOf(T &array) {
@@ -277,6 +277,16 @@ public:
 	uint32_t bssOffset, bssLength;
 	uint32_t stackOffset, stackLength;
 	uint32_t _reserved[5];
+
+	inline void *getTextPtr(void) const {
+		return reinterpret_cast<void *>(textOffset);
+	}
+	inline void *getStackPtr(void) const {
+		return reinterpret_cast<void *>(stackOffset + stackLength);
+	}
+	inline void copyFrom(const void *source) {
+		__builtin_memcpy(this, source, sizeof(ExecutableHeader));
+	}
 
 	bool validateMagic(void) const;
 };
