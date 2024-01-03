@@ -175,9 +175,7 @@ Directory::~Directory(void) {
 	close();
 }
 
-bool FATDirectory::getEntry(
-	FileInfo &output, uint32_t attrMask, uint32_t attrValue
-) {
+bool FATDirectory::getEntry(FileInfo &output) {
 	FILINFO info;
 	auto    error = f_readdir(&_fd, &info);
 
@@ -188,10 +186,7 @@ bool FATDirectory::getEntry(
 	if (!info.fname[0])
 		return false;
 
-	__builtin_strncpy(
-		output.name, info.fname,
-		util::min(sizeof(output.name), sizeof(info.fname))
-	);
+	__builtin_strncpy(output.name, info.fname, sizeof(output.name));
 	output.length     = info.fsize;
 	output.attributes = info.fattrib;
 
@@ -473,10 +468,7 @@ bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 		return false;
 	}
 
-	__builtin_strncpy(
-		output.name, info.fname,
-		util::min(sizeof(output.name), sizeof(info.fname))
-	);
+	__builtin_strncpy(output.name, info.fname, sizeof(output.name));
 	output.length     = info.fsize;
 	output.attributes = info.fattrib;
 
@@ -611,10 +603,14 @@ bool ZIPProvider::getFileInfo(FileInfo &output, const char *path) {
 	if (!info.m_is_supported)
 		return false;
 
-	__builtin_strncpy(
-		output.name, info.m_filename,
-		util::min(sizeof(output.name), sizeof(info.m_filename))
-	);
+	auto ptr = __builtin_strrchr(info.m_filename, '/');
+
+	if (ptr)
+		ptr++;
+	else
+		ptr = info.m_filename;
+
+	__builtin_strncpy(output.name, ptr, sizeof(output.name));
 	output.length     = info.m_uncomp_size;
 	output.attributes = READ_ONLY | ARCHIVE;
 

@@ -215,6 +215,10 @@ TABLE_ESCAPE_REPL:  Mapping[bytes, bytes] = {
 	b"DOWN_ARROW":      b"\x81",
 	b"LEFT_ARROW":      b"\x82",
 	b"RIGHT_ARROW":     b"\x83",
+	b"UP_ARROW_ALT":    b"\x84",
+	b"DOWN_ARROW_ALT":  b"\x85",
+	b"LEFT_ARROW_ALT":  b"\x86",
+	b"RIGHT_ARROW_ALT": b"\x87",
 	b"LEFT_BUTTON":     b"\x90",
 	b"RIGHT_BUTTON":    b"\x91",
 	b"START_BUTTON":    b"\x92",
@@ -223,10 +227,8 @@ TABLE_ESCAPE_REPL:  Mapping[bytes, bytes] = {
 	b"DIR_ICON":        b"\x95",
 	b"PARENT_DIR_ICON": b"\x96",
 	b"FILE_ICON":       b"\x97",
-	b"EXE_FILE_ICON":   b"\x98",
-	b"DUMP_FILE_ICON":  b"\x99",
-	b"CHIP_ICON":       b"\x9a",
-	b"CART_ICON":       b"\x9b"
+	b"CHIP_ICON":       b"\x98",
+	b"CART_ICON":       b"\x99"
 }
 
 def hashString(string: str) -> int:

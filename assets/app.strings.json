@@ -204,6 +204,17 @@
 		"yes":   "Yes, continue"
 	},
 
+	"ExecPickerScreen": {
+		"title":      "{CART_ICON} Select executable to run",
+		"prompt":     "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled.",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+
+		"parentDir":    "[Parent directory]",
+		"noFilesError": "No files or directories have been found in the root of the hard drive's file system.",
+		"rootError":    "An error occurred while enumerating files in the root directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
+		"subdirError":  "An error occurred while enumerating files in the selected subdirectory. The file system may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
+	},
+
 	"HexdumpScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."

@@ -104,6 +104,7 @@ class App {
 	friend class SystemInfoScreen;
 	friend class ResolutionScreen;
 	friend class AboutScreen;
+	friend class ExecPickerScreen;
 	friend class CartInfoScreen;
 	friend class UnlockKeyScreen;
 	friend class KeyEntryScreen;
@@ -123,6 +124,7 @@ private:
 	SystemInfoScreen    _systemInfoScreen;
 	ResolutionScreen    _resolutionScreen;
 	AboutScreen         _aboutScreen;
+	ExecPickerScreen    _execPickerScreen;
 	CartInfoScreen      _cartInfoScreen;
 	UnlockKeyScreen     _unlockKeyScreen;
 	KeyEntryScreen      _keyEntryScreen;

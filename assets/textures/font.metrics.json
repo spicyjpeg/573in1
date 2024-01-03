@@ -105,6 +105,10 @@
 		"\u0081": { "x":  6, "y": 54, "width":  6, "height": 9 },
 		"\u0082": { "x": 12, "y": 54, "width":  4, "height": 9 },
 		"\u0083": { "x": 18, "y": 54, "width":  4, "height": 9 },
+		"\u0084": { "x": 24, "y": 54, "width":  6, "height": 9 },
+		"\u0085": { "x": 30, "y": 54, "width":  6, "height": 9 },
+		"\u0086": { "x": 36, "y": 54, "width":  6, "height": 9 },
+		"\u0087": { "x": 42, "y": 54, "width":  6, "height": 9 },
 
 		"\u0090": { "x":  0, "y": 63, "width":  7, "height":  9, "icon": true },
 		"\u0091": { "x":  7, "y": 63, "width":  7, "height":  9, "icon": true },
@@ -114,9 +118,7 @@
 		"\u0095": { "x": 42, "y": 63, "width":  9, "height":  9, "icon": true },
 		"\u0096": { "x": 51, "y": 63, "width":  9, "height":  9, "icon": true },
 		"\u0097": { "x": 60, "y": 63, "width":  9, "height": 10, "icon": true },
-		"\u0098": { "x": 69, "y": 63, "width":  9, "height": 10, "icon": true },
-		"\u0099": { "x": 78, "y": 63, "width":  9, "height": 10, "icon": true },
-		"\u009a": { "x":  0, "y": 73, "width": 12, "height": 10, "icon": true },
-		"\u009b": { "x": 12, "y": 73, "width": 14, "height": 10, "icon": true }
+		"\u0098": { "x": 69, "y": 63, "width": 12, "height": 10, "icon": true },
+		"\u0099": { "x": 81, "y": 63, "width": 14, "height": 10, "icon": true }
 	}
 }

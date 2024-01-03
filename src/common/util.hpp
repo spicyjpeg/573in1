@@ -89,12 +89,15 @@ public:
 	template<typename T> inline T *as(void) {
 		return reinterpret_cast<T *>(ptr);
 	}
+	template<typename T> inline const T *as(void) const {
+		return reinterpret_cast<const T *>(ptr);
+	}
 
 	inline void *allocate(size_t _length) {
 		if (ptr)
-			free(ptr);
+			delete[] as<uint8_t>();
 
-		ptr    = new uint8_t[length];
+		ptr    = _length ? (new uint8_t[_length]) : nullptr;
 		length = _length;
 
 		return ptr;

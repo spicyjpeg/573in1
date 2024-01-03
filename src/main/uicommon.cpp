@@ -520,6 +520,7 @@ void ListScreen::draw(Context &ctx, bool active) const {
 
 		// Up/down arrow icons
 		gpu::RectWH iconRect;
+		char        arrow[2]{ 0, 0 };
 
 		iconRect.x = screenWidth -
 			(ctx.font.metrics.lineHeight + LIST_BOX_PADDING);
@@ -527,17 +528,15 @@ void ListScreen::draw(Context &ctx, bool active) const {
 		iconRect.h = ctx.font.metrics.lineHeight;
 
 		if (_activeItem) {
+			arrow[0]   = CH_UP_ARROW;
 			iconRect.y = LIST_BOX_PADDING;
-			ctx.font.draw(
-				ctx.gpuCtx, CH_UP_ARROW, iconRect, ctx.colors[COLOR_TEXT1]
-			);
+			ctx.font.draw(ctx.gpuCtx, arrow, iconRect, ctx.colors[COLOR_TEXT1]);
 		}
 		if (_activeItem < (_listLength - 1)) {
+			arrow[0]   = CH_DOWN_ARROW;
 			iconRect.y = listHeight -
 				(ctx.font.metrics.lineHeight + LIST_BOX_PADDING);
-			ctx.font.draw(
-				ctx.gpuCtx, CH_DOWN_ARROW, iconRect, ctx.colors[COLOR_TEXT1]
-			);
+			ctx.font.draw(ctx.gpuCtx, arrow, iconRect, ctx.colors[COLOR_TEXT1]);
 		}
 	}
 }
