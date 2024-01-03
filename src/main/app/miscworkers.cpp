@@ -283,8 +283,7 @@ static const LauncherEntry _LAUNCHERS[]{
 bool App::_executableWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
 
-	// TODO: implement a file picker screen
-	const char *path = "psx.exe";
+	const char *path = _execPickerScreen.selectedPath;
 
 	util::ExecutableHeader header;
 	uintptr_t              executableEnd, stackTop;
@@ -371,7 +370,7 @@ bool App::_executableWorker(void) {
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen,
+		MESSAGE_ERROR, _execPickerScreen,
 		WSTR("App.executableWorker.addressError"), path, header.textOffset,
 		executableEnd - 1, stackTop
 	);
@@ -380,8 +379,8 @@ bool App::_executableWorker(void) {
 
 _fileError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.executableWorker.fileError"),
-		path
+		MESSAGE_ERROR, _execPickerScreen,
+		WSTR("App.executableWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;

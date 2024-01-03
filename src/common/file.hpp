@@ -13,6 +13,7 @@ namespace file {
 
 /* File classes */
 
+static constexpr size_t MAX_NAME_LENGTH = 64;
 static constexpr size_t MAX_PATH_LENGTH = 256;
 
 // The first 4 of these map to the FS_* enum used by FatFs.
@@ -46,7 +47,7 @@ enum FileAttributeFlag {
 
 struct FileInfo {
 public:
-	char     name[MAX_PATH_LENGTH];
+	char     name[MAX_NAME_LENGTH];
 	uint64_t length;
 	uint32_t attributes;
 };
@@ -102,9 +103,7 @@ class Directory {
 public:
 	virtual ~Directory(void);
 
-	virtual bool getEntry(
-		FileInfo &output, uint32_t attrMask, uint32_t attrValue
-	) { return false; }
+	virtual bool getEntry(FileInfo &output) { return false; }
 	virtual void close(void) {}
 };
 
@@ -115,7 +114,7 @@ private:
 	DIR _fd;
 
 public:
-	bool getEntry(FileInfo &output, uint32_t attrMask, uint32_t attrValue);
+	bool getEntry(FileInfo &output);
 	void close(void);
 };
 
