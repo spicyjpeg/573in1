@@ -65,12 +65,23 @@ void init(void) {
 }
 
 int getFreeChannel(void) {
+#if 0
+	// The status flag gets set when a channel stops or loops for the first
+	// time rather than when it actually goes silent (so it will be set early
+	// for e.g. short looping samples with a long release envelope, or samples
+	// looping indefinitely).
 	uint32_t flags = SPU_FLAG_STATUS1 | (SPU_FLAG_STATUS2 << 16);
 
 	for (int ch = 0; flags; ch++, flags >>= 1) {
 		if (flags & 1)
 			return ch;
 	}
+#else
+	for (int ch = 23; ch >= 0; ch--) {
+		if (!SPU_CH_ADSR_VOL(ch))
+			return ch;
+	}
+#endif
 
 	return -1;
 }

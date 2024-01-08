@@ -5,6 +5,7 @@
 #include "common/rom.hpp"
 #include "common/util.hpp"
 #include "ps1/registers.h"
+#include "ps1/registers573.h"
 
 namespace rom {
 

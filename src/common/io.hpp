@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "ps1/registers.h"
+#include "ps1/registers573.h"
 
 namespace io {
 
