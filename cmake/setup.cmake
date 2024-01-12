@@ -44,9 +44,10 @@ target_compile_options(
 		-ffunction-sections
 		-fsigned-char
 		-fno-strict-overflow
-		-msoft-float
 		-march=r3000
 		-mabi=32
+		-mfp32
+		#-msoft-float
 		-mno-mt
 		-mno-llsc
 		-mno-abicalls
@@ -69,6 +70,7 @@ target_compile_options(
 		# These options will be added if CMAKE_BUILD_TYPE is not set to Debug.
 		#-O3
 		#-flto
+		-mno-check-zero-division
 	>
 )
 target_link_options(
@@ -79,57 +81,3 @@ target_link_options(
 		-G8
 		-T${CMAKE_CURRENT_LIST_DIR}/executable.ld
 )
-
-# Define a new ps1_target_incbin() command to embed the contents of a binary
-# file into an executable. This is accomplished by generating an assembly
-# listing that uses the .incbin directive to embed the file from a template.
-function(ps1_target_incbin
-	target type section symbolName sizeSymbolName path
-)
-	string(MAKE_C_IDENTIFIER "${symbolName}"     _symbolName)
-	string(MAKE_C_IDENTIFIER "${sizeSymbolName}" _sizeSymbolName)
-
-	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE _path)
-
-	# Generate a unique name for the assembly file by hashing the target name
-	# and symbol name, and place it in the current build directory.
-	string(SHA1 _hash "${target} ${_symbolName}")
-	set(_assemblyFile "${CMAKE_CURRENT_BINARY_DIR}/incbin_${_hash}.s")
-
-	file(
-		CONFIGURE
-		OUTPUT  "${_assemblyFile}"
-		CONTENT [[
-.section ${section}.${_symbolName}, "a"
-.balign 8
-
-.global ${_symbolName}
-.local ${_symbolName}_end
-.type ${_symbolName}, @object
-.size ${_symbolName}, (${_symbolName}_end - ${_symbolName})
-
-${_symbolName}:
-	.incbin "${_path}"
-${_symbolName}_end:
-
-.section ${section}.${_sizeSymbolName}, "a"
-.balign 4
-
-.global ${_sizeSymbolName}
-.type ${_sizeSymbolName}, @object
-.size ${_sizeSymbolName}, 4
-
-${_sizeSymbolName}:
-	.int (${_symbolName}_end - ${_symbolName})
-]]
-		ESCAPE_QUOTES
-		NEWLINE_STYLE LF
-	)
-
-	# Add the assembly file to the target and add the embedded binary file as a
-	# dependency to make sure it is built first if it needs to be built.
-	target_sources("${target}" "${type}" "${_assemblyFile}")
-	set_source_files_properties(
-		"${_assemblyFile}" PROPERTIES OBJECT_DEPENDS "${_path}"
-	)
-endfunction()
