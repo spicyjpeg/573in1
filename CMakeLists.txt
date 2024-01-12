@@ -123,6 +123,20 @@ target_compile_definitions(
 
 ## Executable launchers
 
+# NOTE: in order to make sure -Os is passed after -Og or -O3 (see
+# cmake/setup.cmake) and thus overrides it, it must be added to a separate
+# target rather than directly to the executables.
+add_library(launcherFlags INTERFACE)
+target_compile_options(launcherFlags INTERFACE -Os)
+target_compile_definitions(
+	launcherFlags INTERFACE
+	$<IF:$<CONFIG:Debug>,
+		#ENABLE_LOGGING=1
+	,
+		#ENABLE_LOGGING=1
+	>
+)
+
 function(addLauncher address stackTop)
 	addExecutable(
 		launcher${address} ${stackTop}
@@ -135,25 +149,53 @@ function(addLauncher address stackTop)
 		src/vendor/ffunicode.c
 		src/vendor/printf.c
 	)
-	target_compile_definitions(
-		launcher${address} PRIVATE
-		$<IF:$<CONFIG:Debug>,
-			#ENABLE_LOGGING=1
-			#ENABLE_FILE_WRITING=1
-		,
-			#ENABLE_LOGGING=1
-			#ENABLE_FILE_WRITING=1
-		>
-	)
 	target_link_options(launcher${address} PRIVATE -Ttext=0x${address})
+	target_link_libraries(launcher${address} PRIVATE launcherFlags)
 endfunction()
 
-# Note that the launchers must be <48 KB (0xc000 bytes) in order for this to
+# Note that the launchers must be <40 KB (0xa000 bytes) in order for this to
 # work properly.
-addLauncher(801f4000 801ffff0)
-addLauncher(803f4000 803ffff0)
+addLauncher(801f8000 801ffff0)
+addLauncher(803f8000 803ffff0)
 
 ## Default resource archive
+
+function(addBinaryFile target name sizeName path)
+	set(_file "${PROJECT_BINARY_DIR}/includes/${target}_${name}.s")
+	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE _path)
+
+	file(
+		CONFIGURE
+		OUTPUT  "${_file}"
+		CONTENT [[
+.section .rodata.${name}, "a"
+.balign 8
+
+.global ${name}
+.type ${name}, @object
+.size ${name}, (${name}_end - ${name})
+
+${name}:
+	.incbin "${_path}"
+${name}_end:
+
+.section .rodata.${sizeName}, "a"
+.balign 4
+
+.global ${sizeName}
+.type ${sizeName}, @object
+.size ${sizeName}, 4
+
+${sizeName}:
+	.int (${name}_end - ${name})
+]]
+		ESCAPE_QUOTES
+		NEWLINE_STYLE LF
+	)
+
+	target_sources(${target} PRIVATE "${_file}")
+	set_source_files_properties("${_file}" PROPERTIES OBJECT_DEPENDS "${_path}")
+endfunction()
 
 configure_file(resources.json resources.json ESCAPE_QUOTES)
 add_custom_command(
@@ -162,13 +204,12 @@ add_custom_command(
 		"${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
 		resources.json resources.zip
 	OUTPUT  resources.zip
-	DEPENDS resources.json launcher801f4000 launcher803f4000
+	DEPENDS resources.json launcher801f8000 launcher803f8000
 	COMMENT "Building resource archive"
 	VERBATIM
 )
-ps1_target_incbin(
-	main PRIVATE
-	.rodata _resources _resourcesSize
+addBinaryFile(
+	main _resources _resourcesSize
 	"${PROJECT_BINARY_DIR}/resources.zip"
 )
 

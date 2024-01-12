@@ -88,12 +88,12 @@
 
 	{
 		"type":   "binary",
-		"name":   "launchers/801f4000.psexe",
-		"source": "launcher801f4000.psexe"
+		"name":   "launchers/801f8000.psexe",
+		"source": "launcher801f8000.psexe"
 	},
 	{
 		"type":   "binary",
-		"name":   "launchers/803f4000.psexe",
-		"source": "launcher803f4000.psexe"
+		"name":   "launchers/803f8000.psexe",
+		"source": "launcher803f8000.psexe"
 	}
 ]

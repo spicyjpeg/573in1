@@ -270,13 +270,13 @@ public:
 
 static const LauncherEntry _LAUNCHERS[]{
 	{
-		.path       = "launchers/801f4000.psexe",
-		.loadOffset = 0x801f4000,
-		.length     = 0xc000
+		.path       = "launchers/801f8000.psexe",
+		.loadOffset = 0x801f8000,
+		.length     = 0x8000
 	}, {
-		.path       = "launchers/803f4000.psexe",
-		.loadOffset = 0x803f4000,
-		.length     = 0xc000
+		.path       = "launchers/803f8000.psexe",
+		.loadOffset = 0x803f8000,
+		.length     = 0x8000
 	}
 };
 
