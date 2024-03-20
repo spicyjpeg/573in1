@@ -13,10 +13,6 @@ namespace rom {
 
 // TODO: implement bounds checks in these
 
-static constexpr size_t   _FLASH_BANK_LENGTH = 0x400000;
-static constexpr uint32_t _FLASH_CRC_OFFSET  = 0x20;
-static constexpr uint32_t _FLASH_EXE_OFFSET  = 0x24;
-
 void Region::read(void *data, uint32_t offset, size_t length) const {
 	auto source = reinterpret_cast<const uint32_t *>(ptr + offset);
 	auto dest   = reinterpret_cast<uint32_t *>(data);
@@ -93,8 +89,8 @@ void FlashRegion::read(void *data, uint32_t offset, size_t length) const {
 	// The internal flash and PCMCIA cards can only be accessed 4 MB at a time.
 	// FIXME: this implementation will not handle reads that cross bank
 	// boundaries properly
-	int bankOffset = offset / _FLASH_BANK_LENGTH;
-	int ptrOffset  = offset % _FLASH_BANK_LENGTH;
+	int bankOffset = offset / FLASH_BANK_LENGTH;
+	int ptrOffset  = offset % FLASH_BANK_LENGTH;
 
 	auto source = reinterpret_cast<const uint32_t *>(ptr + ptrOffset);
 	auto dest   = reinterpret_cast<uint32_t *>(data);
@@ -112,8 +108,8 @@ uint32_t FlashRegion::zipCRC32(
 ) const {
 	// FIXME: this implementation will not handle reads that cross bank
 	// boundaries properly
-	int bankOffset = offset / _FLASH_BANK_LENGTH;
-	int ptrOffset  = offset % _FLASH_BANK_LENGTH;
+	int bankOffset = offset / FLASH_BANK_LENGTH;
+	int ptrOffset  = offset % FLASH_BANK_LENGTH;
 
 	auto source = reinterpret_cast<const uint32_t *>(ptr + ptrOffset);
 	auto table  = reinterpret_cast<const uint32_t *>(CACHE_BASE);
@@ -140,8 +136,8 @@ uint32_t FlashRegion::zipCRC32(
 bool FlashRegion::hasBootExecutable(void) const {
 	// FIXME: this implementation will not detect executables that cross bank
 	// boundaries (but it shouldn't matter as executables must be <4 MB anyway)
-	auto data   = reinterpret_cast<const uint8_t *>(ptr + _FLASH_EXE_OFFSET);
-	auto crcPtr = reinterpret_cast<const uint32_t *>(ptr + _FLASH_CRC_OFFSET);
+	auto data   = reinterpret_cast<const uint8_t *>(ptr + FLASH_EXE_OFFSET);
+	auto crcPtr = reinterpret_cast<const uint32_t *>(ptr + FLASH_CRC_OFFSET);
 	auto table  = reinterpret_cast<const uint32_t *>(CACHE_BASE);
 
 	io::setFlashBank(bank);

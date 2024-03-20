@@ -79,5 +79,5 @@ target_link_options(
 		-nostdlib
 		-Wl,-gc-sections
 		-G8
-		-T${CMAKE_CURRENT_LIST_DIR}/executable.ld
+		"-T${CMAKE_CURRENT_LIST_DIR}/executable.ld"
 )
