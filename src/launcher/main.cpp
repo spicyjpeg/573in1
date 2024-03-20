@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "common/ide.hpp"
 #include "common/io.hpp"
+#include "common/rom.hpp"
 #include "common/util.hpp"
 #include "ps1/system.h"
 #include "vendor/ff.h"
@@ -83,7 +84,7 @@ public:
 	}
 
 	bool openFile(void);
-	bool readHeader(void);
+	bool readHeader(uint64_t offset);
 	bool readBody(void);
 	void exit(void);
 	[[noreturn]] void run(void);
@@ -121,9 +122,13 @@ bool Launcher::openFile(void) {
 	return true;
 }
 
-bool Launcher::readHeader(void) {
+bool Launcher::readHeader(uint64_t offset) {
 	size_t length;
 
+	if (f_lseek(&_file, offset)) {
+		LOG("seek to header failed, path=%s", _settings.path);
+		return false;
+	}
 	if (f_read(&_file, &_header, sizeof(_header), &length)) {
 		LOG("header read failed, path=%s", _settings.path);
 		return false;
@@ -132,9 +137,13 @@ bool Launcher::readHeader(void) {
 		LOG("invalid header length %d", length);
 		return false;
 	}
+	if (!_header.validateMagic()) {
+		LOG("invalid executable magic");
+		return false;
+	}
 
-	if (_header.getTextPtr() >= _textStart) {
-		LOG("executable overlaps launcher");
+	if (f_lseek(&_file, offset + util::EXECUTABLE_BODY_OFFSET)) {
+		LOG("seek to body failed, path=%s", _settings.path);
 		return false;
 	}
 
@@ -145,10 +154,6 @@ bool Launcher::readHeader(void) {
 bool Launcher::readBody(void) {
 	size_t length;
 
-	if (f_lseek(&_file, util::EXECUTABLE_BODY_OFFSET)) {
-		LOG("seek to body failed, path=%s", _settings.path);
-		return false;
-	}
 	if (f_read(&_file, _header.getTextPtr(), _header.textLength, &length)) {
 		LOG("body read failed, path=%s", _settings.path);
 		return false;
@@ -207,8 +212,14 @@ int main(int argc, const char **argv) {
 
 	if (!launcher.openFile())
 		return 1;
-	if (!launcher.readHeader())
-		return 2;
+
+	if (!launcher.readHeader(0)) {
+		// If the file is not an executable, check if it is a flash image that
+		// contains an executable. Note that the CRC32 is not validated.
+		if (!launcher.readHeader(rom::FLASH_EXE_OFFSET))
+			return 2;
+	}
+
 	if (!launcher.readBody())
 		return 3;
 

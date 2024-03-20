@@ -292,15 +292,26 @@ bool App::_executableWorker(void) {
 	size_t length;
 
 	if (!_file)
-		goto _fileError;
+		goto _fileOpenError;
 
 	length = _file->read(&header, sizeof(header));
-	delete _file;
 
 	if (length != sizeof(header))
 		goto _fileError;
-	if (!header.validateMagic())
-		goto _fileError;
+
+	if (!header.validateMagic()) {
+		// If the file is not an executable, check if it is a flash image that
+		// contains an executable. Note that the CRC32 is not validated.
+		_file->seek(rom::FLASH_EXE_OFFSET);
+		length = _file->read(&header, sizeof(header));
+
+		if (length != sizeof(header))
+			goto _fileError;
+		if (!header.validateMagic())
+			goto _fileError;
+	}
+
+	delete _file;
 
 	executableEnd = header.textOffset + header.textLength;
 	stackTop      = uintptr_t(header.getStackPtr());
@@ -378,6 +389,9 @@ bool App::_executableWorker(void) {
 	return false;
 
 _fileError:
+	delete _file;
+
+_fileOpenError:
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, _execPickerScreen,
 		WSTR("App.executableWorker.fileError"), path

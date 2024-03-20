@@ -276,17 +276,8 @@ DriverError X76F041Driver::readPrivateData(void) {
 	if (error)
 		return error;
 
-	io::i2cReadByte();
-	io::i2cStart();
-
-	io::i2cWriteByte(0);
-	if (!io::i2cGetACK()) {
-		io::i2cStopWithCS();
-		LOG("NACK after resending dummy byte");
-		return X76_NACK;
-	}
-
-	io::i2cReadBytes(_dump.config, 8);
+	_dump.clearConfig();
+	io::i2cReadBytes(_dump.config, 5);
 	io::i2cStopWithCS();
 
 	_dump.flags |= DUMP_CONFIG_OK;
@@ -302,13 +293,13 @@ DriverError X76F041Driver::writeData(void) {
 		if (error)
 			return error;
 
-		if (!io::i2cWriteBytes(&_dump.data[i], 8)) {
-			io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::i2cWriteBytes(&_dump.data[i], 8);
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+
+		if (!ok) {
 			LOG("NACK while sending data bytes");
 			return X76_NACK;
 		}
-
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
 	}
 
 	auto error = _x76Command(
@@ -317,13 +308,13 @@ DriverError X76F041Driver::writeData(void) {
 	if (error)
 		return error;
 
-	if (!io::i2cWriteBytes(_dump.config, 8)) {
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
-		LOG("NACK while sending data bytes");
+	auto ok = io::i2cWriteBytes(_dump.config, 5);
+	io::i2cStopWithCS(_X76_WRITE_DELAY);
+
+	if (!ok) {
+		LOG("NACK while sending config registers");
 		return X76_NACK;
 	}
-
-	io::i2cStopWithCS(_X76_WRITE_DELAY);
 
 	return NO_ERROR;
 }
@@ -395,13 +386,13 @@ DriverError X76F100Driver::writeData(void) {
 		if (error)
 			return error;
 
-		if (!io::i2cWriteBytes(&_dump.data[i], 8)) {
-			io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::i2cWriteBytes(&_dump.data[i], 8);
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+
+		if (!ok) {
 			LOG("NACK while sending data bytes");
 			return X76_NACK;
 		}
-
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
 	}
 
 	return NO_ERROR;
@@ -419,13 +410,13 @@ DriverError X76F100Driver::erase(void) {
 		if (error)
 			return error;
 
-		if (!io::i2cWriteBytes(dummy, 8)) {
-			io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::i2cWriteBytes(dummy, 8);
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+
+		if (!ok) {
 			LOG("NACK while sending data bytes");
 			return X76_NACK;
 		}
-
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
 	}
 
 	return setDataKey(dummy);
@@ -441,13 +432,13 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 		if (error)
 			return error;
 
-		if (!io::i2cWriteBytes(key, sizeof(_dump.dataKey))) {
-			io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::i2cWriteBytes(key, sizeof(_dump.dataKey));
+		io::i2cStopWithCS(_X76_WRITE_DELAY);
+
+		if (!ok) {
 			LOG("NACK while setting new data key");
 			return X76_NACK;
 		}
-
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
 	}
 
 	_dump.copyKeyFrom(key);

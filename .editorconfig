@@ -11,3 +11,6 @@ insert_final_newline     = true
 [{*.yml,*.yaml,.clangd}]
 indent_style = space
 indent_size  = 2
+
+[assets/about.txt]
+trim_trailing_whitespace = false
