@@ -172,7 +172,7 @@ void Launcher::exit(void) {
 	if (_fs.fs_type)
 		f_unmount(_settings.drive);
 
-	uninstallExceptionHandler();
+	//uninstallExceptionHandler();
 }
 
 [[noreturn]] void Launcher::run(void) {
@@ -186,6 +186,10 @@ void Launcher::exit(void) {
 }
 
 int main(int argc, const char **argv) {
+#if 0
+	// Exception handling code bloats the binary significantly (especially in
+	// debug builds, as it pulls in the crash handler), so the watchdog is
+	// cleared manually instead.
 	installExceptionHandler();
 	io::init();
 
@@ -196,6 +200,7 @@ int main(int argc, const char **argv) {
 
 	IRQ_MASK = 1 << IRQ_VSYNC;
 	enableInterrupts();
+#endif
 
 	Settings settings;
 	Launcher launcher(settings);
@@ -210,9 +215,11 @@ int main(int argc, const char **argv) {
 
 	//util::logger.setupSyslog(settings.baudRate);
 
+	io::clearWatchdog();
 	if (!launcher.openFile())
 		return 1;
 
+	io::clearWatchdog();
 	if (!launcher.readHeader(0)) {
 		// If the file is not an executable, check if it is a flash image that
 		// contains an executable. Note that the CRC32 is not validated.
@@ -220,9 +227,11 @@ int main(int argc, const char **argv) {
 			return 2;
 	}
 
+	io::clearWatchdog();
 	if (!launcher.readBody())
 		return 3;
 
+	io::clearWatchdog();
 	launcher.run();
 	return 0;
 }

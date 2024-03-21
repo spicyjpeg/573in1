@@ -209,7 +209,7 @@ DeviceError Device::enumerate(void) {
 	delayMicroseconds(5000);
 	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN);
 	delayMicroseconds(5000);
-	_select(0);
+	_select();
 
 	auto error = _waitForStatus(CS0_STATUS_BSY, 0, _RESET_STATUS_TIMEOUT);
 	if (error)
@@ -333,12 +333,32 @@ DeviceError Device::_ideReadWrite(
 	return NO_ERROR;
 }
 
+DeviceError Device::ideIdle(bool standby) {
+	_select();
+
+	auto error = _command(standby ? ATA_STANDBY_IMMEDIATE : ATA_IDLE_IMMEDIATE);
+
+#if 0
+	if (error) {
+		// If the immediate command failed, fall back to setting the inactivity
+		// timeout to the lowest allowed value (5 seconds).
+		// FIXME: the original timeout would have to be restored once the drive
+		// is accessed again
+		_write(CS0_COUNT, 1);
+		return _command(standby ? ATA_STANDBY : ATA_IDLE);
+	}
+#endif
+
+	return error;
+}
+
 DeviceError Device::ideFlushCache(void) {
 	if (!(flags & DEVICE_HAS_FLUSH))
 		return NO_ERROR;
 		//return UNSUPPORTED_OP;
 
-	_select(CS0_DEVICE_SEL_LBA);
+	_select();
+
 	return _command(
 		(flags & DEVICE_HAS_LBA48) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE
 	);
@@ -348,7 +368,7 @@ DeviceError Device::atapiPacket(Packet &packet, size_t transferLength) {
 	if (!(flags & DEVICE_ATAPI))
 		return UNSUPPORTED_OP;
 
-	_select(0);
+	_select();
 
 	_write(CS0_CYLINDER_L, (transferLength >> 0) & 0xff);
 	_write(CS0_CYLINDER_H, (transferLength >> 8) & 0xff);

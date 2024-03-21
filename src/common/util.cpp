@@ -285,6 +285,7 @@ void ExecutableLoader::addArgument(const char *arg) {
 
 [[noreturn]] void ExecutableLoader::run(void) {
 	disableInterrupts();
+	flushCache();
 
 	register int       a0   __asm__("a0") = _argCount;
 	register char      **a1 __asm__("a1") = _argListPtr;

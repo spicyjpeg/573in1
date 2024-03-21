@@ -100,8 +100,8 @@ void setInterruptHandler(ArgFunction func, void *arg) {
 }
 
 void flushCache(void) {
-	//if (!_flushCache)
-		//_flushCache = BIOS_API_TABLE[0x44];
+	if (!_flushCache)
+		_flushCache = BIOS_API_TABLE[0x44];
 
 	bool enable = disableInterrupts();
 

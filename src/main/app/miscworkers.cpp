@@ -20,8 +20,20 @@ bool App::_startupWorker(void) {
 #endif
 
 	for (int i = 0; i < 2; i++) {
+		auto &dev = ide::devices[i];
+
 		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
-		ide::devices[i].enumerate();
+
+		if (dev.enumerate())
+			continue;
+		if (!(dev.flags & ide::DEVICE_ATAPI))
+			continue;
+
+		// Try to prevent the disc from keeping spinning unnecessarily.
+		ide::Packet packet;
+		packet.setStartStopUnit(ide::START_STOP_MODE_STOP_DISC);
+
+		dev.atapiPacket(packet);
 	}
 
 	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFAT"));
@@ -283,7 +295,7 @@ static const LauncherEntry _LAUNCHERS[]{
 bool App::_executableWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
 
-	const char *path = _execPickerScreen.selectedPath;
+	const char *path = _filePickerScreen.selectedPath;
 
 	util::ExecutableHeader header;
 	uintptr_t              executableEnd, stackTop;
@@ -372,16 +384,18 @@ bool App::_executableWorker(void) {
 		// main() before starting the new executable.
 		_unloadCartData();
 		_resourceProvider.close();
+
 		if (_resourceFile)
 			delete _resourceFile;
 
 		_fileProvider.close();
+
 		uninstallExceptionHandler();
 		loader.run();
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _execPickerScreen,
+		MESSAGE_ERROR, _filePickerScreen,
 		WSTR("App.executableWorker.addressError"), path, header.textOffset,
 		executableEnd - 1, stackTop
 	);
@@ -393,7 +407,7 @@ _fileError:
 
 _fileOpenError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _execPickerScreen,
+		MESSAGE_ERROR, _filePickerScreen,
 		WSTR("App.executableWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
