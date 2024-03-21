@@ -71,13 +71,14 @@ _driver(nullptr), _parser(nullptr), _identified(nullptr) {
 
 App::~App(void) {
 	_unloadCartData();
+	//_resourceProvider.close();
+
+	if (_resourceFile)
+		delete _resourceFile;
+
+	//_fileProvider.close();
 
 	delete[] _workerStack;
-
-	if (_resourceFile) {
-		//_resourceFile->close();
-		delete _resourceFile;
-	}
 }
 
 void App::_unloadCartData(void) {

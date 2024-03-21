@@ -108,6 +108,20 @@
 			"name":   "View cartridge hexdump",
 			"prompt": "Display the raw contents of the cartridge's EEPROM in hexadecimal format."
 		},
+		"hddRestore": {
+			"name":   "Restore cartridge from dump",
+			"prompt": "Wipe all data and restore the cartridge's contents from a dump that had been previously been saved to the IDE hard drive or CF card connected as secondary drive (if any)."
+		},
+		"reflash": {
+			"name":    "Erase and convert cartridge to another game",
+			"prompt":  "Wipe all data and flash the cartridge with another game's identifiers. All cartridges can be converted for use with any other game that uses the same cartridge type.",
+			"confirm": "The contents of the cartridge's EEPROM will be replaced, the system identifier (if any) will be cleared and the unlocking key will be updated to match the new game.\n\nDo you wish to proceed?"
+		},
+		"erase": {
+			"name":    "Erase cartridge",
+			"prompt":  "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by this tool using a master calendar.",
+			"confirm": "The contents of the cartridge's EEPROM will be erased, making it unusable until reflashed and resetting the unlocking key to 00-00-00-00-00-00-00-00. The cartridge ID will not be altered.\n\nDo you wish to proceed?"
+		},
 		"resetSystemID": {
 			"name":    "Reset system identifier (unpair cartridge)",
 			"prompt":  "Delete any previously saved system identifier, allowing the cartridge to be used to reinstall the game on any system.",
@@ -125,16 +139,6 @@
 			"prompt":  "Edit the saved system identifier to allow the cartridge to be used on a specific system without having to reinstall the game first.",
 			"confirm": "The system identifier will be changed, allowing the cartridge to be used on the respective system. If already installed on the new system, the game will not have to be reinstalled.\n\nDo you wish to proceed?",
 			"error":   "The system identifier entered is invalid. Make sure all digits are correct and try again."
-		},
-		"reflash": {
-			"name":    "Erase and convert cartridge to another game",
-			"prompt":  "Wipe all data and flash the cartridge with another game's identifiers. All cartridges can be converted for use with any other game that uses the same cartridge type.",
-			"confirm": "The contents of the cartridge's EEPROM will be replaced, the system identifier (if any) will be cleared and the unlocking key will be updated to match the new game.\n\nDo you wish to proceed?"
-		},
-		"erase": {
-			"name":    "Erase cartridge",
-			"prompt":  "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by this tool using a master calendar.",
-			"confirm": "The contents of the cartridge's EEPROM will be erased, making it unusable until reflashed and resetting the unlocking key to 00-00-00-00-00-00-00-00. The cartridge ID will not be altered.\n\nDo you wish to proceed?"
 		}
 	},
 
@@ -204,9 +208,8 @@
 		"yes":   "Yes, continue"
 	},
 
-	"ExecPickerScreen": {
-		"title":      "{CART_ICON} Select executable to run",
-		"prompt":     "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled.",
+	"FilePickerScreen": {
+		"title":      "{CART_ICON} Select file from hard drive",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"parentDir":    "[Parent directory]",
@@ -257,8 +260,9 @@
 			"prompt": "View information about this tool, including open source licenses."
 		},
 		"runExecutable": {
-			"name":   "Run executable from hard drive",
-			"prompt": "Load and launch a System 573 executable file from the IDE hard drive or CF card connected as secondary drive (if any)."
+			"name":       "Run executable from hard drive",
+			"prompt":     "Load and launch a System 573 executable file from the IDE hard drive or CF card connected as secondary drive (if any).",
+			"filePrompt": "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled."
 		},
 		"ejectCD": {
 			"name":   "Eject CD-ROM",

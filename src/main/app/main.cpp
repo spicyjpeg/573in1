@@ -177,18 +177,16 @@ void MainMenuScreen::about(ui::Context &ctx) {
 }
 
 void MainMenuScreen::runExecutable(ui::Context &ctx) {
-	int count = APP->_execPickerScreen.loadDirectory(ctx, "");
+	APP->_filePickerScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_executableWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("MainMenuScreen.runExecutable.filePrompt")
+	);
 
-	if (count > 0) {
-		ctx.show(APP->_execPickerScreen, false, true);
-	} else {
-		auto error = (count < 0)
-			? "ExecPickerScreen.rootError"_h
-			: "ExecPickerScreen.noFilesError"_h;
-
-		APP->_messageScreen.setMessage(MESSAGE_ERROR, *this, STRH(error));
-		ctx.show(APP->_messageScreen, false, true);
-	}
+	APP->_filePickerScreen.loadRootAndShow(ctx);
 }
 
 void MainMenuScreen::ejectCD(ui::Context &ctx) {

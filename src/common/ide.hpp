@@ -79,6 +79,7 @@ enum ATACommand : uint8_t {
 	ATA_IDLE_IMMEDIATE       = 0xe1,
 	ATA_STANDBY              = 0xe2,
 	ATA_IDLE                 = 0xe3,
+	ATA_CHECK_POWER_MODE     = 0xe5,
 	ATA_SLEEP                = 0xe6,
 	ATA_FLUSH_CACHE          = 0xe7,
 	ATA_FLUSH_CACHE_EXT      = 0xea,
@@ -310,7 +311,7 @@ private:
 		SYS573_IDE_CS1_BASE[reg] = value;
 	}
 
-	inline void _select(uint8_t regFlags) {
+	inline void _select(uint8_t regFlags = 0) {
 		if (flags & DEVICE_SECONDARY)
 			_write(CS0_DEVICE_SEL, regFlags | CS0_DEVICE_SEL_SECONDARY);
 		else
@@ -347,6 +348,7 @@ public:
 	}
 
 	DeviceError enumerate(void);
+	DeviceError ideIdle(bool standby = false);
 	DeviceError ideFlushCache(void);
 	DeviceError atapiPacket(
 		Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
