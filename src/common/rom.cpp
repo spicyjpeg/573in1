@@ -6,6 +6,7 @@
 #include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
+#include "ps1/system.h"
 
 namespace rom {
 
@@ -133,6 +134,31 @@ uint32_t FlashRegion::zipCRC32(
 	return ~crc;
 }
 
+/* Flash-specific functions */
+
+enum JEDECCommand : uint16_t {
+	_JEDEC_RESET           = 0xf0f0,
+	_JEDEC_HANDSHAKE1      = 0xaaaa,
+	_JEDEC_HANDSHAKE2      = 0x5555,
+	_JEDEC_GET_ID          = 0x9090,
+	_JEDEC_WRITE_BYTE      = 0xa0a0,
+	_JEDEC_ERASE_HANDSHAKE = 0x8080,
+	_JEDEC_ERASE_CHIP      = 0x1010,
+	_JEDEC_ERASE_SECTOR    = 0x3030
+};
+
+enum SharpCommand : uint16_t {
+	_SHARP_RESET         = 0xffff,
+	_SHARP_GET_ID        = 0x9090,
+	_SHARP_WRITE_BYTE    = 0x4040,
+	_SHARP_ERASE_SECTOR1 = 0x2020,
+	_SHARP_ERASE_SECTOR2 = 0xd0d0,
+	_SHARP_GET_STATUS    = 0x7070,
+	_SHARP_CLEAR_STATUS  = 0x5050,
+	_SHARP_SUSPEND       = 0xb0b0,
+	_SHARP_RESUME        = 0xd0d0
+};
+
 bool FlashRegion::hasBootExecutable(void) const {
 	// FIXME: this implementation will not detect executables that cross bank
 	// boundaries (but it shouldn't matter as executables must be <4 MB anyway)
@@ -164,25 +190,16 @@ bool FlashRegion::hasBootExecutable(void) const {
 	return (~crc == *crcPtr);
 }
 
-uint16_t FlashRegion::getJEDECID(void) const {
-	auto flash = reinterpret_cast<volatile uint16_t *>(ptr);
+uint32_t FlashRegion::getJEDECID(void) const {
+	auto ptr = getFlashPtr();
 
-	io::setFlashBank(bank);
+	ptr[0x000] = _SHARP_RESET;
+	ptr[0x000] = _SHARP_RESET;
+	ptr[0x555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aa] = _JEDEC_HANDSHAKE2;
+	ptr[0x555] = _JEDEC_GET_ID; // Same as _SHARP_GET_ID
 
-	flash[0x000] = SHARP_RESET;
-	flash[0x000] = SHARP_RESET;
-	flash[0x555] = FUJITSU_HANDSHAKE1;
-	flash[0x2aa] = FUJITSU_HANDSHAKE2;
-	flash[0x555] = FUJITSU_GET_JEDEC_ID;
-
-	uint16_t id = (flash[0] & 0xff) | ((flash[1] & 0xff) << 8);
-
-	if (id == ID_SHARP_LH28F016S)
-		flash[0x000] = SHARP_RESET;
-	else
-		flash[0x000] = FUJITSU_RESET;
-
-	return id;
+	return ptr[0] | (ptr[1] << 16);
 }
 
 const BIOSRegion  bios;
@@ -192,6 +209,286 @@ const FlashRegion pcmcia[2]{
 	{ SYS573_BANK_PCMCIA1, 0x4000000, io::JAMMA_PCMCIA_CD1 },
 	{ SYS573_BANK_PCMCIA2, 0x4000000, io::JAMMA_PCMCIA_CD2 }
 };
+
+/* Data common to all flash chip drivers */
+
+static constexpr int _FLASH_WRITE_TIMEOUT = 10000;
+static constexpr int _FLASH_ERASE_TIMEOUT = 10000000;
+
+const char *const FLASH_DRIVER_ERROR_NAMES[]{
+	"NO_ERROR",
+	"UNSUPPORTED_OP",
+	"CHIP_TIMEOUT",
+	"CHIP_ERROR",
+	"VERIFY_MISMATCH",
+	"WRITE_PROTECTED"
+};
+
+static const FlashChipSize _DUMMY_CHIP_SIZE{
+	.chipLength        = 0,
+	.eraseSectorLength = 0
+};
+
+// The onboard flash and all Konami-supplied flash cards use 2 MB chips with 64
+// KB sectors.
+static const FlashChipSize _STANDARD_CHIP_SIZE{
+	.chipLength        = 0x200000,
+	.eraseSectorLength = 0x10000
+};
+
+const FlashChipSize &FlashDriver::getChipSize(void) const {
+	return _DUMMY_CHIP_SIZE;
+}
+
+/* Fujitsu MBM29F016A driver */
+
+enum FujitsuStatusFlag : uint16_t {
+	_FUJITSU_STATUS_ERASE_TOGGLE = 0x101 << 2,
+	_FUJITSU_STATUS_ERASE_START  = 0x101 << 3,
+	_FUJITSU_STATUS_ERROR        = 0x101 << 5,
+	_FUJITSU_STATUS_TOGGLE       = 0x101 << 6,
+	_FUJITSU_STATUS_POLL_BIT     = 0x101 << 7
+};
+
+FlashDriverError MBM29F016AFlashDriver::_flush(
+	volatile uint16_t *ptr, uint16_t value, int timeout
+) {
+	for (; timeout > 0; timeout--) {
+		auto status = *ptr;
+
+		if (status == value)
+			return NO_ERROR;
+
+		if (!((status ^ value) & _FUJITSU_STATUS_POLL_BIT)) {
+			LOG("mismatch, exp=0x%04x, got=0x%04x", value, status);
+			return VERIFY_MISMATCH;
+		}
+		if (status & _FUJITSU_STATUS_ERROR) {
+			LOG("MBM29F016A error, stat=0x%04x", status);
+			return CHIP_ERROR;
+		}
+
+		delayMicroseconds(1);
+	}
+
+	LOG("MBM29F016A timeout, stat=0x%04x", *ptr);
+	return CHIP_TIMEOUT;
+}
+
+void MBM29F016AFlashDriver::write(uint32_t offset, uint16_t value) {
+	auto ptr = _region.getFlashPtr();
+
+	ptr[0x000]  = _JEDEC_RESET;
+	ptr[0x555]  = _JEDEC_HANDSHAKE1;
+	ptr[0x2aa]  = _JEDEC_HANDSHAKE2;
+	ptr[0x555]  = _JEDEC_WRITE_BYTE;
+	ptr[offset] = value;
+}
+
+void MBM29F016AFlashDriver::eraseSector(uint32_t offset) {
+	auto ptr = _region.getFlashPtr();
+
+	ptr[0x000]  = _JEDEC_RESET;
+	ptr[0x555]  = _JEDEC_HANDSHAKE1;
+	ptr[0x2aa]  = _JEDEC_HANDSHAKE2;
+	ptr[0x555]  = _JEDEC_ERASE_HANDSHAKE;
+	ptr[0x555]  = _JEDEC_HANDSHAKE1;
+	ptr[0x2aa]  = _JEDEC_HANDSHAKE2;
+	ptr[offset] = _JEDEC_ERASE_SECTOR;
+}
+
+void MBM29F016AFlashDriver::eraseChip(uint32_t offset) {
+	auto ptr = _region.getFlashPtr();
+
+	ptr[0x000] = _JEDEC_RESET;
+	ptr[0x555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aa] = _JEDEC_HANDSHAKE2;
+	ptr[0x555] = _JEDEC_ERASE_HANDSHAKE;
+	ptr[0x555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aa] = _JEDEC_HANDSHAKE2;
+	ptr[0x555] = _JEDEC_ERASE_CHIP;
+}
+
+FlashDriverError MBM29F016AFlashDriver::flushWrite(
+	uint32_t offset, uint16_t value
+) {
+	auto ptr = &(_region.getFlashPtr())[offset];
+
+	return _flush(ptr, value, _FLASH_WRITE_TIMEOUT);
+}
+
+FlashDriverError MBM29F016AFlashDriver::flushErase(uint32_t offset) {
+	auto ptr = &(_region.getFlashPtr())[offset];
+
+	return _flush(ptr, 0xffff, _FLASH_ERASE_TIMEOUT);
+}
+
+const FlashChipSize &MBM29F016AFlashDriver::getChipSize(void) const {
+	return _STANDARD_CHIP_SIZE;
+}
+
+/* Unknown Fujitsu chip driver */
+
+// Konami's drivers handle this chip pretty much identically to the MBM29F016A,
+// but using 0x5555/0x2aaa as command addresses instead of 0x555/0x2aa. This
+// could actually be a >2 MB chip.
+
+void FujitsuUnknownFlashDriver::write(uint32_t offset, uint16_t value) {
+	auto ptr = _region.getFlashPtr();
+
+	ptr[0x0000] = _JEDEC_RESET;
+	ptr[0x5555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aaa] = _JEDEC_HANDSHAKE2;
+	ptr[0x5555] = _JEDEC_WRITE_BYTE;
+	ptr[offset] = value;
+}
+
+void FujitsuUnknownFlashDriver::eraseSector(uint32_t offset) {
+	auto ptr = _region.getFlashPtr();
+
+	ptr[0x0000] = _JEDEC_RESET;
+	ptr[0x5555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aaa] = _JEDEC_HANDSHAKE2;
+	ptr[0x5555] = _JEDEC_ERASE_HANDSHAKE;
+	ptr[0x5555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aaa] = _JEDEC_HANDSHAKE2;
+	ptr[offset] = _JEDEC_ERASE_SECTOR;
+}
+
+void FujitsuUnknownFlashDriver::eraseChip(uint32_t offset) {
+	auto ptr = _region.getFlashPtr();
+
+	ptr[0x0005] = _JEDEC_RESET;
+	ptr[0x5555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aaa] = _JEDEC_HANDSHAKE2;
+	ptr[0x5555] = _JEDEC_ERASE_HANDSHAKE;
+	ptr[0x5555] = _JEDEC_HANDSHAKE1;
+	ptr[0x2aaa] = _JEDEC_HANDSHAKE2;
+	ptr[0x5555] = _JEDEC_ERASE_CHIP;
+}
+
+/* Sharp LH28F016S driver */
+
+enum SharpStatusFlag : uint16_t {
+	_SHARP_STATUS_DPS    = 0x101 << 1,
+	_SHARP_STATUS_BWSS   = 0x101 << 2,
+	_SHARP_STATUS_VPPS   = 0x101 << 3,
+	_SHARP_STATUS_BWSLBS = 0x101 << 4,
+	_SHARP_STATUS_ECLBS  = 0x101 << 5,
+	_SHARP_STATUS_ESS    = 0x101 << 6,
+	_SHARP_STATUS_WSMS   = 0x101 << 7
+};
+
+FlashDriverError LH28F016SFlashDriver::_flush(
+	volatile uint16_t *ptr, int timeout
+) {
+	// Not required as all write/erase commands already put the chip into status
+	// reading mode.
+	//*ptr = _SHARP_GET_STATUS;
+
+	for (; timeout > 0; timeout--) {
+		auto status = *ptr;
+
+		if (status & (_SHARP_STATUS_DPS | _SHARP_STATUS_VPPS)) {
+			*ptr = _SHARP_CLEAR_STATUS;
+
+			LOG("LH28F016S locked, stat=0x%04x", status);
+			return WRITE_PROTECTED;
+		}
+		if (status & (_SHARP_STATUS_BWSLBS | _SHARP_STATUS_ECLBS)) {
+			*ptr = _SHARP_CLEAR_STATUS;
+
+			LOG("LH28F016S error, stat=0x%04x", status);
+			return CHIP_ERROR;
+		}
+
+		if (status & _SHARP_STATUS_WSMS)
+			return NO_ERROR;
+
+		delayMicroseconds(1);
+	}
+
+	LOG("LH28F016S timeout, stat=0x%04x", *ptr);
+	return CHIP_TIMEOUT;
+}
+
+void LH28F016SFlashDriver::write(uint32_t offset, uint16_t value) {
+	auto ptr = &(_region.getFlashPtr())[offset];
+
+	*ptr = _SHARP_RESET;
+	*ptr = _SHARP_CLEAR_STATUS;
+	*ptr = _SHARP_WRITE_BYTE;
+	*ptr = value;
+}
+
+void LH28F016SFlashDriver::eraseSector(uint32_t offset) {
+	auto ptr = &(_region.getFlashPtr())[offset];
+
+	*ptr = _SHARP_RESET;
+	*ptr = _SHARP_ERASE_SECTOR1;
+	*ptr = _SHARP_ERASE_SECTOR2;
+}
+
+FlashDriverError LH28F016SFlashDriver::flushWrite(
+	uint32_t offset, uint16_t value
+) {
+	auto ptr = &(_region.getFlashPtr())[offset];
+
+	return _flush(ptr, _FLASH_WRITE_TIMEOUT);
+}
+
+FlashDriverError LH28F016SFlashDriver::flushErase(uint32_t offset) {
+	auto ptr = &(_region.getFlashPtr())[offset];
+
+	return _flush(ptr, _FLASH_ERASE_TIMEOUT);
+}
+
+const FlashChipSize &LH28F016SFlashDriver::getChipSize(void) const {
+	return _STANDARD_CHIP_SIZE;
+}
+
+/* Flash chip identification */
+
+enum FlashIdentifier : uint16_t {
+	// NOTE: the MBM29F017A datasheet incorrectly lists the device ID as 0xad in
+	// some places. The chip behaves pretty much identically to the MBM29F016A.
+	_ID_MBM29F016A      = 0x04 | (0xad << 8),
+	_ID_MBM29F017A      = 0x04 | (0x3d << 8),
+	_ID_FUJITSU_UNKNOWN = 0x04 | (0xa4 << 8),
+	_ID_LH28F016S       = 0x89 | (0xaa << 8)
+};
+
+FlashDriver *newFlashDriver(FlashRegion &region) {
+	if (!region.isPresent()) {
+		LOG("card not present");
+		return new FlashDriver(region);
+	}
+
+	uint32_t id   = region.getJEDECID();
+	uint16_t low  = ((id >> 0) & 0xff) | ((id >>  8) & 0xff00);
+	uint16_t high = ((id >> 8) & 0xff) | ((id >> 16) & 0xff00);
+	LOG("low=0x%04x, high=0x%04x", low, high);
+
+	if (low != high) {
+		// TODO: implement single-chip (16-bit) flash support
+		return new FlashDriver(region);
+	} else {
+		switch (low) {
+			case _ID_MBM29F016A:
+			case _ID_MBM29F017A:
+				return new MBM29F016AFlashDriver(region);
+
+			case _ID_FUJITSU_UNKNOWN:
+				return new FujitsuUnknownFlashDriver(region);
+
+			case _ID_LH28F016S:
+				return new LH28F016SFlashDriver(region);
+
+			default:
+				return new FlashDriver(region);
+		}
+	}
+}
 
 /* BIOS ROM headers */
 

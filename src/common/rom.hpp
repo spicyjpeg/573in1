@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/io.hpp"
 #include "common/util.hpp"
 #include "ps1/registers.h"
 
@@ -52,51 +53,112 @@ public:
 	inline FlashRegion(int bank, size_t regionLength, uint32_t inputs = 0)
 	: Region(DEV0_BASE, regionLength), bank(bank), inputs(inputs) {}
 
+	inline volatile uint16_t *getFlashPtr(void) const {
+		io::setFlashBank(bank);
+
+		return reinterpret_cast<volatile uint16_t *>(ptr);
+	}
+
 	bool isPresent(void) const;
 	void read(void *data, uint32_t offset, size_t length) const;
 	uint32_t zipCRC32(uint32_t offset, size_t length, uint32_t crc = 0) const;
 
 	bool hasBootExecutable(void) const;
-	uint16_t getJEDECID(void) const;
+	uint32_t getJEDECID(void) const;
 };
 
 extern const BIOSRegion  bios;
 extern const RTCRegion   rtc;
 extern const FlashRegion flash, pcmcia[2];
 
-/* Flash memory driver */
+/* Flash chip drivers */
 
-enum FlashManufacturer : uint8_t {
-	MANUF_FUJITSU = 0x04,
-	MANUF_SHARP   = 0x89
+enum FlashDriverError {
+	NO_ERROR        = 0,
+	UNSUPPORTED_OP  = 1,
+	CHIP_TIMEOUT    = 2,
+	CHIP_ERROR      = 3,
+	VERIFY_MISMATCH = 4,
+	WRITE_PROTECTED = 5
 };
 
-enum FlashJEDECID : uint16_t {
-	ID_FUJITSU_MBM29F016A     = MANUF_FUJITSU | (0xad << 8),
-	ID_FUJITSU_MBM29F016A_ALT = MANUF_FUJITSU | (0x3d << 8),
-	ID_FUJITSU_UNKNOWN        = MANUF_FUJITSU | (0xa4 << 8),
-	ID_SHARP_LH28F016S        = MANUF_SHARP   | (0xaa << 8)
+struct FlashChipSize {
+public:
+	size_t chipLength, eraseSectorLength;
 };
 
-enum FlashCommand : uint16_t {
-	SHARP_ERASE_SECTOR = 0x2020,
-	SHARP_WRITE        = 0x4040,
-	SHARP_CLEAR_STATUS = 0x5050,
-	SHARP_GET_STATUS   = 0x7070,
-	SHARP_GET_JEDEC_ID = 0x9090,
-	SHARP_SUSPEND      = 0xb0b0,
-	SHARP_RESUME       = 0xd0d0,
-	SHARP_RESET        = 0xffff,
+class FlashDriver {
+protected:
+	FlashRegion &_region;
 
-	FUJITSU_ERASE_CHIP   = 0x1010,
-	FUJITSU_ERASE_SECTOR = 0x3030,
-	FUJITSU_HANDSHAKE2   = 0x5555,
-	FUJITSU_ERASE        = 0x8080,
-	FUJITSU_GET_JEDEC_ID = 0x9090,
-	FUJITSU_WRITE        = 0xa0a0,
-	FUJITSU_HANDSHAKE1   = 0xaaaa,
-	FUJITSU_RESET        = 0xf0f0
+public:
+	inline FlashDriver(FlashRegion &region)
+	: _region(region) {}
+
+	virtual ~FlashDriver(void) {}
+	virtual void write(uint32_t offset, uint16_t value) {}
+	virtual void eraseSector(uint32_t offset) {}
+	virtual void eraseChip(uint32_t offset) {}
+	virtual FlashDriverError flushWrite(uint32_t offset, uint16_t value) {
+		return UNSUPPORTED_OP;
+	}
+	virtual FlashDriverError flushErase(uint32_t offset) {
+		return UNSUPPORTED_OP;
+	}
+	virtual const FlashChipSize &getChipSize(void) const;
 };
+
+class MBM29F016AFlashDriver : public FlashDriver {
+private:
+	FlashDriverError _flush(
+		volatile uint16_t *ptr, uint16_t value, int timeout
+	);
+
+public:
+	inline MBM29F016AFlashDriver(FlashRegion &region)
+	: FlashDriver(region) {}
+
+	void write(uint32_t offset, uint16_t value);
+	void eraseSector(uint32_t offset);
+	void eraseChip(uint32_t offset);
+	FlashDriverError flushWrite(uint32_t offset, uint16_t value);
+	FlashDriverError flushErase(uint32_t offset);
+	const FlashChipSize &getChipSize(void) const;
+};
+
+class FujitsuUnknownFlashDriver : public MBM29F016AFlashDriver {
+public:
+	inline FujitsuUnknownFlashDriver(FlashRegion &region)
+	: MBM29F016AFlashDriver(region) {}
+
+	void write(uint32_t offset, uint16_t value);
+	void eraseSector(uint32_t offset);
+	void eraseChip(uint32_t offset);
+};
+
+class LH28F016SFlashDriver : public FlashDriver {
+private:
+	FlashDriverError _flush(volatile uint16_t *ptr, int timeout);
+
+public:
+	inline LH28F016SFlashDriver(FlashRegion &region)
+	: FlashDriver(region) {}
+
+	void write(uint32_t offset, uint16_t value);
+	void eraseSector(uint32_t offset);
+	void eraseChip(uint32_t offset);
+	FlashDriverError flushWrite(uint32_t offset, uint16_t value);
+	FlashDriverError flushErase(uint32_t offset);
+	const FlashChipSize &getChipSize(void) const;
+};
+
+extern const char *const FLASH_DRIVER_ERROR_NAMES[];
+
+static inline const char *getErrorString(FlashDriverError error) {
+	return FLASH_DRIVER_ERROR_NAMES[error];
+}
+
+FlashDriver *newFlashDriver(FlashRegion &region);
 
 /* BIOS ROM headers */
 

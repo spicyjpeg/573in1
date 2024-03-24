@@ -57,8 +57,8 @@ enum FlashRegionInfoFlag : uint16_t {
 
 class FlashRegionInfo {
 public:
-	uint16_t flags, jedecID;
-	uint32_t crc[4];
+	uint32_t flags;
+	uint32_t jedecID, crc[4];
 
 	inline void clearFlags(void) {
 		flags = 0;
@@ -168,6 +168,7 @@ private:
 	bool _qrCodeWorker(void);
 	bool _cartDumpWorker(void);
 	bool _cartWriteWorker(void);
+	bool _cartRestoreWorker(void);
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
 

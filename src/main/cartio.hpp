@@ -87,7 +87,7 @@ public:
 	DriverError readSystemID(void);
 };
 
-class [[gnu::packed]] X76Driver : public CartDriver {
+class X76Driver : public CartDriver {
 protected:
 	DriverError _x76Command(
 		uint8_t pollByte, uint8_t cmd, int param = -1
@@ -100,7 +100,7 @@ public:
 	DriverError readCartID(void);
 };
 
-class [[gnu::packed]] X76F041Driver : public X76Driver {
+class X76F041Driver : public X76Driver {
 public:
 	inline X76F041Driver(Dump &dump)
 	: X76Driver(dump, X76F041) {}
@@ -111,7 +111,7 @@ public:
 	DriverError setDataKey(const uint8_t *key);
 };
 
-class [[gnu::packed]] X76F100Driver : public X76Driver {
+class X76F100Driver : public X76Driver {
 public:
 	inline X76F100Driver(Dump &dump)
 	: X76Driver(dump, X76F100) {}
@@ -122,7 +122,7 @@ public:
 	DriverError setDataKey(const uint8_t *key);
 };
 
-class [[gnu::packed]] ZS01Driver : public CartDriver {
+class ZS01Driver : public CartDriver {
 private:
 	uint8_t _encoderState;
 

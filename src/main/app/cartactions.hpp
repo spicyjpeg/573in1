@@ -18,6 +18,7 @@ public:
 	void qrDump(ui::Context &ctx);
 	void hddDump(ui::Context &ctx);
 	void hexdump(ui::Context &ctx);
+	void hddRestore(ui::Context &ctx);
 	void reflash(ui::Context &ctx);
 	void erase(ui::Context &ctx);
 	void resetSystemID(ui::Context &ctx);
