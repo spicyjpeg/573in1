@@ -156,7 +156,7 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 	_PRINT(STR("SystemInfoScreen.flash.header"));
 	_PRINT(
 		STR("SystemInfoScreen.flash.info"), info.flash.jedecID & 0xff,
-		info.flash.jedecID >> 8, info.flash.crc[0]
+		(info.flash.jedecID >> 16) & 0xff, info.flash.crc[0]
 	);
 
 	if (info.flash.flags & FLASH_REGION_INFO_BOOTABLE)
@@ -173,7 +173,8 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 		if (card.flags & FLASH_REGION_INFO_PRESENT) {
 			_PRINT(
 				STR("SystemInfoScreen.pcmcia.info"), card.jedecID & 0xff,
-				card.jedecID >> 8, card.crc[0], card.crc[1], card.crc[3]
+				(card.jedecID >> 16) & 0xff, card.crc[0], card.crc[1],
+				card.crc[3]
 			);
 
 			if (card.flags & FLASH_REGION_INFO_BOOTABLE)

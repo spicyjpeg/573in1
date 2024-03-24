@@ -6,9 +6,9 @@
 
 	"App": {
 		"startupWorker": {
-			"initIDE":       "Initializing IDE devices...\nDo not turn off the 573.",
-			"initFAT":       "Attempting to mount FAT filesystem...\nDo not turn off the 573.",
-			"loadResources": "Loading resource pack..."
+			"initIDE":       "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
+			"initFAT":       "Attempting to mount FAT filesystem...\nDo not turn off the 573 or unplug drives.",
+			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives."
 		},
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
@@ -20,10 +20,20 @@
 			"error":  "An error occurred while erasing the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"cartReflashWorker": {
+			"init":       "Generating cartridge data...\nDo not turn off the 573.",
 			"setDataKey": "Setting new unlocking key...\nDo not turn off the 573.",
 			"write":      "Writing new data to cartridge...\nDo not turn off the 573.",
 			"idError":    "The selected game is not compatible with the currently inserted cartridge, as it requires one with a valid DS2401 identifier.",
-			"writeError": "An error occurred while reflashing the cartridge. The unlocking key may or may not have been successfully changed.\n\nError code: %s\nPress the Test button to view debug logs."
+			"writeError": "An error occurred while writing to the cartridge. The unlocking key may or may not have been successfully changed.\n\nError code: %s\nPress the Test button to view debug logs."
+		},
+		"cartRestoreWorker": {
+			"init":       "Validating dump file...\nDo not turn off the 573 or unplug drives.",
+			"setDataKey": "Setting new unlocking key...\nDo not turn off the 573 or unplug drives.",
+			"write":      "Writing new data to cartridge...\nDo not turn off the 573 or unplug drives.",
+			"fileError":  "The selected file could not be accessed or is not a valid cartridge dump. Make sure the file has been copied properly.\n\nFile: %s",
+			"typeError":  "The selected dump is not compatible with the currently inserted cartridge, as it requires a different chip type.\n\nFile: %s",
+			"writeError": "An error occurred while writing to the cartridge's EEPROM. The unlocking key may or may not have been successfully changed.\n\nError code: %s\nPress the Test button to view debug logs.",
+			"idWarning":  "The dump has been successfully restored, but games may reject the cartridge as the dump was obtained from a cartridge with a different ID.\n\nDump ID:\t%s\nCart ID:\t%s"
 		},
 		"cartUnlockWorker": {
 			"read":         "Dumping cartridge...\nDo not turn off the 573.",
@@ -37,14 +47,14 @@
 			"error": "An error occurred while writing to the cartridge's EEPROM.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"cartDumpWorker": {
-			"save":    "Saving cartridge dump...\nDo not turn off the 573.",
+			"save":    "Saving cartridge dump...\nDo not turn off the 573 or unplug drives.",
 			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with this tool.",
 			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"executableWorker": {
-			"init":         "Validating executable file...\nDo not turn off the 573.",
-			"load":         "Loading executable file...\nDo not turn off the 573.",
-			"fileError":    "The selected file is not a valid System 573 executable. Make sure the file has been built, extracted or copied properly.\n\nFile: %s",
+			"init":         "Validating executable file...\nDo not turn off the 573 or unplug drives.",
+			"load":         "Loading executable file...\nDo not turn off the 573 or unplug drives.",
+			"fileError":    "The selected file could not be accessed or is not a valid System 573 executable. Make sure the file has been copied properly.\n\nFile: %s",
 			"addressError": "The selected file cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nFile:\t\t%s\nRegion:\t%08X-%08X\nStack top:\t%08X"
 		},
 		"qrCodeWorker": {
@@ -52,12 +62,12 @@
 			"generate": "Generating QR code..."
 		},
 		"romDumpWorker": {
-			"init":        "Creating dump directory...\nDo not turn off the 573.",
-			"dumpBIOS":    "Dumping BIOS ROM...\nDo not turn off the 573.",
-			"dumpRTC":     "Dumping RTC RAM...\nDo not turn off the 573.",
-			"dumpFlash":   "Dumping internal flash...\nDo not turn off the 573.",
-			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...\nDo not turn off the 573.",
-			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573.",
+			"init":        "Creating dump directory...\nDo not turn off the 573 or unplug drives.",
+			"dumpBIOS":    "Dumping BIOS ROM...\nDo not turn off the 573 or unplug drives.",
+			"dumpRTC":     "Dumping RTC RAM...\nDo not turn off the 573 or unplug drives.",
+			"dumpFlash":   "Dumping internal flash...\nDo not turn off the 573 or unplug drives.",
+			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...\nDo not turn off the 573 or unplug drives.",
+			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573 or unplug drives.",
 			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
 			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
 			"dumpError":   "An error occurred while saving one of the dumps. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
@@ -109,8 +119,10 @@
 			"prompt": "Display the raw contents of the cartridge's EEPROM in hexadecimal format."
 		},
 		"hddRestore": {
-			"name":   "Restore cartridge from dump",
-			"prompt": "Wipe all data and restore the cartridge's contents from a dump that had been previously been saved to the IDE hard drive or CF card connected as secondary drive (if any)."
+			"name":       "Restore cartridge from dump",
+			"prompt":     "Wipe all data and restore the cartridge's contents from a previously saved dump on the IDE hard drive or CF card connected as secondary drive (if any).",
+			"filePrompt": "Note that the dump must have the same chip type, and should have the same DS2401 ID (if any), as the cartridge.",
+			"confirm":    "The contents of the cartridge's EEPROM will be altered and the unlocking key updated to match the selected dump.\n\nDo you wish to proceed?"
 		},
 		"reflash": {
 			"name":    "Erase and convert cartridge to another game",
@@ -225,7 +237,7 @@
 
 	"KeyEntryScreen": {
 		"title":  "Enter unlocking key",
-		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
 	},
@@ -312,7 +324,7 @@
 
 	"SystemIDEntryScreen": {
 		"title":  "Edit system identifier",
-		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move between digits, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
 	},

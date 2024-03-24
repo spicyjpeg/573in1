@@ -29,6 +29,10 @@ static const Action _ACTIONS[]{
 		.prompt = "CartActionsScreen.hexdump.prompt"_h,
 		.target = &CartActionsScreen::hexdump
 	}, {
+		.name   = "CartActionsScreen.hddRestore.name"_h,
+		.prompt = "CartActionsScreen.hddRestore.prompt"_h,
+		.target = &CartActionsScreen::hddRestore
+	}, {
 		.name   = "CartActionsScreen.reflash.name"_h,
 		.prompt = "CartActionsScreen.reflash.prompt"_h,
 		.target = &CartActionsScreen::reflash
@@ -67,6 +71,26 @@ void CartActionsScreen::hddDump(ui::Context &ctx) {
 
 void CartActionsScreen::hexdump(ui::Context &ctx) {
 	ctx.show(APP->_hexdumpScreen, false, true);
+}
+
+void CartActionsScreen::hddRestore(ui::Context &ctx) {
+	APP->_filePickerScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			ctx.show(APP->_confirmScreen, false, true);
+		},
+		STR("CartActionsScreen.hddRestore.filePrompt")
+	);
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_cartRestoreWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("CartActionsScreen.hddRestore.confirm")
+	);
+
+	APP->_filePickerScreen.loadRootAndShow(ctx);
 }
 
 void CartActionsScreen::reflash(ui::Context &ctx) {
@@ -268,7 +292,7 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 
 			APP->_selectedEntry = APP->_db.get(_activeItem);
 			ctx.show(APP->_confirmScreen, false, true);
-		}		
+		}
 	}
 }
 

@@ -265,6 +265,83 @@ bool App::_cartWriteWorker(void) {
 	return _cartUnlockWorker();
 }
 
+bool App::_cartRestoreWorker(void) {
+	_workerStatus.update(0, 3, WSTR("App.cartRestoreWorker.init"));
+
+	const char *path = _filePickerScreen.selectedPath;
+
+	cart::Dump        newDump;
+	cart::DriverError error;
+
+	auto   _file = _fileProvider.openFile(path, file::READ);
+	size_t length;
+
+	if (!_file)
+		goto _fileOpenError;
+
+	length = _file->read(&newDump, sizeof(newDump));
+
+	if (length < (sizeof(newDump) - sizeof(newDump.data)))
+		goto _fileError;
+	if (false) // TODO: validate dump
+		goto _fileError;
+	if (length != newDump.getDumpLength())
+		goto _fileError;
+
+	delete _file;
+
+	if (_dump.chipType != newDump.chipType) {
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _filePickerScreen,
+			WSTR("App.cartRestoreWorker.typeError"), path
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
+
+	_workerStatus.update(1, 3, WSTR("App.cartRestoreWorker.setDataKey"));
+	error = _driver->setDataKey(newDump.dataKey);
+
+	if (error) {
+		LOG("key error [%s]", cart::getErrorString(error));
+	} else {
+		if (newDump.flags & (
+			cart::DUMP_PUBLIC_DATA_OK | cart::DUMP_PRIVATE_DATA_OK
+		))
+			_dump.copyDataFrom(newDump.data);
+		if (newDump.flags & cart::DUMP_CONFIG_OK)
+			_dump.copyConfigFrom(newDump.config);
+
+		_workerStatus.update(2, 3, WSTR("App.cartRestoreWorker.write"));
+		error = _driver->writeData();
+	}
+
+	_cartDetectWorker();
+
+	if (error) {
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _filePickerScreen,
+			WSTR("App.cartRestoreWorker.writeError"),
+			cart::getErrorString(error)
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
+
+	return _cartUnlockWorker();
+
+_fileError:
+	delete _file;
+
+_fileOpenError:
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _filePickerScreen,
+		WSTR("App.cartRestoreWorker.fileError"), path
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+}
+
 bool App::_cartReflashWorker(void) {
 	// Make sure a valid cart ID is present if required by the new data.
 	if (
@@ -278,6 +355,8 @@ bool App::_cartReflashWorker(void) {
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
+
+	_workerStatus.update(0, 3, WSTR("App.cartReflashWorker.init"));
 
 	// TODO: preserve 0x81 traceid if possible
 	//uint8_t traceID[8];
