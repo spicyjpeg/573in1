@@ -11,54 +11,6 @@
 #include "main/app/app.hpp"
 #include "ps1/system.h"
 
-bool App::_startupWorker(void) {
-#ifdef NDEBUG
-	_workerStatus.setNextScreen(_warningScreen);
-#else
-	// Skip the warning screen in debug builds.
-	_workerStatus.setNextScreen(_buttonMappingScreen);
-#endif
-
-	for (int i = 0; i < 2; i++) {
-		auto &dev = ide::devices[i];
-
-		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
-
-		if (dev.enumerate())
-			continue;
-		if (!(dev.flags & ide::DEVICE_ATAPI))
-			continue;
-
-		// Try to prevent the disc from keeping spinning unnecessarily.
-		ide::Packet packet;
-		packet.setStartStopUnit(ide::START_STOP_MODE_STOP_DISC);
-
-		dev.atapiPacket(packet);
-	}
-
-	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFAT"));
-
-	// Attempt to mount the secondary drive first, then in case of failure try
-	// mounting the primary drive instead.
-	if (!_fileProvider.init("1:"))
-		_fileProvider.init("0:");
-
-	_workerStatus.update(3, 4, WSTR("App.startupWorker.loadResources"));
-
-	_resourceFile = _fileProvider.openFile(
-		EXTERNAL_DATA_DIR "/resource.zip", file::READ
-	);
-
-	if (_resourceFile) {
-		_resourceProvider.close();
-		if (_resourceProvider.init(_resourceFile))
-			_loadResources();
-	}
-
-	_ctx.sounds[ui::SOUND_STARTUP].play();
-	return true;
-}
-
 struct DumpEntry {
 public:
 	util::Hash        dumpPrompt, hashPrompt;
@@ -109,15 +61,17 @@ bool App::_romDumpWorker(void) {
 
 	// Store all dumps in a subdirectory named "dumpN" within the main data
 	// folder.
-	int  index = 0;
-	char dirPath[32], filePath[32];
-
 	file::FileInfo info;
 
 	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR)) {
 		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
 			goto _initError;
 	}
+
+	int  index;
+	char dirPath[32], filePath[32];
+
+	index = 0;
 
 	do {
 		index++;
@@ -150,7 +104,7 @@ bool App::_romDumpWorker(void) {
 		);
 
 		if (!_file)
-			goto _writeError;
+			goto _fileError;
 
 		auto     buffer = new uint8_t[chunkLength];
 		uint32_t offset = 0;
@@ -165,7 +119,7 @@ bool App::_romDumpWorker(void) {
 				delete   _file;
 				delete[] buffer;
 
-				goto _writeError;
+				goto _fileError;
 			}
 
 			offset += chunkLength;
@@ -178,7 +132,7 @@ bool App::_romDumpWorker(void) {
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _mainMenuScreen, WSTR("App.romDumpWorker.success"),
+		MESSAGE_SUCCESS, _storageMenuScreen, WSTR("App.romDumpWorker.success"),
 		dirPath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -186,19 +140,209 @@ bool App::_romDumpWorker(void) {
 
 _initError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.initError"),
+		MESSAGE_ERROR, _storageMenuScreen, WSTR("App.romDumpWorker.initError"),
 		dirPath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 
-_writeError:
+_fileError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.romDumpWorker.dumpError"),
+		MESSAGE_ERROR, _storageMenuScreen, WSTR("App.romDumpWorker.fileError"),
 		filePath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
+}
+
+bool App::_romRestoreWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.romRestoreWorker.init"));
+
+	auto &region = _storageMenuScreen.getSelectedRegion();
+	auto driver  = region.newDriver();
+
+	size_t chipLength    = driver->getChipSize().chipLength;
+	size_t sectorLength  = driver->getChipSize().eraseSectorLength;
+	size_t sectorsErased = 0;
+	size_t bytesWritten  = 0;
+
+	const char *path = _filePickerScreen.selectedPath;
+	auto       _file = _fileProvider.openFile(path, file::READ);
+
+	if (!_file)
+		goto _fileError;
+	if (!chipLength)
+		goto _unsupported;
+
+	rom::DriverError error;
+	_systemInfo.flags = 0;
+
+	// TODO: actually implement flash writing
+
+	delete _file;
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _storageMenuScreen,
+		WSTR("App.romRestoreWorker.success"), sectorsErased, bytesWritten
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return true;
+
+_fileError:
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.romRestoreWorker.fileError"), path, sectorsErased,
+		bytesWritten
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+
+_flashError:
+	delete _file;
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.romRestoreWorker.flashError"), rom::getErrorString(error),
+		sectorsErased, bytesWritten
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+
+_unsupported:
+	auto id = region.getJEDECID();
+	delete _file;
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.romRestoreWorker.unsupported"),
+		(id >>  0) & 0xff,
+		(id >>  8) & 0xff,
+		(id >> 16) & 0xff,
+		(id >> 24) & 0xff
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+}
+
+bool App::_romEraseWorker(void) {
+	auto &region = _storageMenuScreen.getSelectedRegion();
+	auto driver  = region.newDriver();
+
+	size_t chipLength    = driver->getChipSize().chipLength;
+	size_t sectorLength  = driver->getChipSize().eraseSectorLength;
+	size_t sectorsErased = 0;
+
+	if (!chipLength)
+		goto _unsupported;
+
+	rom::DriverError error;
+	_systemInfo.flags = 0;
+
+	// Erase one sector at a time on each chip.
+	for (size_t i = 0; i < chipLength; i += sectorLength) {
+		_workerStatus.update(i, chipLength, WSTR("App.romEraseWorker.erase"));
+
+		for (size_t j = 0; j < region.regionLength; j += chipLength)
+			driver->eraseSector(i + j);
+
+		for (
+			size_t j = 0; j < region.regionLength; j += chipLength,
+			sectorsErased++
+		) {
+			error = driver->flushErase(i + j);
+
+			if (error)
+				goto _flashError;
+		}
+	}
+
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _storageMenuScreen, WSTR("App.romEraseWorker.success"),
+		sectorsErased
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return true;
+
+_flashError:
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.romEraseWorker.flashError"), rom::getErrorString(error),
+		sectorsErased
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+
+_unsupported:
+	auto id = region.getJEDECID();
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.romEraseWorker.unsupported"),
+		(id >>  0) & 0xff,
+		(id >>  8) & 0xff,
+		(id >> 16) & 0xff,
+		(id >> 24) & 0xff
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+}
+
+bool App::_startupWorker(void) {
+#ifdef NDEBUG
+	_workerStatus.setNextScreen(_warningScreen);
+#else
+	// Skip the warning screen in debug builds.
+	_workerStatus.setNextScreen(_buttonMappingScreen);
+#endif
+
+	for (int i = 0; i < 2; i++) {
+		auto &dev = ide::devices[i];
+
+		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
+
+		if (dev.enumerate())
+			continue;
+		if (!(dev.flags & ide::DEVICE_ATAPI))
+			continue;
+
+		// Try to prevent the disc from keeping spinning unnecessarily.
+		ide::Packet packet;
+		packet.setStartStopUnit(ide::START_STOP_MODE_STOP_DISC);
+
+		dev.atapiPacket(packet);
+	}
+
+	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFAT"));
+
+	// Attempt to mount the secondary drive first, then in case of failure try
+	// mounting the primary drive instead.
+	if (!_fileProvider.init("1:"))
+		_fileProvider.init("0:");
+
+	_workerStatus.update(3, 4, WSTR("App.startupWorker.loadResources"));
+
+	_resourceFile = _fileProvider.openFile(
+		EXTERNAL_DATA_DIR "/resource.zip", file::READ
+	);
+
+	if (_resourceFile) {
+		_resourceProvider.close();
+		if (_resourceProvider.init(_resourceFile))
+			_loadResources();
+	}
+
+	_ctx.sounds[ui::SOUND_STARTUP].play();
+	return true;
 }
 
 bool App::_systemInfoWorker(void) {
@@ -207,7 +351,7 @@ bool App::_systemInfoWorker(void) {
 		_cartDetectWorker();
 
 	_workerStatus.setNextScreen(_systemInfoScreen);
-	_systemInfo.clearFlags();
+	_systemInfo.flags = 0;
 
 	for (auto &entry : _DUMP_ENTRIES) {
 		if (!entry.region.isPresent())
@@ -251,22 +395,16 @@ bool App::_systemInfoWorker(void) {
 	if (io::isRTCBatteryLow())
 		_systemInfo.flags |= SYSTEM_INFO_RTC_BATTERY_LOW;
 
-	_systemInfo.flash.jedecID = rom::flash.getJEDECID();
-	_systemInfo.flash.flags   = FLASH_REGION_INFO_PRESENT;
-
-	if (rom::flash.hasBootExecutable())
-		_systemInfo.flash.flags |= FLASH_REGION_INFO_BOOTABLE;
+	_systemInfo.flash.jedecID  = rom::flash.getJEDECID();
+	_systemInfo.flash.bootable = rom::flash.hasBootExecutable();
 
 	for (int i = 0; i < 2; i++) {
 		auto &region = rom::pcmcia[i];
 		auto &card   = _systemInfo.pcmcia[i];
 
 		if (region.isPresent()) {
-			card.jedecID = region.getJEDECID();
-			card.flags   = FLASH_REGION_INFO_PRESENT;
-
-			if (region.hasBootExecutable())
-				card.flags |= FLASH_REGION_INFO_BOOTABLE;
+			card.jedecID  = region.getJEDECID();
+			card.bootable = region.hasBootExecutable();
 		}
 	}
 
@@ -296,15 +434,13 @@ bool App::_executableWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
 
 	const char *path = _filePickerScreen.selectedPath;
-
-	util::ExecutableHeader header;
-	uintptr_t              executableEnd, stackTop;
-
-	auto   _file = _fileProvider.openFile(path, file::READ);
-	size_t length;
+	auto       _file = _fileProvider.openFile(path, file::READ);
 
 	if (!_file)
 		goto _fileOpenError;
+
+	util::ExecutableHeader header;
+	size_t                 length;
 
 	length = _file->read(&header, sizeof(header));
 
@@ -324,6 +460,8 @@ bool App::_executableWorker(void) {
 	}
 
 	delete _file;
+
+	uintptr_t executableEnd, stackTop;
 
 	executableEnd = header.textOffset + header.textLength;
 	stackTop      = uintptr_t(header.getStackPtr());
@@ -451,6 +589,14 @@ bool App::_atapiEjectWorker(void) {
 
 bool App::_rebootWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.rebootWorker.reboot"));
+
+	_unloadCartData();
+	_resourceProvider.close();
+
+	if (_resourceFile)
+		delete _resourceFile;
+
+	_fileProvider.close();
 	_workerStatus.setStatus(WORKER_REBOOT);
 
 	// Fall back to a soft reboot if the watchdog fails to reset the system.

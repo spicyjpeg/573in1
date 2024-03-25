@@ -31,8 +31,7 @@ protected:
 
 public:
 	void cartInfo(ui::Context &ctx);
-	void dump(ui::Context &ctx);
-	void restore(ui::Context &ctx);
+	void storageMenu(ui::Context &ctx);
 	void systemInfo(ui::Context &ctx);
 	void setResolution(ui::Context &ctx);
 	void about(ui::Context &ctx);

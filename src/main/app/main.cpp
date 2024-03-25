@@ -87,22 +87,14 @@ public:
 
 static const MenuEntry _MENU_ENTRIES[]{
 	{
-#ifdef ENABLE_CART_MENU
 		.name   = "MainMenuScreen.cartInfo.name"_h,
 		.prompt = "MainMenuScreen.cartInfo.prompt"_h,
 		.target = &MainMenuScreen::cartInfo
 	}, {
-#endif
-		.name   = "MainMenuScreen.dump.name"_h,
-		.prompt = "MainMenuScreen.dump.prompt"_h,
-		.target = &MainMenuScreen::dump
+		.name   = "MainMenuScreen.storageMenu.name"_h,
+		.prompt = "MainMenuScreen.storageMenu.prompt"_h,
+		.target = &MainMenuScreen::storageMenu
 	}, {
-#if 0
-		.name   = "MainMenuScreen.restore.name"_h,
-		.prompt = "MainMenuScreen.restore.prompt"_h,
-		.target = &MainMenuScreen::restore
-	}, {
-#endif
 		.name   = "MainMenuScreen.systemInfo.name"_h,
 		.prompt = "MainMenuScreen.systemInfo.prompt"_h,
 		.target = &MainMenuScreen::systemInfo
@@ -142,21 +134,8 @@ void MainMenuScreen::cartInfo(ui::Context &ctx) {
 	}
 }
 
-void MainMenuScreen::dump(ui::Context &ctx) {
-	APP->_confirmScreen.setMessage(
-		*this,
-		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_romDumpWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
-		},
-		STR("MainMenuScreen.dump.confirm")
-	);
-
-	ctx.show(APP->_confirmScreen, false, true);
-}
-
-void MainMenuScreen::restore(ui::Context &ctx) {
-	//ctx.show(APP->_restoreMenuScreen, false, true);
+void MainMenuScreen::storageMenu(ui::Context &ctx) {
+	ctx.show(APP->_storageMenuScreen, false, true);
 }
 
 void MainMenuScreen::systemInfo(ui::Context &ctx) {
