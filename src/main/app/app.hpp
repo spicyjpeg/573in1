@@ -50,19 +50,10 @@ public:
 
 /* System information buffer */
 
-enum FlashRegionInfoFlag : uint16_t {
-	FLASH_REGION_INFO_PRESENT  = 1 << 0,
-	FLASH_REGION_INFO_BOOTABLE = 1 << 1
-};
-
-class FlashRegionInfo {
+struct FlashRegionInfo {
 public:
-	uint32_t flags;
 	uint32_t jedecID, crc[4];
-
-	inline void clearFlags(void) {
-		flags = 0;
-	}
+	bool     bootable;
 };
 
 enum SystemInfoFlag : uint32_t {
@@ -78,16 +69,8 @@ public:
 	const rom::ShellInfo *shell;
 	FlashRegionInfo      flash, pcmcia[2];
 
-	inline SystemInfo(void) {
-		clearFlags();
-	}
-
-	inline void clearFlags(void) {
-		flags       = 0;
-		flash.flags = 0;
-		pcmcia[0].clearFlags();
-		pcmcia[1].clearFlags();
-	}
+	inline SystemInfo(void)
+	: flags(0) {}
 };
 
 /* App class */
@@ -102,6 +85,7 @@ class App {
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
+	friend class StorageMenuScreen;
 	friend class SystemInfoScreen;
 	friend class ResolutionScreen;
 	friend class AboutScreen;
@@ -122,6 +106,7 @@ private:
 	WarningScreen       _warningScreen;
 	ButtonMappingScreen	_buttonMappingScreen;
 	MainMenuScreen      _mainMenuScreen;
+	StorageMenuScreen   _storageMenuScreen;
 	SystemInfoScreen    _systemInfoScreen;
 	ResolutionScreen    _resolutionScreen;
 	AboutScreen         _aboutScreen;
@@ -172,8 +157,11 @@ private:
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
 
-	bool _startupWorker(void);
 	bool _romDumpWorker(void);
+	bool _romRestoreWorker(void);
+	bool _romEraseWorker(void);
+
+	bool _startupWorker(void);
 	bool _systemInfoWorker(void);
 	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);

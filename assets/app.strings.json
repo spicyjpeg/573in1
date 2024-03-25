@@ -70,7 +70,23 @@
 			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573 or unplug drives.",
 			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
 			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
-			"dumpError":   "An error occurred while saving one of the dumps. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
+			"fileError":   "An error occurred while saving one of the dumps. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
+		},
+		"romEraseWorker": {
+			"erase":       "Erasing device...\nDo not turn off the 573.",
+			"success":     "The device has been successfully wiped.\n\nSectors erased: %d",
+			"flashError":  "An error occurred while erasing sectors on one of the flash memory chips.\n\nError code:\t%s\nSectors erased:\t%d\nPress the Test button to view debug logs.",
+			"unsupported": "The flash memory chips on this device are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
+		},
+		"romRestoreWorker": {
+			"init":        "Opening dump file...\nDo not turn off the 573 or unplug drives.",
+			"write":       "Restoring data...\nDo not turn off the 573 or unplug drives.",
+			"success":     "All data has been successfully restored.\n\nSectors erased:\t%d\nBytes written:\t%d",
+			"underflow":   "The selected file was smaller than the target device's capacity, so only a partial restore was performed.\n\nSectors erased:\t%d\nBytes written:\t%d",
+			"overflow":    "The selected file was larger than the target device's capacity, so all data past the limit was ignored. All other data has been successfully restored.\n\nSectors erased:\t%d\nBytes written:\t%d",
+			"fileError":   "An error occurred while reading data from the file. Ensure the filesystem is not damaged.\n\nFile:\t\t%s\nSectors erased:\t%d\nBytes written:\t%d\nPress the Test button to view debug logs.",
+			"flashError":  "An error occurred while erasing sectors on or writing data to one of the flash memory chips.\n\nError code:\t%s\nSectors erased:\t%d\nBytes written:\t%d\nPress the Test button to view debug logs.",
+			"unsupported": "The flash memory chips on this device are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
 		},
 		"systemInfoWorker": {
 			"hashBIOS":    "Calculating BIOS ROM checksum...",
@@ -250,18 +266,13 @@
 			"name":   "Manage security cartridge",
 			"prompt": "Display information about, unlock, dump and manipulate the contents of the inserted security cartridge (if any)."
 		},
-		"dump": {
-			"name":    "Dump flash, PCMCIA cards, RTC and BIOS ROM",
-			"prompt":  "Dump the contents of the internal ROMs and PCMCIA cards to the IDE hard drive or CF card connected as secondary drive (if any).",
-			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and the dumps saved to a new directory in the root of the hard drive or CF card currently configured as secondary on the IDE bus.\n\nDo you wish to proceed?"
-		},
-		"restore": {
-			"name":   "Restore flash, PCMCIA cards or RTC from dump",
-			"prompt": "Restore the contents of the internal ROMs or any PCMCIA cards from the IDE hard drive or CF card connected as secondary drive (if any)."
+		"storageMenu": {
+			"name":   "Manage flash, PCMCIA cards, RTC and BIOS ROM",
+			"prompt": "Dump, manipulate and erase the contents of the system's built-in storage devices or any inserted PCMCIA flash cards."
 		},
 		"systemInfo": {
 			"name":   "View system information",
-			"prompt": "Display information about the system's I/O board, IDE drives, BIOS ROM, internal flash and PCMCIA flash cards."
+			"prompt": "Display information about the system's I/O board, IDE drives and storage devices."
 		},
 		"setResolution": {
 			"name":   "Change screen resolution",
@@ -289,6 +300,7 @@
 	"MessageScreen": {
 		"title": {
 			"success": "Success",
+			"warning": "Warning",
 			"error":   "Error"
 		},
 
@@ -320,6 +332,59 @@
 		"640x240p": "640x240 (24:9), progressive",
 		"640x240i": "640x240 (24:9), interlaced (line doubled)",
 		"640x480i": "640x480 (4:3), interlaced"
+	},
+
+	"StorageMenuScreen": {
+		"title":      "{CART_ICON} Storage device options",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
+
+		"dump": {
+			"name":    "Dump flash, PCMCIA cards, RTC and BIOS ROM",
+			"prompt":  "Dump the contents of the internal ROMs and any inserted flash cards to the IDE hard drive or CF card connected as secondary drive (if any).",
+			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and the dumps saved to a new directory in the root of the hard drive or CF card currently configured as secondary on the IDE bus.\n\nDo you wish to proceed?"
+		},
+		"restore": {
+			"filePrompt": "Note that the contents of the file will be written as-is, without adding or modifying any game-specific headers or checksums.",
+			"confirm":    "The contents of the selected file will be written to the target device, permanently overwriting any other data currently stored on it. If the file is smaller than the device's capacity, any leftover space will be left as-is and not erased.\n\nDo you wish to proceed?",
+
+			"rtc": {
+				"name":   "Restore RTC RAM from dump",
+				"prompt": "Erase RTC memory and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+			},
+			"flash": {
+				"name":   "Restore internal flash from dump",
+				"prompt": "Erase the system's flash memory and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+			},
+			"pcmcia1": {
+				"name":   "Restore PCMCIA card in slot 1 from dump",
+				"prompt": "Erase the flash card and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+			},
+			"pcmcia2": {
+				"name":   "Restore PCMCIA card in slot 2 from dump",
+				"prompt": "Erase the flash card and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+			}
+		},
+		"erase": {
+			"confirm": "All data currently stored on the selected device will be permanently erased.\n\nDo you wish to proceed?",
+
+			"rtc": {
+				"name":   "Erase RTC RAM",
+				"prompt": "Wipe all data stored in RTC memory, including any high scores and game settings. The date and time will not be reset."
+			},
+			"flash": {
+				"name":   "Erase internal flash",
+				"prompt": "Wipe all data stored in the system's flash memory, including any currently installed game and its assets."
+			},
+			"pcmcia1": {
+				"name":   "Erase PCMCIA card in slot 1",
+				"prompt": "Wipe all data stored in the PCMCIA flash card, including any currently installed game and its assets."
+			},
+			"pcmcia2": {
+				"name":   "Erase PCMCIA card in slot 2",
+				"prompt": "Wipe all data stored in the PCMCIA flash card, including any currently installed game and its assets."
+			}
+		}
 	},
 
 	"SystemIDEntryScreen": {
@@ -378,12 +443,12 @@
 		},
 		"flash": {
 			"header":   "Internal flash memory:\n",
-			"info":     "  JEDEC ID:\t\tmanufacturer %02X, device %02X\n  CRC32:\t\t%08X\n",
+			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n  CRC32:\t\t%08X\n",
 			"bootable": "  Valid boot executable present\n"
 		},
 		"pcmcia": {
 			"header":   "PCMCIA card in slot %d:\n",
-			"info":     "  JEDEC ID:\t\tmanufacturer %02X, device %02X\n  CRC32 (16 MB):\t%08X\n  CRC32 (32 MB):\t%08X\n  CRC32 (64 MB):\t%08X\n",
+			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n  CRC32 (16 MB):\t%08X\n  CRC32 (32 MB):\t%08X\n  CRC32 (64 MB):\t%08X\n",
 			"bootable": "  Valid boot executable present\n",
 			"noCard":   "  No card inserted\n"
 		}

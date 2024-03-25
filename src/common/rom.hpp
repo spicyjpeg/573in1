@@ -15,6 +15,8 @@ static constexpr size_t   FLASH_BANK_LENGTH = 0x400000;
 static constexpr uint32_t FLASH_CRC_OFFSET  = 0x20;
 static constexpr uint32_t FLASH_EXE_OFFSET  = 0x24;
 
+class Driver;
+
 class Region {
 public:
 	uintptr_t ptr;
@@ -24,10 +26,15 @@ public:
 	: ptr(ptr), regionLength(regionLength) {}
 
 	virtual bool isPresent(void) const { return true; }
+	virtual uint16_t *getRawPtr(uint32_t offset, bool alignToChip = false) const;
 	virtual void read(void *data, uint32_t offset, size_t length) const;
 	virtual uint32_t zipCRC32(
 		uint32_t offset, size_t length, uint32_t crc = 0
 	) const;
+
+	virtual bool hasBootExecutable(void) const { return false; }
+	virtual uint32_t getJEDECID(void) const { return 0; }
+	virtual Driver *newDriver(void) const { return nullptr; }
 };
 
 class BIOSRegion : public Region {
@@ -43,6 +50,8 @@ public:
 
 	void read(void *data, uint32_t offset, size_t length) const;
 	uint32_t zipCRC32(uint32_t offset, size_t length, uint32_t crc = 0) const;
+
+	Driver *newDriver(void) const;
 };
 
 class FlashRegion : public Region {
@@ -53,27 +62,23 @@ public:
 	inline FlashRegion(int bank, size_t regionLength, uint32_t inputs = 0)
 	: Region(DEV0_BASE, regionLength), bank(bank), inputs(inputs) {}
 
-	inline volatile uint16_t *getFlashPtr(void) const {
-		io::setFlashBank(bank);
-
-		return reinterpret_cast<volatile uint16_t *>(ptr);
-	}
-
 	bool isPresent(void) const;
+	uint16_t *getRawPtr(uint32_t offset, bool alignToChip = false) const;
 	void read(void *data, uint32_t offset, size_t length) const;
 	uint32_t zipCRC32(uint32_t offset, size_t length, uint32_t crc = 0) const;
 
 	bool hasBootExecutable(void) const;
 	uint32_t getJEDECID(void) const;
+	Driver *newDriver(void) const;
 };
 
 extern const BIOSRegion  bios;
 extern const RTCRegion   rtc;
 extern const FlashRegion flash, pcmcia[2];
 
-/* Flash chip drivers */
+/* Chip drivers */
 
-enum FlashDriverError {
+enum DriverError {
 	NO_ERROR        = 0,
 	UNSUPPORTED_OP  = 1,
 	CHIP_TIMEOUT    = 2,
@@ -82,83 +87,93 @@ enum FlashDriverError {
 	WRITE_PROTECTED = 5
 };
 
-struct FlashChipSize {
+struct ChipSize {
 public:
 	size_t chipLength, eraseSectorLength;
 };
 
-class FlashDriver {
+class Driver {
 protected:
-	FlashRegion &_region;
+	const Region &_region;
 
 public:
-	inline FlashDriver(FlashRegion &region)
+	inline Driver(const Region &region)
 	: _region(region) {}
 
-	virtual ~FlashDriver(void) {}
+	// Note that all offsets must be multiples of 2, as writes are done in
+	// halfwords.
+	virtual ~Driver(void) {}
 	virtual void write(uint32_t offset, uint16_t value) {}
 	virtual void eraseSector(uint32_t offset) {}
 	virtual void eraseChip(uint32_t offset) {}
-	virtual FlashDriverError flushWrite(uint32_t offset, uint16_t value) {
+	virtual DriverError flushWrite(uint32_t offset, uint16_t value) {
 		return UNSUPPORTED_OP;
 	}
-	virtual FlashDriverError flushErase(uint32_t offset) {
+	virtual DriverError flushErase(uint32_t offset) {
 		return UNSUPPORTED_OP;
 	}
-	virtual const FlashChipSize &getChipSize(void) const;
+	virtual const ChipSize &getChipSize(void) const;
 };
 
-class MBM29F016AFlashDriver : public FlashDriver {
+class RTCDriver : public Driver {
+public:
+	inline RTCDriver(const RTCRegion &region)
+	: Driver(region) {}
+
+	void write(uint32_t offset, uint16_t value);
+	void eraseSector(uint32_t offset);
+	void eraseChip(uint32_t offset);
+	DriverError flushWrite(uint32_t offset, uint16_t value);
+	DriverError flushErase(uint32_t offset);
+	const ChipSize &getChipSize(void) const;
+};
+
+class MBM29F016ADriver : public Driver {
 private:
-	FlashDriverError _flush(
-		volatile uint16_t *ptr, uint16_t value, int timeout
-	);
+	DriverError _flush(uint32_t offset, uint16_t value, int timeout);
 
 public:
-	inline MBM29F016AFlashDriver(FlashRegion &region)
-	: FlashDriver(region) {}
+	inline MBM29F016ADriver(const FlashRegion &region)
+	: Driver(region) {}
+
+	virtual void write(uint32_t offset, uint16_t value);
+	virtual void eraseSector(uint32_t offset);
+	virtual void eraseChip(uint32_t offset);
+	DriverError flushWrite(uint32_t offset, uint16_t value);
+	DriverError flushErase(uint32_t offset);
+	const ChipSize &getChipSize(void) const;
+};
+
+class FujitsuUnknownDriver : public MBM29F016ADriver {
+public:
+	inline FujitsuUnknownDriver(const FlashRegion &region)
+	: MBM29F016ADriver(region) {}
 
 	void write(uint32_t offset, uint16_t value);
 	void eraseSector(uint32_t offset);
 	void eraseChip(uint32_t offset);
-	FlashDriverError flushWrite(uint32_t offset, uint16_t value);
-	FlashDriverError flushErase(uint32_t offset);
-	const FlashChipSize &getChipSize(void) const;
 };
 
-class FujitsuUnknownFlashDriver : public MBM29F016AFlashDriver {
-public:
-	inline FujitsuUnknownFlashDriver(FlashRegion &region)
-	: MBM29F016AFlashDriver(region) {}
-
-	void write(uint32_t offset, uint16_t value);
-	void eraseSector(uint32_t offset);
-	void eraseChip(uint32_t offset);
-};
-
-class LH28F016SFlashDriver : public FlashDriver {
+class LH28F016SDriver : public Driver {
 private:
-	FlashDriverError _flush(volatile uint16_t *ptr, int timeout);
+	DriverError _flush(uint32_t offset, int timeout);
 
 public:
-	inline LH28F016SFlashDriver(FlashRegion &region)
-	: FlashDriver(region) {}
+	inline LH28F016SDriver(const FlashRegion &region)
+	: Driver(region) {}
 
 	void write(uint32_t offset, uint16_t value);
 	void eraseSector(uint32_t offset);
-	void eraseChip(uint32_t offset);
-	FlashDriverError flushWrite(uint32_t offset, uint16_t value);
-	FlashDriverError flushErase(uint32_t offset);
-	const FlashChipSize &getChipSize(void) const;
+	DriverError flushWrite(uint32_t offset, uint16_t value);
+	DriverError flushErase(uint32_t offset);
+	const ChipSize &getChipSize(void) const;
 };
 
-extern const char *const FLASH_DRIVER_ERROR_NAMES[];
+extern const char *const DRIVER_ERROR_NAMES[];
 
-static inline const char *getErrorString(FlashDriverError error) {
-	return FLASH_DRIVER_ERROR_NAMES[error];
+static inline const char *getErrorString(DriverError error) {
+	return DRIVER_ERROR_NAMES[error];
 }
-
-FlashDriver *newFlashDriver(FlashRegion &region);
 
 /* BIOS ROM headers */
 

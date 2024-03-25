@@ -1,6 +1,5 @@
 
 #include <stdint.h>
-#include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/ide.hpp"
 #include "common/rom.hpp"
@@ -10,6 +9,148 @@
 #include "main/app/modals.hpp"
 #include "main/uibase.hpp"
 #include "ps1/gpucmd.h"
+
+/* Storage device submenu */
+
+struct StorageAction {
+public:
+	util::Hash        name, prompt;
+	const rom::Region &region;
+	void              (StorageMenuScreen::*target)(ui::Context &ctx);
+};
+
+static const StorageAction _STORAGE_ACTIONS[]{
+	{
+		.name   = "StorageMenuScreen.dump.name"_h,
+		.prompt = "StorageMenuScreen.dump.prompt"_h,
+		.region = rom::bios, // Dummy
+		.target = &StorageMenuScreen::dump
+	}, {
+		.name   = "StorageMenuScreen.restore.rtc.name"_h,
+		.prompt = "StorageMenuScreen.restore.rtc.prompt"_h,
+		.region = rom::rtc,
+		.target = &StorageMenuScreen::restore
+	}, {
+		.name   = "StorageMenuScreen.restore.flash.name"_h,
+		.prompt = "StorageMenuScreen.restore.flash.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageMenuScreen::restore
+	}, {
+		.name   = "StorageMenuScreen.restore.pcmcia1.name"_h,
+		.prompt = "StorageMenuScreen.restore.pcmcia1.prompt"_h,
+		.region = rom::pcmcia[0],
+		.target = &StorageMenuScreen::restore
+	}, {
+		.name   = "StorageMenuScreen.restore.pcmcia2.name"_h,
+		.prompt = "StorageMenuScreen.restore.pcmcia2.prompt"_h,
+		.region = rom::pcmcia[1],
+		.target = &StorageMenuScreen::restore
+	}, {
+		.name   = "StorageMenuScreen.erase.rtc.name"_h,
+		.prompt = "StorageMenuScreen.erase.rtc.prompt"_h,
+		.region = rom::rtc,
+		.target = &StorageMenuScreen::erase
+	}, {
+		.name   = "StorageMenuScreen.erase.flash.name"_h,
+		.prompt = "StorageMenuScreen.erase.flash.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageMenuScreen::erase
+	}, {
+		.name   = "StorageMenuScreen.erase.pcmcia1.name"_h,
+		.prompt = "StorageMenuScreen.erase.pcmcia1.prompt"_h,
+		.region = rom::pcmcia[0],
+		.target = &StorageMenuScreen::erase
+	}, {
+		.name   = "StorageMenuScreen.erase.pcmcia2.name"_h,
+		.prompt = "StorageMenuScreen.erase.pcmcia2.prompt"_h,
+		.region = rom::pcmcia[1],
+		.target = &StorageMenuScreen::erase
+	}
+};
+
+const char *StorageMenuScreen::_getItemName(ui::Context &ctx, int index) const {
+	return STRH(_STORAGE_ACTIONS[index].name);
+}
+
+void StorageMenuScreen::dump(ui::Context &ctx) {
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_romDumpWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("StorageMenuScreen.dump.confirm")
+	);
+
+	ctx.show(APP->_confirmScreen, false, true);
+}
+
+void StorageMenuScreen::restore(ui::Context &ctx) {
+	APP->_filePickerScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			ctx.show(APP->_confirmScreen, false, true);
+		},
+		STR("StorageMenuScreen.restore.filePrompt")
+	);
+	APP->_confirmScreen.setMessage(
+		APP->_filePickerScreen,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_romRestoreWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("StorageMenuScreen.restore.confirm")
+	);
+
+	APP->_filePickerScreen.loadRootAndShow(ctx);
+}
+
+void StorageMenuScreen::erase(ui::Context &ctx) {
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_romEraseWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("StorageMenuScreen.erase.confirm")
+	);
+
+	ctx.show(APP->_confirmScreen, false, true);
+}
+
+void StorageMenuScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("StorageMenuScreen.title");
+	_prompt     = STRH(_STORAGE_ACTIONS[0].prompt);
+	_itemPrompt = STR("StorageMenuScreen.itemPrompt");
+
+	_listLength = util::countOf(_STORAGE_ACTIONS);
+
+	ListScreen::show(ctx, goBack);
+}
+
+void StorageMenuScreen::update(ui::Context &ctx) {
+	auto &action = _STORAGE_ACTIONS[_activeItem];
+	_prompt      = STRH(action.prompt);
+
+	ListScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
+			ctx.show(APP->_mainMenuScreen, true, true);
+		} else {
+			if (action.region.isPresent()) {
+				this->_selectedRegion = &(action.region);
+				(this->*action.target)(ctx);
+			} else {
+				APP->_messageScreen.setMessage(
+					MESSAGE_ERROR, *this, STR("StorageMenuScreen.cardError")
+				);
+
+				ctx.show(APP->_messageScreen, false, true);
+			}
+		}
+	}
+}
 
 /* System information screen */
 
@@ -155,11 +296,15 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 	// Flash
 	_PRINT(STR("SystemInfoScreen.flash.header"));
 	_PRINT(
-		STR("SystemInfoScreen.flash.info"), info.flash.jedecID & 0xff,
-		(info.flash.jedecID >> 16) & 0xff, info.flash.crc[0]
+		STR("SystemInfoScreen.flash.info"),
+		(info.flash.jedecID >>  0) & 0xff,
+		(info.flash.jedecID >>  8) & 0xff,
+		(info.flash.jedecID >> 16) & 0xff,
+		(info.flash.jedecID >> 24) & 0xff,
+		info.flash.crc[0]
 	);
 
-	if (info.flash.flags & FLASH_REGION_INFO_BOOTABLE)
+	if (info.flash.bootable)
 		_PRINT(STR("SystemInfoScreen.flash.bootable"));
 
 	_PRINTLN();
@@ -170,14 +315,17 @@ void SystemInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 		_PRINT(STR("SystemInfoScreen.pcmcia.header"), i + 1);
 
-		if (card.flags & FLASH_REGION_INFO_PRESENT) {
+		if (rom::pcmcia[i].isPresent()) {
 			_PRINT(
-				STR("SystemInfoScreen.pcmcia.info"), card.jedecID & 0xff,
-				(card.jedecID >> 16) & 0xff, card.crc[0], card.crc[1],
-				card.crc[3]
+				STR("SystemInfoScreen.pcmcia.info"),
+				(card.jedecID >>  0) & 0xff,
+				(card.jedecID >>  8) & 0xff,
+				(card.jedecID >> 16) & 0xff,
+				(card.jedecID >> 24) & 0xff,
+				card.crc[0], card.crc[1], card.crc[3]
 			);
 
-			if (card.flags & FLASH_REGION_INFO_BOOTABLE)
+			if (card.bootable)
 				_PRINT(STR("SystemInfoScreen.pcmcia.bootable"));
 		} else {
 			_PRINT(STR("SystemInfoScreen.pcmcia.noCard"));
