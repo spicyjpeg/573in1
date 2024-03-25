@@ -283,7 +283,7 @@ bool App::_cartRestoreWorker(void) {
 
 	if (length < (sizeof(newDump) - sizeof(newDump.data)))
 		goto _fileError;
-	if (false) // TODO: validate dump
+	if (!newDump.validateMagic())
 		goto _fileError;
 	if (length != newDump.getDumpLength())
 		goto _fileError;

@@ -166,7 +166,8 @@ class PublicIdentifierSet:
 
 ## Cartridge dump structure
 
-_DUMP_HEADER_STRUCT: Struct = Struct("< 2B 2x 8s 8s 8s 8s 8s")
+_DUMP_HEADER_STRUCT: Struct = Struct("< H 2B 8s 8s 8s 8s 8s")
+_DUMP_HEADER_MAGIC:  int    = 0x573d
 
 _CHIP_SIZES: Mapping[ChipType, tuple[int, int, int]] = {
 	ChipType.X76F041: ( 512, 384, 128 ),
@@ -191,6 +192,7 @@ class Dump:
 
 	def serialize(self) -> bytes:
 		return _DUMP_HEADER_STRUCT.pack(
+			_DUMP_HEADER_MAGIC,
 			self.chipType,
 			self.flags,
 			self.systemID,
@@ -201,8 +203,12 @@ class Dump:
 		) + self.data
 
 def parseDump(data: bytes) -> Dump:
-	chipType, flags, systemID, cartID, zsID, dataKey, config = \
+	magic, chipType, flags, systemID, cartID, zsID, dataKey, config = \
 		_DUMP_HEADER_STRUCT.unpack(data[0:_DUMP_HEADER_STRUCT.size])
+
+	if magic != _DUMP_HEADER_MAGIC:
+		raise ValueError(f"invalid or unsupported dump format: 0x{magic:04x}")
+
 	dataLength, _, _ = _CHIP_SIZES[chipType]
 
 	return Dump(

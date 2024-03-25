@@ -148,6 +148,8 @@ public:
 
 /* Cartridge dump structure */
 
+static constexpr uint16_t DUMP_HEADER_MAGIC = 0x573d;
+
 struct ChipSize {
 public:
 	size_t dataLength, publicDataOffset, publicDataLength;
@@ -157,9 +159,9 @@ extern const ChipSize CHIP_SIZES[NUM_CHIP_TYPES];
 
 class [[gnu::packed]] Dump {
 public:
+	uint16_t magic;
 	ChipType chipType;
 	uint8_t  flags;
-	uint8_t  _reserved[2];
 
 	Identifier systemID, cartID, zsID;
 
@@ -167,13 +169,16 @@ public:
 	uint8_t data[512];
 
 	inline Dump(void)
-	: chipType(NONE), flags(0) {
-		_reserved[0] = 0;
-		_reserved[1] = 0;
-	}
+	: magic(DUMP_HEADER_MAGIC), chipType(NONE), flags(0) {}
 
 	inline const ChipSize &getChipSize(void) const {
 		return CHIP_SIZES[chipType];
+	}
+	inline bool validateMagic(void) const {
+		return
+			(magic == DUMP_HEADER_MAGIC) &&
+			(chipType > 0) &&
+			(chipType < NUM_CHIP_TYPES);
 	}
 	inline size_t getDumpLength(void) const {
 		return (sizeof(Dump) - sizeof(data)) + getChipSize().dataLength;
