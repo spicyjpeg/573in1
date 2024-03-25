@@ -196,15 +196,17 @@ bool App::_qrCodeWorker(void) {
 bool App::_cartDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
-	char   code[8], region[8], path[32];
-	size_t length = _dump.getDumpLength();
-
 	file::FileInfo info;
 
 	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR)) {
 		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
 			goto _error;
 	}
+
+	char   code[8], region[8], path[32];
+	size_t length;
+
+	length = _dump.getDumpLength();
 
 	if (_identified && _parser->getCode(code) && _parser->getRegion(region)) {
 		snprintf(
@@ -269,12 +271,10 @@ bool App::_cartRestoreWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.cartRestoreWorker.init"));
 
 	const char *path = _filePickerScreen.selectedPath;
+	auto       _file = _fileProvider.openFile(path, file::READ);
 
-	cart::Dump        newDump;
-	cart::DriverError error;
-
-	auto   _file = _fileProvider.openFile(path, file::READ);
-	size_t length;
+	cart::Dump newDump;
+	size_t     length;
 
 	if (!_file)
 		goto _fileOpenError;
@@ -298,6 +298,8 @@ bool App::_cartRestoreWorker(void) {
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
+
+	cart::DriverError error;
 
 	_workerStatus.update(1, 3, WSTR("App.cartRestoreWorker.setDataKey"));
 	error = _driver->setDataKey(newDump.dataKey);

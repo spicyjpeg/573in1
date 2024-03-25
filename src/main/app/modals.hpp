@@ -16,7 +16,8 @@ public:
 
 enum MessageType {
 	MESSAGE_SUCCESS = 0,
-	MESSAGE_ERROR   = 1
+	MESSAGE_WARNING = 1,
+	MESSAGE_ERROR   = 2
 };
 
 class MessageScreen : public ui::MessageBoxScreen {

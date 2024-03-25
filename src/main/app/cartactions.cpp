@@ -82,7 +82,7 @@ void CartActionsScreen::hddRestore(ui::Context &ctx) {
 		STR("CartActionsScreen.hddRestore.filePrompt")
 	);
 	APP->_confirmScreen.setMessage(
-		*this,
+		APP->_filePickerScreen,
 		[](ui::Context &ctx) {
 			APP->_setupWorker(&App::_cartRestoreWorker);
 			ctx.show(APP->_workerStatusScreen, false, true);

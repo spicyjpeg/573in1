@@ -35,6 +35,7 @@ void WorkerStatusScreen::update(ui::Context &ctx) {
 
 static const util::Hash _MESSAGE_TITLES[]{
 	"MessageScreen.title.success"_h,
+	"MessageScreen.title.warning"_h,
 	"MessageScreen.title.error"_h
 };
 
