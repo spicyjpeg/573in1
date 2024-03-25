@@ -148,6 +148,7 @@ private:
 	void _setupInterrupts(void);
 	void _loadResources(void);
 
+	// cartworkers.cpp
 	bool _cartDetectWorker(void);
 	bool _cartUnlockWorker(void);
 	bool _qrCodeWorker(void);
@@ -157,12 +158,14 @@ private:
 	bool _cartReflashWorker(void);
 	bool _cartEraseWorker(void);
 
+	// romworkers.cpp
 	bool _romDumpWorker(void);
 	bool _romRestoreWorker(void);
 	bool _romEraseWorker(void);
-
-	bool _startupWorker(void);
 	bool _systemInfoWorker(void);
+
+	// miscworkers.cpp
+	bool _startupWorker(void);
 	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);
@@ -181,6 +184,5 @@ public:
 #define STR(id)  (APP->_stringTable.get(id ## _h))
 #define STRH(id) (APP->_stringTable.get(id))
 
-#define WAPP      (reinterpret_cast<App *>(_ctx.screenData))
-#define WSTR(id)  (WAPP->_stringTable.get(id ## _h))
-#define WSTRH(id) (WAPP->_stringTable.get(id))
+#define WSTR(id)  (_stringTable.get(id ## _h))
+#define WSTRH(id) (_stringTable.get(id))
