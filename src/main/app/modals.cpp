@@ -252,7 +252,7 @@ int FilePickerScreen::loadRootAndShow(ui::Context &ctx) {
 			? "FilePickerScreen.rootError"_h
 			: "FilePickerScreen.noFilesError"_h;
 
-		APP->_messageScreen.setMessage(MESSAGE_ERROR, *this, STRH(error));
+		APP->_messageScreen.setMessage(MESSAGE_ERROR, *_prevScreen, STRH(error));
 		ctx.show(APP->_messageScreen, false, true);
 	}
 

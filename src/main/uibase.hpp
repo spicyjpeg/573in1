@@ -12,7 +12,7 @@ namespace ui {
 /* Public constants */
 
 static constexpr int NUM_UI_COLORS = 18;
-static constexpr int NUM_UI_SOUNDS = 6;
+static constexpr int NUM_UI_SOUNDS = 9;
 
 enum Color {
 	COLOR_DEFAULT    =  0,
@@ -36,12 +36,15 @@ enum Color {
 };
 
 enum Sound {
-	SOUND_STARTUP = 0,
-	SOUND_ALERT   = 1,
-	SOUND_MOVE    = 2,
-	SOUND_ENTER   = 3,
-	SOUND_EXIT    = 4,
-	SOUND_CLICK   = 5
+	SOUND_STARTUP      = 0,
+	SOUND_ABOUT_SCREEN = 1,
+	SOUND_ALERT        = 2,
+	SOUND_MOVE         = 3,
+	SOUND_MOVE_LEFT    = 4,
+	SOUND_MOVE_RIGHT   = 5,
+	SOUND_ENTER        = 6,
+	SOUND_EXIT         = 7,
+	SOUND_CLICK        = 8
 };
 
 enum AnimationSpeed {

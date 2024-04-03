@@ -120,7 +120,7 @@ _resourceInitDone:
 	auto app    = new App(*uiCtx, *resourceProvider);
 
 	gpu::enableDisplay(true);
-	spu::setVolume(0x3fff);
+	spu::setMasterVolume(spu::MAX_VOLUME);
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
 	app->run();
 

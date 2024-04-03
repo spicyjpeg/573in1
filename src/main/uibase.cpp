@@ -152,15 +152,17 @@ time(0), screenData(screenData) {
 
 void Context::show(Screen &screen, bool goBack, bool playSound) {
 	auto oldScreen = _screens[_currentScreen];
+
 	if (oldScreen)
 		oldScreen->hide(*this, goBack);
 
 	_currentScreen ^= 1;
 	_screens[_currentScreen] = &screen;
-	screen.show(*this, goBack);
 
 	if (playSound)
 		sounds[goBack ? SOUND_EXIT : SOUND_ENTER].play();
+
+	screen.show(*this, goBack);
 }
 
 void Context::draw(void) {

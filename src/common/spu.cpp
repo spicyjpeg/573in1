@@ -11,8 +11,8 @@ namespace spu {
 /* Basic API */
 
 static constexpr int _DMA_CHUNK_SIZE = 4;
-static constexpr int _DMA_TIMEOUT    = 10000;
-static constexpr int _STATUS_TIMEOUT = 1000;
+static constexpr int _DMA_TIMEOUT    = 100000;
+static constexpr int _STATUS_TIMEOUT = 10000;
 
 static bool _waitForStatus(uint16_t mask, uint16_t value) {
 	for (int timeout = _STATUS_TIMEOUT; timeout > 0; timeout--) {
@@ -64,20 +64,20 @@ void init(void) {
 	resetAllChannels();
 }
 
-int getFreeChannel(void) {
+Channel getFreeChannel(void) {
 #if 0
 	// The status flag gets set when a channel stops or loops for the first
 	// time rather than when it actually goes silent (so it will be set early
 	// for e.g. short looping samples with a long release envelope, or samples
 	// looping indefinitely).
-	uint32_t flags = SPU_FLAG_STATUS1 | (SPU_FLAG_STATUS2 << 16);
+	uint32_t flags = (SPU_FLAG_STATUS1 | (SPU_FLAG_STATUS2 << 16)) & 0xffffff;
 
-	for (int ch = 0; flags; ch++, flags >>= 1) {
+	for (Channel ch = 0; flags; ch++, flags >>= 1) {
 		if (flags & 1)
 			return ch;
 	}
 #else
-	for (int ch = 23; ch >= 0; ch--) {
+	for (Channel ch = NUM_CHANNELS - 1; ch >= 0; ch--) {
 		if (!SPU_CH_ADSR_VOL(ch))
 			return ch;
 	}
@@ -86,11 +86,11 @@ int getFreeChannel(void) {
 	return -1;
 }
 
-void stopChannel(int ch) {
+void stopChannel(Channel ch) {
 	SPU_CH_VOL_L(ch) = 0;
 	SPU_CH_VOL_R(ch) = 0;
-	SPU_CH_FREQ(ch)  = 0;
-	SPU_CH_ADDR(ch)  = 0;
+	SPU_CH_FREQ(ch)  = 1 << 12;
+	SPU_CH_ADDR(ch)  = DUMMY_BLOCK_OFFSET / 8;
 
 	if (ch < 16) {
 		SPU_FLAG_OFF1 = 1 << ch;
@@ -102,10 +102,10 @@ void stopChannel(int ch) {
 }
 
 void resetAllChannels(void) {
-	for (int ch = 23; ch >= 0; ch--) {
+	for (Channel ch = NUM_CHANNELS - 1; ch >= 0; ch--) {
 		SPU_CH_VOL_L(ch) = 0;
 		SPU_CH_VOL_R(ch) = 0;
-		SPU_CH_FREQ(ch)  = 0x1000;
+		SPU_CH_FREQ(ch)  = 1 << 12;
 		SPU_CH_ADDR(ch)  = DUMMY_BLOCK_OFFSET / 8;
 	}
 
@@ -162,8 +162,8 @@ bool Sound::initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset) {
 	return true;
 }
 
-int Sound::play(int ch, int16_t volume) const {
-	if ((ch < 0) || (ch > 23))
+Channel Sound::play(uint16_t volume, Channel ch) const {
+	if ((ch < 0) || (ch >= NUM_CHANNELS))
 		return -1;
 	if (!offset)
 		return -1;

@@ -197,13 +197,16 @@ bool App::_cartDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
 	file::FileInfo info;
+	char           path[32];
 
-	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR)) {
-		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
+	__builtin_strcpy(path, EXTERNAL_DATA_DIR);
+
+	if (!_fileProvider.getFileInfo(info, path)) {
+		if (!_fileProvider.createDirectory(path))
 			goto _error;
 	}
 
-	char   code[8], region[8], path[32];
+	char   code[8], region[8];
 	size_t length;
 
 	length = _dump.getDumpLength();

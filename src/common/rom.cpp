@@ -305,8 +305,8 @@ static const ChipSize _DUMMY_CHIP_SIZE{
 // The onboard flash and all Konami-supplied flash cards use 2 MB chips with 64
 // KB sectors and an 8-bit bus.
 static const ChipSize _STANDARD_CHIP_SIZE{
-	.chipLength        = 0x400000,
-	.eraseSectorLength = 0x10000
+	.chipLength        = 2 * 0x200000,
+	.eraseSectorLength = 2 * 0x10000
 };
 
 const ChipSize &Driver::getChipSize(void) const {

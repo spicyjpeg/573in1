@@ -3,6 +3,7 @@
 #include "common/file.hpp"
 #include "common/ide.hpp"
 #include "common/rom.hpp"
+#include "common/spu.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/misc.hpp"
@@ -434,6 +435,9 @@ void ResolutionScreen::update(ui::Context &ctx) {
 	}
 }
 
+static constexpr uint16_t _LOOP_FADE_IN_VOLUME = spu::MAX_VOLUME / 2;
+static constexpr int      _LOOP_FADE_IN_TIME   = 30;
+
 void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	_title  = STR("AboutScreen.title");
 	_prompt = STR("AboutScreen.prompt");
@@ -461,6 +465,12 @@ void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	*ptr = 0;
 
 	TextScreen::show(ctx, goBack);
+
+	_loopVolume.setValue(
+		ctx.time, 0, _LOOP_FADE_IN_VOLUME,
+		ctx.gpuCtx.refreshRate * _LOOP_FADE_IN_TIME
+	);
+	_loopChannel = ctx.sounds[ui::SOUND_ABOUT_SCREEN].play(0);
 }
 
 void AboutScreen::hide(ui::Context &ctx, bool goBack) {
@@ -468,10 +478,12 @@ void AboutScreen::hide(ui::Context &ctx, bool goBack) {
 	_text.destroy();
 
 	TextScreen::hide(ctx, goBack);
+	spu::stopChannel(_loopChannel);
 }
 
 void AboutScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
+	spu::setChannelVolume(_loopChannel, _loopVolume.getValue(ctx.time));
 
 	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_mainMenuScreen, true, true);
