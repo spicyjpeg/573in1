@@ -2,6 +2,7 @@
 #pragma once
 
 #include "common/rom.hpp"
+#include "common/spu.hpp"
 #include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
@@ -52,7 +53,10 @@ public:
 
 class AboutScreen : public ui::TextScreen {
 private:
-	util::Data _text;
+	util::Data   _text;
+	spu::Channel _loopChannel;
+
+	util::Tween<uint16_t, util::QuadInEasing> _loopVolume;
 
 public:
 	void show(ui::Context &ctx, bool goBack = false);

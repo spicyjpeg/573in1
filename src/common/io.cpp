@@ -99,6 +99,14 @@ bool isRTCBatteryLow(void) {
 
 /* Digital I/O board driver */
 
+enum BitstreamTagType : uint8_t {
+	_TAG_SOURCE_FILE = 'a',
+	_TAG_CHIP_TYPE   = 'b',
+	_TAG_BUILD_DATE  = 'c',
+	_TAG_BUILD_TIME  = 'd',
+	_TAG_DATA        = 'e'
+};
+
 static void _writeBitstreamLSB(const uint8_t *data, size_t length) {
 	for (; length; length--) {
 		uint16_t bits = *(data++);
@@ -118,13 +126,49 @@ static void _writeBitstreamMSB(const uint8_t *data, size_t length) {
 }
 
 bool loadBitstream(const uint8_t *data, size_t length) {
+	// Konami's bitstreams are always stored LSB-first and with no headers,
+	// however Xilinx tools export .bit files which contain MSB-first bitstreams
+	// wrapped in a TLV container. In order to upload the bitstream properly,
+	// the bit order and presence of a header must be autodetected. See
+	// https://www.fpga-faq.com/FAQ_Pages/0026_Tell_me_about_bit_files.htm and
+	// the "Data Stream Format" section in the XCS40XL datasheet for details.
+	if (data[0] == 0xff)
+		return loadRawBitstream(data, length);
+
+	auto     dataEnd      = &data[length];
+	uint16_t headerLength = (data[0] << 8) | data[1];
+
+	data += headerLength + 4;
+
+	while (data < dataEnd) {
+		size_t tagLength;
+
+		switch (data[0]) {
+			case _TAG_DATA:
+				tagLength = 0
+					| (data[1] << 24)
+					| (data[2] << 16)
+					| (data[3] <<  8)
+					| data[4];
+				data     += 5;
+
+				return loadRawBitstream(data, tagLength);
+
+			default:
+				tagLength = (data[1] << 8) | data[2];
+				data     += 3;
+		}
+
+		data += tagLength;
+	}
+
+	return false;
+}
+
+bool loadRawBitstream(const uint8_t *data, size_t length) {
 	if (data[0] != 0xff)
 		return false;
 
-	// Konami's bitstreams are always stored LSB first, however Xilinx tools
-	// seem to export bitstreams MSB first by default. The only way out of this
-	// mess is to autodetect the bit order by checking for preamble and frame
-	// start sequences, as specified in the XCS40XL datasheet.
 	uint8_t id1 = data[1], id2 = data[4];
 	void    (*writeFunc)(const uint8_t *, size_t);
 
@@ -139,9 +183,12 @@ bool loadBitstream(const uint8_t *data, size_t length) {
 		SYS573D_CPLD_UNK_RESET = 0;
 
 		SYS573D_CPLD_CTRL = SYS573D_CPLD_CTRL_UNK4;
-		SYS573D_CPLD_CTRL = SYS573D_CPLD_CTRL_UNK4 | SYS573D_CPLD_CTRL_UNK3;
-		SYS573D_CPLD_CTRL = SYS573D_CPLD_CTRL_UNK4 | SYS573D_CPLD_CTRL_UNK3 |
-			SYS573D_CPLD_CTRL_UNK2 | SYS573D_CPLD_CTRL_UNK1;
+		SYS573D_CPLD_CTRL = SYS573D_CPLD_CTRL_UNK3 | SYS573D_CPLD_CTRL_UNK4;
+		SYS573D_CPLD_CTRL = 0
+			| SYS573D_CPLD_CTRL_UNK1
+			| SYS573D_CPLD_CTRL_UNK2
+			| SYS573D_CPLD_CTRL_UNK3
+			| SYS573D_CPLD_CTRL_UNK4;
 		delayMicroseconds(5000);
 
 		if (!(SYS573D_CPLD_STAT & SYS573D_CPLD_STAT_INIT))
@@ -149,11 +196,10 @@ bool loadBitstream(const uint8_t *data, size_t length) {
 
 		writeFunc(data, length);
 
+		const uint16_t mask = SYS573D_CPLD_STAT_INIT | SYS573D_CPLD_STAT_DONE;
+
 		for (int j = 15; j; j--) {
-			if (
-				(SYS573D_CPLD_STAT & (SYS573D_CPLD_STAT_INIT | SYS573D_CPLD_STAT_DONE))
-				== (SYS573D_CPLD_STAT_INIT | SYS573D_CPLD_STAT_DONE)
-			)
+			if ((SYS573D_CPLD_STAT & mask) == mask)
 				return true;
 
 			delayMicroseconds(1000);

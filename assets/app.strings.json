@@ -75,7 +75,7 @@
 		"romEraseWorker": {
 			"erase":       "Erasing device...\nDo not turn off the 573.",
 			"success":     "The device has been successfully wiped.\n\nSectors erased: %d",
-			"flashError":  "An error occurred while erasing sectors on one of the flash memory chips.\n\nError code:\t%s\nSectors erased:\t%d\nPress the Test button to view debug logs.",
+			"flashError":  "An error occurred while erasing sectors on one of the chips.\n\nError code:\t%s\nSectors erased:\t%d\nPress the Test button to view debug logs.",
 			"unsupported": "The flash memory chips on this device are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
 		},
 		"romRestoreWorker": {
@@ -84,7 +84,7 @@
 			"success":     "All data has been successfully restored.\n\nBytes written: %d",
 			"overflow":    "The selected file was larger than the target device's capacity, so all data past the limit was ignored. All other data has been successfully restored.\n\nBytes written: %d",
 			"fileError":   "An error occurred while reading data from the file. Ensure the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs.",
-			"flashError":  "An error occurred while erasing sectors on or writing data to one of the flash memory chips.\n\nError code:\t%s\nBytes written:\t%d\nPress the Test button to view debug logs.",
+			"flashError":  "An error occurred while erasing sectors on or writing data to one of the chips.\n\nError code:\t%s\nBytes written:\t%d\nPress the Test button to view debug logs.",
 			"unsupported": "The flash memory chips on this device are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
 		},
 		"systemInfoWorker": {

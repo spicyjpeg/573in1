@@ -6,7 +6,7 @@
 
 /* Main menu screens */
 
-static constexpr int WARNING_COOLDOWN = 10;
+static constexpr int _WARNING_COOLDOWN = 10;
 
 void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("WarningScreen.title");
@@ -16,7 +16,7 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_locked     = true;
 	_numButtons = 1;
 
-	_cooldownTimer = ctx.time + ctx.gpuCtx.refreshRate * WARNING_COOLDOWN;
+	_cooldownTimer = ctx.time + ctx.gpuCtx.refreshRate * _WARNING_COOLDOWN;
 
 	MessageBoxScreen::show(ctx, goBack);
 

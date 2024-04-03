@@ -62,14 +62,17 @@ bool App::_romDumpWorker(void) {
 	// Store all dumps in a subdirectory named "dumpN" within the main data
 	// folder.
 	file::FileInfo info;
+	char           dirPath[32];
 
-	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR)) {
-		if (!_fileProvider.createDirectory(EXTERNAL_DATA_DIR))
+	__builtin_strcpy(dirPath, EXTERNAL_DATA_DIR);
+
+	if (!_fileProvider.getFileInfo(info, dirPath)) {
+		if (!_fileProvider.createDirectory(dirPath))
 			goto _initError;
 	}
 
 	int  index;
-	char dirPath[32], filePath[32];
+	char filePath[32];
 
 	index = 0;
 

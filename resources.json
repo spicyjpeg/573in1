@@ -22,6 +22,12 @@
 	},
 	{
 		"type":     "binary",
+		"name":     "assets/sounds/about.vag",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/about.vag",
+		"compress": null
+	},
+	{
+		"type":     "binary",
 		"name":     "assets/sounds/alert.vag",
 		"source":   "${PROJECT_SOURCE_DIR}/assets/sounds/alert.vag",
 		"compress": null

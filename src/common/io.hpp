@@ -163,6 +163,7 @@ uint32_t getRTCTime(void);
 bool isRTCBatteryLow(void);
 
 bool loadBitstream(const uint8_t *data, size_t length);
+bool loadRawBitstream(const uint8_t *data, size_t length);
 void initKonamiBitstream(void);
 
 void i2cStart(void);

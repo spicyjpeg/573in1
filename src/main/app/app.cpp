@@ -127,12 +127,15 @@ void App::_setupInterrupts(void) {
 }
 
 static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
-	"assets/sounds/startup.vag", // ui::SOUND_STARTUP
-	"assets/sounds/alert.vag",   // ui::SOUND_ALERT
-	"assets/sounds/move.vag",    // ui::SOUND_MOVE
-	"assets/sounds/enter.vag",   // ui::SOUND_ENTER
-	"assets/sounds/exit.vag",    // ui::SOUND_EXIT
-	"assets/sounds/click.vag"    // ui::SOUND_CLICK
+	"assets/sounds/startup.vag",   // ui::SOUND_STARTUP
+	"assets/sounds/about.vag",     // ui::SOUND_ABOUT_SCREEN
+	"assets/sounds/alert.vag",     // ui::SOUND_ALERT
+	"assets/sounds/move.vag",      // ui::SOUND_MOVE
+	"assets/sounds/moveleft.vag",  // ui::SOUND_MOVE_LEFT
+	"assets/sounds/moveright.vag", // ui::SOUND_MOVE_RIGHT
+	"assets/sounds/enter.vag",     // ui::SOUND_ENTER
+	"assets/sounds/exit.vag",      // ui::SOUND_EXIT
+	"assets/sounds/click.vag"      // ui::SOUND_CLICK
 };
 
 void App::_loadResources(void) {

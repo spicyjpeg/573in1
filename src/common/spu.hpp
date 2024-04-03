@@ -10,18 +10,28 @@ namespace spu {
 static constexpr uint32_t DUMMY_BLOCK_OFFSET = 0x1000;
 static constexpr uint32_t DUMMY_BLOCK_END    = 0x1010;
 
+static constexpr int      NUM_CHANNELS = 24;
+static constexpr uint16_t MAX_VOLUME   = 0x3fff;
+
+using Channel = int;
+
 /* Basic API */
 
-static inline void setVolume(int16_t master, int16_t reverb = 0) {
+static inline void setMasterVolume(uint16_t master, uint16_t reverb = 0) {
 	SPU_MASTER_VOL_L = master;
 	SPU_MASTER_VOL_R = master;
 	SPU_REVERB_VOL_L = reverb;
 	SPU_REVERB_VOL_R = reverb;
 }
 
+static inline void setChannelVolume(Channel ch, uint16_t volume) {
+	SPU_CH_VOL_L(ch) = volume;
+	SPU_CH_VOL_R(ch) = volume;
+}
+
 void init(void);
-int getFreeChannel(void);
-void stopChannel(int ch);
+Channel getFreeChannel(void);
+void stopChannel(Channel ch);
 void resetAllChannels(void);
 size_t upload(uint32_t ramOffset, const void *data, size_t length, bool wait);
 
@@ -41,12 +51,12 @@ public:
 
 	inline Sound(void)
 	: offset(0), length(0) {}
-	inline int play(int16_t volume = 0x3fff) const {
-		return play(getFreeChannel(), volume);
+	inline Channel play(uint16_t volume = MAX_VOLUME) const {
+		return play(volume, getFreeChannel());
 	}
 
 	bool initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset);
-	int play(int ch, int16_t volume = 0x3fff) const;
+	Channel play(uint16_t volume, Channel ch) const;
 };
 
 }
