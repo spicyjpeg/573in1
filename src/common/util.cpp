@@ -95,6 +95,60 @@ void Logger::log(const char *format, ...) {
 		enableInterrupts();
 }
 
+/* LZ4 decompressor */
+
+void decompressLZ4(
+	uint8_t *output, const uint8_t *input, size_t maxOutputLength,
+	size_t inputLength
+) {
+	auto outputEnd = &output[maxOutputLength];
+	auto inputEnd  = &input[inputLength];
+
+	while (input < inputEnd) {
+		uint8_t token = *(input++);
+
+		// Copy literals from the input stream.
+		int literalLength = token >> 4;
+
+		if (literalLength == 0xf) {
+			uint8_t addend;
+
+			do {
+				addend         = *(input++);
+				literalLength += addend;
+			} while (addend == 0xff);
+		}
+
+		for (; literalLength && (output < outputEnd); literalLength--)
+			*(output++) = *(input++);
+		if (input >= inputEnd)
+			break;
+
+		int offset = input[0] | (input[1] << 8);
+		input     += 2;
+
+		// Copy from previously decompressed data. Note that this *must* be done
+		// one byte at a time, as the compressor relies on out-of-bounds copies
+		// repeating the last byte.
+		int copyLength = token & 0xf;
+
+		if (copyLength == 0xf) {
+			uint8_t addend;
+
+			do {
+				addend      = *(input++);
+				copyLength += addend;
+			} while (addend == 0xff);
+		}
+
+		auto copySource = output - offset;
+		copyLength     += 4;
+
+		for (; copyLength && (output < outputEnd); copyLength--)
+			*(output++) = *(copySource++);
+	}
+}
+
 /* CRC calculation */
 
 static constexpr uint8_t  _CRC8_POLY  = 0x8c;
@@ -176,7 +230,19 @@ extern "C" uint32_t mz_crc32(uint32_t crc, const uint8_t *data, size_t length) {
 
 static const char _HEX_CHARSET[]{ "0123456789ABCDEF" };
 
-size_t hexToString(char *output, const uint8_t *input, size_t length, char sep) {
+size_t hexValueToString(char *output, uint32_t value, size_t numDigits) {
+	output += numDigits;
+	*output = 0;
+
+	for (size_t i = numDigits; i; i--, value >>= 4)
+		*(--output) = _HEX_CHARSET[value & 0xf];
+
+	return numDigits;
+}
+
+size_t hexToString(
+	char *output, const uint8_t *input, size_t length, char separator
+) {
 	size_t outLength = 0;
 
 	for (; length; length--) {
@@ -185,8 +251,8 @@ size_t hexToString(char *output, const uint8_t *input, size_t length, char sep) 
 		*(output++) = _HEX_CHARSET[value >> 4];
 		*(output++) = _HEX_CHARSET[value & 0xf];
 
-		if (sep && (length > 1)) {
-			*(output++) = sep;
+		if (separator && (length > 1)) {
+			*(output++) = separator;
 			outLength  += 3;
 		} else {
 			outLength  += 2;
@@ -264,42 +330,43 @@ ExecutableLoader::ExecutableLoader(
 	if (!stackTop)
 		stackTop = defaultStackTop;
 
-	_argListPtr      = reinterpret_cast<char **>(uintptr_t(stackTop) & ~7)
+	_argListPtr      = reinterpret_cast<const char **>(uintptr_t(stackTop) & ~7)
 		- MAX_EXECUTABLE_ARGS;
 	_currentStackPtr = reinterpret_cast<char *>(_argListPtr);
 }
 
-void ExecutableLoader::addArgument(const char *arg) {
+void ExecutableLoader::copyArgument(const char *arg) {
 	// Command-line arguments must be copied to the top of the new stack in
 	// order to ensure the executable is going to be able to access them at any
 	// time.
-	size_t length  = __builtin_strlen(arg) + 1;
-	size_t aligned = (length + 7) & ~7;
+	size_t length     = __builtin_strlen(arg) + 1;
+	_currentStackPtr -= (length + 7) & ~7;
 
-	_currentStackPtr        -= aligned;
-	_argListPtr[_argCount++] = _currentStackPtr;
-
+	addArgument(_currentStackPtr);
 	__builtin_memcpy(_currentStackPtr, arg, length);
 	//assert(_argCount <= MAX_EXECUTABLE_ARGS);
 }
 
-[[noreturn]] void ExecutableLoader::run(void) {
+[[noreturn]] void ExecutableLoader::run(
+	int rawArgc, const char *const *rawArgv
+) {
 	disableInterrupts();
 	flushCache();
 
-	register int       a0   __asm__("a0") = _argCount;
-	register char      **a1 __asm__("a1") = _argListPtr;
-	register uintptr_t gp   __asm__("gp") = _header.initialGP;
+	register int               a0  __asm__("a0") = rawArgc;
+	register const char *const *a1 __asm__("a1") = rawArgv;
+	register uintptr_t         gp  __asm__("gp") = _header.initialGP;
 
 	// Changing the stack pointer and return address is not something that
 	// should be done in a C++ function, but hopefully it's fine here since
 	// we're jumping out right after setting it.
 	__asm__ volatile(
+		".set push\n"
 		".set noreorder\n"
 		"li    $ra, %0\n"
 		"jr    %1\n"
 		"addiu $sp, %2, -8\n"
-		".set reorder\n"
+		".set pop\n"
 		:: "i"(DEV2_BASE), "r"(_header.entryPoint), "r"(_currentStackPtr),
 		"r"(a0), "r"(a1), "r"(gp)
 	);

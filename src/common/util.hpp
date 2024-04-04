@@ -298,24 +298,43 @@ class ExecutableLoader {
 private:
 	const ExecutableHeader &_header;
 
-	int  _argCount;
-	char **_argListPtr;
-	char *_currentStackPtr;
+	int        _argCount;
+	const char **_argListPtr;
+	char       *_currentStackPtr;
 
 public:
+	inline void addArgument(const char *arg) {
+		_argListPtr[_argCount++] = arg;
+	}
+	[[noreturn]] inline void run(void) {
+		run(_argCount, _argListPtr);
+	}
+
 	ExecutableLoader(const ExecutableHeader &header, void *defaultStackTop);
-	void addArgument(const char *arg);
-	[[noreturn]] void run(void);
+	void copyArgument(const char *arg);
+	[[noreturn]] void run(int rawArgc, const char *const *rawArgv);
 };
 
 /* Other APIs */
+
+static inline size_t getLZ4InPlaceMargin(size_t inputLength) {
+	return (inputLength >> 8) + 32;
+}
+
+void decompressLZ4(
+	uint8_t *output, const uint8_t *input, size_t maxOutputLength,
+	size_t inputLength
+);
 
 uint8_t dsCRC8(const uint8_t *data, size_t length);
 uint16_t zsCRC16(const uint8_t *data, size_t length);
 uint32_t zipCRC32(const uint8_t *data, size_t length, uint32_t crc = 0);
 void initZipCRC32(void);
 
-size_t hexToString(char *output, const uint8_t *input, size_t length, char sep = 0);
+size_t hexValueToString(char *output, uint32_t value, size_t numDigits = 8);
+size_t hexToString(
+	char *output, const uint8_t *input, size_t length, char separator = 0
+);
 size_t serialNumberToString(char *output, const uint8_t *input);
 size_t traceIDToString(char *output, const uint8_t *input);
 size_t encodeBase41(char *output, const uint8_t *input, size_t length);

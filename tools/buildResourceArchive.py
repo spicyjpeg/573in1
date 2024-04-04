@@ -13,7 +13,7 @@ from struct      import Struct
 from typing      import Any, ByteString, Generator, Mapping, Sequence
 from zipfile     import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
-import numpy
+import lz4.block, numpy
 from numpy import ndarray
 from PIL   import Image
 
@@ -346,18 +346,20 @@ def createParser() -> ArgumentParser:
 		help   = "Show this help message and exit"
 	)
 
-	group = parser.add_argument_group("ZIP compression options")
+	group = parser.add_argument_group("Compression options")
 	group.add_argument(
-		"-c", "--compress-level",
-		type    = int,
-		default = 9,
-		help    = "Set default gzip compression level (default 9)",
-		metavar = "0-9"
+		"-c", "--compression",
+		type    = str,
+		choices = ( "none", "deflate", "lz4" ),
+		default = "deflate",
+		help    = "Set default compression algorithm (default DEFLATE)"
 	)
 	group.add_argument(
-		"-n", "--no-compression",
-		action = "store_true",
-		help   = "Forcefully disable gzip compression for all files"
+		"-l", "--compress-level",
+		type    = int,
+		default = 9,
+		help    = "Set default DEFLATE and LZ4 compression level (default 9)",
+		metavar = "0-9"
 	)
 
 	group = parser.add_argument_group("File paths")
@@ -449,14 +451,32 @@ def main():
 				case _type:
 					raise KeyError(f"unsupported asset type '{_type}'")
 
-			gzipLevel: int | None = asset.get("compress", args.compress_level)
-			disallow:  bool       = \
-				(len(data) < 1024) or (gzipLevel is None) or args.no_compression
+			compressLevel: int | None = \
+				asset.get("compressLevel", args.compress_level)
 
-			_zip.writestr(
-				asset["name"], data,
-				ZIP_STORED if disallow else ZIP_DEFLATED, gzipLevel
-			)
+			match asset.get("compression", args.compression).strip():
+				case "none" | None:
+					_zip.writestr(asset["name"], data, ZIP_STORED)
+
+				case "deflate":
+					_zip.writestr(
+						asset["name"], data, ZIP_DEFLATED, compressLevel
+					)
+
+				case "lz4":
+					# ZIP archives do not "officially" support LZ4 compression,
+					# so the entry is stored as an uncompressed file.
+					compressed: bytes = lz4.block.compress(
+						data,
+						mode        = "high_compression",
+						compression = compressLevel,
+						store_size  = False
+					)
+
+					_zip.writestr(asset["name"], compressed, ZIP_STORED)
+
+				case _type:
+					raise KeyError(f"unsupported compression type '{_type}'")
 
 if __name__ == "__main__":
 	main()

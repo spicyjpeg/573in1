@@ -201,7 +201,7 @@ enum FlashIdentifier : uint16_t {
 bool FlashRegion::hasBootExecutable(void) const {
 	// FIXME: this implementation will not detect executables that cross bank
 	// boundaries (but it shouldn't matter as executables must be <4 MB anyway)
-	auto data   = reinterpret_cast<const uint8_t *>(ptr + FLASH_EXE_OFFSET);
+	auto data   = reinterpret_cast<const uint8_t *>(ptr + FLASH_EXECUTABLE_OFFSET);
 	auto crcPtr = reinterpret_cast<const uint32_t *>(ptr + FLASH_CRC_OFFSET);
 	auto table  = reinterpret_cast<const uint32_t *>(CACHE_BASE);
 

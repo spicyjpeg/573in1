@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	cart_tool_private
 	LANGUAGES    C CXX ASM
-	VERSION      0.4.0
+	VERSION      0.4.1
 	DESCRIPTION  "Konami System 573 security cartridge tool"
 )
 
@@ -31,7 +31,7 @@ set(cdVolumeName "CART_TOOL_${_version}")
 
 add_library(
 	common OBJECT
-	src/libc/crt0.c
+	#src/libc/crt0.c
 	src/libc/cxxsupport.cpp
 	src/libc/malloc.c
 	src/libc/memset.s
@@ -49,10 +49,11 @@ target_include_directories(
 	src/libc
 )
 target_compile_definitions(common PUBLIC VERSION="${PROJECT_VERSION}")
+link_libraries(common)
 
-function(addExecutable name stackTop)
+function(addExecutable name address stackTop)
 	add_executable(${name} ${ARGN})
-	target_link_libraries(${name} PRIVATE common)
+	target_link_options(${name} PRIVATE -Ttext=0x${address})
 
 	add_custom_command(
 		TARGET     ${name} POST_BUILD
@@ -70,8 +71,12 @@ endfunction()
 
 ## Main executable
 
+# IMPORTANT: these addresses assume the boot executable's size (including code,
+# heap and stack allocations as well as the resource archive) is <448 KB
+# (0x70000 bytes).
 addExecutable(
-	main 801dfff0
+	main 80080000 801dfff0
+	src/common/args.cpp
 	src/common/file.cpp
 	src/common/gpu.cpp
 	src/common/gpufont.cpp
@@ -82,6 +87,7 @@ addExecutable(
 	src/common/rom.cpp
 	src/common/spu.cpp
 	src/common/util.cpp
+	src/libc/crt0.c
 	src/main/cart.cpp
 	src/main/cartdata.cpp
 	src/main/cartio.cpp
@@ -109,7 +115,6 @@ target_compile_definitions(
 	$<IF:$<CONFIG:Debug>,
 		ENABLE_LOGGING=1
 		ENABLE_FILE_WRITING=1
-		#ENABLE_ARGV=1
 		ENABLE_LOG_BUFFER=1
 		ENABLE_PS1_CONTROLLER=1
 		#ENABLE_X76F100_DRIVER=1
@@ -118,7 +123,6 @@ target_compile_definitions(
 	,
 		ENABLE_LOGGING=1
 		ENABLE_FILE_WRITING=1
-		#ENABLE_ARGV=1
 		ENABLE_LOG_BUFFER=1
 		ENABLE_PS1_CONTROLLER=1
 		#ENABLE_X76F100_DRIVER=1
@@ -127,42 +131,52 @@ target_compile_definitions(
 	>
 )
 
-list(APPEND packageContents main.psexe)
-
-## Executable launchers
+## Boot stub and executable launchers
 
 # NOTE: in order to make sure -Os is passed after -Og or -O3 (see
 # cmake/setup.cmake) and thus overrides it, it must be added to a separate
 # target rather than directly to the executables.
-add_library(launcherFlags INTERFACE)
-target_compile_options(launcherFlags INTERFACE -Os)
+add_library(bootFlags INTERFACE)
+target_compile_options(bootFlags INTERFACE -Os)
 target_compile_definitions(
-	launcherFlags INTERFACE
-	$<IF:$<CONFIG:Debug>,
-		#ENABLE_LOGGING=1
-	,
+	bootFlags INTERFACE
+	$<$<CONFIG:Debug>:
+		#ENABLE_ARGV=1
 		#ENABLE_LOGGING=1
 	>
 )
 
+addExecutable(
+	boot 80010000 0
+	src/boot/crt0.s
+	src/boot/main.cpp
+	src/common/util.cpp
+)
+target_link_libraries(boot PRIVATE bootFlags)
+
+list(APPEND packageContents boot.psexe)
+
 function(addLauncher address stackTop)
 	addExecutable(
-		launcher${address} ${stackTop}
+		launcher${address} ${address} ${stackTop}
+		src/common/args.cpp
 		src/common/ide.cpp
 		src/common/ideglue.cpp
 		src/common/io.cpp
 		src/common/util.cpp
+		src/launcher/launcher.cpp
 		src/launcher/main.cpp
+		src/libc/crt0.c
 		src/vendor/ff.c
 		src/vendor/ffunicode.c
 		src/vendor/printf.c
 	)
-	target_link_options(launcher${address} PRIVATE -Ttext=0x${address})
-	target_link_libraries(launcher${address} PRIVATE launcherFlags)
+	target_link_libraries(launcher${address} PRIVATE bootFlags)
 endfunction()
 
-# Note that the launchers must be <40 KB (0xa000 bytes) in order for this to
-# work properly.
+# IMPORTANT: these addresses assume the launcher's total size (including code,
+# heap and stack allocations, but excluding the executable header) is <32 KB
+# (0x8000 bytes).
 addLauncher(801f8000 801ffff0)
 addLauncher(803f8000 803ffff0)
 
@@ -218,13 +232,14 @@ add_custom_command(
 		resources.json
 		assets/app.palette.json
 		assets/app.strings.json
+		main
 		launcher801f8000
 		launcher803f8000
 	COMMENT "Building resource archive"
 	VERBATIM
 )
 addBinaryFile(
-	main _resources _resourcesSize
+	boot _resourceArchive _resourceArchiveLength
 	"${PROJECT_BINARY_DIR}/resources.zip"
 )
 
@@ -248,7 +263,7 @@ if(EXISTS "${XORRISO_PATH}")
 			-system_id      "PLAYSTATION"
 			-preparer_id    "CART_TOOL BUILD SCRIPT"
 			-map   readme.txt README.TXT
-			-map   main.psexe PSX.EXE
+			-map   boot.psexe PSX.EXE
 			-clone PSX.EXE    GSE.NXX
 			-clone PSX.EXE    NSE.GXX
 			-clone PSX.EXE    OSE.FXX
@@ -269,7 +284,7 @@ if(EXISTS "${XORRISO_PATH}")
 			-clone PSX.EXE    TSY.AXD
 			-clone PSX.EXE    TSZ.AXC
 		OUTPUT  "${releaseName}.iso"
-		DEPENDS main
+		DEPENDS boot
 		COMMENT "Building CD-ROM image"
 		VERBATIM
 	)

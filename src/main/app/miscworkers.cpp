@@ -67,14 +67,20 @@ public:
 
 static const Launcher _LAUNCHERS[]{
 	{
-		.path       = "launchers/801f8000.psexe",
+		.path       = "binaries/launcher801f8000.psexe",
 		.loadOffset = 0x801f8000,
 		.length     = 0x8000
 	}, {
-		.path       = "launchers/803f8000.psexe",
+		.path       = "binaries/launcher803f8000.psexe",
 		.loadOffset = 0x803f8000,
 		.length     = 0x8000
 	}
+};
+
+static const uint32_t _EXECUTABLE_OFFSETS[]{
+	0,
+	rom::FLASH_EXECUTABLE_OFFSET,
+	util::EXECUTABLE_BODY_OFFSET
 };
 
 bool App::_executableWorker(void) {
@@ -87,25 +93,30 @@ bool App::_executableWorker(void) {
 		goto _fileOpenError;
 
 	util::ExecutableHeader header;
-	size_t                 length;
 
-	length = _file->read(&header, sizeof(header));
-
-	if (length != sizeof(header))
-		goto _fileError;
-
-	if (!header.validateMagic()) {
-		// If the file is not an executable, check if it is a flash image that
-		// contains an executable. Note that the CRC32 is not validated.
-		_file->seek(rom::FLASH_EXE_OFFSET);
-		length = _file->read(&header, sizeof(header));
+	// Check for the presence of an executable at several different offsets
+	// within the file before giving up.
+	for (auto offset : _EXECUTABLE_OFFSETS) {
+		_file->seek(offset);
+		size_t length = _file->read(&header, sizeof(header));
 
 		if (length != sizeof(header))
-			goto _fileError;
-		if (!header.validateMagic())
-			goto _fileError;
+			break;
+		if (header.validateMagic())
+			goto _validFile;
 	}
 
+	delete _file;
+
+_fileOpenError:
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _filePickerScreen,
+		WSTR("App.executableWorker.fileError"), path
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+
+_validFile:
 	delete _file;
 
 	uintptr_t executableEnd, stackTop;
@@ -153,18 +164,6 @@ bool App::_executableWorker(void) {
 		);
 		data.destroy();
 
-		util::ExecutableLoader loader(
-			header, reinterpret_cast<void *>(launcherEnd)
-		);
-		char arg[128];
-
-		snprintf(
-			arg, sizeof(arg), "launcher.drive=%s", _fileProvider.getDriveString()
-		);
-		loader.addArgument(arg);
-		snprintf(arg, sizeof(arg), "launcher.path=%s", path);
-		loader.addArgument(arg);
-
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
 		_unloadCartData();
@@ -175,6 +174,18 @@ bool App::_executableWorker(void) {
 
 		_fileProvider.close();
 
+		util::ExecutableLoader loader(
+			header, reinterpret_cast<void *>(launcherEnd)
+		);
+		char arg[128];
+
+		snprintf(
+			arg, sizeof(arg), "launcher.drive=%s", _fileProvider.getDriveString()
+		);
+		loader.copyArgument(arg);
+		snprintf(arg, sizeof(arg), "launcher.path=%s", path);
+		loader.copyArgument(arg);
+
 		uninstallExceptionHandler();
 		loader.run();
 	}
@@ -183,17 +194,6 @@ bool App::_executableWorker(void) {
 		MESSAGE_ERROR, _filePickerScreen,
 		WSTR("App.executableWorker.addressError"), path, header.textOffset,
 		executableEnd - 1, stackTop
-	);
-	_workerStatus.setNextScreen(_messageScreen);
-	return false;
-
-_fileError:
-	delete _file;
-
-_fileOpenError:
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, _filePickerScreen,
-		WSTR("App.executableWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
