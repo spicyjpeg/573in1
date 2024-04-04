@@ -11,9 +11,9 @@ namespace rom {
 
 /* ROM region dumpers */
 
-static constexpr size_t   FLASH_BANK_LENGTH = 0x400000;
-static constexpr uint32_t FLASH_CRC_OFFSET  = 0x20;
-static constexpr uint32_t FLASH_EXE_OFFSET  = 0x24;
+static constexpr size_t   FLASH_BANK_LENGTH       = 0x400000;
+static constexpr uint32_t FLASH_CRC_OFFSET        = 0x20;
+static constexpr uint32_t FLASH_EXECUTABLE_OFFSET = 0x24;
 
 class Driver;
 

@@ -28,10 +28,9 @@
 
 /* Internal state */
 
-static uint32_t     _savedBreakpointVector[4];
-static uint32_t     _savedExceptionVector[4];
-static VoidFunction _flushCache = 0;
-static Thread       _mainThread;
+static uint32_t _savedBreakpointVector[4];
+static uint32_t _savedExceptionVector[4];
+static Thread   _mainThread;
 
 ArgFunction interruptHandler     = 0;
 void        *interruptHandlerArg = 0;
@@ -40,6 +39,12 @@ Thread *currentThread = &_mainThread;
 Thread *nextThread    = &_mainThread;
 
 /* Exception handler setup */
+
+static inline void _flushCache(void) {
+	// This is the only function that must always run from the BIOS ROM as it
+	// temporarily disables main RAM.
+	BIOS_API_TABLE[0x44]();
+}
 
 void _exceptionVector(void);
 
@@ -53,11 +58,6 @@ void installExceptionHandler(void) {
 
 	// Disable interrupts and the GTE at the COP0 side.
 	cop0_setSR(COP0_SR_CU0);
-
-	// Grab a direct pointer to the BIOS function to flush the instruction
-	// cache. This is the only function that must always run from the BIOS ROM
-	// as it temporarily disables main RAM.
-	_flushCache = BIOS_API_TABLE[0x44];
 
 	// Overwrite the default breakpoint and exception handlers placed into RAM
 	// by the BIOS with a function that will jump to our custom handler.
@@ -100,9 +100,6 @@ void setInterruptHandler(ArgFunction func, void *arg) {
 }
 
 void flushCache(void) {
-	if (!_flushCache)
-		_flushCache = BIOS_API_TABLE[0x44];
-
 	bool enable = disableInterrupts();
 
 	_flushCache();

@@ -2,5 +2,6 @@
 #   py -m pip install -r tools/requirements.txt   (Windows)
 #   sudo pip install -r tools/requirements.txt    (Linux/macOS)
 
+lz4    >= 4.3.2
 numpy  >= 1.19.4
 Pillow >= 8.2.0
