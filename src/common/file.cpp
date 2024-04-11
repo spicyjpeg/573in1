@@ -206,49 +206,50 @@ Provider::~Provider(void) {
 }
 
 size_t Provider::loadData(util::Data &output, const char *path) {
-	auto file = openFile(path, READ);
+	auto _file = openFile(path, READ);
 
-	if (!file)
+	if (!_file)
 		return 0;
 
 	//assert(file->length <= SIZE_MAX);
-	if (!output.allocate(size_t(file->length))) {
-		delete file;
+	if (!output.allocate(size_t(_file->length))) {
+		_file->close();
+		delete _file;
 		return 0;
 	}
 
-	size_t actualLength = file->read(output.ptr, output.length);
-	file->close();
+	size_t actualLength = _file->read(output.ptr, output.length);
 
-	delete file;
+	_file->close();
+	delete _file;
 	return actualLength;
 }
 
 size_t Provider::loadData(void *output, size_t length, const char *path) {
-	auto file = openFile(path, READ);
+	auto _file = openFile(path, READ);
 
-	if (!file)
+	if (!_file)
 		return 0;
 
 	//assert(file->length >= length);
-	size_t actualLength = file->read(output, length);
-	file->close();
+	size_t actualLength = _file->read(output, length);
 
-	delete file;
+	_file->close();
+	delete _file;
 	return actualLength;
 }
 
 size_t Provider::saveData(const void *input, size_t length, const char *path) {
 #ifdef ENABLE_FILE_WRITING
-	auto file = openFile(path, WRITE | ALLOW_CREATE);
+	auto _file = openFile(path, WRITE | ALLOW_CREATE);
 
-	if (!file)
+	if (!_file)
 		return 0;
 
-	size_t actualLength = file->write(input, length);
-	file->close();
+	size_t actualLength = _file->write(input, length);
 
-	delete file;
+	_file->close();
+	delete _file;
 	return actualLength;
 #else
 	return 0;
@@ -511,17 +512,17 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 	if (!_selectDrive())
 		return nullptr;
 
-	auto file  = new FATFile();
-	auto error = f_open(&(file->_fd), path, uint8_t(flags));
+	auto _file = new FATFile();
+	auto error = f_open(&(_file->_fd), path, uint8_t(flags));
 
 	if (error) {
 		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
-		delete file;
+		delete _file;
 		return nullptr;
 	}
 
-	file->length = f_size(&(file->_fd));
-	return file;
+	_file->length = f_size(&(_file->_fd));
+	return _file;
 }
 
 static constexpr uint32_t _ZIP_FLAGS = 0

@@ -206,6 +206,7 @@ int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
 			_numFiles++;
 	}
 
+	directory->close();
 	delete directory;
 
 	_activeItem = 0;
@@ -236,6 +237,7 @@ int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
 		__builtin_memcpy(ptr, &info, sizeof(file::FileInfo));
 	}
 
+	directory->close();
 	delete directory;
 
 	__builtin_strncpy(_currentPath, path, sizeof(_currentPath));

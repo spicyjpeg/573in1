@@ -177,25 +177,24 @@ enum JEDECCommand : uint16_t {
 	_JEDEC_ERASE_SECTOR    = 0x3030
 };
 
-enum SharpCommand : uint16_t {
-	_SHARP_RESET         = 0xffff,
-	_SHARP_GET_ID        = 0x9090,
-	_SHARP_WRITE_BYTE    = 0x4040,
-	_SHARP_ERASE_SECTOR1 = 0x2020,
-	_SHARP_ERASE_SECTOR2 = 0xd0d0,
-	_SHARP_GET_STATUS    = 0x7070,
-	_SHARP_CLEAR_STATUS  = 0x5050,
-	_SHARP_SUSPEND       = 0xb0b0,
-	_SHARP_RESUME        = 0xd0d0
+enum IntelCommand : uint16_t {
+	_INTEL_RESET         = 0xffff,
+	_INTEL_GET_ID        = 0x9090,
+	_INTEL_WRITE_BYTE    = 0x4040,
+	_INTEL_ERASE_SECTOR1 = 0x2020,
+	_INTEL_ERASE_SECTOR2 = 0xd0d0,
+	_INTEL_GET_STATUS    = 0x7070,
+	_INTEL_CLEAR_STATUS  = 0x5050,
+	_INTEL_SUSPEND       = 0xb0b0,
+	_INTEL_RESUME        = 0xd0d0
 };
 
 enum FlashIdentifier : uint16_t {
-	// NOTE: the MBM29F017A datasheet incorrectly lists the device ID as 0xad in
-	// some places. The chip behaves pretty much identically to the MBM29F016A.
-	_ID_MBM29F016A      = 0x04 | (0xad << 8),
-	_ID_MBM29F017A      = 0x04 | (0x3d << 8),
-	_ID_FUJITSU_UNKNOWN = 0x04 | (0xa4 << 8),
-	_ID_LH28F016S       = 0x89 | (0xaa << 8)
+	_ID_MBM29F016A = 0x04 | (0xad << 8),
+	_ID_MBM29F017A = 0x04 | (0x3d << 8),
+	_ID_MBM29F040A = 0x04 | (0xa4 << 8),
+	_ID_28F016S5   = 0x89 | (0xaa << 8),
+	_ID_28F640J5   = 0x89 | (0x15 << 8)
 };
 
 bool FlashRegion::hasBootExecutable(void) const {
@@ -234,11 +233,11 @@ uint32_t FlashRegion::getJEDECID(void) const {
 
 	auto _ptr = reinterpret_cast<volatile uint16_t *>(ptr);
 
-	_ptr[0x000] = _SHARP_RESET;
-	_ptr[0x000] = _SHARP_RESET;
+	_ptr[0x000] = _INTEL_RESET;
+	_ptr[0x000] = _INTEL_RESET;
 	_ptr[0x555] = _JEDEC_HANDSHAKE1;
 	_ptr[0x2aa] = _JEDEC_HANDSHAKE2;
-	_ptr[0x555] = _JEDEC_GET_ID; // Same as _SHARP_GET_ID
+	_ptr[0x555] = _JEDEC_GET_ID; // Same as _INTEL_GET_ID
 
 	return _ptr[0] | (_ptr[1] << 16);
 }
@@ -254,25 +253,36 @@ Driver *FlashRegion::newDriver(void) const {
 	uint16_t high = ((id >> 8) & 0xff) | ((id >> 16) & 0xff00);
 	LOG("low=0x%04x, high=0x%04x", low, high);
 
-	if (low != high) {
-		// TODO: implement single-chip (16-bit) flash support
-		return new Driver(*this);
-	} else {
+	if (low == high) {
+		// Two 8-bit chips for each bank
 		switch (low) {
 			case _ID_MBM29F016A:
 			case _ID_MBM29F017A:
+				// The MBM29F017A datasheet incorrectly lists the device ID as
+				// 0xad rather than 0x3d in some places. The chip behaves pretty
+				// much identically to the MBM29F016A.
 				return new MBM29F016ADriver(*this);
 
-			case _ID_FUJITSU_UNKNOWN:
-				return new FujitsuUnknownDriver(*this);
+			case _ID_MBM29F040A:
+				return new MBM29F040ADriver(*this);
 
-			case _ID_LH28F016S:
-				return new LH28F016SDriver(*this);
-
-			default:
-				return new Driver(*this);
+			case _ID_28F016S5:
+				// The chip used by Konami is actually the Sharp LH28F016S,
+				// which uses the same ID and command set as the Intel 28F016S5.
+				return new Intel28F016S5Driver(*this);
+		}
+	//} else if (!high || (high == 0xff)) {
+	} else {
+		// Single 16-bit chip for each bank
+		switch (low) {
+			case _ID_28F640J5:
+				// Found in "Centennial" branded flash cards. Not supported by
+				// Konami's drivers.
+				return new Intel28F640J5Driver(*this);
 		}
 	}
+
+	return new Driver(*this);
 }
 
 const BIOSRegion  bios;
@@ -350,7 +360,7 @@ const ChipSize &RTCDriver::getChipSize(void) const {
 	return _RTC_CHIP_SIZE;
 }
 
-/* Fujitsu MBM29F016A driver */
+/* Fujitsu MBM29F016A/017A driver */
 
 enum FujitsuStatusFlag : uint16_t {
 	_FUJITSU_STATUS_ERASE_TOGGLE = 0x101 << 2,
@@ -440,13 +450,12 @@ const ChipSize &MBM29F016ADriver::getChipSize(void) const {
 	return _STANDARD_CHIP_SIZE;
 }
 
-/* Unknown Fujitsu chip driver */
+/* Fujitsu MBM29F040A driver */
 
 // Konami's drivers handle this chip pretty much identically to the MBM29F016A,
-// but using 0x5555/0x2aaa as command addresses instead of 0x555/0x2aa. This
-// could actually be a >2 MB chip.
+// but using 0x5555/0x2aaa as command addresses instead of 0x555/0x2aa.
 
-void FujitsuUnknownDriver::write(uint32_t offset, uint16_t value) {
+void MBM29F040ADriver::write(uint32_t offset, uint16_t value) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 	offset                 = (offset % FLASH_BANK_LENGTH) / 2;
 
@@ -457,7 +466,7 @@ void FujitsuUnknownDriver::write(uint32_t offset, uint16_t value) {
 	ptr[offset] = value;
 }
 
-void FujitsuUnknownDriver::eraseSector(uint32_t offset) {
+void MBM29F040ADriver::eraseSector(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 	offset                 = (offset % FLASH_BANK_LENGTH) / 2;
 
@@ -470,7 +479,7 @@ void FujitsuUnknownDriver::eraseSector(uint32_t offset) {
 	ptr[offset] = _JEDEC_ERASE_SECTOR;
 }
 
-void FujitsuUnknownDriver::eraseChip(uint32_t offset) {
+void MBM29F040ADriver::eraseChip(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 
 	ptr[0x0005] = _JEDEC_RESET;
@@ -482,42 +491,42 @@ void FujitsuUnknownDriver::eraseChip(uint32_t offset) {
 	ptr[0x5555] = _JEDEC_ERASE_CHIP;
 }
 
-/* Sharp LH28F016S driver */
+/* Intel 28F016S5 (Sharp LH28F016S) driver */
 
-enum SharpStatusFlag : uint16_t {
-	_SHARP_STATUS_DPS    = 0x101 << 1,
-	_SHARP_STATUS_BWSS   = 0x101 << 2,
-	_SHARP_STATUS_VPPS   = 0x101 << 3,
-	_SHARP_STATUS_BWSLBS = 0x101 << 4,
-	_SHARP_STATUS_ECLBS  = 0x101 << 5,
-	_SHARP_STATUS_ESS    = 0x101 << 6,
-	_SHARP_STATUS_WSMS   = 0x101 << 7
+enum IntelStatusFlag : uint16_t {
+	_INTEL_STATUS_DPS    = 0x101 << 1,
+	_INTEL_STATUS_BWSS   = 0x101 << 2,
+	_INTEL_STATUS_VPPS   = 0x101 << 3,
+	_INTEL_STATUS_BWSLBS = 0x101 << 4,
+	_INTEL_STATUS_ECLBS  = 0x101 << 5,
+	_INTEL_STATUS_ESS    = 0x101 << 6,
+	_INTEL_STATUS_WSMS   = 0x101 << 7
 };
 
-DriverError LH28F016SDriver::_flush(uint32_t offset, int timeout) {
+DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset);
 
 	// Not required as all write/erase commands already put the chip into status
 	// reading mode.
-	//*ptr = _SHARP_GET_STATUS;
+	//*ptr = _INTEL_GET_STATUS;
 
 	for (; timeout > 0; timeout--) {
 		auto status = *ptr;
 
-		if (status & (_SHARP_STATUS_DPS | _SHARP_STATUS_VPPS)) {
-			*ptr = _SHARP_CLEAR_STATUS;
+		if (status & (_INTEL_STATUS_DPS | _INTEL_STATUS_VPPS)) {
+			*ptr = _INTEL_CLEAR_STATUS;
 
 			LOG("locked @ 0x%08x, stat=0x%04x", offset, status);
 			return WRITE_PROTECTED;
 		}
-		if (status & (_SHARP_STATUS_BWSLBS | _SHARP_STATUS_ECLBS)) {
-			*ptr = _SHARP_CLEAR_STATUS;
+		if (status & (_INTEL_STATUS_BWSLBS | _INTEL_STATUS_ECLBS)) {
+			*ptr = _INTEL_CLEAR_STATUS;
 
 			LOG("error @ 0x%08x, stat=0x%04x", offset, status);
 			return CHIP_ERROR;
 		}
 
-		if (status & _SHARP_STATUS_WSMS)
+		if (status & _INTEL_STATUS_WSMS)
 			return NO_ERROR;
 
 		delayMicroseconds(1);
@@ -527,35 +536,46 @@ DriverError LH28F016SDriver::_flush(uint32_t offset, int timeout) {
 	return CHIP_TIMEOUT;
 }
 
-void LH28F016SDriver::write(uint32_t offset, uint16_t value) {
+void Intel28F016S5Driver::write(uint32_t offset, uint16_t value) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset);
 
-	*ptr = _SHARP_RESET;
-	*ptr = _SHARP_CLEAR_STATUS;
-	*ptr = _SHARP_WRITE_BYTE;
+	*ptr = _INTEL_RESET;
+	*ptr = _INTEL_CLEAR_STATUS;
+	*ptr = _INTEL_WRITE_BYTE;
 	*ptr = value;
 }
 
-void LH28F016SDriver::eraseSector(uint32_t offset) {
+void Intel28F016S5Driver::eraseSector(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset);
 
-	*ptr = _SHARP_RESET;
-	*ptr = _SHARP_ERASE_SECTOR1;
-	*ptr = _SHARP_ERASE_SECTOR2;
+	*ptr = _INTEL_RESET;
+	*ptr = _INTEL_ERASE_SECTOR1;
+	*ptr = _INTEL_ERASE_SECTOR2;
 }
 
-DriverError LH28F016SDriver::flushWrite(
+DriverError Intel28F016S5Driver::flushWrite(
 	uint32_t offset, uint16_t value
 ) {
 	return _flush(offset, _FLASH_WRITE_TIMEOUT);
 }
 
-DriverError LH28F016SDriver::flushErase(uint32_t offset) {
+DriverError Intel28F016S5Driver::flushErase(uint32_t offset) {
 	return _flush(offset, _FLASH_ERASE_TIMEOUT);
 }
 
-const ChipSize &LH28F016SDriver::getChipSize(void) const {
+const ChipSize &Intel28F016S5Driver::getChipSize(void) const {
 	return _STANDARD_CHIP_SIZE;
+}
+
+/* Intel 28F640J5 driver */
+
+static const ChipSize _28F640J5_CHIP_SIZE{
+	.chipLength        = 0x800000,
+	.eraseSectorLength = 0x20000
+};
+
+const ChipSize &Intel28F640J5Driver::getChipSize(void) const {
+	return _28F640J5_CHIP_SIZE;
 }
 
 /* BIOS ROM headers */

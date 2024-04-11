@@ -144,9 +144,9 @@ public:
 	const ChipSize &getChipSize(void) const;
 };
 
-class FujitsuUnknownDriver : public MBM29F016ADriver {
+class MBM29F040ADriver : public MBM29F016ADriver {
 public:
-	inline FujitsuUnknownDriver(const FlashRegion &region)
+	inline MBM29F040ADriver(const FlashRegion &region)
 	: MBM29F016ADriver(region) {}
 
 	void write(uint32_t offset, uint16_t value);
@@ -154,18 +154,26 @@ public:
 	void eraseChip(uint32_t offset);
 };
 
-class LH28F016SDriver : public Driver {
+class Intel28F016S5Driver : public Driver {
 private:
 	DriverError _flush(uint32_t offset, int timeout);
 
 public:
-	inline LH28F016SDriver(const FlashRegion &region)
+	inline Intel28F016S5Driver(const FlashRegion &region)
 	: Driver(region) {}
 
 	void write(uint32_t offset, uint16_t value);
 	void eraseSector(uint32_t offset);
 	DriverError flushWrite(uint32_t offset, uint16_t value);
 	DriverError flushErase(uint32_t offset);
+	const ChipSize &getChipSize(void) const;
+};
+
+class Intel28F640J5Driver : public Intel28F016S5Driver {
+public:
+	inline Intel28F640J5Driver(const FlashRegion &region)
+	: Intel28F016S5Driver(region) {}
+
 	const ChipSize &getChipSize(void) const;
 };
 

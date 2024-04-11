@@ -331,7 +331,7 @@ private:
 public:
 	uint32_t flags;
 
-	char     model[40], revision[8], serialNumber[20];
+	char     model[41], revision[9], serialNumber[21];
 	uint64_t capacity;
 
 	inline Device(uint32_t flags)

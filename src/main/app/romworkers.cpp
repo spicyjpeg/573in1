@@ -113,6 +113,7 @@ bool App::_romDumpWorker(void) {
 			entry.region.read(buffer, offset, chunkLength);
 
 			if (_file->write(buffer, chunkLength) < chunkLength) {
+				_file->close();
 				delete   _file;
 				delete[] buffer;
 
@@ -122,6 +123,7 @@ bool App::_romDumpWorker(void) {
 			offset += chunkLength;
 		}
 
+		_file->close();
 		delete   _file;
 		delete[] buffer;
 
@@ -209,6 +211,7 @@ bool App::_romRestoreWorker(void) {
 		}
 	}
 
+	_file->close();
 	delete   _file;
 	delete[] buffer;
 	delete   driver;
@@ -234,6 +237,7 @@ _fileError:
 	return false;
 
 _flashError:
+	_file->close();
 	delete   _file;
 	delete[] buffer;
 	delete   driver;

@@ -106,6 +106,7 @@ bool App::_executableWorker(void) {
 			goto _validFile;
 	}
 
+	_file->close();
 	delete _file;
 
 _fileOpenError:
@@ -117,6 +118,7 @@ _fileOpenError:
 	return false;
 
 _validFile:
+	_file->close();
 	delete _file;
 
 	uintptr_t executableEnd, stackTop;
@@ -169,8 +171,10 @@ _validFile:
 		_unloadCartData();
 		_resourceProvider.close();
 
-		if (_resourceFile)
+		if (_resourceFile) {
+			_resourceFile->close();
 			delete _resourceFile;
+		}
 
 		_fileProvider.close();
 
@@ -240,8 +244,10 @@ bool App::_rebootWorker(void) {
 	_unloadCartData();
 	_resourceProvider.close();
 
-	if (_resourceFile)
+	if (_resourceFile) {
+		_resourceFile->close();
 		delete _resourceFile;
+	}
 
 	_fileProvider.close();
 	_workerStatus.setStatus(WORKER_REBOOT);
