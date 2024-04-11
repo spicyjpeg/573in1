@@ -73,8 +73,10 @@ App::~App(void) {
 	_unloadCartData();
 	//_resourceProvider.close();
 
-	if (_resourceFile)
+	if (_resourceFile) {
+		_resourceFile->close();
 		delete _resourceFile;
+	}
 
 	//_fileProvider.close();
 

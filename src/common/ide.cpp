@@ -45,6 +45,7 @@ static void _copyString(char *output, const uint16_t *input, size_t length) {
 
 	output += length;
 	input  += length / 2;
+	*output = 0;
 
 	for (; length; length -= 2) {
 		uint16_t packed = *(--input);
@@ -264,9 +265,9 @@ DeviceError Device::enumerate(void) {
 			flags |= DEVICE_HAS_FLUSH;
 	}
 
-	_copyString(model, block.model, sizeof(model));
-	_copyString(revision, block.revision, sizeof(revision));
-	_copyString(serialNumber, block.serialNumber, sizeof(serialNumber));
+	_copyString(model, block.model, sizeof(block.model));
+	_copyString(revision, block.revision, sizeof(block.revision));
+	_copyString(serialNumber, block.serialNumber, sizeof(block.serialNumber));
 
 	LOG("drive %d: %s", (flags / DEVICE_SECONDARY) & 1, model);
 

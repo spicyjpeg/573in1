@@ -291,6 +291,7 @@ bool App::_cartRestoreWorker(void) {
 	if (length != newDump.getDumpLength())
 		goto _fileError;
 
+	_file->close();
 	delete _file;
 
 	if (_dump.chipType != newDump.chipType) {
@@ -336,6 +337,7 @@ bool App::_cartRestoreWorker(void) {
 	return _cartUnlockWorker();
 
 _fileError:
+	_file->close();
 	delete _file;
 
 _fileOpenError:
