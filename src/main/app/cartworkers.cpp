@@ -29,32 +29,32 @@ bool App::_cartDetectWorker(void) {
 
 	if (cart::dummyDriverDump.chipType) {
 		LOG("using dummy cart driver");
-		_driver = new cart::DummyDriver(_dump);
-		_driver->readSystemID();
+		_cartDriver = new cart::DummyDriver(_dump);
+		_cartDriver->readSystemID();
 	} else {
-		_driver = cart::newCartDriver(_dump);
+		_cartDriver = cart::newCartDriver(_dump);
 	}
 #else
-	_driver = cart::newCartDriver(_dump);
+	_cartDriver = cart::newCartDriver(_dump);
 #endif
 
 	if (_dump.chipType) {
 		LOG("cart dump @ 0x%08x", &_dump);
-		LOG("cart driver @ 0x%08x", _driver);
+		LOG("cart driver @ 0x%08x", _cartDriver);
 
-		auto error = _driver->readCartID();
+		auto error = _cartDriver->readCartID();
 
 		if (error)
 			LOG("SID error [%s]", cart::getErrorString(error));
 
-		error = _driver->readPublicData();
+		error = _cartDriver->readPublicData();
 
 		if (error)
 			LOG("read error [%s]", cart::getErrorString(error));
 		else if (!_dump.isReadableDataEmpty())
-			_parser = cart::newCartParser(_dump);
+			_cartParser = cart::newCartParser(_dump);
 
-		LOG("cart parser @ 0x%08x", _parser);
+		LOG("cart parser @ 0x%08x", _cartParser);
 		_workerStatus.update(1, 3, WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!_db.ptr) {
@@ -68,21 +68,21 @@ bool App::_cartDetectWorker(void) {
 
 		char code[8], region[8];
 
-		if (!_parser)
+		if (!_cartParser)
 			goto _cartInitDone;
-		if (_parser->getCode(code) && _parser->getRegion(region))
+		if (_cartParser->getCode(code) && _cartParser->getRegion(region))
 			_identified = _db.lookup(code, region);
 		if (!_identified)
 			goto _cartInitDone;
 
 		// Force the parser to use correct format for the game (to prevent
 		// ambiguity between different formats).
-		delete _parser;
-		_parser = cart::newCartParser(
+		delete _cartParser;
+		_cartParser = cart::newCartParser(
 			_dump, _identified->formatType, _identified->flags
 		);
 
-		LOG("new cart parser @ 0x%08x", _parser);
+		LOG("new cart parser @ 0x%08x", _cartParser);
 	}
 
 _cartInitDone:
@@ -112,7 +112,7 @@ _cartInitDone:
 		delayMicroseconds(5000); // Probably not necessary
 		io::initKonamiBitstream();
 
-		auto error = _driver->readSystemID();
+		auto error = _cartDriver->readSystemID();
 
 		if (error)
 			LOG("XID error [%s]", cart::getErrorString(error));
@@ -132,7 +132,7 @@ bool App::_cartUnlockWorker(void) {
 	_workerStatus.setNextScreen(_cartInfoScreen, true);
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
 
-	auto error = _driver->readPrivateData();
+	auto error = _cartDriver->readPrivateData();
 
 	if (error) {
 		_messageScreen.setMessage(
@@ -144,20 +144,20 @@ bool App::_cartUnlockWorker(void) {
 		return false;
 	}
 
-	if (_parser)
-		delete _parser;
+	if (_cartParser)
+		delete _cartParser;
 
-	_parser = cart::newCartParser(_dump);
+	_cartParser = cart::newCartParser(_dump);
 
-	if (!_parser)
+	if (!_cartParser)
 		return true;
 
-	LOG("cart parser @ 0x%08x", _parser);
+	LOG("cart parser @ 0x%08x", _cartParser);
 	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identifyGame"));
 
 	char code[8], region[8];
 
-	if (_parser->getCode(code) && _parser->getRegion(region))
+	if (_cartParser->getCode(code) && _cartParser->getRegion(region))
 		_identified = _db.lookup(code, region);
 
 	// If auto-identification failed (e.g. because the format has no game code),
@@ -171,12 +171,12 @@ bool App::_cartUnlockWorker(void) {
 		}
 	}
 
-	delete _parser;
-	_parser = cart::newCartParser(
+	delete _cartParser;
+	_cartParser = cart::newCartParser(
 		_dump, _identified->formatType, _identified->flags
 	);
 
-	LOG("new cart parser @ 0x%08x", _parser);
+	LOG("new cart parser @ 0x%08x", _cartParser);
 	return true;
 }
 
@@ -211,7 +211,10 @@ bool App::_cartDumpWorker(void) {
 
 	length = _dump.getDumpLength();
 
-	if (_identified && _parser->getCode(code) && _parser->getRegion(region)) {
+	if (
+		_identified && _cartParser->getCode(code) &&
+		_cartParser->getRegion(region)
+	) {
 		snprintf(
 			path, sizeof(path), EXTERNAL_DATA_DIR "/%s%s.573", code, region
 		);
@@ -250,7 +253,7 @@ bool App::_cartWriteWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartWriteWorker.write"));
 
 	uint8_t key[8];
-	auto    error = _driver->writeData();
+	auto    error = _cartDriver->writeData();
 
 	if (!error)
 		_identified->copyKeyTo(key);
@@ -306,7 +309,7 @@ bool App::_cartRestoreWorker(void) {
 	cart::DriverError error;
 
 	_workerStatus.update(1, 3, WSTR("App.cartRestoreWorker.setDataKey"));
-	error = _driver->setDataKey(newDump.dataKey);
+	error = _cartDriver->setDataKey(newDump.dataKey);
 
 	if (error) {
 		LOG("key error [%s]", cart::getErrorString(error));
@@ -319,7 +322,7 @@ bool App::_cartRestoreWorker(void) {
 			_dump.copyConfigFrom(newDump.config);
 
 		_workerStatus.update(2, 3, WSTR("App.cartRestoreWorker.write"));
-		error = _driver->writeData();
+		error = _cartDriver->writeData();
 	}
 
 	_cartDetectWorker();
@@ -367,18 +370,18 @@ bool App::_cartReflashWorker(void) {
 
 	// TODO: preserve 0x81 traceid if possible
 	//uint8_t traceID[8];
-	//_parser->getIdentifiers()->traceID.copyTo(traceID);
+	//_cartParser->getIdentifiers()->traceID.copyTo(traceID);
 
 	if (!_cartEraseWorker())
 		return false;
-	if (_parser)
-		delete _parser;
+	if (_cartParser)
+		delete _cartParser;
 
-	_parser  = cart::newCartParser(
+	_cartParser = cart::newCartParser(
 		_dump, _selectedEntry->formatType, _selectedEntry->flags
 	);
-	auto pri = _parser->getIdentifiers();
-	auto pub = _parser->getPublicIdentifiers();
+	auto pri = _cartParser->getIdentifiers();
+	auto pub = _cartParser->getPublicIdentifiers();
 
 	_dump.clearData();
 	_dump.initConfig(9, _selectedEntry->flags & cart::DATA_HAS_PUBLIC_SECTION);
@@ -401,19 +404,19 @@ bool App::_cartReflashWorker(void) {
 		}
 	}
 
-	_parser->setCode(_selectedEntry->code);
-	_parser->setRegion(_selectedEntry->region);
-	_parser->setYear(_selectedEntry->year);
-	_parser->flush();
+	_cartParser->setCode(_selectedEntry->code);
+	_cartParser->setRegion(_selectedEntry->region);
+	_cartParser->setYear(_selectedEntry->year);
+	_cartParser->flush();
 
 	_workerStatus.update(1, 3, WSTR("App.cartReflashWorker.setDataKey"));
-	auto error = _driver->setDataKey(_selectedEntry->dataKey);
+	auto error = _cartDriver->setDataKey(_selectedEntry->dataKey);
 
 	if (error) {
 		LOG("key error [%s]", cart::getErrorString(error));
 	} else {
 		_workerStatus.update(2, 3, WSTR("App.cartReflashWorker.write"));
-		error = _driver->writeData();
+		error = _cartDriver->writeData();
 	}
 
 	_cartDetectWorker();
@@ -434,7 +437,7 @@ bool App::_cartReflashWorker(void) {
 bool App::_cartEraseWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartEraseWorker.erase"));
 
-	auto error = _driver->erase();
+	auto error = _cartDriver->erase();
 	_cartDetectWorker();
 
 	if (error) {

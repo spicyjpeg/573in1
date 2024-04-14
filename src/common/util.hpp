@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -30,6 +29,14 @@ template<typename T> static inline T max(T a, T b) {
 template<typename T> static inline T clamp(T value, T minValue, T maxValue) {
 	return (value < minValue) ? minValue :
 		((value > maxValue) ? maxValue : value);
+}
+
+template<typename T> static inline T rotateLeft(T value, int amount) {
+	return T((value << amount) | (value >> (sizeof(T) * 8 - amount)));
+}
+
+template<typename T> static inline T rotateRight(T value, int amount) {
+	return T((value >> amount) | (value << (sizeof(T) * 8 - amount)));
 }
 
 // These shall only be used with unsigned types.
@@ -189,39 +196,19 @@ public:
 		setValue(start);
 	}
 
-	inline T getValue(int time) const {
-		int remaining = time - _endTime;
-		if (remaining >= 0)
-			return _base + _delta;
-
-		return _base + (
-			_delta * E::apply(remaining * _timeScale + TWEEN_UNIT)
-		) / TWEEN_UNIT;
-	}
 	inline T getTargetValue(void) const {
 		return _base + _delta;
 	}
 	inline bool isDone(int time) const {
 		return time >= _endTime;
 	}
-
-	inline void setValue(int time, T start, T target, int duration) {
-		//assert(duration <= 0x800);
-
-		_base  = start;
-		_delta = target - start;
-
-		_endTime   = time + duration;
-		_timeScale = TWEEN_UNIT / duration;
-	}
 	inline void setValue(int time, T target, int duration) {
 		setValue(time, getValue(time), target, duration);
 	}
-	inline void setValue(T target) {
-		_base    = target;
-		_delta   = static_cast<T>(0);
-		_endTime = 0;
-	}
+
+	void setValue(int time, T start, T target, int duration);
+	void setValue(T target);
+	T getValue(int time) const;
 };
 
 /* Logging framework */
@@ -313,6 +300,47 @@ public:
 	ExecutableLoader(const ExecutableHeader &header, void *defaultStackTop);
 	void copyArgument(const char *arg);
 	[[noreturn]] void run(int rawArgc, const char *const *rawArgv);
+};
+
+/* MD5 hash */
+
+class MD5 {
+private:
+	uint32_t _state[4];
+	uint8_t  _blockBuffer[64];
+	size_t   _blockCount, _bufferLength;
+
+	static inline int _indexF(int index) {
+		return index;
+	}
+	static inline uint32_t _addF(uint32_t x, uint32_t y, uint32_t z) {
+		return z ^ (x & (y ^ z)); // (x & y) | ((~x) & z)
+	}
+	static inline int _indexG(int index) {
+		return ((index * 5) + 1) % 16;
+	}
+	static inline uint32_t _addG(uint32_t x, uint32_t y, uint32_t z) {
+		return y ^ (z & (x ^ y)); // (x & z) | (y & (~z))
+	}
+	static inline int _indexH(int index) {
+		return ((index * 3) + 5) % 16;
+	}
+	static inline uint32_t _addH(uint32_t x, uint32_t y, uint32_t z) {
+		return x ^ y ^ z;
+	}
+	static inline int _indexI(int index) {
+		return (index * 7) % 16;
+	}
+	static inline uint32_t _addI(uint32_t x, uint32_t y, uint32_t z) {
+		return (y ^ (x | (~z)));
+	}
+
+	void _flushBlock(const void *data);
+
+public:
+	MD5(void);
+	void update(const uint8_t *data, size_t length);
+	void digest(uint8_t *output);
 };
 
 /* Other APIs */

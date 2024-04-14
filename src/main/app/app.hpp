@@ -138,12 +138,13 @@ private:
 	WorkerStatus _workerStatus;
 	bool         (App::*_workerFunction)(void);
 
-	uint8_t             *_workerStack;
-	cart::Driver        *_driver;
-	cart::Parser        *_parser;
-	const cart::DBEntry *_identified, *_selectedEntry;
+	uint8_t                 *_workerStack;
+	cart::Driver            *_cartDriver;
+	cart::CartParser        *_cartParser;
+	const cart::CartDBEntry *_identified, *_selectedEntry;
 
 	void _unloadCartData(void);
+	void _unloadSystemInfo(void);
 	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
 	void _loadResources(void);
@@ -162,6 +163,8 @@ private:
 	bool _romDumpWorker(void);
 	bool _romRestoreWorker(void);
 	bool _romEraseWorker(void);
+	bool _flashHeaderWriteWorker(void);
+	bool _flashHeaderEraseWorker(void);
 	bool _systemInfoWorker(void);
 
 	// miscworkers.cpp
@@ -174,7 +177,6 @@ private:
 	void _interruptHandler(void);
 
 public:
-
 	App(ui::Context &ctx, file::ZIPProvider &resourceProvider);
 	~App(void);
 	[[noreturn]] void run(void);

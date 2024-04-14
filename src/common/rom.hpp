@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/io.hpp"
 #include "common/util.hpp"
 #include "ps1/registers.h"
 
@@ -12,6 +11,7 @@ namespace rom {
 /* ROM region dumpers */
 
 static constexpr size_t   FLASH_BANK_LENGTH       = 0x400000;
+static constexpr uint32_t FLASH_HEADER_OFFSET     = 0x00;
 static constexpr uint32_t FLASH_CRC_OFFSET        = 0x20;
 static constexpr uint32_t FLASH_EXECUTABLE_OFFSET = 0x24;
 
@@ -129,7 +129,7 @@ public:
 };
 
 class MBM29F016ADriver : public Driver {
-private:
+protected:
 	DriverError _flush(uint32_t offset, uint16_t value, int timeout);
 
 public:
@@ -155,7 +155,7 @@ public:
 };
 
 class Intel28F016S5Driver : public Driver {
-private:
+protected:
 	DriverError _flush(uint32_t offset, int timeout);
 
 public:
@@ -174,6 +174,8 @@ public:
 	inline Intel28F640J5Driver(const FlashRegion &region)
 	: Intel28F016S5Driver(region) {}
 
+	DriverError flushWrite(uint32_t offset, uint16_t value);
+	DriverError flushErase(uint32_t offset);
 	const ChipSize &getChipSize(void) const;
 };
 

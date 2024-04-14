@@ -132,7 +132,7 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 		if ((status & mask) == value)
 			return NO_ERROR;
 
-		delayMicroseconds(1);
+		delayMicroseconds(10);
 	}
 
 	LOG("IDE timeout, stat=0x%02x, err=0x%02x", _read(CS0_STATUS), _read(CS0_ERROR));

@@ -65,7 +65,7 @@ App::App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
 :
 #endif
 _ctx(ctx), _resourceProvider(resourceProvider), _resourceFile(nullptr),
-_driver(nullptr), _parser(nullptr), _identified(nullptr) {
+_cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {
 	_workerStack = new uint8_t[WORKER_STACK_SIZE];
 }
 
@@ -84,13 +84,13 @@ App::~App(void) {
 }
 
 void App::_unloadCartData(void) {
-	if (_driver) {
-		delete _driver;
-		_driver = nullptr;
+	if (_cartDriver) {
+		delete _cartDriver;
+		_cartDriver = nullptr;
 	}
-	if (_parser) {
-		delete _parser;
-		_parser = nullptr;
+	if (_cartParser) {
+		delete _cartParser;
+		_cartParser = nullptr;
 	}
 
 	_dump.chipType = cart::NONE;
@@ -100,6 +100,10 @@ void App::_unloadCartData(void) {
 
 	_identified    = nullptr;
 	//_selectedEntry = nullptr;
+}
+
+void App::_unloadSystemInfo(void) {
+	_systemInfo.flags = 0;
 }
 
 void App::_setupWorker(bool (App::*func)(void)) {

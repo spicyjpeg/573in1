@@ -349,7 +349,15 @@ DriverError RTCDriver::flushWrite(uint32_t offset, uint16_t value) {
 	auto ptr = reinterpret_cast<volatile uint32_t *>(_region.ptr + offset * 2);
 	value    = (value & 0x00ff) | ((value & 0xff00) << 8);
 
-	return (ptr[offset] == value) ? NO_ERROR : VERIFY_MISMATCH;
+	if (ptr[offset] != value) {
+		LOG(
+			"mismatch @ 0x%08x, exp=0x%02x, got=0x%02x", offset, value,
+			ptr[offset]
+		);
+		return VERIFY_MISMATCH;
+	}
+
+	return NO_ERROR;
 }
 
 DriverError RTCDriver::flushErase(uint32_t offset) {
@@ -363,40 +371,49 @@ const ChipSize &RTCDriver::getChipSize(void) const {
 /* Fujitsu MBM29F016A/017A driver */
 
 enum FujitsuStatusFlag : uint16_t {
-	_FUJITSU_STATUS_ERASE_TOGGLE = 0x101 << 2,
-	_FUJITSU_STATUS_ERASE_START  = 0x101 << 3,
-	_FUJITSU_STATUS_ERROR        = 0x101 << 5,
-	_FUJITSU_STATUS_TOGGLE       = 0x101 << 6,
-	_FUJITSU_STATUS_POLL_BIT     = 0x101 << 7
+	_FUJITSU_STATUS_ERASE_TOGGLE = 1 << 2,
+	_FUJITSU_STATUS_ERASE_START  = 1 << 3,
+	_FUJITSU_STATUS_ERROR        = 1 << 5,
+	_FUJITSU_STATUS_TOGGLE       = 1 << 6,
+	_FUJITSU_STATUS_POLL_BIT     = 1 << 7
 };
 
 DriverError MBM29F016ADriver::_flush(
 	uint32_t offset, uint16_t value, int timeout
 ) {
-	volatile uint16_t *ptr = _region.getRawPtr(offset);
+	volatile uint16_t *ptr  = _region.getRawPtr(offset & ~1);
+
+	int     shift = (offset & 1) * 8;
+	uint8_t byte  = (value >> shift) & 0xff;
 
 	for (; timeout > 0; timeout--) {
-		auto status = *ptr;
+		uint8_t status = (*ptr >> shift) & 0xff;
 
-		if (status == value)
+		if (status == byte)
 			return NO_ERROR;
 
-		if (!((status ^ value) & _FUJITSU_STATUS_POLL_BIT)) {
+		if (!((status ^ byte) & _FUJITSU_STATUS_POLL_BIT)) {
 			LOG(
-				"mismatch @ 0x%08x, exp=0x%04x, got=0x%04x", offset, value,
+				"mismatch @ 0x%08x, exp=0x%02x, got=0x%02x", offset, byte,
 				status
 			);
+
+			*ptr = _JEDEC_RESET;
 			return VERIFY_MISMATCH;
 		}
 		if (status & _FUJITSU_STATUS_ERROR) {
-			LOG("error @ 0x%08x, stat=0x%04x", offset, status);
+			LOG("error @ 0x%08x, stat=0x%02x", offset, status);
+
+			*ptr = _JEDEC_RESET;
 			return CHIP_ERROR;
 		}
 
-		delayMicroseconds(1);
+		delayMicroseconds(10);
 	}
 
-	LOG("timeout @ 0x%08x, stat=0x%04x", offset, *ptr);
+	LOG("timeout @ 0x%08x, stat=0x%02x", offset, (*ptr >> shift) & 0xff);
+
+	*ptr = _JEDEC_RESET;
 	return CHIP_TIMEOUT;
 }
 
@@ -439,11 +456,21 @@ void MBM29F016ADriver::eraseChip(uint32_t offset) {
 DriverError MBM29F016ADriver::flushWrite(
 	uint32_t offset, uint16_t value
 ) {
-	return _flush(offset, value, _FLASH_WRITE_TIMEOUT);
+	auto error = _flush(offset, value, _FLASH_WRITE_TIMEOUT);
+
+	if (error)
+		return error;
+
+	return _flush(offset + 1, value, _FLASH_WRITE_TIMEOUT);
 }
 
 DriverError MBM29F016ADriver::flushErase(uint32_t offset) {
-	return _flush(offset, 0xffff, _FLASH_ERASE_TIMEOUT);
+	auto error = _flush(offset, 0xffff, _FLASH_ERASE_TIMEOUT);
+
+	if (error)
+		return error;
+
+	return _flush(offset + 1, 0xffff, _FLASH_ERASE_TIMEOUT);
 }
 
 const ChipSize &MBM29F016ADriver::getChipSize(void) const {
@@ -494,45 +521,50 @@ void MBM29F040ADriver::eraseChip(uint32_t offset) {
 /* Intel 28F016S5 (Sharp LH28F016S) driver */
 
 enum IntelStatusFlag : uint16_t {
-	_INTEL_STATUS_DPS    = 0x101 << 1,
-	_INTEL_STATUS_BWSS   = 0x101 << 2,
-	_INTEL_STATUS_VPPS   = 0x101 << 3,
-	_INTEL_STATUS_BWSLBS = 0x101 << 4,
-	_INTEL_STATUS_ECLBS  = 0x101 << 5,
-	_INTEL_STATUS_ESS    = 0x101 << 6,
-	_INTEL_STATUS_WSMS   = 0x101 << 7
+	_INTEL_STATUS_DPS    = 1 << 1,
+	_INTEL_STATUS_BWSS   = 1 << 2,
+	_INTEL_STATUS_VPPS   = 1 << 3,
+	_INTEL_STATUS_BWSLBS = 1 << 4,
+	_INTEL_STATUS_ECLBS  = 1 << 5,
+	_INTEL_STATUS_ESS    = 1 << 6,
+	_INTEL_STATUS_WSMS   = 1 << 7
 };
 
 DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
-	volatile uint16_t *ptr = _region.getRawPtr(offset);
+	volatile uint16_t *ptr  = _region.getRawPtr(offset & ~1);
+
+	int shift = (offset & 1) * 8;
 
 	// Not required as all write/erase commands already put the chip into status
 	// reading mode.
 	//*ptr = _INTEL_GET_STATUS;
 
 	for (; timeout > 0; timeout--) {
-		auto status = *ptr;
+		uint8_t status = (*ptr >> shift) & 0xff;
 
 		if (status & (_INTEL_STATUS_DPS | _INTEL_STATUS_VPPS)) {
-			*ptr = _INTEL_CLEAR_STATUS;
+			LOG("locked @ 0x%08x, stat=0x%02x", offset, status);
 
-			LOG("locked @ 0x%08x, stat=0x%04x", offset, status);
+			*ptr = _INTEL_CLEAR_STATUS;
 			return WRITE_PROTECTED;
 		}
 		if (status & (_INTEL_STATUS_BWSLBS | _INTEL_STATUS_ECLBS)) {
-			*ptr = _INTEL_CLEAR_STATUS;
+			LOG("error @ 0x%08x, stat=0x%02x", offset, status);
 
-			LOG("error @ 0x%08x, stat=0x%04x", offset, status);
+			*ptr = _INTEL_CLEAR_STATUS;
 			return CHIP_ERROR;
 		}
-
-		if (status & _INTEL_STATUS_WSMS)
+		if (status & _INTEL_STATUS_WSMS) {
+			*ptr = _INTEL_CLEAR_STATUS;
 			return NO_ERROR;
+		}
 
-		delayMicroseconds(1);
+		delayMicroseconds(10);
 	}
 
-	LOG("timeout @ 0x%08x, stat=0x%04x", offset, *ptr);
+	LOG("timeout @ 0x%08x, stat=0x%02x", offset, (*ptr >> shift) & 0xff);
+
+	*ptr = _INTEL_CLEAR_STATUS;
 	return CHIP_TIMEOUT;
 }
 
@@ -556,11 +588,21 @@ void Intel28F016S5Driver::eraseSector(uint32_t offset) {
 DriverError Intel28F016S5Driver::flushWrite(
 	uint32_t offset, uint16_t value
 ) {
-	return _flush(offset, _FLASH_WRITE_TIMEOUT);
+	auto error = _flush(offset, _FLASH_WRITE_TIMEOUT);
+
+	if (error)
+		return error;
+
+	return _flush(offset + 1, _FLASH_WRITE_TIMEOUT);
 }
 
 DriverError Intel28F016S5Driver::flushErase(uint32_t offset) {
-	return _flush(offset, _FLASH_ERASE_TIMEOUT);
+	auto error = _flush(offset, _FLASH_ERASE_TIMEOUT);
+
+	if (error)
+		return error;
+
+	return _flush(offset + 1, _FLASH_ERASE_TIMEOUT);
 }
 
 const ChipSize &Intel28F016S5Driver::getChipSize(void) const {
@@ -573,6 +615,16 @@ static const ChipSize _28F640J5_CHIP_SIZE{
 	.chipLength        = 0x800000,
 	.eraseSectorLength = 0x20000
 };
+
+DriverError Intel28F640J5Driver::flushWrite(
+	uint32_t offset, uint16_t value
+) {
+	return _flush(offset, _FLASH_WRITE_TIMEOUT);
+}
+
+DriverError Intel28F640J5Driver::flushErase(uint32_t offset) {
+	return _flush(offset, _FLASH_ERASE_TIMEOUT);
+}
 
 const ChipSize &Intel28F640J5Driver::getChipSize(void) const {
 	return _28F640J5_CHIP_SIZE;

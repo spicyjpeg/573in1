@@ -12,10 +12,10 @@ namespace cart {
 // The system and install IDs are excluded from validation as they may not be
 // always present.
 // TODO/FIXME: this will create ambiguity between two of the basic formats...
-static constexpr uint8_t _IDENTIFIER_FLAG_MASK = 
+static constexpr uint8_t _IDENTIFIER_FLAG_MASK =
 	DATA_HAS_TRACE_ID | DATA_HAS_CART_ID;
 
-bool Parser::validate(void) {
+bool CartParser::validate(void) {
 	char region[8];
 
 	if (getRegion(region) < REGION_MIN_LENGTH) {
@@ -43,7 +43,7 @@ bool Parser::validate(void) {
 	return true;
 }
 
-size_t SimpleParser::getRegion(char *output) const {
+size_t SimpleCartParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
 	__builtin_memcpy(output, header->region, sizeof(header->region));
@@ -52,13 +52,13 @@ size_t SimpleParser::getRegion(char *output) const {
 	return __builtin_strlen(output);
 }
 
-void SimpleParser::setRegion(const char *input) {
+void SimpleCartParser::setRegion(const char *input) {
 	auto header = _getHeader();
 
 	__builtin_strncpy(header->region, input, sizeof(header->region));
 }
 
-void BasicParser::setCode(const char *input) {
+void BasicCartParser::setCode(const char *input) {
 	if (!(flags & DATA_HAS_CODE_PREFIX))
 		return;
 
@@ -68,7 +68,7 @@ void BasicParser::setCode(const char *input) {
 	header->codePrefix[1] = input[1];
 }
 
-size_t BasicParser::getRegion(char *output) const {
+size_t BasicCartParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
 	output[0] = header->region[0];
@@ -78,29 +78,29 @@ size_t BasicParser::getRegion(char *output) const {
 	return 2;
 }
 
-void BasicParser::setRegion(const char *input) {
+void BasicCartParser::setRegion(const char *input) {
 	auto header = _getHeader();
 
 	header->region[0] = input[0];
 	header->region[1] = input[1];
 }
 
-IdentifierSet *BasicParser::getIdentifiers(void) {
+IdentifierSet *BasicCartParser::getIdentifiers(void) {
 	return reinterpret_cast<IdentifierSet *>(&_dump.data[sizeof(BasicHeader)]);
 }
 
-void BasicParser::flush(void) {
+void BasicCartParser::flush(void) {
 	_getHeader()->updateChecksum(flags & DATA_CHECKSUM_INVERTED);
 }
 
-bool BasicParser::validate(void) {
-	if (!Parser::validate())
+bool BasicCartParser::validate(void) {
+	if (!CartParser::validate())
 		return false;
 
 	return _getHeader()->validateChecksum(flags & DATA_CHECKSUM_INVERTED);
 }
 
-size_t ExtendedParser::getCode(char *output) const {
+size_t ExtendedCartParser::getCode(char *output) const {
 	auto header = _getHeader();
 
 	__builtin_memcpy(output, header->code, sizeof(header->code) - 1);
@@ -112,7 +112,7 @@ size_t ExtendedParser::getCode(char *output) const {
 	return __builtin_strlen(output);
 }
 
-void ExtendedParser::setCode(const char *input) {
+void ExtendedCartParser::setCode(const char *input) {
 	auto header = _getHeader();
 
 	__builtin_strncpy(header->code, input, sizeof(header->code));
@@ -121,7 +121,7 @@ void ExtendedParser::setCode(const char *input) {
 		header->code[1] = 'E';
 }
 
-size_t ExtendedParser::getRegion(char *output) const {
+size_t ExtendedCartParser::getRegion(char *output) const {
 	auto header = _getHeader();
 
 	__builtin_memcpy(output, header->region, sizeof(header->region));
@@ -130,21 +130,21 @@ size_t ExtendedParser::getRegion(char *output) const {
 	return __builtin_strlen(output);
 }
 
-void ExtendedParser::setRegion(const char *input) {
+void ExtendedCartParser::setRegion(const char *input) {
 	auto header = _getHeader();
 
 	__builtin_strncpy(header->region, input, sizeof(header->region));
 }
 
-uint16_t ExtendedParser::getYear(void) const {
+uint16_t ExtendedCartParser::getYear(void) const {
 	return _getHeader()->year;
 }
 
-void ExtendedParser::setYear(uint16_t value) {
+void ExtendedCartParser::setYear(uint16_t value) {
 	_getHeader()->year = value;
 }
 
-IdentifierSet *ExtendedParser::getIdentifiers(void) {
+IdentifierSet *ExtendedCartParser::getIdentifiers(void) {
 	if (!(flags & DATA_HAS_PUBLIC_SECTION))
 		return nullptr;
 
@@ -153,7 +153,7 @@ IdentifierSet *ExtendedParser::getIdentifiers(void) {
 	);
 }
 
-PublicIdentifierSet *ExtendedParser::getPublicIdentifiers(void) {
+PublicIdentifierSet *ExtendedCartParser::getPublicIdentifiers(void) {
 	if (!(flags & DATA_HAS_PUBLIC_SECTION))
 		return nullptr;
 
@@ -162,7 +162,7 @@ PublicIdentifierSet *ExtendedParser::getPublicIdentifiers(void) {
 	);
 }
 
-void ExtendedParser::flush(void) {
+void ExtendedCartParser::flush(void) {
 	// Copy over the private identifiers to the public data area. On X76F041
 	// carts this area is in the last sector, while on ZS01 carts it is placed
 	// in the first 32 bytes.
@@ -185,8 +185,8 @@ void ExtendedParser::flush(void) {
 		header->code[1] = code;
 }
 
-bool ExtendedParser::validate(void) {
-	if (!Parser::validate())
+bool ExtendedCartParser::validate(void) {
+	if (!CartParser::validate())
 		return false;
 
 	auto header = _getHeader();
@@ -317,29 +317,29 @@ bool isValidUpgradeRegion(const char *region) {
 	return true;
 }
 
-Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
+CartParser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags) {
 	switch (formatType) {
 		case SIMPLE:
-			return new SimpleParser(dump, flags);
+			return new SimpleCartParser(dump, flags);
 
 		case BASIC:
-			return new BasicParser(dump, flags);
+			return new BasicCartParser(dump, flags);
 
 		case EXTENDED:
-			return new ExtendedParser(dump, flags);
+			return new ExtendedCartParser(dump, flags);
 
 		default:
-			//return new Parser(dump, flags);
+			//return new CartParser(dump, flags);
 			return nullptr;
 	}
 }
 
-Parser *newCartParser(Dump &dump) {
+CartParser *newCartParser(Dump &dump) {
 	// Try all formats from the most complex one to the simplest.
 	//for (auto &format : _KNOWN_FORMATS) {
 	for (int i = util::countOf(_KNOWN_FORMATS) - 1; i >= 0; i--) {
-		auto   &format = _KNOWN_FORMATS[i];
-		Parser *parser = newCartParser(dump, format.format, format.flags);
+		auto &format = _KNOWN_FORMATS[i];
+		auto parser  = newCartParser(dump, format.format, format.flags);
 
 		LOG("trying as %s", format.name);
 		if (parser->validate())
@@ -352,12 +352,25 @@ Parser *newCartParser(Dump &dump) {
 	return nullptr;
 }
 
-/* Cartridge database */
+/* Cartridge and flash header database */
 
-const DBEntry *CartDB::lookup(const char *code, const char *region) const {
+template<typename T> const T *DB<T>::get(int index) const {
+	auto entries = reinterpret_cast<const T *>(ptr);
+
+	if (!entries)
+		return nullptr;
+	if ((index * sizeof(T)) >= length)
+		return nullptr;
+
+	return &entries[index];
+}
+
+template<typename T> const T *DB<T>::lookup(
+	const char *code, const char *region
+) const {
 	// Perform a binary search. This assumes all entries in the DB are sorted by
 	// their code and region.
-	auto low  = reinterpret_cast<const DBEntry *>(ptr);
+	auto low  = reinterpret_cast<const T *>(ptr);
 	auto high = &low[getNumEntries() - 1];
 
 	while (low <= high) {
@@ -378,5 +391,8 @@ const DBEntry *CartDB::lookup(const char *code, const char *region) const {
 	LOG("%s %s not found", code, region);
 	return nullptr;
 }
+
+template class DB<CartDBEntry>;
+template class DB<FlashDBEntry>;
 
 }

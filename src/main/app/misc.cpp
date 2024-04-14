@@ -13,14 +13,14 @@
 
 /* Storage device submenu */
 
-struct StorageAction {
+struct Action {
 public:
 	util::Hash        name, prompt;
 	const rom::Region &region;
 	void              (StorageMenuScreen::*target)(ui::Context &ctx);
 };
 
-static const StorageAction _STORAGE_ACTIONS[]{
+static const Action _ACTIONS[]{
 	{
 		.name   = "StorageMenuScreen.dump.name"_h,
 		.prompt = "StorageMenuScreen.dump.prompt"_h,
@@ -66,11 +66,26 @@ static const StorageAction _STORAGE_ACTIONS[]{
 		.prompt = "StorageMenuScreen.erase.pcmcia2.prompt"_h,
 		.region = rom::pcmcia[1],
 		.target = &StorageMenuScreen::erase
+	}, {
+		.name   = "StorageMenuScreen.resetFlashHeader.name"_h,
+		.prompt = "StorageMenuScreen.resetFlashHeader.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageMenuScreen::resetFlashHeader
+	}, {
+		.name   = "StorageMenuScreen.matchFlashHeader.name"_h,
+		.prompt = "StorageMenuScreen.matchFlashHeader.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageMenuScreen::matchFlashHeader
+	}, {
+		.name   = "StorageMenuScreen.editFlashHeader.name"_h,
+		.prompt = "StorageMenuScreen.editFlashHeader.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageMenuScreen::editFlashHeader
 	}
 };
 
 const char *StorageMenuScreen::_getItemName(ui::Context &ctx, int index) const {
-	return STRH(_STORAGE_ACTIONS[index].name);
+	return STRH(_ACTIONS[index].name);
 }
 
 void StorageMenuScreen::dump(ui::Context &ctx) {
@@ -119,18 +134,39 @@ void StorageMenuScreen::erase(ui::Context &ctx) {
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
+void StorageMenuScreen::resetFlashHeader(ui::Context &ctx) {
+	APP->_confirmScreen.setMessage(
+		*this,
+		[](ui::Context &ctx) {
+			APP->_setupWorker(&App::_flashHeaderEraseWorker);
+			ctx.show(APP->_workerStatusScreen, false, true);
+		},
+		STR("StorageMenuScreen.resetFlashHeader.confirm")
+	);
+
+	ctx.show(APP->_confirmScreen, false, true);
+}
+
+void StorageMenuScreen::matchFlashHeader(ui::Context &ctx) {
+	// TODO
+}
+
+void StorageMenuScreen::editFlashHeader(ui::Context &ctx) {
+	// TODO
+}
+
 void StorageMenuScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("StorageMenuScreen.title");
-	_prompt     = STRH(_STORAGE_ACTIONS[0].prompt);
+	_prompt     = STRH(_ACTIONS[0].prompt);
 	_itemPrompt = STR("StorageMenuScreen.itemPrompt");
 
-	_listLength = util::countOf(_STORAGE_ACTIONS);
+	_listLength = util::countOf(_ACTIONS);
 
 	ListScreen::show(ctx, goBack);
 }
 
 void StorageMenuScreen::update(ui::Context &ctx) {
-	auto &action = _STORAGE_ACTIONS[_activeItem];
+	auto &action = _ACTIONS[_activeItem];
 	_prompt      = STRH(action.prompt);
 
 	ListScreen::update(ctx);

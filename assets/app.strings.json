@@ -57,6 +57,17 @@
 			"fileError":    "The selected file could not be accessed or is not a valid System 573 executable. Make sure the file has been copied properly.\n\nFile: %s",
 			"addressError": "The selected file cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nFile:\t\t%s\nRegion:\t%08X-%08X\nStack top:\t%08X"
 		},
+		"flashHeaderEraseWorker": {
+			"erase":       "Erasing header...\nDo not turn off the 573.",
+			"success":     "The header has been successfully cleared.",
+			"flashError":  "An error occurred while erasing and rewriting the first sector of the internal flash memory.\n\nError code: %s\nPress the Test button to view debug logs.",
+			"unsupported": "This system's onboard flash memory chips are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
+		},
+		"flashHeaderWriteWorker": {
+			"write":      "Writing new header...\nDo not turn off the 573.",
+			"success":    "The header has been successfully written.",
+			"flashError": "An error occurred while erasing and rewriting the first sector of the internal flash memory.\n\nError code: %s\nPress the Test button to view debug logs."
+		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
 			"generate": "Generating QR code..."
@@ -383,6 +394,22 @@
 				"name":   "Erase PCMCIA card in slot 2",
 				"prompt": "Wipe all data stored in the PCMCIA flash card, including any currently installed game and its assets."
 			}
+		},
+		"resetFlashHeader": {
+			"name":    "Clear internal flash header",
+			"prompt":  "Erase any metadata about the currently installed game from the system's flash memory. All other data will be left as-is.",
+			"confirm": "The first 32 bytes of the internal flash memory will be cleared. If a game is currently installed, it will no longer recognize the installation as valid until the header is restored.\n\nDo you wish to proceed?"
+		},
+		"matchFlashHeader": {
+			"name":    "Edit internal flash header (use this system's ID)",
+			"prompt":  "Write metadata to the system's flash memory to ensure a flash dump restored from another 573 or an install disc gets recognized as a valid installation.",
+			"confirm": "The first 32 bytes of the internal flash memory will be overwritten with information about the specified game's code and this system's digital I/O board identifier.\n\nDo you wish to proceed?",
+			"error":   "No digital I/O board found. This game requires a digital I/O board to be installed in this system, and its identifier to be present in the internal flash header."
+		},
+		"editFlashHeader": {
+			"name":    "Edit internal flash header (use custom I/O board ID)",
+			"prompt":  "Write metadata to the system's flash memory to ensure a flash dump restored from another 573 or an install disc gets recognized as a valid installation.",
+			"confirm": "The first 32 bytes of the internal flash memory will be overwritten with information about the specified game's code and the digital I/O board identifier entered.\n\nDo you wish to proceed?"
 		}
 	},
 

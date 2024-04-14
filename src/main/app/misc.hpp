@@ -24,6 +24,9 @@ public:
 	void dump(ui::Context &ctx);
 	void restore(ui::Context &ctx);
 	void erase(ui::Context &ctx);
+	void resetFlashHeader(ui::Context &ctx);
+	void matchFlashHeader(ui::Context &ctx);
+	void editFlashHeader(ui::Context &ctx);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);

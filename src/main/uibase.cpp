@@ -204,7 +204,7 @@ void Layer::_setBlendMode(
 	ctx.gpuCtx.setBlendMode(blendMode, dither);
 }
 
-void TiledBackground::draw(Context &ctx) const {
+void TiledBackground::draw(Context &ctx, bool active) const {
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 	_setTexturePage(ctx, tile.texpage);
 
@@ -234,7 +234,7 @@ LogOverlay::LogOverlay(util::LogBuffer &buffer)
 	_slideAnim.setValue(0);
 }
 
-void LogOverlay::draw(Context &ctx) const {
+void LogOverlay::draw(Context &ctx, bool active) const {
 	int offset = _slideAnim.getValue(ctx.time);
 	if (!offset)
 		return;
