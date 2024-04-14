@@ -147,7 +147,7 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 		state = IDENTIFIED;
 		APP->_identified->getDisplayName(name, sizeof(name));
 
-		auto ids = APP->_parser->getIdentifiers();
+		auto ids = APP->_cartParser->getIdentifiers();
 
 		if (!(APP->_identified->flags & cart::DATA_HAS_SYSTEM_ID)) {
 			__builtin_strcpy(

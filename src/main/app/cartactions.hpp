@@ -62,10 +62,10 @@ public:
 
 class SystemIDEntryScreen : public ui::HexEntryScreen {
 public:
-	inline void getSystemID(cart::Parser &parser) {
+	inline void getSystemID(cart::CartParser &parser) {
 		parser.getIdentifiers()->systemID.copyTo(_buffer);
 	}
-	inline void setSystemID(cart::Parser &parser) const {
+	inline void setSystemID(cart::CartParser &parser) const {
 		parser.getIdentifiers()->systemID.copyFrom(_buffer);
 		parser.flush();
 	}

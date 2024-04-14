@@ -179,13 +179,12 @@ bool App::_romRestoreWorker(void) {
 	sectorLength = driver->getChipSize().eraseSectorLength;
 	numSectors   = (dataLength + sectorLength - 1) / sectorLength;
 
-	uint8_t  *buffer;
-	uint32_t offset;
+	rom::DriverError error;
+	uint8_t          *buffer;
+	uint32_t         offset;
 
 	buffer = new uint8_t[sectorLength];
 	offset = 0;
-
-	rom::DriverError error;
 
 	//assert(buffer);
 
@@ -262,9 +261,9 @@ bool App::_romEraseWorker(void) {
 	if (!chipLength)
 		goto _unsupported;
 
-	_systemInfo.flags = 0;
-
 	rom::DriverError error;
+
+	_unloadSystemInfo();
 
 	// Erase one sector at a time on each chip.
 	for (size_t i = 0; i < chipLength; i += sectorLength) {
@@ -320,13 +319,129 @@ _unsupported:
 	return false;
 }
 
+bool App::_flashHeaderWriteWorker(void) {
+	if (!_flashHeaderEraseWorker())
+		return false;
+
+	auto driver = rom::flash.newDriver();
+
+	_workerStatus.update(1, 2, WSTR("App.flashHeaderWriteWorker.write"));
+
+	rom::DriverError error;
+
+	// TODO
+
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _storageMenuScreen,
+		WSTR("App.flashHeaderWriteWorker.success")
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return true;
+
+_flashError:
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.flashHeaderWriteWorker.flashError"),
+		rom::getErrorString(error)
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+}
+
+bool App::_flashHeaderEraseWorker(void) {
+	auto   driver       = rom::flash.newDriver();
+	size_t sectorLength = driver->getChipSize().eraseSectorLength;
+
+	// This should never happen since the flash chips are soldered to the 573,
+	// but whatever.
+	if (!sectorLength)
+		goto _unsupported;
+
+	_unloadSystemInfo();
+	_workerStatus.update(0, 1, WSTR("App.flashHeaderEraseWorker.erase"));
+
+	// The flash can only be erased with sector granularity, so all data in the
+	// first sector other than the header must be backed up and rewritten.
+	rom::DriverError error;
+	uint8_t          *buffer;
+	const uint16_t   *ptr;
+
+	buffer = new uint8_t[sectorLength];
+
+	//assert(buffer);
+
+	rom::flash.read(buffer, 0, sectorLength);
+
+	driver->eraseSector(0);
+	error = driver->flushErase(0);
+
+	if (error)
+		goto _flashError;
+
+	ptr = reinterpret_cast<const uint16_t *>(&buffer[rom::FLASH_CRC_OFFSET]);
+
+	for (
+		uint32_t offset = rom::FLASH_CRC_OFFSET; offset < sectorLength;
+		offset += 2
+	) {
+		auto value = *(ptr++);
+
+		driver->write(offset, value);
+		error = driver->flushWrite(offset, value);
+
+		if (error)
+			goto _flashError;
+	}
+
+	delete[] buffer;
+	delete   driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_SUCCESS, _storageMenuScreen,
+		WSTR("App.flashHeaderEraseWorker.success")
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return true;
+
+_flashError:
+	delete[] buffer;
+	delete   driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.flashHeaderEraseWorker.flashError"),
+		rom::getErrorString(error)
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+
+_unsupported:
+	auto id = rom::flash.getJEDECID();
+	delete driver;
+
+	_messageScreen.setMessage(
+		MESSAGE_ERROR, _storageMenuScreen,
+		WSTR("App.flashHeaderEraseWorker.unsupported"),
+		(id >>  0) & 0xff,
+		(id >>  8) & 0xff,
+		(id >> 16) & 0xff,
+		(id >> 24) & 0xff
+	);
+	_workerStatus.setNextScreen(_messageScreen);
+	return false;
+}
+
 bool App::_systemInfoWorker(void) {
 	// This is necessary to ensure the digital I/O ID is read at least once.
-	if (!_driver)
+	if (!_cartDriver)
 		_cartDetectWorker();
 
 	_workerStatus.setNextScreen(_systemInfoScreen);
-	_systemInfo.flags = 0;
+	_unloadSystemInfo();
 
 	for (auto &entry : _DUMP_ENTRIES) {
 		if (!entry.region.isPresent())

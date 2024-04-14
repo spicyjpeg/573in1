@@ -16,7 +16,7 @@ static constexpr size_t CODE_PREFIX_LENGTH = 2;
 static constexpr size_t REGION_MIN_LENGTH  = 2;
 static constexpr size_t REGION_MAX_LENGTH  = 5;
 
-class Parser {
+class CartParser {
 protected:
 	Dump &_dump;
 
@@ -30,10 +30,10 @@ protected:
 public:
 	uint8_t flags;
 
-	inline Parser(Dump &dump, uint8_t flags = 0)
+	inline CartParser(Dump &dump, uint8_t flags = 0)
 	: _dump(dump), flags(flags) {}
 
-	virtual ~Parser(void) {}
+	virtual ~CartParser(void) {}
 	virtual size_t getCode(char *output) const { return 0; }
 	virtual void setCode(const char *input) {}
 	virtual size_t getRegion(char *output) const { return 0; }
@@ -46,29 +46,29 @@ public:
 	virtual bool validate(void);
 };
 
-class SimpleParser : public Parser {
+class SimpleCartParser : public CartParser {
 private:
 	inline SimpleHeader *_getHeader(void) const {
 		return reinterpret_cast<SimpleHeader *>(_getPublicData());
 	}
 
 public:
-	inline SimpleParser(Dump &dump, uint8_t flags = 0)
-	: Parser(dump, flags | DATA_HAS_PUBLIC_SECTION) {}
+	inline SimpleCartParser(Dump &dump, uint8_t flags = 0)
+	: CartParser(dump, flags | DATA_HAS_PUBLIC_SECTION) {}
 
 	size_t getRegion(char *output) const;
 	void setRegion(const char *input);
 };
 
-class BasicParser : public Parser {
+class BasicCartParser : public CartParser {
 private:
 	inline BasicHeader *_getHeader(void) const {
 		return reinterpret_cast<BasicHeader *>(_getPublicData());
 	}
 
 public:
-	inline BasicParser(Dump &dump, uint8_t flags = 0)
-	: Parser(dump, flags) {}
+	inline BasicCartParser(Dump &dump, uint8_t flags = 0)
+	: CartParser(dump, flags) {}
 
 	void setCode(const char *input);
 	size_t getRegion(char *output) const;
@@ -78,15 +78,15 @@ public:
 	bool validate(void);
 };
 
-class ExtendedParser : public Parser {
+class ExtendedCartParser : public CartParser {
 private:
 	inline ExtendedHeader *_getHeader(void) const {
 		return reinterpret_cast<ExtendedHeader *>(_getPublicData());
 	}
 
 public:
-	inline ExtendedParser(Dump &dump, uint8_t flags = 0)
-	: Parser(dump, flags | DATA_HAS_CODE_PREFIX) {}
+	inline ExtendedCartParser(Dump &dump, uint8_t flags = 0)
+	: CartParser(dump, flags | DATA_HAS_CODE_PREFIX) {}
 
 	size_t getCode(char *output) const;
 	void setCode(const char *input);
@@ -102,12 +102,12 @@ public:
 
 bool isValidRegion(const char *region);
 bool isValidUpgradeRegion(const char *region);
-Parser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags = 0);
-Parser *newCartParser(Dump &dump);
+CartParser *newCartParser(Dump &dump, FormatType formatType, uint8_t flags = 0);
+CartParser *newCartParser(Dump &dump);
 
-/* Cartridge database */
+/* Cartridge and flash header database */
 
-class [[gnu::packed]] DBEntry {
+class [[gnu::packed]] CartDBEntry {
 public:
 	ChipType    chipType;
 	FormatType  formatType;
@@ -149,27 +149,45 @@ public:
 	}
 };
 
-class CartDB : public util::Data {
+class [[gnu::packed]] FlashDBEntry {
 public:
-	inline const DBEntry *operator[](int index) const {
+	// TODO
+	uint8_t flags;
+
+	uint16_t year;
+	uint8_t  hashSalt[8];
+	char     code[8], region[8], name[96];
+
+	inline int compare(const char *_code, const char *_region) const {
+		int diff = __builtin_strncmp(
+			&code[CODE_PREFIX_LENGTH], &_code[CODE_PREFIX_LENGTH],
+			CODE_LENGTH - CODE_PREFIX_LENGTH + 1
+		);
+		if (diff)
+			return diff;
+
+		diff = __builtin_strncmp(code, _code, CODE_PREFIX_LENGTH);
+		if (diff)
+			return diff;
+
+		return __builtin_strncmp(region, _region, REGION_MAX_LENGTH);
+	}
+};
+
+template<typename T> class DB : public util::Data {
+public:
+	inline const T *operator[](int index) const {
 		return get(index);
 	}
-
-	inline const DBEntry *get(int index) const {
-		auto entries = reinterpret_cast<const DBEntry *>(ptr);
-
-		if (!entries)
-			return nullptr;
-		if ((index * sizeof(DBEntry)) >= length)
-			return nullptr;
-
-		return &entries[index];
-	}
 	inline size_t getNumEntries(void) const {
-		return length / sizeof(DBEntry);
+		return length / sizeof(T);
 	}
 
-	const DBEntry *lookup(const char *code, const char *region) const;
+	const T *get(int index) const;
+	const T *lookup(const char *code, const char *region) const;
 };
+
+using CartDB  = DB<CartDBEntry>;
+using FlashDB = DB<FlashDBEntry>;
 
 }

@@ -111,12 +111,12 @@ void CartActionsScreen::erase(ui::Context &ctx) {
 }
 
 void CartActionsScreen::resetSystemID(ui::Context &ctx) {
-	if (!(APP->_parser->getIdentifiers()->systemID.isEmpty())) {
+	if (!(APP->_cartParser->getIdentifiers()->systemID.isEmpty())) {
 		APP->_confirmScreen.setMessage(
 			*this,
 			[](ui::Context &ctx) {
-				APP->_parser->getIdentifiers()->systemID.clear();
-				APP->_parser->flush();
+				APP->_cartParser->getIdentifiers()->systemID.clear();
+				APP->_cartParser->flush();
 
 				APP->_setupWorker(&App::_cartWriteWorker);
 				ctx.show(APP->_workerStatusScreen, false, true);
@@ -139,10 +139,10 @@ void CartActionsScreen::matchSystemID(ui::Context &ctx) {
 		APP->_confirmScreen.setMessage(
 			*this,
 			[](ui::Context &ctx) {
-				APP->_parser->getIdentifiers()->systemID.copyFrom(
+				APP->_cartParser->getIdentifiers()->systemID.copyFrom(
 					APP->_dump.systemID.data
 				);
-				APP->_parser->flush();
+				APP->_cartParser->flush();
 
 				APP->_setupWorker(&App::_cartWriteWorker);
 				ctx.show(APP->_workerStatusScreen, false, true);
@@ -164,7 +164,7 @@ void CartActionsScreen::editSystemID(ui::Context &ctx) {
 	APP->_confirmScreen.setMessage(
 		APP->_systemIDEntryScreen,
 		[](ui::Context &ctx) {
-			APP->_systemIDEntryScreen.setSystemID(*(APP->_parser));
+			APP->_systemIDEntryScreen.setSystemID(*(APP->_cartParser));
 
 			APP->_setupWorker(&App::_cartWriteWorker);
 			ctx.show(APP->_workerStatusScreen, false, true);
@@ -177,7 +177,7 @@ void CartActionsScreen::editSystemID(ui::Context &ctx) {
 		STR("CartActionsScreen.editSystemID.error")
 	);
 
-	APP->_systemIDEntryScreen.getSystemID(*(APP->_parser));
+	APP->_systemIDEntryScreen.getSystemID(*(APP->_cartParser));
 	ctx.show(APP->_systemIDEntryScreen, false, true);
 }
 
@@ -188,8 +188,8 @@ void CartActionsScreen::show(ui::Context &ctx, bool goBack) {
 
 	_listLength = util::countOf(_ACTIONS) - _NUM_SYSTEM_ID_ACTIONS;
 
-	if (APP->_parser) {
-		if (APP->_parser->flags & cart::DATA_HAS_SYSTEM_ID)
+	if (APP->_cartParser) {
+		if (APP->_cartParser->flags & cart::DATA_HAS_SYSTEM_ID)
 			_listLength = util::countOf(_ACTIONS);
 	}
 

@@ -179,7 +179,7 @@ protected:
 	void _setBlendMode(Context &ctx, gpu::BlendMode blendMode, bool dither = false) const;
 
 public:
-	virtual void draw(Context &ctx) const {}
+	virtual void draw(Context &ctx, bool active = true) const {}
 	virtual void update(Context &ctx) {}
 };
 
@@ -191,7 +191,7 @@ public:
 	inline TiledBackground(void)
 	: text(nullptr) {}
 
-	void draw(Context &ctx) const;
+	void draw(Context &ctx, bool active = true) const;
 };
 
 class LogOverlay : public Layer {
@@ -201,7 +201,7 @@ private:
 
 public:
 	LogOverlay(util::LogBuffer &buffer);
-	void draw(Context &ctx) const;
+	void draw(Context &ctx, bool active = true) const;
 	void update(Context &ctx);
 };
 

@@ -126,7 +126,7 @@ const char *MainMenuScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void MainMenuScreen::cartInfo(ui::Context &ctx) {
-	if (APP->_driver) {
+	if (APP->_cartDriver) {
 		ctx.show(APP->_cartInfoScreen, false, true);
 	} else {
 		APP->_setupWorker(&App::_cartDetectWorker);
