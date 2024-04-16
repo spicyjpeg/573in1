@@ -60,8 +60,12 @@ const char *CartActionsScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void CartActionsScreen::qrDump(ui::Context &ctx) {
-	APP->_setupWorker(&App::_qrCodeWorker);
-	ctx.show(APP->_workerStatusScreen, false, true);
+	if (APP->_qrCodeScreen.valid) {
+		ctx.show(APP->_qrCodeScreen, false, true);
+	} else {
+		APP->_setupWorker(&App::_qrCodeWorker);
+		ctx.show(APP->_workerStatusScreen, false, true);
+	}
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {

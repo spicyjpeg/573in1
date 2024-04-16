@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 #include "common/file.hpp"
-#include "common/rom.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
 #include "main/app/main.hpp"
 #include "main/app/misc.hpp"
 #include "main/app/modals.hpp"
+#include "main/app/romactions.hpp"
 #include "main/cart.hpp"
 #include "main/cartdata.hpp"
 #include "main/cartio.hpp"
@@ -48,31 +48,6 @@ public:
 	void finish(void);
 };
 
-/* System information buffer */
-
-struct FlashRegionInfo {
-public:
-	uint32_t jedecID, crc[4];
-	bool     bootable;
-};
-
-enum SystemInfoFlag : uint32_t {
-	SYSTEM_INFO_VALID           = 1 << 0,
-	SYSTEM_INFO_RTC_BATTERY_LOW = 1 << 1
-};
-
-class SystemInfo {
-public:
-	uint32_t flags;
-	uint32_t biosCRC, rtcCRC;
-
-	const rom::ShellInfo *shell;
-	FlashRegionInfo      flash, pcmcia[2];
-
-	inline SystemInfo(void)
-	: flags(0) {}
-};
-
 /* App class */
 
 static constexpr size_t WORKER_STACK_SIZE = 0x20000;
@@ -85,8 +60,9 @@ class App {
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
-	friend class StorageMenuScreen;
-	friend class SystemInfoScreen;
+	friend class StorageInfoScreen;
+	friend class StorageActionsScreen;
+	friend class IDEInfoScreen;
 	friend class ResolutionScreen;
 	friend class AboutScreen;
 	friend class CartInfoScreen;
@@ -97,27 +73,30 @@ class App {
 	friend class HexdumpScreen;
 	friend class ReflashGameScreen;
 	friend class SystemIDEntryScreen;
+	friend class ChecksumScreen;
 
 private:
-	WorkerStatusScreen  _workerStatusScreen;
-	MessageScreen       _messageScreen;
-	ConfirmScreen       _confirmScreen;
-	FilePickerScreen    _filePickerScreen;
-	WarningScreen       _warningScreen;
-	ButtonMappingScreen	_buttonMappingScreen;
-	MainMenuScreen      _mainMenuScreen;
-	StorageMenuScreen   _storageMenuScreen;
-	SystemInfoScreen    _systemInfoScreen;
-	ResolutionScreen    _resolutionScreen;
-	AboutScreen         _aboutScreen;
-	CartInfoScreen      _cartInfoScreen;
-	UnlockKeyScreen     _unlockKeyScreen;
-	KeyEntryScreen      _keyEntryScreen;
-	CartActionsScreen   _cartActionsScreen;
-	QRCodeScreen        _qrCodeScreen;
-	HexdumpScreen       _hexdumpScreen;
-	ReflashGameScreen   _reflashGameScreen;
-	SystemIDEntryScreen _systemIDEntryScreen;
+	WorkerStatusScreen   _workerStatusScreen;
+	MessageScreen        _messageScreen;
+	ConfirmScreen        _confirmScreen;
+	FilePickerScreen     _filePickerScreen;
+	WarningScreen        _warningScreen;
+	ButtonMappingScreen	 _buttonMappingScreen;
+	MainMenuScreen       _mainMenuScreen;
+	StorageInfoScreen    _storageInfoScreen;
+	StorageActionsScreen _storageActionsScreen;
+	IDEInfoScreen        _ideInfoScreen;
+	ResolutionScreen     _resolutionScreen;
+	AboutScreen          _aboutScreen;
+	CartInfoScreen       _cartInfoScreen;
+	UnlockKeyScreen      _unlockKeyScreen;
+	KeyEntryScreen       _keyEntryScreen;
+	CartActionsScreen    _cartActionsScreen;
+	QRCodeScreen         _qrCodeScreen;
+	HexdumpScreen        _hexdumpScreen;
+	ReflashGameScreen    _reflashGameScreen;
+	SystemIDEntryScreen  _systemIDEntryScreen;
+	ChecksumScreen       _checksumScreen;
 
 #ifdef ENABLE_LOG_BUFFER
 	util::LogBuffer     _logBuffer;
@@ -131,12 +110,11 @@ private:
 	file::FATProvider _fileProvider;
 	file::StringTable _stringTable;
 
-	cart::Dump   _dump;
-	cart::CartDB _db;
-	SystemInfo   _systemInfo;
-	Thread       _workerThread;
-	WorkerStatus _workerStatus;
-	bool         (App::*_workerFunction)(void);
+	cart::CartDump _dump;
+	cart::CartDB   _db;
+	Thread         _workerThread;
+	WorkerStatus   _workerStatus;
+	bool           (App::*_workerFunction)(void);
 
 	uint8_t                 *_workerStack;
 	cart::Driver            *_cartDriver;
@@ -144,7 +122,6 @@ private:
 	const cart::CartDBEntry *_identified, *_selectedEntry;
 
 	void _unloadCartData(void);
-	void _unloadSystemInfo(void);
 	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
 	void _loadResources(void);
@@ -160,12 +137,12 @@ private:
 	bool _cartEraseWorker(void);
 
 	// romworkers.cpp
+	bool _romChecksumWorker(void);
 	bool _romDumpWorker(void);
 	bool _romRestoreWorker(void);
 	bool _romEraseWorker(void);
 	bool _flashHeaderWriteWorker(void);
 	bool _flashHeaderEraseWorker(void);
-	bool _systemInfoWorker(void);
 
 	// miscworkers.cpp
 	bool _startupWorker(void);

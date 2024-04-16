@@ -23,14 +23,14 @@ enum DriverError {
 
 /* Base classes */
 
-extern Dump dummyDriverDump;
+extern CartDump dummyDriverDump;
 
 class Driver {
 protected:
-	Dump &_dump;
+	CartDump &_dump;
 
 public:
-	inline Driver(Dump &dump)
+	inline Driver(CartDump &dump)
 	: _dump(dump) {}
 
 	virtual ~Driver(void) {}
@@ -50,7 +50,7 @@ private:
 	}
 
 public:
-	inline DummyDriver(Dump &dump)
+	inline DummyDriver(CartDump &dump)
 	: Driver(dump) {
 		//dump.clearIdentifiers();
 		//dump.clearKey();
@@ -74,8 +74,9 @@ public:
 
 class CartDriver : public Driver {
 public:
-	inline CartDriver(Dump &dump, ChipType chipType = NONE, uint8_t flags = 0)
-	: Driver(dump) {
+	inline CartDriver(
+		CartDump &dump, ChipType chipType = NONE, uint8_t flags = 0
+	) : Driver(dump) {
 		//dump.clearIdentifiers();
 		//dump.clearKey();
 		//dump.clearData();
@@ -94,7 +95,7 @@ protected:
 	) const;
 
 public:
-	inline X76Driver(Dump &dump, ChipType chipType)
+	inline X76Driver(CartDump &dump, ChipType chipType)
 	: CartDriver(dump, chipType) {}
 
 	DriverError readCartID(void);
@@ -102,7 +103,7 @@ public:
 
 class X76F041Driver : public X76Driver {
 public:
-	inline X76F041Driver(Dump &dump)
+	inline X76F041Driver(CartDump &dump)
 	: X76Driver(dump, X76F041) {}
 
 	DriverError readPrivateData(void);
@@ -113,7 +114,7 @@ public:
 
 class X76F100Driver : public X76Driver {
 public:
-	inline X76F100Driver(Dump &dump)
+	inline X76F100Driver(CartDump &dump)
 	: X76Driver(dump, X76F100) {}
 
 	DriverError readPrivateData(void);
@@ -129,7 +130,7 @@ private:
 	DriverError _transact(zs01::Packet &request, zs01::Packet &response);
 
 public:
-	inline ZS01Driver(Dump &dump)
+	inline ZS01Driver(CartDump &dump)
 	: CartDriver(dump, ZS01, DUMP_HAS_CART_ID), _encoderState(0) {}
 
 	DriverError readCartID(void);
@@ -146,6 +147,6 @@ static inline const char *getErrorString(DriverError error) {
 	return DRIVER_ERROR_NAMES[error];
 }
 
-CartDriver *newCartDriver(Dump &dump);
+CartDriver *newCartDriver(CartDump &dump);
 
 }

@@ -122,7 +122,7 @@ void Device::_setLBA(uint64_t lba, uint16_t count) {
 }
 
 DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
-	for (; timeout > 0; timeout--) {
+	for (; timeout > 0; timeout -= 10) {
 		uint8_t status = _read(CS0_STATUS);
 
 		if (status & CS0_STATUS_ERR) {

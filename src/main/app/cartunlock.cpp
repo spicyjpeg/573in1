@@ -33,7 +33,7 @@ static const util::Hash _UNLOCKED_PROMPTS[]{
 	"CartInfoScreen.description.unlocked.blank"_h
 };
 
-#define _PRINT(...) (ptr += snprintf(ptr, end - ptr, __VA_ARGS__))
+#define _PRINT(...) (ptr += snprintf(ptr, end - ptr __VA_OPT__(,) __VA_ARGS__))
 #define _PRINTLN()  (*(ptr++) = '\n')
 
 void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
@@ -52,11 +52,11 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 		dump.systemID.toString(id1);
 		dump.systemID.toSerialNumber(id2);
 
-		_PRINT(STR("SystemInfoScreen.digitalIO.info"), id1, id2);
+		_PRINT(STR("CartInfoScreen.digitalIO.info"), id1, id2);
 	} else if (dump.flags & cart::DUMP_HAS_SYSTEM_ID) {
-		_PRINT(STR("SystemInfoScreen.digitalIO.error"));
+		_PRINT(STR("CartInfoScreen.digitalIO.error"));
 	} else {
-		_PRINT(STR("SystemInfoScreen.digitalIO.noBoard"));
+		_PRINT(STR("CartInfoScreen.digitalIO.noBoard"));
 	}
 
 	_PRINTLN();

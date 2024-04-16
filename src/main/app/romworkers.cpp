@@ -4,50 +4,50 @@
 #include <stdio.h>
 #include "common/defs.hpp"
 #include "common/file.hpp"
-#include "common/io.hpp"
 #include "common/rom.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
+#include "main/app/romactions.hpp"
 
-struct DumpEntry {
+struct RegionInfo {
 public:
-	util::Hash        dumpPrompt, hashPrompt;
+	util::Hash        dumpPrompt, crcPrompt;
 	const char        *path;
 	const rom::Region &region;
-	size_t            hashOffset;
+	size_t            crcOffset;
 };
 
-static const DumpEntry _DUMP_ENTRIES[]{
+static const RegionInfo _REGION_INFO[]{
 	{
 		.dumpPrompt = "App.romDumpWorker.dumpBIOS"_h,
-		.hashPrompt = "App.systemInfoWorker.hashBIOS"_h,
+		.crcPrompt  = "App.romChecksumWorker.hashBIOS"_h,
 		.path       = "%s/bios.bin",
 		.region     = rom::bios,
-		.hashOffset = offsetof(SystemInfo, biosCRC)
+		.crcOffset  = offsetof(ChecksumScreen, biosCRC)
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpRTC"_h,
-		.hashPrompt = "App.systemInfoWorker.hashRTC"_h,
+		.crcPrompt  = "App.romChecksumWorker.hashRTC"_h,
 		.path       = "%s/rtc.bin",
 		.region     = rom::rtc,
-		.hashOffset = offsetof(SystemInfo, rtcCRC)
+		.crcOffset  = offsetof(ChecksumScreen, rtcCRC)
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpFlash"_h,
-		.hashPrompt = "App.systemInfoWorker.hashFlash"_h,
+		.crcPrompt  = "App.romChecksumWorker.hashFlash"_h,
 		.path       = "%s/flash.bin",
 		.region     = rom::flash,
-		.hashOffset = offsetof(SystemInfo, flash.crc)
+		.crcOffset  = offsetof(ChecksumScreen, flashCRC)
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA1"_h,
-		.hashPrompt = "App.systemInfoWorker.hashPCMCIA1"_h,
+		.crcPrompt  = "App.romChecksumWorker.hashPCMCIA1"_h,
 		.path       = "%s/pcmcia1.bin",
 		.region     = rom::pcmcia[0],
-		.hashOffset = offsetof(SystemInfo, pcmcia[0].crc)
+		.crcOffset  = offsetof(ChecksumScreen, pcmciaCRC[0])
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA2"_h,
-		.hashPrompt = "App.systemInfoWorker.hashPCMCIA2"_h,
+		.crcPrompt  = "App.romChecksumWorker.hashPCMCIA2"_h,
 		.path       = "%s/pcmcia2.bin",
 		.region     = rom::pcmcia[1],
-		.hashOffset = offsetof(SystemInfo, pcmcia[1].crc)
+		.crcOffset  = offsetof(ChecksumScreen, pcmciaCRC[1])
 	}
 };
 
@@ -55,6 +55,43 @@ static constexpr size_t _DUMP_CHUNK_LENGTH   = 0x80000;
 static constexpr size_t _DUMP_CHUNKS_PER_CRC = 32; // Save CRC32 every 16 MB
 
 // TODO: all these *really* need a cleanup...
+
+bool App::_romChecksumWorker(void) {
+	_workerStatus.setNextScreen(_checksumScreen);
+	_checksumScreen.valid = false;
+
+	for (auto &entry : _REGION_INFO) {
+		if (!entry.region.isPresent())
+			continue;
+
+		size_t chunkLength =
+			util::min(entry.region.regionLength, _DUMP_CHUNK_LENGTH);
+		size_t numChunks   = entry.region.regionLength / chunkLength;
+
+		uint32_t offset = 0;
+		uint32_t crc    = 0;
+		auto     crcPtr = reinterpret_cast<uint32_t *>(
+			reinterpret_cast<uintptr_t>(&_checksumScreen) + entry.crcOffset
+		);
+
+		// Flash cards can be 16, 32 or 64 MB, so copies of the current CRC are
+		// saved after the first 16, then 32, 48 and finally 64 MB are read.
+		for (size_t i = 0; i < numChunks; i += _DUMP_CHUNKS_PER_CRC) {
+			size_t end = util::min(i + _DUMP_CHUNKS_PER_CRC, numChunks);
+
+			for (size_t j = i; j < end; j++) {
+				_workerStatus.update(j, numChunks, WSTRH(entry.crcPrompt));
+
+				crc     = entry.region.zipCRC32(offset, chunkLength, crc);
+				offset += chunkLength;
+			}
+
+			*(crcPtr++) = crc;
+		}
+	}
+
+	return true;
+}
 
 bool App::_romDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romDumpWorker.init"));
@@ -86,7 +123,7 @@ bool App::_romDumpWorker(void) {
 	if (!_fileProvider.createDirectory(dirPath))
 		goto _initError;
 
-	for (auto &entry : _DUMP_ENTRIES) {
+	for (auto &entry : _REGION_INFO) {
 		if (!entry.region.isPresent())
 			continue;
 
@@ -131,7 +168,7 @@ bool App::_romDumpWorker(void) {
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageMenuScreen, WSTR("App.romDumpWorker.success"),
+		MESSAGE_SUCCESS, _storageInfoScreen, WSTR("App.romDumpWorker.success"),
 		dirPath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -139,7 +176,7 @@ bool App::_romDumpWorker(void) {
 
 _initError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen, WSTR("App.romDumpWorker.initError"),
+		MESSAGE_ERROR, _storageInfoScreen, WSTR("App.romDumpWorker.initError"),
 		dirPath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -147,7 +184,7 @@ _initError:
 
 _fileError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen, WSTR("App.romDumpWorker.fileError"),
+		MESSAGE_ERROR, _storageInfoScreen, WSTR("App.romDumpWorker.fileError"),
 		filePath
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -160,7 +197,7 @@ bool App::_romRestoreWorker(void) {
 	const char *path = _filePickerScreen.selectedPath;
 	auto       _file = _fileProvider.openFile(path, file::READ);
 
-	auto &region = _storageMenuScreen.getSelectedRegion();
+	auto &region = _storageActionsScreen.getSelectedRegion();
 
 	if (!_file)
 		goto _fileError;
@@ -222,14 +259,14 @@ bool App::_romRestoreWorker(void) {
 		: "App.romRestoreWorker.success"_h;
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageMenuScreen, WSTRH(message), offset
+		MESSAGE_SUCCESS, _storageInfoScreen, WSTRH(message), offset
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return true;
 
 _fileError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
+		MESSAGE_ERROR, _storageInfoScreen,
 		WSTR("App.romRestoreWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -242,7 +279,7 @@ _flashError:
 	delete   driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
+		MESSAGE_ERROR, _storageInfoScreen,
 		WSTR("App.romRestoreWorker.flashError"), rom::getErrorString(error),
 		offset
 	);
@@ -251,7 +288,7 @@ _flashError:
 }
 
 bool App::_romEraseWorker(void) {
-	auto &region = _storageMenuScreen.getSelectedRegion();
+	auto &region = _storageActionsScreen.getSelectedRegion();
 	auto driver  = region.newDriver();
 
 	size_t chipLength    = driver->getChipSize().chipLength;
@@ -263,7 +300,7 @@ bool App::_romEraseWorker(void) {
 
 	rom::DriverError error;
 
-	_unloadSystemInfo();
+	_checksumScreen.valid = false;
 
 	// Erase one sector at a time on each chip.
 	for (size_t i = 0; i < chipLength; i += sectorLength) {
@@ -286,7 +323,7 @@ bool App::_romEraseWorker(void) {
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageMenuScreen, WSTR("App.romEraseWorker.success"),
+		MESSAGE_SUCCESS, _storageInfoScreen, WSTR("App.romEraseWorker.success"),
 		sectorsErased
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -296,7 +333,7 @@ _flashError:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
+		MESSAGE_ERROR, _storageInfoScreen,
 		WSTR("App.romEraseWorker.flashError"), rom::getErrorString(error),
 		sectorsErased
 	);
@@ -304,16 +341,11 @@ _flashError:
 	return false;
 
 _unsupported:
-	auto id = region.getJEDECID();
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
-		WSTR("App.romEraseWorker.unsupported"),
-		(id >>  0) & 0xff,
-		(id >>  8) & 0xff,
-		(id >> 16) & 0xff,
-		(id >> 24) & 0xff
+		MESSAGE_ERROR, _storageInfoScreen,
+		WSTR("App.romEraseWorker.unsupported")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
@@ -329,22 +361,18 @@ bool App::_flashHeaderWriteWorker(void) {
 
 	rom::DriverError error;
 
-	// TODO
+	// TODO: implement
 
 	delete driver;
 
-	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageMenuScreen,
-		WSTR("App.flashHeaderWriteWorker.success")
-	);
-	_workerStatus.setNextScreen(_messageScreen);
+	_workerStatus.setNextScreen(_storageInfoScreen);
 	return true;
 
 _flashError:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
+		MESSAGE_ERROR, _storageInfoScreen,
 		WSTR("App.flashHeaderWriteWorker.flashError"),
 		rom::getErrorString(error)
 	);
@@ -361,7 +389,7 @@ bool App::_flashHeaderEraseWorker(void) {
 	if (!sectorLength)
 		goto _unsupported;
 
-	_unloadSystemInfo();
+	_checksumScreen.valid = false;
 	_workerStatus.update(0, 1, WSTR("App.flashHeaderEraseWorker.erase"));
 
 	// The flash can only be erased with sector granularity, so all data in the
@@ -400,11 +428,7 @@ bool App::_flashHeaderEraseWorker(void) {
 	delete[] buffer;
 	delete   driver;
 
-	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageMenuScreen,
-		WSTR("App.flashHeaderEraseWorker.success")
-	);
-	_workerStatus.setNextScreen(_messageScreen);
+	_workerStatus.setNextScreen(_storageInfoScreen);
 	return true;
 
 _flashError:
@@ -412,7 +436,7 @@ _flashError:
 	delete   driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
+		MESSAGE_ERROR, _storageInfoScreen,
 		WSTR("App.flashHeaderEraseWorker.flashError"),
 		rom::getErrorString(error)
 	);
@@ -420,77 +444,12 @@ _flashError:
 	return false;
 
 _unsupported:
-	auto id = rom::flash.getJEDECID();
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageMenuScreen,
-		WSTR("App.flashHeaderEraseWorker.unsupported"),
-		(id >>  0) & 0xff,
-		(id >>  8) & 0xff,
-		(id >> 16) & 0xff,
-		(id >> 24) & 0xff
+		MESSAGE_ERROR, _storageInfoScreen,
+		WSTR("App.flashHeaderEraseWorker.unsupported")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
-}
-
-bool App::_systemInfoWorker(void) {
-	// This is necessary to ensure the digital I/O ID is read at least once.
-	if (!_cartDriver)
-		_cartDetectWorker();
-
-	_workerStatus.setNextScreen(_systemInfoScreen);
-	_unloadSystemInfo();
-
-	for (auto &entry : _DUMP_ENTRIES) {
-		if (!entry.region.isPresent())
-			continue;
-
-		size_t chunkLength =
-			util::min(entry.region.regionLength, _DUMP_CHUNK_LENGTH);
-		size_t numChunks   = entry.region.regionLength / chunkLength;
-
-		uint32_t offset = 0;
-		uint32_t crc    = 0;
-		auto     crcPtr = reinterpret_cast<uint32_t *>(
-			reinterpret_cast<uintptr_t>(&_systemInfo) + entry.hashOffset
-		);
-
-		// Flash cards can be 16, 32 or 64 MB, so copies of the current CRC are
-		// saved after the first 16, then 32, 48 and finally 64 MB are read.
-		for (size_t i = 0; i < numChunks; i += _DUMP_CHUNKS_PER_CRC) {
-			size_t end = util::min(i + _DUMP_CHUNKS_PER_CRC, numChunks);
-
-			for (size_t j = i; j < end; j++) {
-				_workerStatus.update(j, numChunks, WSTRH(entry.hashPrompt));
-
-				crc     = entry.region.zipCRC32(offset, chunkLength, crc);
-				offset += chunkLength;
-			}
-
-			*(crcPtr++) = crc;
-		}
-	}
-
-	_systemInfo.flags = SYSTEM_INFO_VALID;
-	_systemInfo.shell = rom::getShellInfo();
-
-	if (io::isRTCBatteryLow())
-		_systemInfo.flags |= SYSTEM_INFO_RTC_BATTERY_LOW;
-
-	_systemInfo.flash.jedecID  = rom::flash.getJEDECID();
-	_systemInfo.flash.bootable = rom::flash.hasBootExecutable();
-
-	for (int i = 0; i < 2; i++) {
-		auto &region = rom::pcmcia[i];
-		auto &card   = _systemInfo.pcmcia[i];
-
-		if (region.isPresent()) {
-			card.jedecID  = region.getJEDECID();
-			card.bootable = region.hasBootExecutable();
-		}
-	}
-
-	return true;
 }
