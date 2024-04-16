@@ -23,7 +23,7 @@ const char *const DRIVER_ERROR_NAMES[]{
 
 /* Dummy cartridge driver */
 
-Dump dummyDriverDump;
+CartDump dummyDriverDump;
 
 DriverError DummyDriver::readSystemID(void) {
 	if (dummyDriverDump.flags & DUMP_SYSTEM_ID_OK) {
@@ -645,7 +645,7 @@ enum ChipIdentifier : uint32_t {
 	_ID_ZS01    = 0x5a530001
 };
 
-CartDriver *newCartDriver(Dump &dump) {
+CartDriver *newCartDriver(CartDump &dump) {
 	if (!io::getCartInsertionStatus()) {
 		LOG("DSR not asserted");
 		return new CartDriver(dump);

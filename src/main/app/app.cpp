@@ -102,10 +102,6 @@ void App::_unloadCartData(void) {
 	//_selectedEntry = nullptr;
 }
 
-void App::_unloadSystemInfo(void) {
-	_systemInfo.flags = 0;
-}
-
 void App::_setupWorker(bool (App::*func)(void)) {
 	LOG("restarting worker, func=0x%08x", func);
 

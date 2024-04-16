@@ -59,18 +59,23 @@
 		},
 		"flashHeaderEraseWorker": {
 			"erase":       "Erasing header...\nDo not turn off the 573.",
-			"success":     "The header has been successfully cleared.",
 			"flashError":  "An error occurred while erasing and rewriting the first sector of the internal flash memory.\n\nError code: %s\nPress the Test button to view debug logs.",
-			"unsupported": "This system's onboard flash memory chips are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
+			"unsupported": "This system's onboard flash memory chips are not currently supported. See the documentation for more information on supported flash chips."
 		},
 		"flashHeaderWriteWorker": {
 			"write":      "Writing new header...\nDo not turn off the 573.",
-			"success":    "The header has been successfully written.",
 			"flashError": "An error occurred while erasing and rewriting the first sector of the internal flash memory.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
 			"generate": "Generating QR code..."
+		},
+		"romChecksumWorker": {
+			"hashBIOS":    "Calculating BIOS ROM checksum...",
+			"hashRTC":     "Calculating RTC RAM checksum...",
+			"hashFlash":   "Calculating internal flash checksum...",
+			"hashPCMCIA1": "Calculating PCMCIA card 1 checksum...",
+			"hashPCMCIA2": "Calculating PCMCIA card 2 checksum..."
 		},
 		"romDumpWorker": {
 			"init":        "Creating dump directory...\nDo not turn off the 573 or unplug drives.",
@@ -87,7 +92,7 @@
 			"erase":       "Erasing device...\nDo not turn off the 573.",
 			"success":     "The device has been successfully wiped.\n\nSectors erased: %d",
 			"flashError":  "An error occurred while erasing sectors on one of the chips.\n\nError code:\t%s\nSectors erased:\t%d\nPress the Test button to view debug logs.",
-			"unsupported": "The flash memory chips on this device are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
+			"unsupported": "Erasing sectors on the flash memory chips used by this device is not currently supported. See the documentation for more information on supported flash chips."
 		},
 		"romRestoreWorker": {
 			"init":        "Opening dump file...\nDo not turn off the 573 or unplug drives.",
@@ -96,14 +101,7 @@
 			"overflow":    "The selected file was larger than the target device's capacity, so all data past the limit was ignored. All other data has been successfully restored.\n\nBytes written: %d",
 			"fileError":   "An error occurred while reading data from the file. Ensure the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs.",
 			"flashError":  "An error occurred while erasing sectors on or writing data to one of the chips.\n\nError code:\t%s\nBytes written:\t%d\nPress the Test button to view debug logs.",
-			"unsupported": "The flash memory chips on this device are not currently supported.\n\nManufacturer ID:\t%02X (lower), %02X (upper)\nDevice ID:\t\t%02X (lower), %02X (upper)\nPress the Test button to view debug logs."
-		},
-		"systemInfoWorker": {
-			"hashBIOS":    "Calculating BIOS ROM checksum...",
-			"hashRTC":     "Calculating RTC RAM checksum...",
-			"hashFlash":   "Calculating internal flash checksum...",
-			"hashPCMCIA1": "Calculating PCMCIA card 1 checksum...",
-			"hashPCMCIA2": "Calculating PCMCIA card 2 checksum..."
+			"unsupported": "Writing data to the flash memory chips used by this device is not currently supported. See the documentation for more information on supported flash chips."
 		},
 		"atapiEjectWorker": {
 			"eject":      "Sending eject command...",
@@ -191,9 +189,9 @@
 		},
 		"cart": {
 			"header":      "Security cartridge:\n",
-			"x76f041Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F041\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  Configuration:\t%s\n",
-			"x76f100Info": "  Chip type:\t\t{CHIP_ICON} Xicor X76F100\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n",
-			"zs01Info":    "  Chip type:\t\t{CHIP_ICON} Konami ZS01 (PIC16CE625)\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  ZS01 ID:\t\t%s\n  Configuration:\t%s\n"
+			"x76f041Info": "  Chip type:\t\tXicor X76F041\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  Configuration:\t%s\n",
+			"x76f100Info": "  Chip type:\t\tXicor X76F100\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n",
+			"zs01Info":    "  Chip type:\t\tKonami ZS01 (PIC16CE625)\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  ZS01 ID:\t\t%s\n  Configuration:\t%s\n"
 		},
 		"unlockStatus": {
 			"locked":   "{CLOSED_LOCK} locked, game key required",
@@ -240,6 +238,16 @@
 		}
 	},
 
+	"ChecksumScreen": {
+		"title":  "{CART_ICON} Storage device checksums",
+		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back.",
+
+		"bios":   "BIOS ROM (512 KB):\t\t\t\t%08X\n",
+		"rtc":    "RTC RAM (8184 bytes):\t\t\t%08X\n",
+		"flash":  "Internal flash (16 MB):\t\t\t%08X\n",
+		"pcmcia": "PCMCIA card in slot %d (first %d MB):\t%08X\n"
+	},
+
 	"ConfirmScreen": {
 		"title": "Confirm operation",
 		"no":    "No, go back",
@@ -251,14 +259,38 @@
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"parentDir":    "[Parent directory]",
-		"noFilesError": "No files or directories have been found in the root of the hard drive's file system.",
+		"noFilesError": "No files or directories have been found in the root of the hard drive's filesystem.",
 		"rootError":    "An error occurred while enumerating files in the root directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
-		"subdirError":  "An error occurred while enumerating files in the selected subdirectory. The file system may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
+		"subdirError":  "An error occurred while enumerating files in the selected subdirectory. The filesystem may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
 	},
 
 	"HexdumpScreen": {
 		"title":  "{CART_ICON} Cartridge dump",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+	},
+
+	"IDEInfoScreen": {
+		"title":  "{CART_ICON} IDE device information",
+		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back.",
+
+		"ide": {
+			"header": {
+				"primary":   "Primary IDE drive:\n",
+				"secondary": "Secondary IDE drive:\n"
+			},
+
+			"commonInfo": "  Model name:\t\t%s\n  Revision number:\t%s\n  Serial number:\t%s\n",
+			"ataInfo":    "  Device type:\tATA\n  Capacity:\t\t%llu MB (%d-bit LBA)\n",
+			"atapiInfo":  "  Device type:\tATAPI\n  Packet length:\t%d bytes\n",
+			"hasTrim":    "  Supports trim command\n",
+			"hasFlush":   "  Supports cache flushing\n",
+			"error":      "  No drive present or initialization failed\n"
+		},
+		"fat": {
+			"header": "FAT filesystem:\n",
+			"info":   "  Type:\t\t%s\n  Volume label:\t%s\n  Serial number:\t%04X-%04X\n  Formatted:\t\t%llu MB\n  Free space:\t%llu MB\n",
+			"error":  "  No filesystem mounted\n"
+		}
 	},
 
 	"KeyEntryScreen": {
@@ -276,13 +308,13 @@
 			"name":   "Manage security cartridge",
 			"prompt": "Display information about, unlock, dump and manipulate the contents of the inserted security cartridge (if any)."
 		},
-		"storageMenu": {
+		"storageInfo": {
 			"name":   "Manage flash, PCMCIA cards, RTC and BIOS ROM",
-			"prompt": "Dump, manipulate and erase the contents of the system's built-in storage devices or any inserted PCMCIA flash cards."
+			"prompt": "Display information about, dump and manipulate the contents of the system's built-in storage devices or any inserted PCMCIA flash cards."
 		},
-		"systemInfo": {
-			"name":   "View system information",
-			"prompt": "Display information about the system's I/O board, IDE drives and storage devices."
+		"ideInfo": {
+			"name":   "View IDE device and filesystem information",
+			"prompt": "Display information about the connected IDE/ATAPI devices and mounted FAT filesystem (if any)."
 		},
 		"setResolution": {
 			"name":   "Change screen resolution",
@@ -344,13 +376,17 @@
 		"640x480i": "640x480 (4:3), interlaced"
 	},
 
-	"StorageMenuScreen": {
+	"StorageActionsScreen": {
 		"title":      "{CART_ICON} Storage device options",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
 
+		"checksum": {
+			"name":   "Calculate flash, card, RTC and BIOS ROM checksums",
+			"prompt": "Compute and display the CRC32 of the contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted flash cards."
+		},
 		"dump": {
-			"name":    "Dump flash, PCMCIA cards, RTC and BIOS ROM",
+			"name":    "Dump flash, cards, RTC and BIOS ROM",
 			"prompt":  "Dump the contents of the internal ROMs and any inserted flash cards to the IDE hard drive or CF card connected as secondary drive (if any).",
 			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and the dumps saved to a new directory in the root of the hard drive or CF card currently configured as secondary on the IDE bus.\n\nDo you wish to proceed?"
 		},
@@ -413,44 +449,12 @@
 		}
 	},
 
-	"SystemIDEntryScreen": {
-		"title":  "Edit system identifier",
-		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
-		"cancel": "Cancel",
-		"ok":     "Confirm"
-	},
+	"StorageInfoScreen": {
+		"title":  "{CART_ICON} Storage device information",
+		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} for more options, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
 
-	"SystemInfoScreen": {
-		"title":  "{CART_ICON} System information",
-		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back.",
-
-		"digitalIO": {
-			"header":  "Digital I/O board:\n",
-			"info":    "  DS2401 ID:\t\t%s\n  Serial number:\t%s\n",
-			"error":   "  Failed to read the board's DS2401\n",
-			"noBoard": "  No digital I/O board installed\n"
-		},
-		"ide": {
-			"header": {
-				"primary":   "Primary IDE drive:\n",
-				"secondary": "Secondary IDE drive:\n"
-			},
-
-			"commonInfo": "  Model name:\t\t%s\n  Revision number:\t%s\n  Serial number:\t%s\n",
-			"ataInfo":    "  Device type:\tATA\n  Capacity:\t\t%llu MB (%d-bit LBA)\n",
-			"atapiInfo":  "  Device type:\tATAPI\n  Packet length:\t%d bytes\n",
-			"hasTrim":    "  Supports trim command\n",
-			"hasFlush":   "  Supports cache flushing\n",
-			"error":      "  No drive present or initialization failed\n"
-		},
-		"fat": {
-			"header": "FAT file system:\n",
-			"info":   "  Type:\t\t%s\n  Volume label:\t%s\n  Serial number:\t%08X\n  Formatted:\t\t%llu MB\n  Free space:\t%llu MB\n",
-			"error":  "  No file system mounted\n"
-		},
 		"bios": {
-			"header":     "BIOS ROM:\n",
-			"commonInfo": "  CRC32:\t\t%08X\n",
+			"header": "BIOS ROM:\n",
 
 			"kernelInfo": {
 				"sony":     "  Kernel type:\tSony PlayStation kernel\n  Kernel version:\t%s\n  Kernel date:\t%04X-%02X-%02X\n",
@@ -464,20 +468,33 @@
 		},
 		"rtc": {
 			"header":     "RTC:\n",
-			"info":       "  CRC32:\t\t%08X (excl. clock registers)\n",
-			"batteryLow": "  Battery voltage is below 2.5V\n"
+			"batteryOK":  "  Battery voltage:\tabove 2.5V\n",
+			"batteryLow": "  Battery voltage:\tbelow 2.5V\n"
 		},
 		"flash": {
 			"header":   "Internal flash memory:\n",
-			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n  CRC32:\t\t%08X\n",
-			"bootable": "  Valid boot executable present\n"
+			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n",
+			"bootable": "  Valid boot executable present\n",
+
+			"pairing": {
+				"unsupported": "This game does not pair to I/O boards",
+				"thisSystem":  "Paired to this system's I/O board",
+				"otherSystem": "Paired to another system's I/O board"
+			}
 		},
 		"pcmcia": {
 			"header":   "PCMCIA card in slot %d:\n",
-			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n  CRC32 (16 MB):\t%08X\n  CRC32 (32 MB):\t%08X\n  CRC32 (64 MB):\t%08X\n",
+			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n",
 			"bootable": "  Valid boot executable present\n",
 			"noCard":   "  No card inserted\n"
 		}
+	},
+
+	"SystemIDEntryScreen": {
+		"title":  "Edit system identifier",
+		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"cancel": "Cancel",
+		"ok":     "Confirm"
 	},
 
 	"UnlockKeyScreen": {

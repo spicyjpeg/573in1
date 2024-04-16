@@ -21,7 +21,9 @@ static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 bool App::_cartDetectWorker(void) {
 	_workerStatus.setNextScreen(_cartInfoScreen);
 	_workerStatus.update(0, 3, WSTR("App.cartDetectWorker.readCart"));
+
 	_unloadCartData();
+	_qrCodeScreen.valid = false;
 
 #ifdef ENABLE_DUMMY_DRIVER
 	if (!cart::dummyDriverDump.chipType)
@@ -131,6 +133,8 @@ static const util::Hash _UNLOCK_ERRORS[cart::NUM_CHIP_TYPES]{
 bool App::_cartUnlockWorker(void) {
 	_workerStatus.setNextScreen(_cartInfoScreen, true);
 	_workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
+
+	_qrCodeScreen.valid = false;
 
 	auto error = _cartDriver->readPrivateData();
 
@@ -279,8 +283,8 @@ bool App::_cartRestoreWorker(void) {
 	const char *path = _filePickerScreen.selectedPath;
 	auto       _file = _fileProvider.openFile(path, file::READ);
 
-	cart::Dump newDump;
-	size_t     length;
+	cart::CartDump newDump;
+	size_t         length;
 
 	if (!_file)
 		goto _fileOpenError;

@@ -1,40 +1,15 @@
 
 #pragma once
 
-#include "common/rom.hpp"
+#include <stdint.h>
 #include "common/spu.hpp"
 #include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 
-/* Storage device submenu */
+/* System information screens */
 
-class StorageMenuScreen : public ui::ListScreen {
-private:
-	const rom::Region *_selectedRegion;
-
-protected:
-	const char *_getItemName(ui::Context &ctx, int index) const;
-
-public:
-	inline const rom::Region &getSelectedRegion(void) {
-		return *_selectedRegion;
-	}
-
-	void dump(ui::Context &ctx);
-	void restore(ui::Context &ctx);
-	void erase(ui::Context &ctx);
-	void resetFlashHeader(ui::Context &ctx);
-	void matchFlashHeader(ui::Context &ctx);
-	void editFlashHeader(ui::Context &ctx);
-
-	void show(ui::Context &ctx, bool goBack = false);
-	void update(ui::Context &ctx);
-};
-
-/* System information screen */
-
-class SystemInfoScreen : public ui::TextScreen {
+class IDEInfoScreen : public ui::TextScreen {
 private:
 	char _bodyText[2048];
 

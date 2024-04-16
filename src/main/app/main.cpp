@@ -1,4 +1,5 @@
 
+#include <stdio.h>
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/main.hpp"
@@ -91,13 +92,13 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.prompt = "MainMenuScreen.cartInfo.prompt"_h,
 		.target = &MainMenuScreen::cartInfo
 	}, {
-		.name   = "MainMenuScreen.storageMenu.name"_h,
-		.prompt = "MainMenuScreen.storageMenu.prompt"_h,
-		.target = &MainMenuScreen::storageMenu
+		.name   = "MainMenuScreen.storageInfo.name"_h,
+		.prompt = "MainMenuScreen.storageInfo.prompt"_h,
+		.target = &MainMenuScreen::storageInfo
 	}, {
-		.name   = "MainMenuScreen.systemInfo.name"_h,
-		.prompt = "MainMenuScreen.systemInfo.prompt"_h,
-		.target = &MainMenuScreen::systemInfo
+		.name   = "MainMenuScreen.ideInfo.name"_h,
+		.prompt = "MainMenuScreen.ideInfo.prompt"_h,
+		.target = &MainMenuScreen::ideInfo
 	}, {
 		.name   = "MainMenuScreen.setResolution.name"_h,
 		.prompt = "MainMenuScreen.setResolution.prompt"_h,
@@ -134,17 +135,12 @@ void MainMenuScreen::cartInfo(ui::Context &ctx) {
 	}
 }
 
-void MainMenuScreen::storageMenu(ui::Context &ctx) {
-	ctx.show(APP->_storageMenuScreen, false, true);
+void MainMenuScreen::storageInfo(ui::Context &ctx) {
+	ctx.show(APP->_storageInfoScreen, false, true);
 }
 
-void MainMenuScreen::systemInfo(ui::Context &ctx) {
-	if (APP->_systemInfo.flags & SYSTEM_INFO_VALID) {
-		ctx.show(APP->_systemInfoScreen, false, true);
-	} else {
-		APP->_setupWorker(&App::_systemInfoWorker);
-		ctx.show(APP->_workerStatusScreen, false, true);
-	}
+void MainMenuScreen::ideInfo(ui::Context &ctx) {
+	ctx.show(APP->_ideInfoScreen, false, true);
 }
 
 void MainMenuScreen::setResolution(ui::Context &ctx) {

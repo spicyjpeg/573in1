@@ -31,8 +31,8 @@ protected:
 
 public:
 	void cartInfo(ui::Context &ctx);
-	void storageMenu(ui::Context &ctx);
-	void systemInfo(ui::Context &ctx);
+	void storageInfo(ui::Context &ctx);
+	void ideInfo(ui::Context &ctx);
 	void setResolution(ui::Context &ctx);
 	void about(ui::Context &ctx);
 	void runExecutable(ui::Context &ctx);

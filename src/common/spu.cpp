@@ -15,11 +15,11 @@ static constexpr int _DMA_TIMEOUT    = 100000;
 static constexpr int _STATUS_TIMEOUT = 10000;
 
 static bool _waitForStatus(uint16_t mask, uint16_t value) {
-	for (int timeout = _STATUS_TIMEOUT; timeout > 0; timeout--) {
+	for (int timeout = _STATUS_TIMEOUT; timeout > 0; timeout -= 10) {
 		if ((SPU_STAT & mask) == value)
 			return true;
 
-		delayMicroseconds(1);
+		delayMicroseconds(10);
 	}
 
 	return false;

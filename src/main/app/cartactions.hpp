@@ -31,11 +31,24 @@ public:
 
 class QRCodeScreen : public ui::ImageScreen {
 public:
+	bool valid;
+
+	inline QRCodeScreen(void)
+	: valid(false) {}
+
 	inline bool generateCode(const char *textInput) {
-		return gpu::generateQRCode(_image, 960, 256, textInput);
+		if (!gpu::generateQRCode(_image, 960, 256, textInput))
+			return false;
+
+		valid = true;
+		return true;
 	}
 	inline bool generateCode(const uint8_t *binaryInput, size_t length) {
-		return gpu::generateQRCode(_image, 960, 256, binaryInput, length);
+		if (!gpu::generateQRCode(_image, 960, 256, binaryInput, length))
+			return false;
+
+		valid = true;
+		return true;
 	}
 
 	void show(ui::Context &ctx, bool goBack = false);

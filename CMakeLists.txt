@@ -103,6 +103,7 @@ addExecutable(
 	src/main/app/misc.cpp
 	src/main/app/miscworkers.cpp
 	src/main/app/modals.cpp
+	src/main/app/romactions.cpp
 	src/main/app/romworkers.cpp
 	src/vendor/ff.c
 	src/vendor/ffunicode.c
