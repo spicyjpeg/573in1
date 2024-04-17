@@ -709,6 +709,6 @@ template<typename T> const T *DB<T>::lookup(
 }
 
 template class DB<CartDBEntry>;
-template class DB<FlashDBEntry>;
+template class DB<ROMHeaderDBEntry>;
 
 }

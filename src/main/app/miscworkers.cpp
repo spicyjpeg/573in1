@@ -37,10 +37,14 @@ bool App::_startupWorker(void) {
 
 	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFAT"));
 
+#if 0
 	// Attempt to mount the secondary drive first, then in case of failure try
 	// mounting the primary drive instead.
 	if (!_fileProvider.init("1:"))
 		_fileProvider.init("0:");
+#else
+	_fileProvider.init("1:");
+#endif
 
 	_workerStatus.update(3, 4, WSTR("App.startupWorker.loadResources"));
 

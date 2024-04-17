@@ -128,12 +128,12 @@ public:
 	const ChipSize &getChipSize(void) const;
 };
 
-class MBM29F016ADriver : public Driver {
+class AM29F016Driver : public Driver {
 protected:
 	DriverError _flush(uint32_t offset, uint16_t value, int timeout);
 
 public:
-	inline MBM29F016ADriver(const FlashRegion &region)
+	inline AM29F016Driver(const FlashRegion &region)
 	: Driver(region) {}
 
 	virtual void write(uint32_t offset, uint16_t value);
@@ -144,14 +144,15 @@ public:
 	const ChipSize &getChipSize(void) const;
 };
 
-class MBM29F040ADriver : public MBM29F016ADriver {
+class AM29F040Driver : public AM29F016Driver {
 public:
-	inline MBM29F040ADriver(const FlashRegion &region)
-	: MBM29F016ADriver(region) {}
+	inline AM29F040Driver(const FlashRegion &region)
+	: AM29F016Driver(region) {}
 
 	void write(uint32_t offset, uint16_t value);
 	void eraseSector(uint32_t offset);
 	void eraseChip(uint32_t offset);
+	const ChipSize &getChipSize(void) const;
 };
 
 class Intel28F016S5Driver : public Driver {

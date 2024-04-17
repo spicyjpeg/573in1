@@ -58,6 +58,8 @@ void WorkerStatus::finish(void) {
 
 /* App class */
 
+static constexpr size_t _WORKER_STACK_SIZE = 0x20000;
+
 App::App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
 #ifdef ENABLE_LOG_BUFFER
 : _overlayLayer(_logBuffer),
@@ -65,9 +67,7 @@ App::App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
 :
 #endif
 _ctx(ctx), _resourceProvider(resourceProvider), _resourceFile(nullptr),
-_cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {
-	_workerStack = new uint8_t[WORKER_STACK_SIZE];
-}
+_cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {}
 
 App::~App(void) {
 	_unloadCartData();
@@ -79,8 +79,6 @@ App::~App(void) {
 	}
 
 	//_fileProvider.close();
-
-	delete[] _workerStack;
 }
 
 void App::_unloadCartData(void) {
@@ -93,10 +91,10 @@ void App::_unloadCartData(void) {
 		_cartParser = nullptr;
 	}
 
-	_dump.chipType = cart::NONE;
-	_dump.flags    = 0;
-	_dump.clearIdentifiers();
-	_dump.clearData();
+	_cartDump.chipType = cart::NONE;
+	_cartDump.flags    = 0;
+	_cartDump.clearIdentifiers();
+	_cartDump.clearData();
 
 	_identified    = nullptr;
 	//_selectedEntry = nullptr;
@@ -107,13 +105,16 @@ void App::_setupWorker(bool (App::*func)(void)) {
 
 	auto enable = disableInterrupts();
 
+	_workerStack.allocate(_WORKER_STACK_SIZE);
 	_workerStatus.reset();
-	_workerFunction = func;
+
+	_workerFunction  = func;
+	auto stackBottom = _workerStack.as<uint8_t>();
 
 	initThread(
 		// This is not how you implement delegates in C++.
 		&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
-		&_workerStack[(WORKER_STACK_SIZE - 1) & ~7]
+		&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
 	);
 	if (enable)
 		enableInterrupts();

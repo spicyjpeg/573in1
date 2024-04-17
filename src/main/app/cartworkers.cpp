@@ -31,17 +31,17 @@ bool App::_cartDetectWorker(void) {
 
 	if (cart::dummyDriverDump.chipType) {
 		LOG("using dummy cart driver");
-		_cartDriver = new cart::DummyDriver(_dump);
+		_cartDriver = new cart::DummyDriver(_cartDump);
 		_cartDriver->readSystemID();
 	} else {
-		_cartDriver = cart::newCartDriver(_dump);
+		_cartDriver = cart::newCartDriver(_cartDump);
 	}
 #else
-	_cartDriver = cart::newCartDriver(_dump);
+	_cartDriver = cart::newCartDriver(_cartDump);
 #endif
 
-	if (_dump.chipType) {
-		LOG("cart dump @ 0x%08x", &_dump);
+	if (_cartDump.chipType) {
+		LOG("cart dump @ 0x%08x", &_cartDump);
 		LOG("cart driver @ 0x%08x", _cartDriver);
 
 		auto error = _cartDriver->readCartID();
@@ -53,17 +53,17 @@ bool App::_cartDetectWorker(void) {
 
 		if (error)
 			LOG("read error [%s]", cart::getErrorString(error));
-		else if (!_dump.isReadableDataEmpty())
-			_cartParser = cart::newCartParser(_dump);
+		else if (!_cartDump.isReadableDataEmpty())
+			_cartParser = cart::newCartParser(_cartDump);
 
 		LOG("cart parser @ 0x%08x", _cartParser);
 		_workerStatus.update(1, 3, WSTR("App.cartDetectWorker.identifyGame"));
 
-		if (!_db.ptr) {
+		if (!_cartDB.ptr) {
 			if (!_resourceProvider.loadData(
-				_db, _CARTDB_PATHS[_dump.chipType])
+				_cartDB, _CARTDB_PATHS[_cartDump.chipType])
 			) {
-				LOG("%s not found", _CARTDB_PATHS[_dump.chipType]);
+				LOG("%s not found", _CARTDB_PATHS[_cartDump.chipType]);
 				goto _cartInitDone;
 			}
 		}
@@ -73,7 +73,7 @@ bool App::_cartDetectWorker(void) {
 		if (!_cartParser)
 			goto _cartInitDone;
 		if (_cartParser->getCode(code) && _cartParser->getRegion(region))
-			_identified = _db.lookup(code, region);
+			_identified = _cartDB.lookup(code, region);
 		if (!_identified)
 			goto _cartInitDone;
 
@@ -81,7 +81,7 @@ bool App::_cartDetectWorker(void) {
 		// ambiguity between different formats).
 		delete _cartParser;
 		_cartParser = cart::newCartParser(
-			_dump, _identified->formatType, _identified->flags
+			_cartDump, _identified->formatType, _identified->flags
 		);
 
 		LOG("new cart parser @ 0x%08x", _cartParser);
@@ -90,11 +90,12 @@ bool App::_cartDetectWorker(void) {
 _cartInitDone:
 	_workerStatus.update(2, 3, WSTR("App.cartDetectWorker.readDigitalIO"));
 
+	if (
 #ifdef ENABLE_DUMMY_DRIVER
-	if (io::isDigitalIOPresent() && !(_dump.flags & cart::DUMP_SYSTEM_ID_OK)) {
-#else
-	if (io::isDigitalIOPresent()) {
+		!(_cartDump.flags & cart::DUMP_SYSTEM_ID_OK) &&
 #endif
+		io::isDigitalIOPresent()
+	) {
 		util::Data bitstream;
 		bool       ready;
 
@@ -141,7 +142,8 @@ bool App::_cartUnlockWorker(void) {
 	if (error) {
 		_messageScreen.setMessage(
 			MESSAGE_ERROR, _cartInfoScreen,
-			WSTRH(_UNLOCK_ERRORS[_dump.chipType]), cart::getErrorString(error)
+			WSTRH(_UNLOCK_ERRORS[_cartDump.chipType]),
+			cart::getErrorString(error)
 		);
 
 		_workerStatus.setNextScreen(_messageScreen);
@@ -151,7 +153,7 @@ bool App::_cartUnlockWorker(void) {
 	if (_cartParser)
 		delete _cartParser;
 
-	_cartParser = cart::newCartParser(_dump);
+	_cartParser = cart::newCartParser(_cartDump);
 
 	if (!_cartParser)
 		return true;
@@ -162,7 +164,7 @@ bool App::_cartUnlockWorker(void) {
 	char code[8], region[8];
 
 	if (_cartParser->getCode(code) && _cartParser->getRegion(region))
-		_identified = _db.lookup(code, region);
+		_identified = _cartDB.lookup(code, region);
 
 	// If auto-identification failed (e.g. because the format has no game code),
 	// use the game whose unlocking key was selected as a hint.
@@ -177,7 +179,7 @@ bool App::_cartUnlockWorker(void) {
 
 	delete _cartParser;
 	_cartParser = cart::newCartParser(
-		_dump, _identified->formatType, _identified->flags
+		_cartDump, _identified->formatType, _identified->flags
 	);
 
 	LOG("new cart parser @ 0x%08x", _cartParser);
@@ -189,7 +191,7 @@ bool App::_qrCodeWorker(void) {
 
 	_workerStatus.setNextScreen(_qrCodeScreen);
 	_workerStatus.update(0, 2, WSTR("App.qrCodeWorker.compress"));
-	_dump.toQRString(qrString);
+	_cartDump.toQRString(qrString);
 
 	_workerStatus.update(1, 2, WSTR("App.qrCodeWorker.generate"));
 	_qrCodeScreen.generateCode(qrString);
@@ -213,7 +215,7 @@ bool App::_cartDumpWorker(void) {
 	char   code[8], region[8];
 	size_t length;
 
-	length = _dump.getDumpLength();
+	length = _cartDump.getDumpLength();
 
 	if (
 		_identified && _cartParser->getCode(code) &&
@@ -235,7 +237,7 @@ bool App::_cartDumpWorker(void) {
 
 	LOG("saving %s, length=%d", path, length);
 
-	if (_fileProvider.saveData(&_dump, length, path) != length)
+	if (_fileProvider.saveData(&_cartDump, length, path) != length)
 		goto _error;
 
 	_messageScreen.setMessage(
@@ -273,7 +275,7 @@ bool App::_cartWriteWorker(void) {
 		return false;
 	}
 
-	_dump.copyKeyFrom(key);
+	_cartDump.copyKeyFrom(key);
 	return _cartUnlockWorker();
 }
 
@@ -301,7 +303,7 @@ bool App::_cartRestoreWorker(void) {
 	_file->close();
 	delete _file;
 
-	if (_dump.chipType != newDump.chipType) {
+	if (_cartDump.chipType != newDump.chipType) {
 		_messageScreen.setMessage(
 			MESSAGE_ERROR, _filePickerScreen,
 			WSTR("App.cartRestoreWorker.typeError"), path
@@ -321,9 +323,9 @@ bool App::_cartRestoreWorker(void) {
 		if (newDump.flags & (
 			cart::DUMP_PUBLIC_DATA_OK | cart::DUMP_PRIVATE_DATA_OK
 		))
-			_dump.copyDataFrom(newDump.data);
+			_cartDump.copyDataFrom(newDump.data);
 		if (newDump.flags & cart::DUMP_CONFIG_OK)
-			_dump.copyConfigFrom(newDump.config);
+			_cartDump.copyConfigFrom(newDump.config);
 
 		_workerStatus.update(2, 3, WSTR("App.cartRestoreWorker.write"));
 		error = _cartDriver->writeData();
@@ -360,7 +362,7 @@ bool App::_cartReflashWorker(void) {
 	// Make sure a valid cart ID is present if required by the new data.
 	if (
 		_selectedEntry->requiresCartID() &&
-		!(_dump.flags & cart::DUMP_CART_ID_OK)
+		!(_cartDump.flags & cart::DUMP_CART_ID_OK)
 	) {
 		_messageScreen.setMessage(
 			MESSAGE_ERROR, _cartInfoScreen,
@@ -382,21 +384,23 @@ bool App::_cartReflashWorker(void) {
 		delete _cartParser;
 
 	_cartParser = cart::newCartParser(
-		_dump, _selectedEntry->formatType, _selectedEntry->flags
+		_cartDump, _selectedEntry->formatType, _selectedEntry->flags
 	);
 	auto pri = _cartParser->getIdentifiers();
 	auto pub = _cartParser->getPublicIdentifiers();
 
-	_dump.clearData();
-	_dump.initConfig(9, _selectedEntry->flags & cart::DATA_HAS_PUBLIC_SECTION);
+	_cartDump.clearData();
+	_cartDump.initConfig(
+		9, _selectedEntry->flags & cart::DATA_HAS_PUBLIC_SECTION
+	);
 
 	if (pri) {
 		if (_selectedEntry->flags & cart::DATA_HAS_CART_ID)
-			pri->cartID.copyFrom(_dump.cartID.data);
+			pri->cartID.copyFrom(_cartDump.cartID.data);
 		if (_selectedEntry->flags & cart::DATA_HAS_TRACE_ID)
 			pri->updateTraceID(
 				_selectedEntry->traceIDType, _selectedEntry->traceIDParam,
-				&_dump.cartID
+				&_cartDump.cartID
 			);
 		if (_selectedEntry->flags & cart::DATA_HAS_INSTALL_ID) {
 			// The private installation ID seems to be unused on carts with a

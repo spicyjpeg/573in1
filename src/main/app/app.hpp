@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <stdint.h>
 #include "common/file.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
@@ -49,8 +48,6 @@ public:
 };
 
 /* App class */
-
-static constexpr size_t WORKER_STACK_SIZE = 0x20000;
 
 class App {
 	friend class WorkerStatusScreen;
@@ -110,13 +107,16 @@ private:
 	file::FATProvider _fileProvider;
 	file::StringTable _stringTable;
 
-	cart::CartDump _dump;
-	cart::CartDB   _db;
-	Thread         _workerThread;
-	WorkerStatus   _workerStatus;
-	bool           (App::*_workerFunction)(void);
+	cart::CartDump      _cartDump;
+	cart::ROMHeaderDump _romHeaderDump;
+	cart::CartDB        _cartDB;
+	cart::ROMHeaderDB   _romHeaderDB;
 
-	uint8_t                 *_workerStack;
+	Thread       _workerThread;
+	util::Data   _workerStack;
+	WorkerStatus _workerStatus;
+	bool         (App::*_workerFunction)(void);
+
 	cart::Driver            *_cartDriver;
 	cart::CartParser        *_cartParser;
 	const cart::CartDBEntry *_identified, *_selectedEntry;

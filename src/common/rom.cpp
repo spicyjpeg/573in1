@@ -190,6 +190,8 @@ enum IntelCommand : uint16_t {
 };
 
 enum FlashIdentifier : uint16_t {
+	_ID_AM29F016   = 0x01 | (0xad << 8),
+	_ID_AM29F040   = 0x01 | (0xa4 << 8),
 	_ID_MBM29F016A = 0x04 | (0xad << 8),
 	_ID_MBM29F017A = 0x04 | (0x3d << 8),
 	_ID_MBM29F040A = 0x04 | (0xa4 << 8),
@@ -233,13 +235,18 @@ uint32_t FlashRegion::getJEDECID(void) const {
 
 	auto _ptr = reinterpret_cast<volatile uint16_t *>(ptr);
 
-	_ptr[0x000] = _INTEL_RESET;
+	_ptr[0x000] = _JEDEC_RESET;
 	_ptr[0x000] = _INTEL_RESET;
 	_ptr[0x555] = _JEDEC_HANDSHAKE1;
 	_ptr[0x2aa] = _JEDEC_HANDSHAKE2;
 	_ptr[0x555] = _JEDEC_GET_ID; // Same as _INTEL_GET_ID
 
-	return _ptr[0] | (_ptr[1] << 16);
+	uint32_t id = _ptr[0] | (_ptr[1] << 16);
+
+	_ptr[0x000] = _JEDEC_RESET;
+	_ptr[0x000] = _INTEL_RESET;
+
+	return id;
 }
 
 Driver *FlashRegion::newDriver(void) const {
@@ -256,15 +263,17 @@ Driver *FlashRegion::newDriver(void) const {
 	if (low == high) {
 		// Two 8-bit chips for each bank
 		switch (low) {
+			case _ID_AM29F016:
 			case _ID_MBM29F016A:
 			case _ID_MBM29F017A:
 				// The MBM29F017A datasheet incorrectly lists the device ID as
 				// 0xad rather than 0x3d in some places. The chip behaves pretty
 				// much identically to the MBM29F016A.
-				return new MBM29F016ADriver(*this);
+				return new AM29F016Driver(*this);
 
+			case _ID_AM29F040:
 			case _ID_MBM29F040A:
-				return new MBM29F040ADriver(*this);
+				return new AM29F040Driver(*this);
 
 			case _ID_28F016S5:
 				// The chip used by Konami is actually the Sharp LH28F016S,
@@ -319,6 +328,11 @@ static const ChipSize _STANDARD_CHIP_SIZE{
 	.eraseSectorLength = 2 * 0x10000
 };
 
+static const ChipSize _ALT_CHIP_SIZE{
+	.chipLength        = 2 * 0x80000,
+	.eraseSectorLength = 2 * 0x10000
+};
+
 const ChipSize &Driver::getChipSize(void) const {
 	return _DUMMY_CHIP_SIZE;
 }
@@ -368,7 +382,7 @@ const ChipSize &RTCDriver::getChipSize(void) const {
 	return _RTC_CHIP_SIZE;
 }
 
-/* Fujitsu MBM29F016A/017A driver */
+/* AMD AM29F016/017 (Fujitsu MBM29F016A/017A) driver */
 
 enum FujitsuStatusFlag : uint16_t {
 	_FUJITSU_STATUS_ERASE_TOGGLE = 1 << 2,
@@ -378,29 +392,27 @@ enum FujitsuStatusFlag : uint16_t {
 	_FUJITSU_STATUS_POLL_BIT     = 1 << 7
 };
 
-DriverError MBM29F016ADriver::_flush(
+DriverError AM29F016Driver::_flush(
 	uint32_t offset, uint16_t value, int timeout
 ) {
-	volatile uint16_t *ptr  = _region.getRawPtr(offset & ~1);
+	volatile uint16_t *ptr = _region.getRawPtr(offset & ~1);
 
 	int     shift = (offset & 1) * 8;
 	uint8_t byte  = (value >> shift) & 0xff;
 
-	for (; timeout > 0; timeout--) {
-		uint8_t status = (*ptr >> shift) & 0xff;
+	uint8_t status, diff;
 
-		if (status == byte)
+	for (; timeout > 0; timeout -= 10) {
+		status = (*ptr >> shift) & 0xff;
+		diff   = status ^ byte;
+
+		// Some chips seem to flip the poll bit slightly before returning the
+		// newly written byte.
+		if (!diff)
 			return NO_ERROR;
+		if (!(diff & _FUJITSU_STATUS_POLL_BIT))
+			continue;
 
-		if (!((status ^ byte) & _FUJITSU_STATUS_POLL_BIT)) {
-			LOG(
-				"mismatch @ 0x%08x, exp=0x%02x, got=0x%02x", offset, byte,
-				status
-			);
-
-			*ptr = _JEDEC_RESET;
-			return VERIFY_MISMATCH;
-		}
 		if (status & _FUJITSU_STATUS_ERROR) {
 			LOG("error @ 0x%08x, stat=0x%02x", offset, status);
 
@@ -411,13 +423,23 @@ DriverError MBM29F016ADriver::_flush(
 		delayMicroseconds(10);
 	}
 
-	LOG("timeout @ 0x%08x, stat=0x%02x", offset, (*ptr >> shift) & 0xff);
+	if (diff & _FUJITSU_STATUS_POLL_BIT) {
+		LOG("timeout @ 0x%08x, stat=0x%02x", offset, status);
 
-	*ptr = _JEDEC_RESET;
-	return CHIP_TIMEOUT;
+		*ptr = _JEDEC_RESET;
+		return CHIP_TIMEOUT;
+	} else {
+		LOG(
+			"mismatch @ 0x%08x, exp=0x%02x, got=0x%02x", offset, byte,
+			status
+		);
+
+		*ptr = _JEDEC_RESET;
+		return VERIFY_MISMATCH;
+	}
 }
 
-void MBM29F016ADriver::write(uint32_t offset, uint16_t value) {
+void AM29F016Driver::write(uint32_t offset, uint16_t value) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 	offset                 = (offset % FLASH_BANK_LENGTH) / 2;
 
@@ -428,7 +450,7 @@ void MBM29F016ADriver::write(uint32_t offset, uint16_t value) {
 	ptr[offset] = value;
 }
 
-void MBM29F016ADriver::eraseSector(uint32_t offset) {
+void AM29F016Driver::eraseSector(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 	offset                 = (offset % FLASH_BANK_LENGTH) / 2;
 
@@ -441,7 +463,7 @@ void MBM29F016ADriver::eraseSector(uint32_t offset) {
 	ptr[offset] = _JEDEC_ERASE_SECTOR;
 }
 
-void MBM29F016ADriver::eraseChip(uint32_t offset) {
+void AM29F016Driver::eraseChip(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 
 	ptr[0x000] = _JEDEC_RESET;
@@ -453,7 +475,7 @@ void MBM29F016ADriver::eraseChip(uint32_t offset) {
 	ptr[0x555] = _JEDEC_ERASE_CHIP;
 }
 
-DriverError MBM29F016ADriver::flushWrite(
+DriverError AM29F016Driver::flushWrite(
 	uint32_t offset, uint16_t value
 ) {
 	auto error = _flush(offset, value, _FLASH_WRITE_TIMEOUT);
@@ -464,7 +486,7 @@ DriverError MBM29F016ADriver::flushWrite(
 	return _flush(offset + 1, value, _FLASH_WRITE_TIMEOUT);
 }
 
-DriverError MBM29F016ADriver::flushErase(uint32_t offset) {
+DriverError AM29F016Driver::flushErase(uint32_t offset) {
 	auto error = _flush(offset, 0xffff, _FLASH_ERASE_TIMEOUT);
 
 	if (error)
@@ -473,16 +495,16 @@ DriverError MBM29F016ADriver::flushErase(uint32_t offset) {
 	return _flush(offset + 1, 0xffff, _FLASH_ERASE_TIMEOUT);
 }
 
-const ChipSize &MBM29F016ADriver::getChipSize(void) const {
+const ChipSize &AM29F016Driver::getChipSize(void) const {
 	return _STANDARD_CHIP_SIZE;
 }
 
-/* Fujitsu MBM29F040A driver */
+/* AMD AM29F040 (Fujitsu MBM29F040A) driver */
 
 // Konami's drivers handle this chip pretty much identically to the MBM29F016A,
 // but using 0x5555/0x2aaa as command addresses instead of 0x555/0x2aa.
 
-void MBM29F040ADriver::write(uint32_t offset, uint16_t value) {
+void AM29F040Driver::write(uint32_t offset, uint16_t value) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 	offset                 = (offset % FLASH_BANK_LENGTH) / 2;
 
@@ -493,7 +515,7 @@ void MBM29F040ADriver::write(uint32_t offset, uint16_t value) {
 	ptr[offset] = value;
 }
 
-void MBM29F040ADriver::eraseSector(uint32_t offset) {
+void AM29F040Driver::eraseSector(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 	offset                 = (offset % FLASH_BANK_LENGTH) / 2;
 
@@ -506,7 +528,7 @@ void MBM29F040ADriver::eraseSector(uint32_t offset) {
 	ptr[offset] = _JEDEC_ERASE_SECTOR;
 }
 
-void MBM29F040ADriver::eraseChip(uint32_t offset) {
+void AM29F040Driver::eraseChip(uint32_t offset) {
 	volatile uint16_t *ptr = _region.getRawPtr(offset, true);
 
 	ptr[0x0005] = _JEDEC_RESET;
@@ -516,6 +538,10 @@ void MBM29F040ADriver::eraseChip(uint32_t offset) {
 	ptr[0x5555] = _JEDEC_HANDSHAKE1;
 	ptr[0x2aaa] = _JEDEC_HANDSHAKE2;
 	ptr[0x5555] = _JEDEC_ERASE_CHIP;
+}
+
+const ChipSize &AM29F040Driver::getChipSize(void) const {
+	return _ALT_CHIP_SIZE;
 }
 
 /* Intel 28F016S5 (Sharp LH28F016S) driver */
@@ -533,14 +559,15 @@ enum IntelStatusFlag : uint16_t {
 DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 	volatile uint16_t *ptr  = _region.getRawPtr(offset & ~1);
 
-	int shift = (offset & 1) * 8;
+	int     shift = (offset & 1) * 8;
+	uint8_t status;
 
 	// Not required as all write/erase commands already put the chip into status
 	// reading mode.
 	//*ptr = _INTEL_GET_STATUS;
 
-	for (; timeout > 0; timeout--) {
-		uint8_t status = (*ptr >> shift) & 0xff;
+	for (; timeout > 0; timeout -= 10) {
+		status = (*ptr >> shift) & 0xff;
 
 		if (status & (_INTEL_STATUS_DPS | _INTEL_STATUS_VPPS)) {
 			LOG("locked @ 0x%08x, stat=0x%02x", offset, status);
@@ -562,7 +589,7 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 		delayMicroseconds(10);
 	}
 
-	LOG("timeout @ 0x%08x, stat=0x%02x", offset, (*ptr >> shift) & 0xff);
+	LOG("timeout @ 0x%08x, stat=0x%02x", offset, status);
 
 	*ptr = _INTEL_CLEAR_STATUS;
 	return CHIP_TIMEOUT;

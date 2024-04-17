@@ -299,7 +299,7 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
-			ctx.show(APP->_mainMenuScreen, true, true);
+			ctx.show(APP->_storageInfoScreen, true, true);
 		} else {
 			if (action.region.isPresent()) {
 				this->_selectedRegion = &(action.region);
@@ -322,9 +322,9 @@ void ChecksumScreen::show(ui::Context &ctx, bool goBack) {
 
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
-	_PRINT(STR("ChecksumScreen.bios"),  biosCRC);
-	_PRINT(STR("ChecksumScreen.rtc"),   rtcCRC);
-	_PRINT(STR("ChecksumScreen.flash"), flashCRC);
+	_PRINT(STR("ChecksumScreen.bios"),  values.bios);
+	_PRINT(STR("ChecksumScreen.rtc"),   values.rtc);
+	_PRINT(STR("ChecksumScreen.flash"), values.flash);
 
 	_PRINTLN();
 
@@ -333,7 +333,7 @@ void ChecksumScreen::show(ui::Context &ctx, bool goBack) {
 			continue;
 
 		auto slot = i + 1;
-		auto crc  = pcmciaCRC[i];
+		auto crc  = values.pcmcia[i];
 
 		_PRINT(STR("ChecksumScreen.pcmcia"), slot, 16, crc[0]);
 		_PRINT(STR("ChecksumScreen.pcmcia"), slot, 32, crc[1]);
@@ -342,7 +342,9 @@ void ChecksumScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINTLN();
 	}
 
-	*(--ptr) = 0;
+	_PRINT(STR("ChecksumScreen.description"));
+
+	//*(--ptr) = 0;
 	LOG("remaining=%d", end - ptr);
 
 	TextScreen::show(ctx, goBack);
