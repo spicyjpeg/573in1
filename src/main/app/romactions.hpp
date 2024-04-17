@@ -41,14 +41,21 @@ public:
 	void update(ui::Context &ctx);
 };
 
+// The CRCs have to be wrapped into their own structure in order to allow usage
+// of offsetof().
+struct ChecksumValues {
+public:
+	uint32_t bios, rtc, flash;
+	uint32_t pcmcia[2][4];
+};
+
 class ChecksumScreen : public ui::TextScreen {
 private:
 	char _bodyText[2048];
 
 public:
-	bool     valid;
-	uint32_t biosCRC, rtcCRC, flashCRC;
-	uint32_t pcmciaCRC[2][4];
+	bool           valid;
+	ChecksumValues values;
 
 	inline ChecksumScreen(void)
 	: valid(false) {}

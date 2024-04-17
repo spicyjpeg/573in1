@@ -295,7 +295,7 @@ public:
 	}
 };
 
-class [[gnu::packed]] FlashDBEntry {
+class [[gnu::packed]] ROMHeaderDBEntry {
 public:
 	// TODO: define these flags
 	uint8_t flags;
@@ -332,7 +332,7 @@ public:
 	const T *lookup(const char *code, const char *region) const;
 };
 
-using CartDB  = DB<CartDBEntry>;
-using FlashDB = DB<FlashDBEntry>;
+using CartDB      = DB<CartDBEntry>;
+using ROMHeaderDB = DB<ROMHeaderDBEntry>;
 
 }

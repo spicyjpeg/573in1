@@ -23,31 +23,31 @@ static const RegionInfo _REGION_INFO[]{
 		.crcPrompt  = "App.romChecksumWorker.hashBIOS"_h,
 		.path       = "%s/bios.bin",
 		.region     = rom::bios,
-		.crcOffset  = offsetof(ChecksumScreen, biosCRC)
+		.crcOffset  = offsetof(ChecksumValues, bios)
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpRTC"_h,
 		.crcPrompt  = "App.romChecksumWorker.hashRTC"_h,
 		.path       = "%s/rtc.bin",
 		.region     = rom::rtc,
-		.crcOffset  = offsetof(ChecksumScreen, rtcCRC)
+		.crcOffset  = offsetof(ChecksumValues, rtc)
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpFlash"_h,
 		.crcPrompt  = "App.romChecksumWorker.hashFlash"_h,
 		.path       = "%s/flash.bin",
 		.region     = rom::flash,
-		.crcOffset  = offsetof(ChecksumScreen, flashCRC)
+		.crcOffset  = offsetof(ChecksumValues, flash)
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA1"_h,
 		.crcPrompt  = "App.romChecksumWorker.hashPCMCIA1"_h,
 		.path       = "%s/pcmcia1.bin",
 		.region     = rom::pcmcia[0],
-		.crcOffset  = offsetof(ChecksumScreen, pcmciaCRC[0])
+		.crcOffset  = offsetof(ChecksumValues, pcmcia[0])
 	}, {
 		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA2"_h,
 		.crcPrompt  = "App.romChecksumWorker.hashPCMCIA2"_h,
 		.path       = "%s/pcmcia2.bin",
 		.region     = rom::pcmcia[1],
-		.crcOffset  = offsetof(ChecksumScreen, pcmciaCRC[1])
+		.crcOffset  = offsetof(ChecksumValues, pcmcia[1])
 	}
 };
 
@@ -71,7 +71,8 @@ bool App::_romChecksumWorker(void) {
 		uint32_t offset = 0;
 		uint32_t crc    = 0;
 		auto     crcPtr = reinterpret_cast<uint32_t *>(
-			reinterpret_cast<uintptr_t>(&_checksumScreen) + entry.crcOffset
+			reinterpret_cast<uintptr_t>(&_checksumScreen.values) +
+			entry.crcOffset
 		);
 
 		// Flash cards can be 16, 32 or 64 MB, so copies of the current CRC are
@@ -90,6 +91,7 @@ bool App::_romChecksumWorker(void) {
 		}
 	}
 
+	_checksumScreen.valid = true;
 	return true;
 }
 

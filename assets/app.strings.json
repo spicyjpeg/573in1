@@ -242,10 +242,11 @@
 		"title":  "{CART_ICON} Storage device checksums",
 		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back.",
 
-		"bios":   "BIOS ROM (512 KB):\t\t\t\t%08X\n",
-		"rtc":    "RTC RAM (8184 bytes):\t\t\t%08X\n",
-		"flash":  "Internal flash (16 MB):\t\t\t%08X\n",
-		"pcmcia": "PCMCIA card in slot %d (first %d MB):\t%08X\n"
+		"bios":        "BIOS ROM (512 KB):\t\t\t\t%08X\n",
+		"rtc":         "RTC RAM (8184 bytes):\t\t\t%08X\n",
+		"flash":       "Internal flash (16 MB):\t\t\t%08X\n",
+		"pcmcia":      "PCMCIA card in slot %d (first %d MB):\t%08X\n",
+		"description": "All checksums are computed using the standard CRC32 algorithm and parameters (polynomial 04C11DB7, initial value FFFFFFFF, input and output reflected, output bits negated)."
 	},
 
 	"ConfirmScreen": {

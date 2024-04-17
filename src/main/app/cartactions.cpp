@@ -1,5 +1,4 @@
 
-#include "common/defs.hpp"
 #include "common/util.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/app.hpp"
@@ -139,12 +138,12 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 }
 
 void CartActionsScreen::matchSystemID(ui::Context &ctx) {
-	if (APP->_dump.flags & cart::DUMP_SYSTEM_ID_OK) {
+	if (APP->_cartDump.flags & cart::DUMP_SYSTEM_ID_OK) {
 		APP->_confirmScreen.setMessage(
 			*this,
 			[](ui::Context &ctx) {
 				APP->_cartParser->getIdentifiers()->systemID.copyFrom(
-					APP->_dump.systemID.data
+					APP->_cartDump.systemID.data
 				);
 				APP->_cartParser->flush();
 
@@ -238,12 +237,12 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 	_body   = _bodyText;
 	_prompt = STR("HexdumpScreen.prompt");
 
-	size_t length = APP->_dump.getChipSize().dataLength;
+	size_t length = APP->_cartDump.getChipSize().dataLength;
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
 	for (size_t i = 0; i < length; i += 16) {
 		ptr += snprintf(ptr, end - ptr, "%04X: ", i);
-		ptr += util::hexToString(ptr, &APP->_dump.data[i], 16, ' ');
+		ptr += util::hexToString(ptr, &APP->_cartDump.data[i], 16, ' ');
 
 		*(ptr++) = '\n';
 	}
@@ -264,7 +263,7 @@ void HexdumpScreen::update(ui::Context &ctx) {
 const char *ReflashGameScreen::_getItemName(ui::Context &ctx, int index) const {
 	static char name[96]; // TODO: get rid of this ugly crap
 
-	APP->_db.get(index)->getDisplayName(name, sizeof(name));
+	APP->_cartDB.get(index)->getDisplayName(name, sizeof(name));
 	return name;
 }
 
@@ -273,7 +272,7 @@ void ReflashGameScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = STR("ReflashGameScreen.prompt");
 	_itemPrompt = STR("ReflashGameScreen.itemPrompt");
 
-	_listLength = APP->_db.getNumEntries();
+	_listLength = APP->_cartDB.getNumEntries();
 
 	ListScreen::show(ctx, goBack);
 }
@@ -294,7 +293,7 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 				STR("CartActionsScreen.reflash.confirm")
 			);
 
-			APP->_selectedEntry = APP->_db.get(_activeItem);
+			APP->_selectedEntry = APP->_cartDB.get(_activeItem);
 			ctx.show(APP->_confirmScreen, false, true);
 		}
 	}
