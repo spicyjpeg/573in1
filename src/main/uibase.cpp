@@ -4,6 +4,7 @@
 #include "common/gpufont.hpp"
 #include "common/io.hpp"
 #include "common/pad.hpp"
+#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "ps1/gpucmd.h"
 
@@ -51,8 +52,9 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 };
 
 ButtonState::ButtonState(void)
-: _held(0), _prevHeld(0), _pressed(0), _released(0), _repeating(0),
-_repeatTimer(0), buttonMap(MAP_JOYSTICK) {}
+: _held(0), _prevHeld(0), _longHeld(0), _prevLongHeld(0), _pressed(0),
+_released(0), _longPressed(0), _longReleased(0), _repeatTimer(0),
+buttonMap(MAP_JOYSTICK) {}
 
 uint8_t ButtonState::_getHeld(void) const {
 	uint32_t inputs = io::getJAMMAInputs();
@@ -94,25 +96,29 @@ uint8_t ButtonState::_getHeld(void) const {
 }
 
 void ButtonState::reset(void) {
-	_held     = _getHeld();
-	_prevHeld = _held;
+	_held         = _getHeld();
+	_prevHeld     = _held;
+	_longHeld     = 0;
+	_prevLongHeld = 0;
 
-	_pressed     = 0;
-	_released    = 0;
-	_repeating   = 0;
-	_repeatTimer = 0;
+	_pressed      = 0;
+	_released     = 0;
+	_longPressed  = 0;
+	_longReleased = 0;
+	_repeatTimer  = 0;
 }
 
 void ButtonState::update(void) {
-	_prevHeld = _held;
-	_held     = _getHeld();
+	_prevHeld     = _held;
+	_prevLongHeld = _longHeld;
+	_held         = _getHeld();
 
 	uint32_t changed = _prevHeld ^ _held;
 
 	if (buttonMap == MAP_SINGLE_BUTTON) {
-		_pressed   = 0;
-		_released  = 0;
-		_repeating = 0;
+		_pressed  = 0;
+		_released = 0;
+		_longHeld = 0;
 
 		// In single-button mode, interpret a short button press as the right
 		// button and a long press as start.
@@ -135,19 +141,24 @@ void ButtonState::update(void) {
 		else if (_held)
 			_repeatTimer++;
 
-		_pressed   = (changed & _held) & ~_pressed;
-		_released  = (changed & _prevHeld) & ~_released;
-		_repeating = (_repeatTimer >= REPEAT_DELAY) ? _held : 0;
+		_pressed  = (changed & _held) & ~_pressed;
+		_released = (changed & _prevHeld) & ~_released;
+		_longHeld = (_repeatTimer >= REPEAT_DELAY) ? _held : 0;
 	}
+
+	changed = _prevLongHeld ^ _longHeld;
+
+	_longPressed  = (changed & _longHeld) & ~_longPressed;
+	_longReleased = (changed & _prevLongHeld) & ~_longReleased;
 }
 
 /* UI context */
 
 Context::Context(gpu::Context &gpuCtx, void *screenData)
-: _currentScreen(0), gpuCtx(gpuCtx), background(nullptr), overlay(nullptr),
-time(0), screenData(screenData) {
-	_screens[0] = nullptr;
-	_screens[1] = nullptr;
+: _currentScreen(0), gpuCtx(gpuCtx), time(0), screenData(screenData) {
+	util::clear(_screens);
+	util::clear(backgrounds);
+	util::clear(overlays);
 }
 
 void Context::show(Screen &screen, bool goBack, bool playSound) {
@@ -169,21 +180,30 @@ void Context::draw(void) {
 	auto oldScreen = _screens[_currentScreen ^ 1];
 	auto newScreen = _screens[_currentScreen];
 
-	if (background)
-		background->draw(*this);
+	for (auto layer : backgrounds) {
+		if (layer)
+			layer->draw(*this);
+	}
+
 	if (oldScreen)
 		oldScreen->draw(*this, false);
 	if (newScreen)
 		newScreen->draw(*this, true);
-	if (overlay)
-		overlay->draw(*this);
+
+	for (auto layer : overlays) {
+		if (layer)
+			layer->draw(*this);
+	}
 }
 
 void Context::update(void) {
 	buttons.update();
 
-	if (overlay)
-		overlay->update(*this);
+	for (auto layer : overlays) {
+		if (layer)
+			layer->update(*this);
+	}
+
 	if (_screens[_currentScreen])
 		_screens[_currentScreen]->update(*this);
 }
@@ -215,7 +235,9 @@ void TiledBackground::draw(Context &ctx, bool active) const {
 		for (int y = -offsetY; y < ctx.gpuCtx.height; y += tile.height)
 			tile.draw(ctx.gpuCtx, x, y);
 	}
+}
 
+void TextOverlay::draw(Context &ctx, bool active) const {
 	gpu::RectWH rect;
 
 	rect.y = ctx.gpuCtx.height - (8 + ctx.font.metrics.lineHeight);
@@ -272,11 +294,34 @@ void LogOverlay::draw(Context &ctx, bool active) const {
 }
 
 void LogOverlay::update(Context &ctx) {
-	if (ctx.buttons.pressed(BTN_DEBUG)) {
+	if (
+		ctx.buttons.released(BTN_DEBUG) && !ctx.buttons.longReleased(BTN_DEBUG)
+	) {
 		bool shown = !_slideAnim.getTargetValue();
 
 		_slideAnim.setValue(ctx.time, shown ? ctx.gpuCtx.height : 0, SPEED_SLOW);
 		ctx.sounds[shown ? SOUND_ENTER : SOUND_EXIT].play();
+	}
+}
+
+void ScreenshotOverlay::draw(Context &ctx, bool active) const {
+	int brightness = _flashAnim.getValue(ctx.time);
+
+	if (!brightness)
+		return;
+
+	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
+	ctx.gpuCtx.drawBackdrop(
+		gp0_rgb(brightness, brightness, brightness), GP0_BLEND_ADD
+	);
+}
+
+void ScreenshotOverlay::update(Context &ctx) {
+	if (ctx.buttons.longPressed(BTN_DEBUG)) {
+		if (callback(ctx)) {
+			_flashAnim.setValue(ctx.time, 0xff, 0, SPEED_SLOW);
+			ctx.sounds[ui::SOUND_SCREENSHOT].play();
+		}
 	}
 }
 
@@ -308,6 +353,7 @@ void BackdropScreen::hide(Context &ctx, bool goBack) {
 
 void BackdropScreen::draw(Context &ctx, bool active) const {
 	int brightness = _backdropAnim.getValue(ctx.time);
+
 	if (!brightness)
 		return;
 

@@ -84,7 +84,7 @@ void TextScreen::update(Context &ctx) {
 
 	if (
 		ctx.buttons.pressed(ui::BTN_LEFT) ||
-		(ctx.buttons.repeating(ui::BTN_LEFT) && (value > 0))
+		(ctx.buttons.longHeld(ui::BTN_LEFT) && (value > 0))
 	) {
 		if (value <= 0) {
 			value = scrollHeight;
@@ -98,7 +98,7 @@ void TextScreen::update(Context &ctx) {
 	}
 	if (
 		ctx.buttons.pressed(ui::BTN_RIGHT) ||
-		(ctx.buttons.repeating(ui::BTN_RIGHT) && (value < scrollHeight))
+		(ctx.buttons.longHeld(ui::BTN_RIGHT) && (value < scrollHeight))
 	) {
 		if (value >= scrollHeight) {
 			value = 0;
@@ -281,7 +281,7 @@ void ListScreen::draw(Context &ctx, bool active) const {
 void ListScreen::update(Context &ctx) {
 	if (
 		ctx.buttons.pressed(ui::BTN_LEFT) ||
-		(ctx.buttons.repeating(ui::BTN_LEFT) && (_activeItem > 0))
+		(ctx.buttons.longHeld(ui::BTN_LEFT) && (_activeItem > 0))
 	) {
 		_activeItem--;
 		if (_activeItem < 0) {
@@ -296,7 +296,7 @@ void ListScreen::update(Context &ctx) {
 	}
 	if (
 		ctx.buttons.pressed(ui::BTN_RIGHT) ||
-		(ctx.buttons.repeating(ui::BTN_RIGHT) && (_activeItem < (_listLength - 1)))
+		(ctx.buttons.longHeld(ui::BTN_RIGHT) && (_activeItem < (_listLength - 1)))
 	) {
 		_activeItem++;
 		if (_activeItem >= _listLength) {

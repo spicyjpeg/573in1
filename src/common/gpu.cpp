@@ -54,6 +54,44 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 	return length * _DMA_CHUNK_SIZE * 4;
 }
 
+size_t download(const RectWH &rect, void *data, bool wait) {
+	size_t length = (rect.w * rect.h) / 2;
+
+	util::assertAligned<uint32_t>(data);
+	//assert(!(length % _DMA_CHUNK_SIZE));
+	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
+
+	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
+		return 0;
+
+	auto enable = disableInterrupts();
+	GPU_GP1     = gp1_dmaRequestMode(GP1_DREQ_NONE);
+
+	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
+		__asm__ volatile("");
+
+	GPU_GP0 = gp0_flushCache();
+	GPU_GP0 = gp0_vramRead();
+	GPU_GP0 = gp0_xy(rect.x, rect.y);
+	GPU_GP0 = gp0_xy(rect.w, rect.h);
+
+	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_READ);
+
+	while (!(GPU_GP1 & GP1_STAT_READ_READY))
+		__asm__ volatile("");
+
+	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+	DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
+	DMA_CHCR(DMA_GPU) = DMA_CHCR_READ | DMA_CHCR_MODE_SLICE | DMA_CHCR_ENABLE;
+
+	if (enable)
+		enableInterrupts();
+	if (wait)
+		waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT);
+
+	return length * _DMA_CHUNK_SIZE * 4;
+}
+
 /* Rendering context */
 
 void Context::_applyResolution(

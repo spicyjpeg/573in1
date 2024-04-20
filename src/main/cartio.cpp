@@ -1,6 +1,7 @@
 
 #include <stdint.h>
 #include "common/io.hpp"
+#include "common/util.hpp"
 #include "main/cart.hpp"
 #include "main/cartio.hpp"
 #include "main/zs01.hpp"
@@ -90,11 +91,11 @@ DriverError DummyDriver::erase(void) {
 	if (!__builtin_memcmp(
 		_dump.dataKey, dummyDriverDump.dataKey, sizeof(_dump.dataKey)
 	)) {
-		dummyDriverDump.clearData();
-		dummyDriverDump.clearKey();
+		util::clear(dummyDriverDump.data);
+		util::clear(dummyDriverDump.dataKey);
 		// TODO: clear config registers as well
 
-		_dump.clearKey();
+		util::clear(_dump.dataKey);
 		return NO_ERROR;
 	}
 
@@ -276,7 +277,7 @@ DriverError X76F041Driver::readPrivateData(void) {
 	if (error)
 		return error;
 
-	_dump.clearConfig();
+	util::clear(_dump.config);
 	io::i2cReadBytes(_dump.config, 5);
 	io::i2cStopWithCS();
 
@@ -328,7 +329,7 @@ DriverError X76F041Driver::erase(void) {
 
 	io::i2cStopWithCS(_X76_WRITE_DELAY);
 
-	_dump.clearKey();
+	util::clear(_dump.dataKey);
 	return NO_ERROR;
 }
 
@@ -607,7 +608,7 @@ DriverError ZS01Driver::erase(void) {
 
 	key.unpackFrom(_dump.dataKey);
 
-	__builtin_memset(request.data, 0, sizeof(request.data));
+	util::clear(request.data);
 	request.address = zs01::ADDR_ERASE;
 	request.encodeWriteRequest(key, _encoderState);
 
@@ -615,7 +616,7 @@ DriverError ZS01Driver::erase(void) {
 	if (error)
 		return error;
 
-	_dump.clearKey();
+	util::clear(_dump.dataKey);
 	return NO_ERROR;
 }
 

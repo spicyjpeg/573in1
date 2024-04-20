@@ -230,7 +230,7 @@ bool App::_cartDumpWorker(void) {
 		do {
 			index++;
 			snprintf(
-				path, sizeof(path), EXTERNAL_DATA_DIR "/cart%d.573", index
+				path, sizeof(path), EXTERNAL_DATA_DIR "/cart%04d.573", index
 			);
 		} while (_fileProvider.getFileInfo(info, path));
 	}
@@ -389,7 +389,7 @@ bool App::_cartReflashWorker(void) {
 	auto pri = _cartParser->getIdentifiers();
 	auto pub = _cartParser->getPublicIdentifiers();
 
-	_cartDump.clearData();
+	util::clear(_cartDump.data);
 	_cartDump.initConfig(
 		9, _selectedEntry->flags & cart::DATA_HAS_PUBLIC_SECTION
 	);

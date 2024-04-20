@@ -43,9 +43,6 @@ public:
 	inline void copyTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, data, sizeof(data));
 	}
-	inline void clear(void) {
-		__builtin_memset(data, 0, sizeof(data));
-	}
 	inline bool isEmpty(void) const {
 		return (util::sum(data, sizeof(data)) == 0);
 	}
@@ -102,9 +99,9 @@ public:
 		return (sizeof(CartDump) - sizeof(data)) + getChipSize().dataLength;
 	}
 	inline void clearIdentifiers(void) {
-		systemID.clear();
-		cartID.clear();
-		zsID.clear();
+		util::clear(systemID);
+		util::clear(cartID);
+		util::clear(zsID);
 	}
 	inline void copyDataFrom(const uint8_t *source) {
 		__builtin_memcpy(data, source, getChipSize().dataLength);
@@ -112,26 +109,17 @@ public:
 	inline void copyDataTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, data, getChipSize().dataLength);
 	}
-	inline void clearData(void) {
-		__builtin_memset(data, 0, sizeof(data));
-	}
 	inline void copyKeyFrom(const uint8_t *source) {
 		__builtin_memcpy(dataKey, source, sizeof(dataKey));
 	}
 	inline void copyKeyTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, dataKey, sizeof(dataKey));
 	}
-	inline void clearKey(void) {
-		__builtin_memset(dataKey, 0, sizeof(dataKey));
-	}
 	inline void copyConfigFrom(const uint8_t *source) {
 		__builtin_memcpy(config, source, sizeof(config));
 	}
 	inline void copyConfigTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, config, sizeof(config));
-	}
-	inline void clearConfig(void) {
-		__builtin_memset(config, 0, sizeof(config));
 	}
 
 	void initConfig(uint8_t maxAttempts, bool hasPublicSection = false);
@@ -157,9 +145,6 @@ public:
 
 	inline bool validateMagic(void) const {
 		return (magic == ROM_HEADER_DUMP_HEADER_MAGIC);
-	}
-	inline void clearData(void) {
-		__builtin_memset(data, 0xff, sizeof(data));
 	}
 
 	bool isDataEmpty(void) const;

@@ -1,6 +1,7 @@
 
 #include "common/defs.hpp"
 #include "common/file.hpp"
+#include "common/gpu.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
@@ -62,7 +63,7 @@ static constexpr size_t _WORKER_STACK_SIZE = 0x20000;
 
 App::App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
 #ifdef ENABLE_LOG_BUFFER
-: _overlayLayer(_logBuffer),
+: _logOverlay(_logBuffer),
 #else
 :
 #endif
@@ -94,7 +95,7 @@ void App::_unloadCartData(void) {
 	_cartDump.chipType = cart::NONE;
 	_cartDump.flags    = 0;
 	_cartDump.clearIdentifiers();
-	_cartDump.clearData();
+	util::clear(_cartDump.data);
 
 	_identified    = nullptr;
 	//_selectedEntry = nullptr;
@@ -138,18 +139,42 @@ static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 	"assets/sounds/moveright.vag", // ui::SOUND_MOVE_RIGHT
 	"assets/sounds/enter.vag",     // ui::SOUND_ENTER
 	"assets/sounds/exit.vag",      // ui::SOUND_EXIT
-	"assets/sounds/click.vag"      // ui::SOUND_CLICK
+	"assets/sounds/click.vag",     // ui::SOUND_CLICK
+	"assets/sounds/screenshot.vag" // ui::SOUND_SCREENSHOT
 };
 
 void App::_loadResources(void) {
-	_resourceProvider.loadTIM(_backgroundLayer.tile, "assets/textures/background.tim");
-	_resourceProvider.loadTIM(_ctx.font.image,       "assets/textures/font.tim");
-	_resourceProvider.loadStruct(_ctx.font.metrics,  "assets/textures/font.metrics");
-	_resourceProvider.loadStruct(_ctx.colors,        "assets/app.palette");
-	_resourceProvider.loadData(_stringTable,         "assets/app.strings");
+	_resourceProvider.loadTIM(_background.tile,     "assets/textures/background.tim");
+	_resourceProvider.loadTIM(_ctx.font.image,      "assets/textures/font.tim");
+	_resourceProvider.loadStruct(_ctx.font.metrics, "assets/textures/font.metrics");
+	_resourceProvider.loadStruct(_ctx.colors,       "assets/app.palette");
+	_resourceProvider.loadData(_stringTable,        "assets/app.strings");
 
 	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
 		_resourceProvider.loadVAG(_ctx.sounds[i], _UI_SOUND_PATHS[i]);
+}
+
+bool App::_takeScreenshot(void) {
+	file::FileInfo info;
+	char           path[32];
+	int            index = 0;
+
+	do {
+		index++;
+		snprintf(path, sizeof(path), EXTERNAL_DATA_DIR "/shot%04d.bmp", index);
+	} while (_fileProvider.getFileInfo(info, path));
+
+	gpu::RectWH clip;
+
+	_ctx.gpuCtx.getVRAMClipRect(clip);
+
+	if (_fileProvider.saveVRAMBMP(clip, path)) {
+		LOG("%s saved", path);
+		return true;
+	} else {
+		LOG("%s saving failed", path);
+		return false;
+	}
 }
 
 void App::_worker(void) {
@@ -189,13 +214,18 @@ void App::_interruptHandler(void) {
 
 	char dateString[24];
 
-	_backgroundLayer.leftText  = dateString;
-	_backgroundLayer.rightText = "v" VERSION_STRING;
+	_textOverlay.leftText       = dateString;
+	_textOverlay.rightText      = "v" VERSION_STRING;
+	_screenshotOverlay.callback = [](ui::Context &ctx) -> bool {
+		return APP->_takeScreenshot();
+	};
 
-	_ctx.background = &_backgroundLayer;
+	_ctx.backgrounds[0] = &_background;
+	_ctx.backgrounds[1] = &_textOverlay;
 #ifdef ENABLE_LOG_BUFFER
-	_ctx.overlay    = &_overlayLayer;
+	_ctx.overlays[0]    = &_logOverlay;
 #endif
+	_ctx.overlays[1]    = &_screenshotOverlay;
 	_ctx.show(_workerStatusScreen);
 
 	for (;;) {

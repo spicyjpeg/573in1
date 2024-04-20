@@ -12,7 +12,7 @@ namespace ui {
 /* Public constants */
 
 static constexpr int NUM_UI_COLORS = 18;
-static constexpr int NUM_UI_SOUNDS = 9;
+static constexpr int NUM_UI_SOUNDS = 10;
 
 enum Color {
 	COLOR_DEFAULT    =  0,
@@ -44,7 +44,8 @@ enum Sound {
 	SOUND_MOVE_RIGHT   = 5,
 	SOUND_ENTER        = 6,
 	SOUND_EXIT         = 7,
-	SOUND_CLICK        = 8
+	SOUND_CLICK        = 8,
+	SOUND_SCREENSHOT   = 9
 };
 
 enum AnimationSpeed {
@@ -106,7 +107,9 @@ class ButtonState {
 private:
 	uint32_t _mappings[NUM_BUTTONS];
 	uint8_t  _held, _prevHeld;
-	uint8_t  _pressed, _released, _repeating;
+	uint8_t  _longHeld, _prevLongHeld;
+	uint8_t  _pressed, _released;
+	uint8_t  _longPressed, _longReleased;
 
 	int _repeatTimer;
 
@@ -115,20 +118,24 @@ private:
 public:
 	ButtonMap buttonMap;
 
-	inline bool pressed(Button button) const {
-		return _pressed & (1 << button);
+	inline bool held(Button button) const {
+		return (_held >> button) & 1;
 	}
-	inline bool pressedRepeating(Button button) const {
-		return (_pressed | _repeating) & (1 << button);
+	inline bool pressed(Button button) const {
+		return (_pressed >> button) & 1;
 	}
 	inline bool released(Button button) const {
-		return _released & (1 << button);
+		return (_released >> button) & 1;
 	}
-	inline bool repeating(Button button) const {
-		return _repeating & (1 << button);
+
+	inline bool longHeld(Button button) const {
+		return (_longHeld >> button) & 1;
 	}
-	inline bool held(Button button) const {
-		return _held & (1 << button);
+	inline bool longPressed(Button button) const {
+		return (_longPressed >> button) & 1;
+	}
+	inline bool longReleased(Button button) const {
+		return (_longReleased >> button) & 1;
 	}
 
 	ButtonState(void);
@@ -148,7 +155,8 @@ private:
 
 public:
 	gpu::Context &gpuCtx;
-	Layer        *background, *overlay;
+
+	Layer *backgrounds[4], *overlays[4];
 
 	gpu::Font  font;
 	gpu::Color colors[NUM_UI_COLORS];
@@ -186,9 +194,15 @@ public:
 class TiledBackground : public Layer {
 public:
 	gpu::Image tile;
+
+	void draw(Context &ctx, bool active = true) const;
+};
+
+class TextOverlay : public Layer {
+public:
 	const char *leftText, *rightText;
 
-	inline TiledBackground(void)
+	inline TextOverlay(void)
 	: leftText(nullptr), rightText(nullptr) {}
 
 	void draw(Context &ctx, bool active = true) const;
@@ -201,6 +215,20 @@ private:
 
 public:
 	LogOverlay(util::LogBuffer &buffer);
+	void draw(Context &ctx, bool active = true) const;
+	void update(Context &ctx);
+};
+
+class ScreenshotOverlay : public Layer {
+private:
+	util::Tween<int, util::QuadOutEasing> _flashAnim;
+
+public:
+	bool (*callback)(ui::Context &ctx);
+
+	inline ScreenshotOverlay(void)
+	: callback(nullptr) {}
+
 	void draw(Context &ctx, bool active = true) const;
 	void update(Context &ctx);
 };

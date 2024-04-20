@@ -148,8 +148,10 @@ public:
 	virtual size_t loadData(util::Data &output, const char *path);
 	virtual size_t loadData(void *output, size_t length, const char *path);
 	virtual size_t saveData(const void *input, size_t length, const char *path);
+
 	size_t loadTIM(gpu::Image &output, const char *path);
 	size_t loadVAG(spu::Sound &output, const char *path);
+	size_t saveVRAMBMP(gpu::RectWH &rect, const char *path);
 };
 
 class HostProvider : public Provider {

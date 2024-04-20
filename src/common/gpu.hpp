@@ -52,6 +52,7 @@ static inline void enableDisplay(bool enable) {
 }
 
 size_t upload(const RectWH &rect, const void *data, bool wait);
+size_t download(const RectWH &rect, void *data, bool wait);
 
 /* Rendering context */
 
@@ -93,6 +94,15 @@ public:
 	) : _lastTexpage(0) {
 		setResolution(mode, width, height, forceInterlace, sideBySide);
 	}
+	inline void getVRAMClipRect(RectWH &output) const {
+		auto &clip = _buffers[_currentBuffer ^ 1].clip;
+
+		output.x = clip.x1;
+		output.y = clip.y1;
+		output.w = width;
+		output.h = height;
+	}
+
 	inline void newLayer(int x, int y) {
 		newLayer(x, y, width, height);
 	}

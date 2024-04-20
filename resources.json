@@ -74,6 +74,12 @@
 		"compression": "none"
 	},
 	{
+		"type":        "binary",
+		"name":        "assets/sounds/screenshot.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/screenshot.vag",
+		"compression": "none"
+	},
+	{
 		"type":   "palette",
 		"name":   "assets/app.palette",
 		"source": "${PROJECT_SOURCE_DIR}/assets/app.palette.json"

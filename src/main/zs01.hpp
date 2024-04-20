@@ -64,9 +64,6 @@ public:
 	inline void copyTo(uint8_t *dest) const {
 		__builtin_memcpy(dest, data, sizeof(data));
 	}
-	inline void clear(void) {
-		__builtin_memset(data, 0, sizeof(data));
-	}
 
 	void updateCRC(void);
 	bool validateCRC(void) const;

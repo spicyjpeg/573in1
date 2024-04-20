@@ -100,10 +100,12 @@ private:
 	ChecksumScreen       _checksumScreen;
 
 #ifdef ENABLE_LOG_BUFFER
-	util::LogBuffer     _logBuffer;
-	ui::LogOverlay      _overlayLayer;
+	util::LogBuffer       _logBuffer;
+	ui::LogOverlay        _logOverlay;
 #endif
-	ui::TiledBackground _backgroundLayer;
+	ui::TiledBackground   _background;
+	ui::TextOverlay       _textOverlay;
+	ui::ScreenshotOverlay _screenshotOverlay;
 
 	ui::Context       &_ctx;
 	file::ZIPProvider &_resourceProvider;
@@ -129,6 +131,7 @@ private:
 	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
 	void _loadResources(void);
+	bool _takeScreenshot(void);
 
 	// cartworkers.cpp
 	bool _cartDetectWorker(void);

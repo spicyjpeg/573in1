@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/gpu.hpp"
+#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uimodals.hpp"
 
@@ -82,7 +83,7 @@ void MessageBoxScreen::update(Context &ctx) {
 
 	if (
 		ctx.buttons.pressed(ui::BTN_LEFT) ||
-		(ctx.buttons.repeating(ui::BTN_LEFT) && (_activeButton > 0))
+		(ctx.buttons.longHeld(ui::BTN_LEFT) && (_activeButton > 0))
 	) {
 		_activeButton--;
 		if (_activeButton < 0) {
@@ -96,7 +97,7 @@ void MessageBoxScreen::update(Context &ctx) {
 	}
 	if (
 		ctx.buttons.pressed(ui::BTN_RIGHT) ||
-		(ctx.buttons.repeating(ui::BTN_RIGHT) && (_activeButton < (numButtons - 1)))
+		(ctx.buttons.longHeld(ui::BTN_RIGHT) && (_activeButton < (numButtons - 1)))
 	) {
 		_activeButton++;
 		if (_activeButton >= numButtons) {
@@ -112,13 +113,13 @@ void MessageBoxScreen::update(Context &ctx) {
 
 HexEntryScreen::HexEntryScreen(void)
 : _bufferLength(0) {
-	__builtin_memset(_buffer, 0, sizeof(_buffer));
+	util::clear(_buffer);
 }
 
 void HexEntryScreen::show(Context &ctx, bool goBack) {
 	MessageBoxScreen::show(ctx, goBack);
 
-	//__builtin_memset(_buffer, 0, _bufferLength);
+	//util::clear(_buffer);
 
 	_buttonIndexOffset = _bufferLength * 2;
 	_charWidth         = ctx.font.getCharacterWidth('0');
@@ -187,7 +188,7 @@ void HexEntryScreen::update(Context &ctx) {
 
 		if (
 			ctx.buttons.pressed(ui::BTN_LEFT) ||
-			(ctx.buttons.repeating(ui::BTN_LEFT) && (value > 0))
+			(ctx.buttons.longHeld(ui::BTN_LEFT) && (value > 0))
 		) {
 			if (--value < 0) {
 				value = 0xf;
@@ -198,7 +199,7 @@ void HexEntryScreen::update(Context &ctx) {
 		}
 		if (
 			ctx.buttons.pressed(ui::BTN_RIGHT) ||
-			(ctx.buttons.repeating(ui::BTN_RIGHT) && (value < 0xf))
+			(ctx.buttons.longHeld(ui::BTN_RIGHT) && (value < 0xf))
 		) {
 			if (++value > 0xf) {
 				value = 0;
@@ -365,7 +366,7 @@ void DateEntryScreen::update(Context &ctx) {
 
 		if (
 			ctx.buttons.pressed(ui::BTN_LEFT) ||
-			(ctx.buttons.repeating(ui::BTN_LEFT) && (value > field.minValue))
+			(ctx.buttons.longHeld(ui::BTN_LEFT) && (value > field.minValue))
 		) {
 			if (--value < field.minValue) {
 				value = field.maxValue;
@@ -376,7 +377,7 @@ void DateEntryScreen::update(Context &ctx) {
 		}
 		if (
 			ctx.buttons.pressed(ui::BTN_RIGHT) ||
-			(ctx.buttons.repeating(ui::BTN_RIGHT) && (value < field.maxValue))
+			(ctx.buttons.longHeld(ui::BTN_RIGHT) && (value < field.maxValue))
 		) {
 			if (++value > field.maxValue) {
 				value = field.minValue;
