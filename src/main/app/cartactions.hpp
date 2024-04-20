@@ -3,10 +3,10 @@
 
 #include <stddef.h>
 #include "common/gpu.hpp"
-#include "common/util.hpp"
 #include "main/cartdata.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
+#include "main/uimodals.hpp"
 
 /* Unlocked cartridge screens */
 

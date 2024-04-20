@@ -100,6 +100,14 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.prompt = "MainMenuScreen.ideInfo.prompt"_h,
 		.target = &MainMenuScreen::ideInfo
 	}, {
+		.name   = "MainMenuScreen.runExecutable.name"_h,
+		.prompt = "MainMenuScreen.runExecutable.prompt"_h,
+		.target = &MainMenuScreen::runExecutable
+	}, {
+		.name   = "MainMenuScreen.setRTCTime.name"_h,
+		.prompt = "MainMenuScreen.setRTCTime.prompt"_h,
+		.target = &MainMenuScreen::setRTCTime
+	}, {
 		.name   = "MainMenuScreen.setResolution.name"_h,
 		.prompt = "MainMenuScreen.setResolution.prompt"_h,
 		.target = &MainMenuScreen::setResolution
@@ -107,10 +115,6 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.name   = "MainMenuScreen.about.name"_h,
 		.prompt = "MainMenuScreen.about.prompt"_h,
 		.target = &MainMenuScreen::about
-	}, {
-		.name   = "MainMenuScreen.runExecutable.name"_h,
-		.prompt = "MainMenuScreen.runExecutable.prompt"_h,
-		.target = &MainMenuScreen::runExecutable
 	}, {
 		.name   = "MainMenuScreen.ejectCD.name"_h,
 		.prompt = "MainMenuScreen.ejectCD.prompt"_h,
@@ -143,14 +147,6 @@ void MainMenuScreen::ideInfo(ui::Context &ctx) {
 	ctx.show(APP->_ideInfoScreen, false, true);
 }
 
-void MainMenuScreen::setResolution(ui::Context &ctx) {
-	ctx.show(APP->_resolutionScreen, false, true);
-}
-
-void MainMenuScreen::about(ui::Context &ctx) {
-	ctx.show(APP->_aboutScreen, false, true);
-}
-
 void MainMenuScreen::runExecutable(ui::Context &ctx) {
 	APP->_filePickerScreen.setMessage(
 		*this,
@@ -162,6 +158,18 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 	);
 
 	APP->_filePickerScreen.loadRootAndShow(ctx);
+}
+
+void MainMenuScreen::setRTCTime(ui::Context &ctx) {
+	ctx.show(APP->_rtcTimeScreen, false, true);
+}
+
+void MainMenuScreen::setResolution(ui::Context &ctx) {
+	ctx.show(APP->_resolutionScreen, false, true);
+}
+
+void MainMenuScreen::about(ui::Context &ctx) {
+	ctx.show(APP->_aboutScreen, false, true);
 }
 
 void MainMenuScreen::ejectCD(ui::Context &ctx) {

@@ -186,10 +186,10 @@ public:
 class TiledBackground : public Layer {
 public:
 	gpu::Image tile;
-	const char *text;
+	const char *leftText, *rightText;
 
 	inline TiledBackground(void)
-	: text(nullptr) {}
+	: leftText(nullptr), rightText(nullptr) {}
 
 	void draw(Context &ctx, bool active = true) const;
 };

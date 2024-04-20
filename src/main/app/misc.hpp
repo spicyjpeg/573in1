@@ -6,6 +6,7 @@
 #include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
+#include "main/uimodals.hpp"
 
 /* System information screens */
 
@@ -19,6 +20,12 @@ public:
 };
 
 /* Misc. screens */
+
+class RTCTimeScreen : public ui::DateEntryScreen {
+public:
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
 
 class ResolutionScreen : public ui::ListScreen {
 protected:

@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/io.hpp"
+#include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
@@ -63,32 +64,53 @@ uint32_t getJAMMAInputs(void) {
 	return inputs ^ 0x1fffffff;
 }
 
-uint32_t getRTCTime(void) {
+void getRTCTime(util::Date &output) {
 	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_READ;
 
-	int year = SYS573_RTC_YEAR, month = SYS573_RTC_MONTH,  day = SYS573_RTC_DAY;
-	int hour = SYS573_RTC_HOUR, min   = SYS573_RTC_MINUTE, sec = SYS573_RTC_SECOND;
+	auto second = SYS573_RTC_SECOND, minute = SYS573_RTC_MINUTE;
+	auto hour   = SYS573_RTC_HOUR,   day    = SYS573_RTC_DAY;
+	auto month  = SYS573_RTC_MONTH,  year   = SYS573_RTC_YEAR;
 
 	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_READ;
 
-	year  = (year  & 15) + 10 * ((year  >> 4) & 15); // 0-99
-	month = (month & 15) + 10 * ((month >> 4) &  1); // 1-12
-	day   = (day   & 15) + 10 * ((day   >> 4) &  3); // 1-31
-	hour  = (hour  & 15) + 10 * ((hour  >> 4) &  3); // 0-23
-	min   = (min   & 15) + 10 * ((min   >> 4) &  7); // 0-59
-	sec   = (sec   & 15) + 10 * ((sec   >> 4) &  7); // 0-59
+	output.year   = (year   & 15) + 10 * ((year   >> 4) & 15); // 0-99
+	output.month  = (month  & 15) + 10 * ((month  >> 4) &  1); // 1-12
+	output.day    = (day    & 15) + 10 * ((day    >> 4) &  3); // 1-31
+	output.hour   = (hour   & 15) + 10 * ((hour   >> 4) &  3); // 0-23
+	output.minute = (minute & 15) + 10 * ((minute >> 4) &  7); // 0-59
+	output.second = (second & 15) + 10 * ((second >> 4) &  7); // 0-59
 
-	// Return all values packed into a FAT/MS-DOS-style bitfield. Assume the
-	// year is always in 1995-2094 range.
-	int _year = (year >= 95) ? (year + 1900 - 1980) : (year + 2000 - 1980);
+	output.year += (output.year < 70) ? 2000 : 1900;
+}
 
-	return 0
-		| (_year << 25)
-		| (month << 21)
-		| (day   << 16)
-		| (hour  << 11)
-		| (min   <<  5)
-		| (sec   >>  1);
+void setRTCTime(const util::Date &value, bool stop) {
+	//assert((value.year >= 1970) && (value.year <= 2069));
+
+	int _year   = value.year % 100;
+	int weekday = value.getDayOfWeek();
+
+	int year    = (_year        % 10) | (((_year        / 10) & 15) << 4);
+	int month   = (value.month  % 10) | (((value.month  / 10) &  1) << 4);
+	int day     = (value.day    % 10) | (((value.day    / 10) &  3) << 4);
+	int hour    = (value.hour   % 10) | (((value.hour   / 10) &  3) << 4);
+	int minute  = (value.minute % 10) | (((value.minute / 10) &  7) << 4);
+	int second  = (value.second % 10) | (((value.second / 10) &  7) << 4);
+
+	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_WRITE;
+
+	SYS573_RTC_SECOND  = second
+		| (stop ? SYS573_RTC_SECOND_STOP : 0);
+	SYS573_RTC_MINUTE  = minute;
+	SYS573_RTC_HOUR    = hour;
+	SYS573_RTC_WEEKDAY = weekday
+		| SYS573_RTC_WEEKDAY_CENTURY
+		| SYS573_RTC_WEEKDAY_CENTURY_ENABLE;
+	SYS573_RTC_DAY     = day
+		| SYS573_RTC_DAY_BATTERY_MONITOR;
+	SYS573_RTC_MONTH   = month;
+	SYS573_RTC_YEAR    = year;
+
+	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_WRITE;
 }
 
 bool isRTCBatteryLow(void) {

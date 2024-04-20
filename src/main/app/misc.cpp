@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "common/file.hpp"
 #include "common/ide.hpp"
+#include "common/io.hpp"
 #include "common/spu.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
@@ -106,6 +107,32 @@ void IDEInfoScreen::update(ui::Context &ctx) {
 }
 
 /* Misc. screens */
+
+void RTCTimeScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("RTCTimeScreen.title");
+	_body       = STR("RTCTimeScreen.body");
+	_buttons[0] = STR("RTCTimeScreen.cancel");
+	_buttons[1] = STR("RTCTimeScreen.ok");
+
+	_numButtons = 2;
+	io::getRTCTime(_date);
+
+	DateEntryScreen::show(ctx, goBack);
+}
+
+void RTCTimeScreen::update(ui::Context &ctx) {
+	DateEntryScreen::update(ctx);
+
+	if (
+		ctx.buttons.pressed(ui::BTN_START) &&
+		(_activeButton >= _buttonIndexOffset)
+	) {
+		if (_activeButton == (_buttonIndexOffset + 1))
+			io::setRTCTime(_date);
+
+		ctx.show(APP->_mainMenuScreen, true, true);
+	}
+}
 
 struct Resolution {
 public:

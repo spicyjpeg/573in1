@@ -31,6 +31,69 @@ Hash hash(const uint8_t *data, size_t length) {
 	return value;
 }
 
+/* Date and time class */
+
+int Date::getDayOfWeek(void) const {
+	// See https://datatracker.ietf.org/doc/html/rfc3339#appendix-B
+	int _year = year, _month = month - 2;
+
+	if (_month <= 0) {
+		_month += 12;
+		_year--;
+	}
+
+	int century = _year / 100;
+	_year      %= 100;
+
+	int weekday = 0
+		+ day
+		+ (_month * 26 - 2) / 10
+		+ _year
+		+ _year / 4
+		+ century / 4
+		+ century * 5;
+
+	return weekday % 7;
+}
+
+int Date::getMonthDayCount(void) const {
+	switch (month) {
+		case 2:
+			return isLeapYear() ? 29 : 28;
+
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+			return 30;
+
+		default:
+			return 31;
+	}
+}
+
+uint32_t Date::toDOSTime(void) const {
+	int _year = year + 2000 - 1980;
+
+	if ((_year < 0) || (_year > 127))
+		return 0;
+
+	return 0
+		| (_year  << 25)
+		| (month  << 21)
+		| (day    << 16)
+		| (hour   << 11)
+		| (minute <<  5)
+		| (second >>  1);
+}
+
+size_t Date::toString(char *output) const {
+	return sprintf(
+		output, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute,
+		second
+	);
+}
+
 /* Tween/animation classes */
 
 template<typename T, typename E> void Tween<T, E>::setValue(

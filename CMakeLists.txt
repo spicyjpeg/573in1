@@ -94,6 +94,7 @@ addExecutable(
 	src/main/main.cpp
 	src/main/uibase.cpp
 	src/main/uicommon.cpp
+	src/main/uimodals.cpp
 	src/main/zs01.cpp
 	src/main/app/app.cpp
 	src/main/app/cartactions.cpp

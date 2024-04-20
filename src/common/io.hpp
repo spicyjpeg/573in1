@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 
@@ -159,7 +161,8 @@ static inline void setDIO1Wire(bool value) {
 
 void init(void);
 uint32_t getJAMMAInputs(void);
-uint32_t getRTCTime(void);
+void getRTCTime(util::Date &output);
+void setRTCTime(const util::Date &value, bool stop = false);
 bool isRTCBatteryLow(void);
 
 bool loadBitstream(const uint8_t *data, size_t length);
