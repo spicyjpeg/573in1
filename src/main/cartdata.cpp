@@ -25,7 +25,7 @@ uint8_t IdentifierSet::getFlags(void) const {
 }
 
 void IdentifierSet::setInstallID(uint8_t prefix) {
-	installID.clear();
+	util::clear(installID);
 
 	installID.data[0] = prefix;
 	installID.updateChecksum();
@@ -34,7 +34,7 @@ void IdentifierSet::setInstallID(uint8_t prefix) {
 void IdentifierSet::updateTraceID(
 	TraceIDType type, int param, const Identifier *_cartID
 ) {
-	traceID.clear();
+	util::clear(traceID);
 
 	const uint8_t *input   = _cartID ? &_cartID->data[1] : &cartID.data[1];
 	uint16_t      checksum = 0;
@@ -93,7 +93,7 @@ uint8_t PublicIdentifierSet::getFlags(void) const {
 }
 
 void PublicIdentifierSet::setInstallID(uint8_t prefix) {
-	installID.clear();
+	util::clear(installID);
 
 	installID.data[0] = prefix;
 	installID.updateChecksum();

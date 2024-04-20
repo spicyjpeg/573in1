@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util.hpp"
 #include "ps1/registers573.h"
 
 namespace ide {
@@ -241,17 +242,14 @@ public:
 	uint8_t param[11];
 	uint8_t _reserved[4];
 
-	inline void clear(void) {
-		__builtin_memset(this, 0, sizeof(Packet));
-	}
 	inline void setStartStopUnit(ATAPIStartStopMode mode) {
-		clear();
+		util::clear(*this);
 
 		command  = ATAPI_START_STOP_UNIT;
 		param[3] = mode & 3;
 	}
 	inline void setRead(uint32_t lba, size_t count) {
-		clear();
+		util::clear(*this);
 
 		command  = ATAPI_READ12;
 		param[1] = (lba >> 24) & 0xff;
@@ -264,7 +262,7 @@ public:
 		param[8] = (count >>  0) & 0xff;
 	}
 	inline void setSetCDSpeed(uint16_t value) {
-		clear();
+		util::clear(*this);
 
 		command  = ATAPI_SET_CD_SPEED;
 		param[1] = (value >> 8) & 0xff;

@@ -5,7 +5,6 @@
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/romactions.hpp"
-#include "main/cartdata.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 
@@ -264,7 +263,7 @@ void StorageActionsScreen::resetFlashHeader(ui::Context &ctx) {
 	APP->_confirmScreen.setMessage(
 		*this,
 		[](ui::Context &ctx) {
-			APP->_romHeaderDump.clearData();
+			util::clear(APP->_romHeaderDump.data);
 			APP->_setupWorker(&App::_flashHeaderWriteWorker);
 			ctx.show(APP->_workerStatusScreen, false, true);
 		},

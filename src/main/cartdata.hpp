@@ -57,10 +57,6 @@ class [[gnu::packed]] IdentifierSet {
 public:
 	Identifier traceID, cartID, installID, systemID; // aka TID, SID, MID, XID
 
-	inline void clear(void) {
-		__builtin_memset(this, 0, sizeof(IdentifierSet));
-	}
-
 	uint8_t getFlags(void) const;
 	void setInstallID(uint8_t prefix);
 	void updateTraceID(
@@ -71,10 +67,6 @@ public:
 class [[gnu::packed]] PublicIdentifierSet {
 public:
 	Identifier installID, systemID; // aka MID, XID
-
-	inline void clear(void) {
-		__builtin_memset(this, 0, sizeof(PublicIdentifierSet));
-	}
 
 	uint8_t getFlags(void) const;
 	void setInstallID(uint8_t prefix);

@@ -117,7 +117,7 @@ bool App::_romDumpWorker(void) {
 
 	do {
 		index++;
-		snprintf(dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%d", index);
+		snprintf(dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%04d", index);
 	} while (_fileProvider.getFileInfo(info, dirPath));
 
 	LOG("saving dumps to %s", dirPath);

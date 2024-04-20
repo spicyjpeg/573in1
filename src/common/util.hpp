@@ -53,6 +53,10 @@ template<typename T, typename X> static inline void assertAligned(X *ptr) {
 	//assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
 }
 
+template<typename T> static inline void clear(T &obj, uint8_t value = 0) {
+	__builtin_memset(&obj, value, sizeof(obj));
+}
+
 template<typename T> static constexpr inline size_t countOf(T &array) {
 	return sizeof(array) / sizeof(array[0]);
 }

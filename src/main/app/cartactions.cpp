@@ -118,7 +118,7 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 		APP->_confirmScreen.setMessage(
 			*this,
 			[](ui::Context &ctx) {
-				APP->_cartParser->getIdentifiers()->systemID.clear();
+				util::clear(APP->_cartParser->getIdentifiers()->systemID);
 				APP->_cartParser->flush();
 
 				APP->_setupWorker(&App::_cartWriteWorker);

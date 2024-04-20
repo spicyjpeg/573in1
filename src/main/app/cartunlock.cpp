@@ -278,18 +278,14 @@ void UnlockKeyScreen::useCustomKey(ui::Context &ctx) {
 }
 
 void UnlockKeyScreen::use00Key(ui::Context &ctx) {
-	__builtin_memset(
-		APP->_cartDump.dataKey, 0x00, sizeof(APP->_cartDump.dataKey)
-	);
+	util::clear(APP->_cartDump.dataKey, 0x00);
 
 	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
 void UnlockKeyScreen::useFFKey(ui::Context &ctx) {
-	__builtin_memset(
-		APP->_cartDump.dataKey, 0xff, sizeof(APP->_cartDump.dataKey)
-	);
+	util::clear(APP->_cartDump.dataKey, 0xff);
 
 	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_confirmScreen, false, true);
