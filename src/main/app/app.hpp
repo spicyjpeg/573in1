@@ -60,6 +60,7 @@ class App {
 	friend class StorageInfoScreen;
 	friend class StorageActionsScreen;
 	friend class IDEInfoScreen;
+	friend class RTCTimeScreen;
 	friend class ResolutionScreen;
 	friend class AboutScreen;
 	friend class CartInfoScreen;
@@ -84,6 +85,7 @@ private:
 	StorageInfoScreen    _storageInfoScreen;
 	StorageActionsScreen _storageActionsScreen;
 	IDEInfoScreen        _ideInfoScreen;
+	RTCTimeScreen        _rtcTimeScreen;
 	ResolutionScreen     _resolutionScreen;
 	AboutScreen          _aboutScreen;
 	CartInfoScreen       _cartInfoScreen;

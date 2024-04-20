@@ -305,9 +305,7 @@ void SystemIDEntryScreen::show(ui::Context &ctx, bool goBack) {
 	_buttons[0] = STR("SystemIDEntryScreen.cancel");
 	_buttons[1] = STR("SystemIDEntryScreen.ok");
 
-	_numButtons = 2;
-	_locked     = false;
-
+	_numButtons   = 2;
 	_bufferLength = 8;
 	_separator    = '-';
 

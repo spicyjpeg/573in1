@@ -342,9 +342,7 @@ void KeyEntryScreen::show(ui::Context &ctx, bool goBack) {
 	_buttons[0] = STR("KeyEntryScreen.cancel");
 	_buttons[1] = STR("KeyEntryScreen.ok");
 
-	_numButtons = 2;
-	_locked     = false;
-
+	_numButtons   = 2;
 	_bufferLength = 8;
 	_separator    = '-';
 

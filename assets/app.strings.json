@@ -323,6 +323,15 @@
 			"name":   "View IDE device and filesystem information",
 			"prompt": "Display information about the connected IDE/ATAPI devices and mounted FAT filesystem (if any)."
 		},
+		"runExecutable": {
+			"name":       "Run executable from hard drive",
+			"prompt":     "Load and launch a System 573 executable file from the IDE hard drive or CF card connected as secondary drive (if any).",
+			"filePrompt": "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled."
+		},
+		"setRTCTime": {
+			"name":   "Set RTC date and time",
+			"prompt": "Adjust the current date and time. Note that the time will not persist after a power cycle if the RTC's internal battery is empty."
+		},
 		"setResolution": {
 			"name":   "Change screen resolution",
 			"prompt": "Switch to a different screen resolution and aspect ratio. Some monitors and upscalers may not support all resolutions."
@@ -330,11 +339,6 @@
 		"about": {
 			"name":   "About this tool",
 			"prompt": "View information about this tool, including open source licenses."
-		},
-		"runExecutable": {
-			"name":       "Run executable from hard drive",
-			"prompt":     "Load and launch a System 573 executable file from the IDE hard drive or CF card connected as secondary drive (if any).",
-			"filePrompt": "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled."
 		},
 		"ejectCD": {
 			"name":   "Eject CD-ROM",
@@ -381,6 +385,13 @@
 		"640x240p": "640x240 (24:9), progressive",
 		"640x240i": "640x240 (24:9), interlaced (line doubled)",
 		"640x480i": "640x480 (4:3), interlaced"
+	},
+
+	"RTCTimeScreen": {
+		"title":  "Set RTC date and time",
+		"body":   "Enter the current date and time. Note that System 573 games only accept years in 1970-2069 range.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted field.",
+		"cancel": "Cancel",
+		"ok":     "Confirm"
 	},
 
 	"StorageActionsScreen": {

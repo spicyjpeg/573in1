@@ -3,6 +3,7 @@
 
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
+#include "main/uimodals.hpp"
 
 /* Main menu screens */
 
@@ -33,9 +34,10 @@ public:
 	void cartInfo(ui::Context &ctx);
 	void storageInfo(ui::Context &ctx);
 	void ideInfo(ui::Context &ctx);
+	void runExecutable(ui::Context &ctx);
+	void setRTCTime(ui::Context &ctx);
 	void setResolution(ui::Context &ctx);
 	void about(ui::Context &ctx);
-	void runExecutable(ui::Context &ctx);
 	void ejectCD(ui::Context &ctx);
 	void reboot(ui::Context &ctx);
 

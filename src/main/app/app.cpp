@@ -187,14 +187,23 @@ void App::_interruptHandler(void) {
 	_setupInterrupts();
 	_loadResources();
 
-	_backgroundLayer.text = "v" VERSION_STRING;
-	_ctx.background       = &_backgroundLayer;
+	char dateString[24];
+
+	_backgroundLayer.leftText  = dateString;
+	_backgroundLayer.rightText = "v" VERSION_STRING;
+
+	_ctx.background = &_backgroundLayer;
 #ifdef ENABLE_LOG_BUFFER
-	_ctx.overlay          = &_overlayLayer;
+	_ctx.overlay    = &_overlayLayer;
 #endif
 	_ctx.show(_workerStatusScreen);
 
 	for (;;) {
+		util::Date date;
+
+		io::getRTCTime(date);
+		date.toString(dateString);
+
 		_ctx.update();
 		_ctx.draw();
 

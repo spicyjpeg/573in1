@@ -158,6 +158,29 @@ public:
 	}
 };
 
+/* Date and time class */
+
+class Date {
+public:
+	uint16_t year;
+	uint8_t  month, day;
+	uint8_t  hour, minute, second;
+
+	inline bool isLeapYear(void) const {
+		if (year % 4)
+			return false;
+		if (!(year % 100) && (year % 400))
+			return false;
+
+		return true;
+	}
+
+	int getDayOfWeek(void) const;
+	int getMonthDayCount(void) const;
+	uint32_t toDOSTime(void) const;
+	size_t toString(char *output) const;
+};
+
 /* Tween/animation classes */
 
 static constexpr int TWEEN_UNIT = 1 << 12;

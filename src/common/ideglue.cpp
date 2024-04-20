@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "common/ide.hpp"
 #include "common/io.hpp"
+#include "common/util.hpp"
 #include "vendor/diskio.h"
 
 /* FatFs library API glue */
@@ -87,5 +88,8 @@ extern "C" DRESULT disk_ioctl(uint8_t drive, uint8_t cmd, void *data) {
 }
 
 extern "C" uint32_t get_fattime(void) {
-	return io::getRTCTime();
+	util::Date date;
+
+	io::getRTCTime(date);
+	return date.toDOSTime();
 }

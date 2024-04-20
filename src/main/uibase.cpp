@@ -216,17 +216,23 @@ void TiledBackground::draw(Context &ctx, bool active) const {
 			tile.draw(ctx.gpuCtx, x, y);
 	}
 
-	if (!text)
-		return;
-
 	gpu::RectWH rect;
 
-	int width = ctx.font.getStringWidth(text);
-	rect.x    = ctx.gpuCtx.width  - (8 + width);
-	rect.y    = ctx.gpuCtx.height - (8 + ctx.font.metrics.lineHeight);
-	rect.w    = width;
-	rect.h    = ctx.font.metrics.lineHeight;
-	ctx.font.draw(ctx.gpuCtx, text, rect, ctx.colors[COLOR_TEXT2]);
+	rect.y = ctx.gpuCtx.height - (8 + ctx.font.metrics.lineHeight);
+	rect.h = ctx.font.metrics.lineHeight;
+
+	if (leftText) {
+		rect.x = 8;
+		rect.w = ctx.gpuCtx.width - 16;
+		ctx.font.draw(ctx.gpuCtx, leftText, rect, ctx.colors[COLOR_TEXT2]);
+	}
+	if (rightText) {
+		int width = ctx.font.getStringWidth(rightText);
+
+		rect.x = ctx.gpuCtx.width - (8 + width);
+		rect.w = width;
+		ctx.font.draw(ctx.gpuCtx, rightText, rect, ctx.colors[COLOR_TEXT2]);
+	}
 }
 
 LogOverlay::LogOverlay(util::LogBuffer &buffer)

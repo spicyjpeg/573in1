@@ -6,6 +6,7 @@
 #include "common/rom.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
+#include "main/uimodals.hpp"
 
 /* Storage device submenu */
 
