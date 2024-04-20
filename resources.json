@@ -96,16 +96,17 @@
 	},
 	{
 		"type":   "binary",
-		"name":   "data/x76f041.cartdb",
-		"source": "${PROJECT_SOURCE_DIR}/data/x76f041.cartdb"
-	},
-	{
-		"type": "empty",
-		"name": "data/x76f100.cartdb"
+		"name":   "data/x76f041.db",
+		"source": "${PROJECT_SOURCE_DIR}/data/x76f041.db"
 	},
 	{
 		"type":   "binary",
-		"name":   "data/zs01.cartdb",
-		"source": "${PROJECT_SOURCE_DIR}/data/zs01.cartdb"
+		"name":   "data/zs01.db",
+		"source": "${PROJECT_SOURCE_DIR}/data/zs01.db"
+	},
+	{
+		"type":   "binary",
+		"name":   "data/flash.db",
+		"source": "${PROJECT_SOURCE_DIR}/data/flash.db"
 	}
 ]

@@ -6,7 +6,6 @@
 #include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
-#include "ps1/system.h"
 
 namespace rom {
 
@@ -304,8 +303,8 @@ const FlashRegion pcmcia[2]{
 
 /* Data common to all chip drivers */
 
-static constexpr int _FLASH_WRITE_TIMEOUT = 10000;
-static constexpr int _FLASH_ERASE_TIMEOUT = 10000000;
+static constexpr int _FLASH_WRITE_TIMEOUT = 100000;
+static constexpr int _FLASH_ERASE_TIMEOUT = 20000000;
 
 const char *const DRIVER_ERROR_NAMES[]{
 	"NO_ERROR",
@@ -345,8 +344,9 @@ static const ChipSize _RTC_CHIP_SIZE{
 };
 
 void RTCDriver::write(uint32_t offset, uint16_t value) {
-	auto ptr = reinterpret_cast<volatile uint32_t *>(_region.ptr + offset * 2);
-	*ptr     = (value & 0x00ff) | ((value & 0xff00) << 8);
+	auto ptr = reinterpret_cast<volatile uint16_t *>(_region.ptr + offset * 2);
+	ptr[0]   = value & 0xff;
+	ptr[1]   = value >> 8;
 }
 
 void RTCDriver::eraseSector(uint32_t offset) {
@@ -360,13 +360,14 @@ void RTCDriver::eraseChip(uint32_t offset) {
 }
 
 DriverError RTCDriver::flushWrite(uint32_t offset, uint16_t value) {
-	auto ptr = reinterpret_cast<volatile uint32_t *>(_region.ptr + offset * 2);
-	value    = (value & 0x00ff) | ((value & 0xff00) << 8);
+	auto ptr = reinterpret_cast<volatile uint16_t *>(_region.ptr + offset * 2);
 
-	if (ptr[offset] != value) {
+	uint16_t actualValue = (ptr[0] & 0xff) | ((ptr[1] & 0xff) << 8);
+
+	if (value != actualValue) {
 		LOG(
-			"mismatch @ 0x%08x, exp=0x%02x, got=0x%02x", offset, value,
-			ptr[offset]
+			"mismatch @ 0x%08x, exp=0x%02x, got=0x%04x", offset, value,
+			actualValue
 		);
 		return VERIFY_MISMATCH;
 	}
@@ -384,12 +385,12 @@ const ChipSize &RTCDriver::getChipSize(void) const {
 
 /* AMD AM29F016/017 (Fujitsu MBM29F016A/017A) driver */
 
-enum FujitsuStatusFlag : uint16_t {
-	_FUJITSU_STATUS_ERASE_TOGGLE = 1 << 2,
-	_FUJITSU_STATUS_ERASE_START  = 1 << 3,
-	_FUJITSU_STATUS_ERROR        = 1 << 5,
-	_FUJITSU_STATUS_TOGGLE       = 1 << 6,
-	_FUJITSU_STATUS_POLL_BIT     = 1 << 7
+enum JEDECStatusFlag : uint16_t {
+	_JEDEC_STATUS_ERASE_TOGGLE = 1 << 2,
+	_JEDEC_STATUS_ERASE_START  = 1 << 3,
+	_JEDEC_STATUS_ERROR        = 1 << 5,
+	_JEDEC_STATUS_TOGGLE       = 1 << 6,
+	_JEDEC_STATUS_POLL_BIT     = 1 << 7
 };
 
 DriverError AM29F016Driver::_flush(
@@ -402,40 +403,31 @@ DriverError AM29F016Driver::_flush(
 
 	uint8_t status, diff;
 
-	for (; timeout > 0; timeout -= 10) {
+	for (; timeout > 0; timeout--) {
 		status = (*ptr >> shift) & 0xff;
 		diff   = status ^ byte;
 
-		// Some chips seem to flip the poll bit slightly before returning the
-		// newly written byte.
-		if (!diff)
+		if (!(diff & _JEDEC_STATUS_POLL_BIT))
 			return NO_ERROR;
-		if (!(diff & _FUJITSU_STATUS_POLL_BIT))
-			continue;
-
-		if (status & _FUJITSU_STATUS_ERROR) {
-			LOG("error @ 0x%08x, stat=0x%02x", offset, status);
-
-			*ptr = _JEDEC_RESET;
-			return CHIP_ERROR;
-		}
-
-		delayMicroseconds(10);
+		if (status & _JEDEC_STATUS_ERROR)
+			break;
 	}
 
-	if (diff & _FUJITSU_STATUS_POLL_BIT) {
-		LOG("timeout @ 0x%08x, stat=0x%02x", offset, status);
+	// If the error flag was set, make sure an error actually occurred.
+	status = (*ptr >> shift) & 0xff;
+	diff   = status ^ byte;
 
-		*ptr = _JEDEC_RESET;
-		return CHIP_TIMEOUT;
+	if (!(diff & _JEDEC_STATUS_POLL_BIT))
+		return NO_ERROR;
+
+	*ptr = _JEDEC_RESET;
+
+	if (status & _JEDEC_STATUS_ERROR) {
+		LOG("error @ 0x%08x, stat=0x%02x", offset, status);
+		return CHIP_ERROR;
 	} else {
-		LOG(
-			"mismatch @ 0x%08x, exp=0x%02x, got=0x%02x", offset, byte,
-			status
-		);
-
-		*ptr = _JEDEC_RESET;
-		return VERIFY_MISMATCH;
+		LOG("timeout @ 0x%08x, stat=0x%02x", offset, status);
+		return CHIP_TIMEOUT;
 	}
 }
 
@@ -566,32 +558,34 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 	// reading mode.
 	//*ptr = _INTEL_GET_STATUS;
 
-	for (; timeout > 0; timeout -= 10) {
+	for (; timeout > 0; timeout--) {
 		status = (*ptr >> shift) & 0xff;
 
-		if (status & (_INTEL_STATUS_DPS | _INTEL_STATUS_VPPS)) {
-			LOG("locked @ 0x%08x, stat=0x%02x", offset, status);
+		if (!(status & _INTEL_STATUS_WSMS))
+			continue;
 
+		*ptr = _INTEL_RESET;
+
+		// The datasheet suggests only checking the error flags after WSMS = 1.
+		if (status & (_INTEL_STATUS_DPS | _INTEL_STATUS_VPPS)) {
 			*ptr = _INTEL_CLEAR_STATUS;
+
+			LOG("locked @ 0x%08x, stat=0x%02x", offset, status);
 			return WRITE_PROTECTED;
 		}
 		if (status & (_INTEL_STATUS_BWSLBS | _INTEL_STATUS_ECLBS)) {
-			LOG("error @ 0x%08x, stat=0x%02x", offset, status);
-
 			*ptr = _INTEL_CLEAR_STATUS;
+
+			LOG("error @ 0x%08x, stat=0x%02x", offset, status);
 			return CHIP_ERROR;
 		}
-		if (status & _INTEL_STATUS_WSMS) {
-			*ptr = _INTEL_CLEAR_STATUS;
-			return NO_ERROR;
-		}
 
-		delayMicroseconds(10);
+		return NO_ERROR;
 	}
 
-	LOG("timeout @ 0x%08x, stat=0x%02x", offset, status);
+	*ptr = _INTEL_RESET;
 
-	*ptr = _INTEL_CLEAR_STATUS;
+	LOG("timeout @ 0x%08x, stat=0x%02x", offset, status);
 	return CHIP_TIMEOUT;
 }
 

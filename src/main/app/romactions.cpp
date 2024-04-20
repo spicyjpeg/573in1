@@ -264,7 +264,8 @@ void StorageActionsScreen::resetFlashHeader(ui::Context &ctx) {
 	APP->_confirmScreen.setMessage(
 		*this,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_flashHeaderEraseWorker);
+			APP->_romHeaderDump.clearData();
+			APP->_setupWorker(&App::_flashHeaderWriteWorker);
 			ctx.show(APP->_workerStatusScreen, false, true);
 		},
 		STR("StorageActionsScreen.resetFlashHeader.confirm")
@@ -302,8 +303,16 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 			ctx.show(APP->_storageInfoScreen, true, true);
 		} else {
 			if (action.region.isPresent()) {
-				this->_selectedRegion = &(action.region);
-				(this->*action.target)(ctx);
+				this->selectedRegion = &(action.region);
+
+				if (action.region.regionLength > 0x1000000) {
+					APP->_cardSizeScreen.callback = action.target;
+					ctx.show(APP->_cardSizeScreen, false, true);
+				} else {
+					APP->_cardSizeScreen.selectedLength =
+						action.region.regionLength;
+					(this->*action.target)(ctx);
+				}
 			} else {
 				APP->_messageScreen.setMessage(
 					MESSAGE_ERROR, *this, STR("StorageActionsScreen.cardError")
@@ -311,6 +320,32 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 
 				ctx.show(APP->_messageScreen, false, true);
 			}
+		}
+	}
+}
+
+void CardSizeScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("CardSizeScreen.title");
+	_body       = STR("CardSizeScreen.body");
+	_buttons[0] = STR("CardSizeScreen.16");
+	_buttons[1] = STR("CardSizeScreen.32");
+	_buttons[2] = STR("CardSizeScreen.64");
+	_buttons[3] = STR("CardSizeScreen.cancel");
+
+	_numButtons = 4;
+
+	MessageBoxScreen::show(ctx, goBack);
+}
+
+void CardSizeScreen::update(ui::Context &ctx) {
+	MessageBoxScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (_activeButton == 3) {
+			ctx.show(APP->_storageActionsScreen, true, true);
+		} else {
+			selectedLength = 0x1000000 << _activeButton;
+			(APP->_storageActionsScreen.*callback)(ctx);
 		}
 	}
 }

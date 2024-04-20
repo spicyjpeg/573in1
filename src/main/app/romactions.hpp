@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 #include "common/rom.hpp"
 #include "main/uibase.hpp"
@@ -18,16 +19,11 @@ public:
 };
 
 class StorageActionsScreen : public ui::ListScreen {
-private:
-	const rom::Region *_selectedRegion;
-
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
 
 public:
-	inline const rom::Region &getSelectedRegion(void) {
-		return *_selectedRegion;
-	}
+	const rom::Region *selectedRegion;
 
 	void checksum(ui::Context &ctx);
 	void dump(ui::Context &ctx);
@@ -36,6 +32,15 @@ public:
 	void resetFlashHeader(ui::Context &ctx);
 	void matchFlashHeader(ui::Context &ctx);
 	void editFlashHeader(ui::Context &ctx);
+
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class CardSizeScreen : public ui::MessageBoxScreen {
+public:
+	size_t selectedLength;
+	void   (StorageActionsScreen::*callback)(ui::Context &ctx);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);

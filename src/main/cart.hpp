@@ -17,7 +17,7 @@ enum ChipType : uint8_t {
 	ZS01    = 3
 };
 
-enum CartDumpFlag : uint8_t {
+enum DumpFlag : uint8_t {
 	DUMP_HAS_SYSTEM_ID   = 1 << 0,
 	DUMP_HAS_CART_ID     = 1 << 1,
 	DUMP_CONFIG_OK       = 1 << 2,
@@ -65,7 +65,8 @@ public:
 
 /* Cartridge dump structure */
 
-static constexpr uint16_t DUMP_HEADER_MAGIC = 0x573d;
+static constexpr uint16_t CART_DUMP_HEADER_MAGIC       = 0x573d;
+static constexpr uint16_t ROM_HEADER_DUMP_HEADER_MAGIC = 0x573e;
 
 struct ChipSize {
 public:
@@ -86,14 +87,14 @@ public:
 	uint8_t data[512];
 
 	inline CartDump(void)
-	: magic(DUMP_HEADER_MAGIC), chipType(NONE), flags(0) {}
+	: magic(CART_DUMP_HEADER_MAGIC), chipType(NONE), flags(0) {}
 
 	inline const ChipSize &getChipSize(void) const {
 		return CHIP_SIZES[chipType];
 	}
 	inline bool validateMagic(void) const {
 		return
-			(magic == DUMP_HEADER_MAGIC) &&
+			(magic == CART_DUMP_HEADER_MAGIC) &&
 			(chipType > 0) &&
 			(chipType < NUM_CHIP_TYPES);
 	}
@@ -144,9 +145,22 @@ public:
 
 class [[gnu::packed]] ROMHeaderDump {
 public:
+	uint16_t magic;
+	uint8_t  _reserved, flags;
+
 	Identifier systemID;
 
 	uint8_t data[rom::FLASH_CRC_OFFSET - rom::FLASH_HEADER_OFFSET];
+
+	inline ROMHeaderDump(void)
+	: magic(ROM_HEADER_DUMP_HEADER_MAGIC), _reserved(0), flags(0) {}
+
+	inline bool validateMagic(void) const {
+		return (magic == ROM_HEADER_DUMP_HEADER_MAGIC);
+	}
+	inline void clearData(void) {
+		__builtin_memset(data, 0xff, sizeof(data));
+	}
 
 	bool isDataEmpty(void) const;
 };

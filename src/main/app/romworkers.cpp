@@ -199,7 +199,8 @@ bool App::_romRestoreWorker(void) {
 	const char *path = _filePickerScreen.selectedPath;
 	auto       _file = _fileProvider.openFile(path, file::READ);
 
-	auto &region = _storageActionsScreen.getSelectedRegion();
+	auto region       = _storageActionsScreen.selectedRegion;
+	auto regionLength = _cardSizeScreen.selectedLength;
 
 	if (!_file)
 		goto _fileError;
@@ -209,12 +210,12 @@ bool App::_romRestoreWorker(void) {
 	size_t fileLength, dataLength;
 
 	fileLength = size_t(_file->length);
-	dataLength = util::min(fileLength, region.regionLength);
+	dataLength = util::min(fileLength, regionLength);
 
 	rom::Driver *driver;
 	size_t      sectorLength, numSectors;
 
-	driver       = region.newDriver();
+	driver       = region->newDriver();
 	sectorLength = driver->getChipSize().eraseSectorLength;
 	numSectors   = (dataLength + sectorLength - 1) / sectorLength;
 
@@ -290,8 +291,9 @@ _flashError:
 }
 
 bool App::_romEraseWorker(void) {
-	auto &region = _storageActionsScreen.getSelectedRegion();
-	auto driver  = region.newDriver();
+	auto region       = _storageActionsScreen.selectedRegion;
+	auto regionLength = _cardSizeScreen.selectedLength;
+	auto driver       = region->newDriver();
 
 	size_t chipLength    = driver->getChipSize().chipLength;
 	size_t sectorLength  = driver->getChipSize().eraseSectorLength;
@@ -308,13 +310,10 @@ bool App::_romEraseWorker(void) {
 	for (size_t i = 0; i < chipLength; i += sectorLength) {
 		_workerStatus.update(i, chipLength, WSTR("App.romEraseWorker.erase"));
 
-		for (size_t j = 0; j < region.regionLength; j += chipLength)
+		for (size_t j = 0; j < regionLength; j += chipLength)
 			driver->eraseSector(i + j);
 
-		for (
-			size_t j = 0; j < region.regionLength; j += chipLength,
-			sectorsErased++
-		) {
+		for (size_t j = 0; j < regionLength; j += chipLength, sectorsErased++) {
 			error = driver->flushErase(i + j);
 
 			if (error)
@@ -354,35 +353,6 @@ _unsupported:
 }
 
 bool App::_flashHeaderWriteWorker(void) {
-	if (!_flashHeaderEraseWorker())
-		return false;
-
-	auto driver = rom::flash.newDriver();
-
-	_workerStatus.update(1, 2, WSTR("App.flashHeaderWriteWorker.write"));
-
-	rom::DriverError error;
-
-	// TODO: implement
-
-	delete driver;
-
-	_workerStatus.setNextScreen(_storageInfoScreen);
-	return true;
-
-_flashError:
-	delete driver;
-
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.flashHeaderWriteWorker.flashError"),
-		rom::getErrorString(error)
-	);
-	_workerStatus.setNextScreen(_messageScreen);
-	return false;
-}
-
-bool App::_flashHeaderEraseWorker(void) {
 	auto   driver       = rom::flash.newDriver();
 	size_t sectorLength = driver->getChipSize().eraseSectorLength;
 
@@ -392,7 +362,7 @@ bool App::_flashHeaderEraseWorker(void) {
 		goto _unsupported;
 
 	_checksumScreen.valid = false;
-	_workerStatus.update(0, 1, WSTR("App.flashHeaderEraseWorker.erase"));
+	_workerStatus.update(0, 2, WSTR("App.flashHeaderWriteWorker.erase"));
 
 	// The flash can only be erased with sector granularity, so all data in the
 	// first sector other than the header must be backed up and rewritten.
@@ -412,6 +382,27 @@ bool App::_flashHeaderEraseWorker(void) {
 	if (error)
 		goto _flashError;
 
+	_workerStatus.update(1, 2, WSTR("App.flashHeaderWriteWorker.write"));
+
+	// Write the new header (if any).
+	if (!_romHeaderDump.isDataEmpty()) {
+		ptr = reinterpret_cast<const uint16_t *>(_romHeaderDump.data);
+
+		for (
+			uint32_t offset = rom::FLASH_HEADER_OFFSET;
+			offset < rom::FLASH_CRC_OFFSET; offset += 2
+		) {
+			auto value = *(ptr++);
+
+			driver->write(offset, value);
+			error = driver->flushWrite(offset, value);
+
+			if (error)
+				goto _flashError;
+		}
+	}
+
+	// Restore the rest of the sector that was erased.
 	ptr = reinterpret_cast<const uint16_t *>(&buffer[rom::FLASH_CRC_OFFSET]);
 
 	for (
@@ -439,7 +430,7 @@ _flashError:
 
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.flashHeaderEraseWorker.flashError"),
+		WSTR("App.flashHeaderWriteWorker.flashError"),
 		rom::getErrorString(error)
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -450,7 +441,7 @@ _unsupported:
 
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.flashHeaderEraseWorker.unsupported")
+		WSTR("App.flashHeaderWriteWorker.unsupported")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;

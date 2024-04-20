@@ -339,7 +339,7 @@ bool ExtendedCartParser::validate(void) {
 
 // Used alongside the system ID and the header itself to calculate the MD5 used
 // as a header signature. Seems to be the same in all games.
-static const uint8_t _EXTENDED_HEADER_SIGNATURE_SALT[]{
+static const uint8_t _SIGNATURE_SALT[]{
 	0xc1, 0xa2, 0x03, 0xd6, 0xab, 0x70, 0x85, 0x5e
 };
 
@@ -366,9 +366,7 @@ void ExtendedROMHeaderParser::_calculateSignature(uint8_t *output) const {
 	md5.update(
 		reinterpret_cast<const uint8_t *>(_getHeader()), sizeof(ExtendedHeader)
 	);
-	md5.update(
-		_EXTENDED_HEADER_SIGNATURE_SALT, sizeof(_EXTENDED_HEADER_SIGNATURE_SALT)
-	);
+	md5.update(_SIGNATURE_SALT, sizeof(_SIGNATURE_SALT));
 	md5.digest(buffer);
 
 	for (int i = 0; i < 8; i++)
@@ -549,6 +547,7 @@ static const KnownFormat _KNOWN_ROM_HEADER_FORMATS[]{
 		.name   = "extended + MD5",
 		.format = EXTENDED,
 		.flags  = DATA_HAS_CODE_PREFIX | DATA_HAS_SYSTEM_ID
+			| DATA_CHECKSUM_INVERTED
 	}
 };
 

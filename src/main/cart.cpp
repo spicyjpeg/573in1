@@ -152,7 +152,11 @@ size_t CartDump::toQRString(char *output) const {
 bool ROMHeaderDump::isDataEmpty(void) const {
 	auto sum = util::sum(data, sizeof(data));
 
+#if 0
 	return (!sum || (sum == (0xff * sizeof(data))));
+#else
+	return (sum == (0xff * sizeof(data)));
+#endif
 }
 
 }

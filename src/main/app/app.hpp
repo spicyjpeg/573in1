@@ -70,6 +70,7 @@ class App {
 	friend class HexdumpScreen;
 	friend class ReflashGameScreen;
 	friend class SystemIDEntryScreen;
+	friend class CardSizeScreen;
 	friend class ChecksumScreen;
 
 private:
@@ -93,6 +94,7 @@ private:
 	HexdumpScreen        _hexdumpScreen;
 	ReflashGameScreen    _reflashGameScreen;
 	SystemIDEntryScreen  _systemIDEntryScreen;
+	CardSizeScreen       _cardSizeScreen;
 	ChecksumScreen       _checksumScreen;
 
 #ifdef ENABLE_LOG_BUFFER
@@ -142,7 +144,6 @@ private:
 	bool _romRestoreWorker(void);
 	bool _romEraseWorker(void);
 	bool _flashHeaderWriteWorker(void);
-	bool _flashHeaderEraseWorker(void);
 
 	// miscworkers.cpp
 	bool _startupWorker(void);
