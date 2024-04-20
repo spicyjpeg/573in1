@@ -20,14 +20,14 @@ private:
 	util::Tween<int, util::QuadOutEasing> _buttonAnim;
 
 	inline int _getButtonWidth(void) const {
-		return ((_width / 4) * 3) / _numButtons - BUTTON_SPACING;
+		return ((_width / 5) * 4) / _numButtons - BUTTON_SPACING;
 	}
 
 protected:
 	int  _numButtons, _activeButton, _buttonIndexOffset;
 	bool _locked;
 
-	const char *_buttons[3];
+	const char *_buttons[4];
 
 public:
 	MessageBoxScreen(void);

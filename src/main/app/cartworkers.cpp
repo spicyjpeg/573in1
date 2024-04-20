@@ -13,9 +13,9 @@
 
 static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 	nullptr,
-	"data/x76f041.cartdb",
-	"data/x76f100.cartdb",
-	"data/zs01.cartdb"
+	"data/x76f041.db",
+	"data/x76f100.db",
+	"data/zs01.db"
 };
 
 bool App::_cartDetectWorker(void) {

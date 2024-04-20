@@ -265,10 +265,7 @@ const char *UnlockKeyScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void UnlockKeyScreen::autoUnlock(ui::Context &ctx) {
-	__builtin_memcpy(
-		APP->_cartDump.dataKey, APP->_identified->dataKey,
-		sizeof(APP->_cartDump.dataKey)
-	);
+	APP->_cartDump.copyKeyFrom(APP->_identified->dataKey);
 
 	//APP->_selectedEntry = APP->_identified;
 	APP->_selectedEntry = nullptr;
@@ -330,10 +327,7 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 			if (index < 0) {
 				(this->*_SPECIAL_ENTRIES[-index].target)(ctx);
 			} else {
-				__builtin_memcpy(
-					dump.dataKey, APP->_cartDB.get(index)->dataKey,
-					sizeof(dump.dataKey)
-				);
+				dump.copyKeyFrom(APP->_cartDB.get(index)->dataKey);
 
 				APP->_selectedEntry = APP->_cartDB.get(index);
 				ctx.show(APP->_confirmScreen, false, true);
@@ -376,7 +370,7 @@ void KeyEntryScreen::update(ui::Context &ctx) {
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
 			);
 
-			__builtin_memcpy(dump.dataKey, _buffer, sizeof(dump.dataKey));
+			dump.copyKeyFrom(_buffer);
 			ctx.show(APP->_confirmScreen, false, true);
 		}
 	}

@@ -297,8 +297,8 @@ public:
 
 class [[gnu::packed]] ROMHeaderDBEntry {
 public:
-	// TODO: define these flags
-	uint8_t flags;
+	FormatType formatType;
+	uint8_t    flags;
 
 	uint16_t year;
 	char     code[8], region[8], name[96];
