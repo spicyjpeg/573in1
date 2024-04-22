@@ -33,6 +33,26 @@ Hash hash(const uint8_t *data, size_t length) {
 
 /* Date and time class */
 
+bool Date::isValid(void) const {
+	if ((hour > 23) || (minute > 59) || (second > 59))
+		return false;
+	if ((month < 1) || (month > 12))
+		return false;
+	if ((day < 1) || (day > getMonthDayCount()))
+		return false;
+
+	return true;
+}
+
+bool Date::isLeapYear(void) const {
+	if (year % 4)
+		return false;
+	if (!(year % 100) && (year % 400))
+		return false;
+
+	return true;
+}
+
 int Date::getDayOfWeek(void) const {
 	// See https://datatracker.ietf.org/doc/html/rfc3339#appendix-B
 	int _year = year, _month = month - 2;

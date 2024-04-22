@@ -98,32 +98,20 @@ bool App::_romChecksumWorker(void) {
 bool App::_romDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romDumpWorker.init"));
 
-	// Store all dumps in a subdirectory named "dumpN" within the main data
+	// Store all dumps in a subdirectory named "dumpNNNN" within the main data
 	// folder.
-	file::FileInfo info;
-	char           dirPath[32];
+	char dirPath[32], filePath[32];
 
-	__builtin_strcpy(dirPath, EXTERNAL_DATA_DIR);
-
-	if (!_fileProvider.getFileInfo(info, dirPath)) {
-		if (!_fileProvider.createDirectory(dirPath))
-			goto _initError;
-	}
-
-	int  index;
-	char filePath[32];
-
-	index = 0;
-
-	do {
-		index++;
-		snprintf(dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%04d", index);
-	} while (_fileProvider.getFileInfo(info, dirPath));
-
-	LOG("saving dumps to %s", dirPath);
-
+	if (!_createDataDirectory())
+		goto _initError;
+	if (!_getNumberedPath(
+		dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%04d"
+	))
+		goto _initError;
 	if (!_fileProvider.createDirectory(dirPath))
 		goto _initError;
+
+	LOG("saving dumps to %s", dirPath);
 
 	for (auto &entry : _REGION_INFO) {
 		if (!entry.region.isPresent())
@@ -142,19 +130,19 @@ bool App::_romDumpWorker(void) {
 		if (!_file)
 			goto _fileError;
 
-		auto     buffer = new uint8_t[chunkLength];
-		uint32_t offset = 0;
+		util::Data buffer;
+		uint32_t   offset = 0;
 
-		//assert(buffer);
+		buffer.allocate(chunkLength);
 
 		for (size_t i = 0; i < numChunks; i++) {
 			_workerStatus.update(i, numChunks, WSTRH(entry.dumpPrompt));
-			entry.region.read(buffer, offset, chunkLength);
+			entry.region.read(buffer.ptr, offset, chunkLength);
 
-			if (_file->write(buffer, chunkLength) < chunkLength) {
+			if (_file->write(buffer.ptr, chunkLength) < chunkLength) {
+				buffer.destroy();
 				_file->close();
-				delete   _file;
-				delete[] buffer;
+				delete _file;
 
 				goto _fileError;
 			}
@@ -162,9 +150,9 @@ bool App::_romDumpWorker(void) {
 			offset += chunkLength;
 		}
 
+		buffer.destroy();
 		_file->close();
-		delete   _file;
-		delete[] buffer;
+		delete _file;
 
 		LOG("%s saved", filePath);
 	}
@@ -202,67 +190,117 @@ bool App::_romRestoreWorker(void) {
 	auto region       = _storageActionsScreen.selectedRegion;
 	auto regionLength = _cardSizeScreen.selectedLength;
 
+	size_t bytesWritten = 0;
+
+	util::Data buffers, chunkLengths;
+
 	if (!_file)
 		goto _fileError;
 	if (!_romEraseWorker())
 		return false;
 
-	size_t fileLength, dataLength;
-
-	fileLength = size_t(_file->length);
-	dataLength = util::min(fileLength, regionLength);
-
 	rom::Driver *driver;
-	size_t      sectorLength, numSectors;
+	size_t      chipLength, numChips, maxChunkLength;
 
-	driver       = region->newDriver();
-	sectorLength = driver->getChipSize().eraseSectorLength;
-	numSectors   = (dataLength + sectorLength - 1) / sectorLength;
+	driver         = region->newDriver();
+	chipLength     = driver->getChipSize().chipLength;
+	numChips       = (regionLength + chipLength - 1) / chipLength;
+	maxChunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH / numChips);
+
+	LOG("%d chips, buf=%d", numChips, maxChunkLength);
 
 	rom::DriverError error;
-	uint8_t          *buffer;
-	uint32_t         offset;
 
-	buffer = new uint8_t[sectorLength];
-	offset = 0;
+	buffers.allocate(maxChunkLength * numChips);
+	chunkLengths.allocate<size_t>(numChips);
 
-	//assert(buffer);
+	// Parallelize writing by buffering a chunk for each chip into RAM, then
+	// writing all chunks to the respective chips at the same time.
+	for (size_t i = 0; i < chipLength; i += maxChunkLength) {
+		_workerStatus.update(i, chipLength, WSTR("App.romRestoreWorker.write"));
 
-	for (size_t i = 0; i < numSectors; i++) {
-		_workerStatus.update(i, numSectors, WSTR("App.romRestoreWorker.write"));
+		auto   bufferPtr   = buffers.as<uint8_t>();
+		auto   lengthPtr   = chunkLengths.as<size_t>();
+		size_t offset      = i;
+		size_t totalLength = 0;
 
-		auto length = _file->read(buffer, sectorLength);
-		auto ptr    = reinterpret_cast<const uint16_t *>(buffer);
+		for (
+			size_t j = numChips; j > 0; j--, bufferPtr += maxChunkLength,
+			offset += chipLength
+		) {
+			_file->seek(offset);
+			auto length = _file->read(bufferPtr, maxChunkLength);
 
-		// Data is written 16 bits at a time, so the buffer must be padded to an
-		// even number of bytes.
-		if (length % 2)
-			buffer[length++] = 0xff;
+			// Data is written 16 bits at a time, so the chunk must be padded to
+			// an even number of bytes.
+			if (length % 2)
+				bufferPtr[length++] = 0xff;
 
-		for (uint32_t end = offset + length; offset < end; offset += 2) {
-			auto value = *(ptr++);
+			*(lengthPtr++) = length;
+			totalLength   += length;
+		}
 
-			driver->write(offset, value);
-			error = driver->flushWrite(offset, value);
+		// Stop once there is no more data to write.
+		if (!totalLength)
+			break;
 
-			if (error)
-				goto _flashError;
+		bufferPtr = buffers.as<uint8_t>();
+		offset    = i;
+
+		for (
+			size_t j = 0; j < maxChunkLength; j += 2, bufferPtr += 2,
+			offset += 2
+		) {
+			auto chunkOffset = offset;
+			auto chunkPtr    = bufferPtr;
+			lengthPtr        = chunkLengths.as<size_t>();
+
+			for (
+				size_t k = numChips; k > 0;
+				k--, chunkPtr += maxChunkLength, chunkOffset += chipLength
+			) {
+				if (j >= *(lengthPtr++))
+					continue;
+
+				auto value = *reinterpret_cast<const uint16_t *>(chunkPtr);
+
+				driver->write(chunkOffset, value);
+			}
+
+			chunkOffset = offset;
+			chunkPtr    = bufferPtr;
+			lengthPtr   = chunkLengths.as<size_t>();
+
+			for (
+				size_t k = numChips; k > 0; k--, chunkPtr += maxChunkLength,
+				chunkOffset += chipLength, bytesWritten += 2
+			) {
+				if (j >= *(lengthPtr++))
+					continue;
+
+				auto value = *reinterpret_cast<const uint16_t *>(chunkPtr);
+				error      = driver->flushWrite(chunkOffset, value);
+
+				if (error)
+					goto _flashError;
+			}
 		}
 	}
 
-	_file->close();
-	delete   _file;
-	delete[] buffer;
-	delete   driver;
-
 	util::Hash message;
 
-	message = (fileLength > dataLength)
+	message = (_file->length > regionLength)
 		? "App.romRestoreWorker.overflow"_h
 		: "App.romRestoreWorker.success"_h;
 
+	buffers.destroy();
+	chunkLengths.destroy();
+	_file->close();
+	delete _file;
+	delete driver;
+
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageInfoScreen, WSTRH(message), offset
+		MESSAGE_SUCCESS, _storageInfoScreen, WSTRH(message), bytesWritten
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return true;
@@ -276,15 +314,16 @@ _fileError:
 	return false;
 
 _flashError:
+	buffers.destroy();
+	chunkLengths.destroy();
 	_file->close();
-	delete   _file;
-	delete[] buffer;
-	delete   driver;
+	delete _file;
+	delete driver;
 
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, _storageInfoScreen,
 		WSTR("App.romRestoreWorker.flashError"), rom::getErrorString(error),
-		offset
+		bytesWritten
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
@@ -293,10 +332,12 @@ _flashError:
 bool App::_romEraseWorker(void) {
 	auto region       = _storageActionsScreen.selectedRegion;
 	auto regionLength = _cardSizeScreen.selectedLength;
-	auto driver       = region->newDriver();
 
-	size_t chipLength    = driver->getChipSize().chipLength;
-	size_t sectorLength  = driver->getChipSize().eraseSectorLength;
+	auto   driver       = region->newDriver();
+	size_t chipLength   = driver->getChipSize().chipLength;
+	size_t sectorLength = driver->getChipSize().eraseSectorLength;
+	//size_t numChips     = (regionLength + chipLength - 1) / chipLength;
+
 	size_t sectorsErased = 0;
 
 	if (!chipLength)
@@ -306,7 +347,8 @@ bool App::_romEraseWorker(void) {
 
 	_checksumScreen.valid = false;
 
-	// Erase one sector at a time on each chip.
+	// Parallelize erasing by sending the same sector erase command to all chips
+	// at the same time.
 	for (size_t i = 0; i < chipLength; i += sectorLength) {
 		_workerStatus.update(i, chipLength, WSTR("App.romEraseWorker.erase"));
 
@@ -356,6 +398,8 @@ bool App::_flashHeaderWriteWorker(void) {
 	auto   driver       = rom::flash.newDriver();
 	size_t sectorLength = driver->getChipSize().eraseSectorLength;
 
+	util::Data buffer;
+
 	// This should never happen since the flash chips are soldered to the 573,
 	// but whatever.
 	if (!sectorLength)
@@ -367,14 +411,10 @@ bool App::_flashHeaderWriteWorker(void) {
 	// The flash can only be erased with sector granularity, so all data in the
 	// first sector other than the header must be backed up and rewritten.
 	rom::DriverError error;
-	uint8_t          *buffer;
 	const uint16_t   *ptr;
 
-	buffer = new uint8_t[sectorLength];
-
-	//assert(buffer);
-
-	rom::flash.read(buffer, 0, sectorLength);
+	buffer.allocate(sectorLength);
+	rom::flash.read(buffer.ptr, 0, sectorLength);
 
 	driver->eraseSector(0);
 	error = driver->flushErase(0);
@@ -403,7 +443,7 @@ bool App::_flashHeaderWriteWorker(void) {
 	}
 
 	// Restore the rest of the sector that was erased.
-	ptr = reinterpret_cast<const uint16_t *>(&buffer[rom::FLASH_CRC_OFFSET]);
+	ptr = &buffer.as<const uint16_t>()[rom::FLASH_CRC_OFFSET / 2];
 
 	for (
 		uint32_t offset = rom::FLASH_CRC_OFFSET; offset < sectorLength;
@@ -418,15 +458,15 @@ bool App::_flashHeaderWriteWorker(void) {
 			goto _flashError;
 	}
 
-	delete[] buffer;
-	delete   driver;
+	buffer.destroy();
+	delete driver;
 
 	_workerStatus.setNextScreen(_storageInfoScreen);
 	return true;
 
 _flashError:
-	delete[] buffer;
-	delete   driver;
+	buffer.destroy();
+	delete driver;
 
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, _storageInfoScreen,

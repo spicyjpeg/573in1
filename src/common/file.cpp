@@ -354,7 +354,7 @@ size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
 	size_t     length = _file->write(&header, sizeof(header));
 	util::Data buffer;
 
-	if (buffer.allocate(rect.w * 2 + 32)) {
+	if (buffer.allocate<uint16_t>(rect.w + 32)) {
 		// Read the image from VRAM one line at a time from the bottom up, as
 		// the BMP format stores lines in reversed order.
 		gpu::RectWH slice;

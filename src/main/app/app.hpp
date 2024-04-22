@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include "common/file.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
@@ -131,6 +132,8 @@ private:
 	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
 	void _loadResources(void);
+	bool _createDataDirectory(void);
+	bool _getNumberedPath(char *output, size_t length, const char *path);
 	bool _takeScreenshot(void);
 
 	// cartworkers.cpp
