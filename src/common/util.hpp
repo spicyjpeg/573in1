@@ -103,6 +103,9 @@ public:
 	template<typename T> inline const T *as(void) const {
 		return reinterpret_cast<const T *>(ptr);
 	}
+	template<typename T> inline T *allocate(size_t count = 1) {
+		return reinterpret_cast<T *>(allocate(sizeof(T) * count));
+	}
 
 	inline void *allocate(size_t _length) {
 		if (ptr)
@@ -170,15 +173,8 @@ public:
 	uint8_t  month, day;
 	uint8_t  hour, minute, second;
 
-	inline bool isLeapYear(void) const {
-		if (year % 4)
-			return false;
-		if (!(year % 100) && (year % 400))
-			return false;
-
-		return true;
-	}
-
+	bool isValid(void) const;
+	bool isLeapYear(void) const;
 	int getDayOfWeek(void) const;
 	int getMonthDayCount(void) const;
 	uint32_t toDOSTime(void) const;

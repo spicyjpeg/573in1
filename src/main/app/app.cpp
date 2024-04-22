@@ -1,4 +1,6 @@
 
+#include <stddef.h>
+#include <stdio.h>
 #include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/gpu.hpp"
@@ -154,27 +156,47 @@ void App::_loadResources(void) {
 		_resourceProvider.loadVAG(_ctx.sounds[i], _UI_SOUND_PATHS[i]);
 }
 
-bool App::_takeScreenshot(void) {
+bool App::_createDataDirectory(void) {
 	file::FileInfo info;
-	char           path[32];
+
+	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR))
+		return _fileProvider.createDirectory(EXTERNAL_DATA_DIR);
+	if (info.attributes & file::DIRECTORY)
+		return true;
+
+	return false;
+}
+
+bool App::_getNumberedPath(char *output, size_t length, const char *path) {
+	file::FileInfo info;
 	int            index = 0;
 
 	do {
-		index++;
-		snprintf(path, sizeof(path), EXTERNAL_DATA_DIR "/shot%04d.bmp", index);
-	} while (_fileProvider.getFileInfo(info, path));
+		if (++index > 9999)
+			return false;
+
+		snprintf(output, length, path, index);
+	} while (_fileProvider.getFileInfo(info, output));
+
+	return true;
+}
+
+bool App::_takeScreenshot(void) {
+	char path[32];
+
+	if (!_createDataDirectory())
+		return false;
+	if (!_getNumberedPath(path, sizeof(path), EXTERNAL_DATA_DIR "/shot%04d.bmp"))
+		return false;
 
 	gpu::RectWH clip;
 
 	_ctx.gpuCtx.getVRAMClipRect(clip);
-
-	if (_fileProvider.saveVRAMBMP(clip, path)) {
-		LOG("%s saved", path);
-		return true;
-	} else {
-		LOG("%s saving failed", path);
+	if (!_fileProvider.saveVRAMBMP(clip, path))
 		return false;
-	}
+
+	LOG("%s saved", path);
+	return true;
 }
 
 void App::_worker(void) {

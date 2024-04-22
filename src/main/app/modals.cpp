@@ -217,13 +217,12 @@ int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
 	LOG("path: %s", path);
 	LOG("files=%d, dirs=%d", _numFiles, _numDirectories);
 
-	if (_numFiles)
-		_files.allocate(sizeof(file::FileInfo) * _numFiles);
-	if (_numDirectories)
-		_directories.allocate(sizeof(file::FileInfo) * _numDirectories);
+	file::FileInfo *files, *directories;
 
-	auto files       = _files.as<file::FileInfo>();
-	auto directories = _directories.as<file::FileInfo>();
+	if (_numFiles)
+		files       = _files.allocate<file::FileInfo>(_numFiles);
+	if (_numDirectories)
+		directories = _directories.allocate<file::FileInfo>(_numDirectories);
 
 	// Iterate over all entries again to populate the newly allocated arrays.
 	directory = APP->_fileProvider.openDirectory(path);

@@ -202,20 +202,11 @@ bool App::_qrCodeWorker(void) {
 bool App::_cartDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
-	file::FileInfo info;
-	char           path[32];
+	char   path[32], code[8], region[8];
+	size_t length = _cartDump.getDumpLength();
 
-	__builtin_strcpy(path, EXTERNAL_DATA_DIR);
-
-	if (!_fileProvider.getFileInfo(info, path)) {
-		if (!_fileProvider.createDirectory(path))
-			goto _error;
-	}
-
-	char   code[8], region[8];
-	size_t length;
-
-	length = _cartDump.getDumpLength();
+	if (!_createDataDirectory())
+		goto _error;
 
 	if (
 		_identified && _cartParser->getCode(code) &&
@@ -225,14 +216,10 @@ bool App::_cartDumpWorker(void) {
 			path, sizeof(path), EXTERNAL_DATA_DIR "/%s%s.573", code, region
 		);
 	} else {
-		int index = 0;
-
-		do {
-			index++;
-			snprintf(
-				path, sizeof(path), EXTERNAL_DATA_DIR "/cart%04d.573", index
-			);
-		} while (_fileProvider.getFileInfo(info, path));
+		if (!_getNumberedPath(
+			path, sizeof(path), EXTERNAL_DATA_DIR "/cart%04d.573"
+		))
+			goto _error;
 	}
 
 	LOG("saving %s, length=%d", path, length);

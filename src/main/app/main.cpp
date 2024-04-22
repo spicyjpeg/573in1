@@ -34,7 +34,10 @@ void WarningScreen::update(ui::Context &ctx) {
 	if (_locked) {
 		time = (time / ctx.gpuCtx.refreshRate) + 1;
 
-		sprintf(_buttonText, STR("WarningScreen.cooldown"), time);
+		snprintf(
+			_buttonText, sizeof(_buttonText), STR("WarningScreen.cooldown"),
+			time
+		);
 		return;
 	}
 

@@ -326,10 +326,10 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 void CardSizeScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("CardSizeScreen.title");
 	_body       = STR("CardSizeScreen.body");
-	_buttons[0] = STR("CardSizeScreen.16");
-	_buttons[1] = STR("CardSizeScreen.32");
-	_buttons[2] = STR("CardSizeScreen.64");
-	_buttons[3] = STR("CardSizeScreen.cancel");
+	_buttons[0] = STR("CardSizeScreen.cancel");
+	_buttons[1] = STR("CardSizeScreen.16");
+	_buttons[2] = STR("CardSizeScreen.32");
+	_buttons[3] = STR("CardSizeScreen.64");
 
 	_numButtons = 4;
 
@@ -340,11 +340,11 @@ void CardSizeScreen::update(ui::Context &ctx) {
 	MessageBoxScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
-		if (_activeButton == 3) {
-			ctx.show(APP->_storageActionsScreen, true, true);
-		} else {
-			selectedLength = 0x1000000 << _activeButton;
+		if (_activeButton) {
+			selectedLength = 0x800000 << _activeButton;
 			(APP->_storageActionsScreen.*callback)(ctx);
+		} else {
+			ctx.show(APP->_storageActionsScreen, true, true);
 		}
 	}
 }
