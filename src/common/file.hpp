@@ -6,12 +6,10 @@
 #include "common/gpu.hpp"
 #include "common/spu.hpp"
 #include "common/util.hpp"
-#include "vendor/ff.h"
-#include "vendor/miniz.h"
 
 namespace file {
 
-/* File classes */
+/* Common structures */
 
 static constexpr size_t MAX_NAME_LENGTH = 64;
 static constexpr size_t MAX_PATH_LENGTH = 256;
@@ -22,9 +20,10 @@ enum FileSystemType {
 	FAT12      = 1,
 	FAT16      = 2,
 	FAT32      = 3,
-	HOST       = 4,
+	ISO9660    = 4,
 	ZIP_MEMORY = 5,
-	ZIP_FILE   = 6
+	ZIP_FILE   = 6,
+	HOST       = 7
 };
 
 // These are functionally equivalent to the FA_* flags used by FatFs.
@@ -51,6 +50,8 @@ public:
 	uint64_t length;
 	uint32_t attributes;
 };
+
+/* Base file and directory classes */
 
 class File {
 public:
@@ -81,24 +82,6 @@ public:
 	void close(void);
 };
 
-class FATFile : public File {
-	friend class FATProvider;
-
-private:
-	FIL _fd;
-
-public:
-	size_t read(void *output, size_t length);
-#ifdef ENABLE_FILE_WRITING
-	size_t write(const void *input, size_t length);
-#endif
-	uint64_t seek(uint64_t offset);
-	uint64_t tell(void) const;
-	void close(void);
-};
-
-/* Directory classes */
-
 class Directory {
 public:
 	virtual ~Directory(void);
@@ -107,24 +90,19 @@ public:
 	virtual void close(void) {}
 };
 
-class FATDirectory : public Directory {
-	friend class FATProvider;
+/* Base file and asset provider classes */
 
-private:
-	DIR _fd;
-
-public:
-	bool getEntry(FileInfo &output);
-	void close(void);
-};
-
-/* File and asset provider classes */
-
-// TODO: move this (and loadTIM/loadVAG) somewhere else
 extern uint32_t currentSPUOffset;
 
 class Provider {
 public:
+	char     volumeLabel[MAX_NAME_LENGTH];
+	uint32_t serialNumber;
+
+	inline Provider(void)
+	: serialNumber(0) {
+		volumeLabel[0] = 0;
+	}
 	template<class T> inline size_t loadStruct(T &output, const char *path) {
 		return loadData(&output, sizeof(output), path);
 	}
@@ -165,63 +143,6 @@ public:
 #endif
 
 	File *openFile(const char *path, uint32_t flags);
-};
-
-class FATProvider : public Provider {
-private:
-	FATFS _fs;
-	char  _drive[8];
-
-	bool _selectDrive(void);
-
-public:
-	inline FATProvider(void) {
-		_fs.fs_type = 0;
-		_drive[0]   = 0;
-	}
-
-	inline const char *getDriveString(void) {
-		return _drive;
-	}
-
-	bool init(const char *drive);
-	void close(void);
-
-	FileSystemType getFileSystemType(void);
-	uint64_t getCapacity(void);
-#ifdef ENABLE_FILE_WRITING
-	uint64_t getFreeSpace(void);
-#endif
-	size_t getVolumeLabel(char *output, size_t length);
-	uint32_t getSerialNumber(void);
-
-	bool getFileInfo(FileInfo &output, const char *path);
-	Directory *openDirectory(const char *path);
-#ifdef ENABLE_FILE_WRITING
-	bool createDirectory(const char *path);
-#endif
-
-	File *openFile(const char *path, uint32_t flags);
-};
-
-// This implementation only supports loading an entire file at once.
-class ZIPProvider : public Provider {
-private:
-	mz_zip_archive _zip;
-	File           *_file;
-
-public:
-	bool init(File *file);
-	bool init(const void *zipData, size_t length);
-	void close(void);
-
-	FileSystemType getFileSystemType(void);
-	uint64_t getCapacity(void);
-
-	bool getFileInfo(FileInfo &output, const char *path);
-
-	size_t loadData(util::Data &output, const char *path);
-	size_t loadData(void *output, size_t length, const char *path);
 };
 
 /* String table parser */

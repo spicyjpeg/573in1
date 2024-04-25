@@ -78,10 +78,11 @@ addExecutable(
 	main 80080000 801dfff0
 	src/common/args.cpp
 	src/common/file.cpp
+	src/common/filefat.cpp
+	src/common/filezip.cpp
 	src/common/gpu.cpp
 	src/common/gpufont.cpp
 	src/common/ide.cpp
-	src/common/ideglue.cpp
 	src/common/io.cpp
 	src/common/pad.cpp
 	src/common/rom.cpp
@@ -162,8 +163,9 @@ function(addLauncher address stackTop)
 	addExecutable(
 		launcher${address} ${address} ${stackTop}
 		src/common/args.cpp
+		src/common/file.cpp
+		src/common/filefat.cpp
 		src/common/ide.cpp
-		src/common/ideglue.cpp
 		src/common/io.cpp
 		src/common/util.cpp
 		src/launcher/launcher.cpp

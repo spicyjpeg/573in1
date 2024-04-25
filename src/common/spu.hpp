@@ -25,6 +25,9 @@ static inline void setMasterVolume(uint16_t master, uint16_t reverb = 0) {
 }
 
 static inline void setChannelVolume(Channel ch, uint16_t volume) {
+	if ((ch < 0) || (ch >= NUM_CHANNELS))
+		return;
+
 	SPU_CH_VOL_L(ch) = volume;
 	SPU_CH_VOL_R(ch) = volume;
 }

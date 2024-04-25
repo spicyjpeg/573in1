@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/file.hpp"
 #include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
@@ -79,19 +78,14 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 	_PRINT(STR("IDEInfoScreen.fat.header"));
 
-	if (fsType) {
-		char label[32];
-		auto serial = fs.getSerialNumber();
-
-		fs.getVolumeLabel(label, sizeof(label));
+	if (fsType)
 		_PRINT(
-			STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fsType], label,
-			serial >> 16, serial & 0xffff, fs.getCapacity() / 0x100000,
-			fs.getFreeSpace() / 0x100000
+			STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fsType], fs.volumeLabel,
+			fs.serialNumber >> 16, fs.serialNumber & 0xffff,
+			fs.getCapacity() / 0x100000, fs.getFreeSpace() / 0x100000
 		);
-	} else {
+	else
 		_PRINT(STR("IDEInfoScreen.fat.error"));
-	}
 
 	//*(--ptr) = 0;
 	LOG("remaining=%d", end - ptr);
@@ -115,7 +109,12 @@ void RTCTimeScreen::show(ui::Context &ctx, bool goBack) {
 	_buttons[1] = STR("RTCTimeScreen.ok");
 
 	_numButtons = 2;
+
 	io::getRTCTime(_date);
+	if (!_date.isValid())
+		_date.reset();
+
+	_date.second = 0;
 
 	DateEntryScreen::show(ctx, goBack);
 }
@@ -182,13 +181,11 @@ static const Resolution _RESOLUTIONS[]{
 		.width          = 640,
 		.height         = 240,
 		.forceInterlace = true
-#if 0
 	}, {
 		.name           = "ResolutionScreen.640x480i"_h,
 		.width          = 640,
 		.height         = 480,
 		.forceInterlace = true
-#endif
 	}
 };
 
