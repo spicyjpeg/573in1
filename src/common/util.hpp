@@ -170,8 +170,16 @@ public:
 class Date {
 public:
 	uint16_t year;
-	uint8_t  month, day;
-	uint8_t  hour, minute, second;
+	uint8_t  month, day, hour, minute, second;
+
+	inline void reset(void) {
+		year   = 2024;
+		month  = 1;
+		day    = 1;
+		hour   = 0;
+		minute = 0;
+		second = 0;
+	}
 
 	bool isValid(void) const;
 	bool isLeapYear(void) const;

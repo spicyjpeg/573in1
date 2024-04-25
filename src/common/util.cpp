@@ -93,8 +93,10 @@ int Date::getMonthDayCount(void) const {
 }
 
 uint32_t Date::toDOSTime(void) const {
-	int _year = year + 2000 - 1980;
+	int _year = year - 1980;
 
+	if (!isValid())
+		return 0;
 	if ((_year < 0) || (_year > 127))
 		return 0;
 
@@ -108,6 +110,11 @@ uint32_t Date::toDOSTime(void) const {
 }
 
 size_t Date::toString(char *output) const {
+	if (!isValid()) {
+		*output = 0;
+		return 0;
+	}
+
 	return sprintf(
 		output, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute,
 		second

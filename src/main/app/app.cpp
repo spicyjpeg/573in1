@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "common/defs.hpp"
 #include "common/file.hpp"
+#include "common/filefat.hpp"
+#include "common/filezip.hpp"
 #include "common/gpu.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"

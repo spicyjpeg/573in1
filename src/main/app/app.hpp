@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 #include "common/file.hpp"
+#include "common/filefat.hpp"
+#include "common/filezip.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
 #include "main/app/main.hpp"

@@ -87,6 +87,9 @@ Channel getFreeChannel(void) {
 }
 
 void stopChannel(Channel ch) {
+	if ((ch < 0) || (ch >= NUM_CHANNELS))
+		return;
+
 	SPU_CH_VOL_L(ch) = 0;
 	SPU_CH_VOL_R(ch) = 0;
 	SPU_CH_FREQ(ch)  = 1 << 12;
