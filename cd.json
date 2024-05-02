@@ -1,0 +1,126 @@
+{
+	"identifiers": {
+		"system":       "PLAYSTATION",
+		"volume":       "${CD_VOLUME_NAME}",
+		"volumeSet":    "${CD_VOLUME_NAME}",
+		"publisher":    "SPICYJPEG",
+		"dataPreparer": "GCC ${CMAKE_CXX_COMPILER_VERSION}, CMAKE ${CMAKE_VERSION}, PYTHON ${Python3_VERSION}",
+		"application":  "PLAYSTATION",
+		"copyright":    "README.TXT;1"
+	},
+
+	"entries": [
+		{
+			"type":   "file",
+			"name":   "README.TXT",
+			"source": "${PROJECT_BINARY_DIR}/readme.txt"
+		},
+
+		{
+			"type":   "file",
+			"name":   "PSX.EXE",
+			"source": "${PROJECT_BINARY_DIR}/boot.psexe"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "GSE.NXX",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "NSE.GXX",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "OSE.FXX",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "QSU.DXH",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "QSX.DXE",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "QSY.DXD",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "QSZ.DXC",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "RSU.CXH",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "RSV.CXG",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "RSW.CXF",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "RSZ.CXC",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "SSW.BXF",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "SSX.BXE",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "SSY.BXD",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "TSV.AXG",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "TSW.AXF",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "TSX.AXE",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "TSY.AXD",
+			"source": "PSX.EXE"
+		},
+		{
+			"type":   "fileAlias",
+			"name":   "TSZ.AXC",
+			"source": "PSX.EXE"
+		},
+
+		{
+			"type": "padding",
+			"name": "PADDING.BIN",
+			"size": 1048576
+		}
+	]
+}

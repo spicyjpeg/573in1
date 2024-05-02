@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __author__  = "spicyjpeg"
 
 import json
 from argparse    import ArgumentParser, FileType, Namespace
 from pathlib     import Path
-from typing      import ByteString
+from typing      import Any, ByteString
 from zipfile     import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 import lz4.block
@@ -50,10 +50,11 @@ def createParser() -> ArgumentParser:
 	group = parser.add_argument_group("File paths")
 	group.add_argument(
 		"-s", "--source-dir",
-		type = Path,
-		help = \
+		type    = Path,
+		help    = \
 			"Set path to directory containing source files (same directory as "
-			"resource list by default)"
+			"resource list by default)",
+		metavar = "dir"
 	)
 	group.add_argument(
 		"resourceList",
@@ -73,8 +74,9 @@ def main():
 	args:   Namespace      = parser.parse_args()
 
 	with args.resourceList as _file:
-		assetList: list = json.load(_file)
-		sourceDir: Path = args.source_dir or Path(_file.name).parent
+		assetList: list[dict[str, Any]] = json.load(_file)
+		sourceDir: Path                 = \
+			args.source_dir or Path(_file.name).parent
 
 	with ZipFile(args.output, "w", allowZip64 = False) as _zip:
 		for asset in assetList:

@@ -9,7 +9,7 @@ from typing      import Any, Generator, Mapping, Sequence
 import numpy
 from numpy import ndarray
 from PIL   import Image
-from .util import hashData
+from .util import colorFromString, hashData
 
 ## .TIM image converter
 
@@ -155,8 +155,9 @@ def generateFontMetrics(metrics: Mapping[str, Any]) -> bytearray:
 
 ## Color palette generator
 
-_PALETTE_COLOR_REGEX: re.Pattern    = re.compile(r"^#?([0-9A-Fa-f]{6})$")
-_PALETTE_COLORS:      Sequence[str] = (
+_PALETTE_ENTRY_STRUCT: Struct = Struct("< 3B x")
+
+_PALETTE_ENTRIES: Sequence[str] = (
 	"default",
 	"shadow",
 	"backdrop",
@@ -177,25 +178,22 @@ _PALETTE_COLORS:      Sequence[str] = (
 	"subtitle"
 )
 
-_PALETTE_ENTRY_STRUCT: Struct = Struct("< 3s x")
-
-def generateColorPalette(palette: Mapping[str, str]) -> bytearray:
+def generateColorPalette(
+	palette: Mapping[str, str | Sequence[int]]
+) -> bytearray:
 	data: bytearray = bytearray()
 
-	for entry in _PALETTE_COLORS:
-		color: str | None = palette.get(entry, None)
+	for entry in _PALETTE_ENTRIES:
+		color: str | Sequence[int] | None = palette.get(entry, None)
 
 		if color is None:
 			raise ValueError(f"no entry found for {entry}")
+		if isinstance(color, str):
+			r, g, b = colorFromString(color)
+		else:
+			r, g, b = color
 
-		matched: re.Match | None = _PALETTE_COLOR_REGEX.match(color)
-
-		if matched is None:
-			raise ValueError(f"invalid color value: {color}")
-
-		colorValue: bytes = bytes.fromhex(matched.group(1))
-
-		data.extend(_PALETTE_ENTRY_STRUCT.pack(colorValue))
+		data.extend(_PALETTE_ENTRY_STRUCT.pack(r, g, b))
 
 	return data
 
@@ -241,7 +239,7 @@ def _walkStringTree(
 
 		if value is None:
 			yield hashData(fullKey.encode("ascii")), None
-		elif type(value) is str:
+		elif isinstance(value, str):
 			yield hashData(fullKey.encode("ascii")), _convertString(value)
 		else:
 			yield from _walkStringTree(value, f"{fullKey}.")

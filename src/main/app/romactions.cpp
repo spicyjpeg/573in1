@@ -302,7 +302,7 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 			ctx.show(APP->_storageInfoScreen, true, true);
 		} else {
 			if (action.region.isPresent()) {
-				this->selectedRegion = &(action.region);
+				selectedRegion = &(action.region);
 
 				if (action.region.regionLength > 0x1000000) {
 					APP->_cardSizeScreen.callback = action.target;

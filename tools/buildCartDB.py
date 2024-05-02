@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __author__  = "spicyjpeg"
 
 import json, logging, os, re
@@ -14,6 +14,7 @@ from typing      import Any, Mapping, Sequence, TextIO
 from common.cart     import CartDump, DumpFlag
 from common.cartdata import *
 from common.games    import GameDB, GameDBEntry
+from common.util     import setupLogger
 
 ## MAME NVRAM file parser
 
@@ -199,17 +200,6 @@ def createParser() -> ArgumentParser:
 	)
 
 	return parser
-
-def setupLogger(level: int | None):
-	logging.basicConfig(
-		format = "[{levelname:8s}] {message}",
-		style  = "{",
-		level  = (
-			logging.WARNING,
-			logging.INFO,
-			logging.DEBUG
-		)[min(level or 0, 2)]
-	)
 
 def main():
 	parser: ArgumentParser = createParser()

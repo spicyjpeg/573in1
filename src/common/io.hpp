@@ -144,7 +144,7 @@ static inline void setMiscOutput(MiscOutputPin pin, bool value) {
 static inline bool isDigitalIOPresent(void) {
 	return (
 		(SYS573D_CPLD_STAT & (SYS573D_CPLD_STAT_ID1 | SYS573D_CPLD_STAT_ID2)) ==
-		SYS573D_CPLD_STAT_ID1
+		SYS573D_CPLD_STAT_ID2
 	);
 }
 
