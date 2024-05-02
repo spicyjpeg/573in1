@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __author__  = "spicyjpeg"
 
 import json, logging, os, re
@@ -12,7 +12,7 @@ from typing   import ByteString, Mapping, TextIO
 from common.cart     import DumpFlag, ROMHeaderDump
 from common.cartdata import *
 from common.games    import GameDB, GameDBEntry
-from common.util     import InterleavedFile
+from common.util     import InterleavedFile, setupLogger
 
 ## Flash dump "parser"
 
@@ -142,17 +142,6 @@ def createParser() -> ArgumentParser:
 	)
 
 	return parser
-
-def setupLogger(level: int | None):
-	logging.basicConfig(
-		format = "[{levelname:8s}] {message}",
-		style  = "{",
-		level  = (
-			logging.WARNING,
-			logging.INFO,
-			logging.DEBUG
-		)[min(level or 0, 2)]
-	)
 
 def main():
 	parser: ArgumentParser = createParser()

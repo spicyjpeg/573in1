@@ -87,7 +87,12 @@ bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 			return true;
 
 		default:
+#if 0
 			return CommonArgs::parseArgument(arg);
+#else
+			// Avoid pulling in strtol().
+			return false;
+#endif
 	}
 }
 

@@ -7,10 +7,17 @@
 #include "vendor/ff.h"
 
 LauncherError ExecutableLauncher::openFile(void) {
+#if 0
 	if (!args.drive || !args.path) {
 		LOG("required arguments missing");
 		return INVALID_ARGS;
 	}
+#else
+	if (!args.drive)
+		args.drive = "1:";
+	if (!args.path)
+		args.path = "psx.exe";
+#endif
 
 	// The drive index is always a single digit, so there is no need to pull in
 	// strtol() here.

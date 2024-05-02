@@ -2,18 +2,18 @@
 	{
 		"type":        "binary",
 		"name":        "binaries/main.psexe.lz4",
-		"source":      "main.psexe",
+		"source":      "${PROJECT_BINARY_DIR}/main.psexe",
 		"compression": "lz4"
 	},
 	{
 		"type":   "binary",
 		"name":   "binaries/launcher801f8000.psexe",
-		"source": "launcher801f8000.psexe"
+		"source": "${PROJECT_BINARY_DIR}/launcher801f8000.psexe"
 	},
 	{
 		"type":   "binary",
 		"name":   "binaries/launcher803f8000.psexe",
-		"source": "launcher803f8000.psexe"
+		"source": "${PROJECT_BINARY_DIR}/launcher803f8000.psexe"
 	},
 
 	{

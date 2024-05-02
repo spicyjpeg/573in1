@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from hashlib import md5
-from io      import SEEK_SET, SEEK_END
-from typing  import BinaryIO, ByteString, Iterable, Iterator, Sequence, TextIO
+import logging, re
+from collections import deque
+from hashlib     import md5
+from io          import SEEK_END, SEEK_SET
+from typing      import \
+	BinaryIO, ByteString, Iterable, Iterator, Mapping, MutableSequence, \
+	Sequence, TextIO
 
-## Misc. utilities
+import numpy
+
+## Value and array manipulation
 
 def signExtend(value: int, bitLength: int) -> int:
 	signMask:  int = 1 << (bitLength - 1)
@@ -12,11 +18,30 @@ def signExtend(value: int, bitLength: int) -> int:
 
 	return (value & valueMask) - (value & signMask)
 
+def blitArray(
+	source: numpy.ndarray, dest: numpy.ndarray, position: Sequence[int]
+):
+	pos: map[int | None] = map(lambda x: x if x >= 0 else None, position)
+	neg: map[int | None] = map(lambda x: -x if x < 0 else None, position)
+
+	destView:   numpy.ndarray = dest[tuple(
+		slice(start, None) for start in pos
+	)]
+	sourceView: numpy.ndarray = source[tuple(
+		slice(start, end) for start, end in zip(neg, destView.shape)
+	)]
+
+	destView[tuple(
+		slice(None, end) for end in source.shape
+	)] = sourceView
+
 ## String manipulation
 
 # This encoding is similar to standard base45, but with some problematic
 # characters (' ', '$', '%', '*') excluded.
 _BASE41_CHARSET: str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:"
+
+_COLOR_REGEX: re.Pattern = re.compile(r"^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")
 
 def toPrintableChar(value: int) -> str:
 	if (value < 0x20) or (value > 0x7e):
@@ -54,6 +79,27 @@ def decodeBase41(data: str) -> bytearray:
 
 	return output
 
+def colorFromString(value: str) -> tuple[int, int, int]:
+	matched: re.Match | None = _COLOR_REGEX.match(value)
+
+	if matched is None:
+		raise ValueError(f"invalid color value '{value}'")
+
+	digits: str = matched.group(1)
+
+	if len(digits) == 3:
+		return (
+			int(digits[0], 16) * 0x11,
+			int(digits[1], 16) * 0x11,
+			int(digits[2], 16) * 0x11
+		)
+	else:
+		return (
+			int(digits[0:2], 16),
+			int(digits[2:4], 16),
+			int(digits[4:6], 16)
+		)
+
 ## Hashes and checksums
 
 def hashData(data: Iterable[int]) -> int:
@@ -86,6 +132,19 @@ def shortenedMD5(data: ByteString) -> bytearray:
 		output[i] = hashed[i] ^ hashed[i + 8]
 
 	return output
+
+## Logging
+
+def setupLogger(level: int | None):
+	logging.basicConfig(
+		format = "[{levelname:8s}] {message}",
+		style  = "{",
+		level  = (
+			logging.WARNING,
+			logging.INFO,
+			logging.DEBUG
+		)[min(level or 0, 2)]
+	)
 
 ## Odd/even interleaved file reader
 
@@ -139,3 +198,158 @@ class InterleavedFile(BinaryIO):
 
 		self._offset += _length
 		return output
+
+## Boolean algebra expression parser
+
+class BooleanOperator:
+	precedence: int = 1
+	operands:   int = 2
+
+	@staticmethod
+	def execute(stack: MutableSequence[bool]):
+		pass
+
+class AndOperator(BooleanOperator):
+	precedence: int = 2
+
+	@staticmethod
+	def execute(stack: MutableSequence[bool]):
+		a: bool = stack.pop()
+		b: bool = stack.pop()
+
+		stack.append(a and b)
+
+class OrOperator(BooleanOperator):
+	@staticmethod
+	def execute(stack: MutableSequence[bool]):
+		a: bool = stack.pop()
+		b: bool = stack.pop()
+
+		stack.append(a or b)
+
+class XorOperator(BooleanOperator):
+	@staticmethod
+	def execute(stack: MutableSequence[bool]):
+		a: bool = stack.pop()
+		b: bool = stack.pop()
+
+		stack.append(a != b)
+
+class NotOperator(BooleanOperator):
+	precedence: int = 3
+	operands:   int = 1
+
+	@staticmethod
+	def execute(stack: MutableSequence):
+		stack.append(not stack.pop())
+
+_OPERATORS: Mapping[str, type[BooleanOperator]] = {
+	"*": AndOperator,
+	"+": OrOperator,
+	"@": XorOperator,
+	"~": NotOperator
+}
+
+class BooleanFunction:
+	def __init__(self, expression: str):
+		# "Compile" the expression to its respective RPN representation using
+		# the shunting yard algorithm.
+		self.expression: list[str | type[BooleanOperator]] = []
+
+		operators:   deque[str] = deque()
+		tokenBuffer: str = ""
+
+		for char in expression:
+			if char not in "*+@~()":
+				tokenBuffer += char
+				continue
+
+			# Flush the non-operator token buffer when an operator is
+			# encountered.
+			if tokenBuffer:
+				self.expression.append(tokenBuffer)
+				tokenBuffer = ""
+
+			match char:
+				case "(":
+					operators.append(char)
+				case ")":
+					if "(" not in operators:
+						raise RuntimeError("mismatched parentheses in expression")
+					while (op := operators.pop()) != "(":
+						self.expression.append(_OPERATORS[op])
+				case _:
+					precedence: int = _OPERATORS[char].precedence
+
+					while operators:
+						op: str = operators[-1]
+
+						if op == "(":
+							break
+						if _OPERATORS[op].precedence < precedence:
+							break
+
+						self.expression.append(_OPERATORS[op])
+						operators.pop()
+
+					operators.append(char)
+
+		if tokenBuffer:
+			self.expression.append(tokenBuffer)
+			tokenBuffer = ""
+
+		if "(" in operators:
+			raise RuntimeError("mismatched parentheses in expression")
+		while operators:
+			self.expression.append(_OPERATORS[operators.pop()])
+
+	def evaluate(self, variables: Mapping[str, bool]) -> bool:
+		values: dict[str, bool] = { "0": False, "1": True, **variables }
+		stack:  deque[bool]     = deque()
+
+		for token in self.expression:
+			if isinstance(token, str):
+				value: bool | None = values.get(token)
+
+				if value is None:
+					raise RuntimeError(f"unknown variable '{token}'")
+
+				stack.append(value)
+			else:
+				token.execute(stack)
+
+		if len(stack) != 1:
+			raise RuntimeError("invalid or malformed expression")
+
+		return stack[0]
+
+## Logic lookup table conversion
+
+def generateLUTFromExpression(expression: str, inputs: Sequence[str]) -> int:
+	lut: int = 0
+
+	function:  BooleanFunction = BooleanFunction(expression)
+	variables: dict[str, bool] = {}
+
+	for index in range(1 << len(inputs)):
+		for bit, name in enumerate(inputs):
+			variables[name] = bool((index >> bit) & 1)
+
+		if function.evaluate(variables):
+			lut |= 1 << index # LSB-first
+
+	return lut
+
+def generateExpressionFromLUT(lut: int, inputs: Sequence[str]) -> str:
+	products: list[str] = []
+
+	for index in range(1 << len(inputs)):
+		values: str = "*".join(
+			(value if (index >> bit) & 1 else f"~{value}")
+			for bit, value in enumerate(inputs)
+		)
+
+		if (lut >> index) & 1:
+			products.append(f"({values})")
+
+	return "+".join(products) or "0"

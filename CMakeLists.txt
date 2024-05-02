@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.25)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 
 project(
-	cart_tool_private
+	cart_tool
 	LANGUAGES    C CXX ASM
 	VERSION      0.4.2
 	DESCRIPTION  "Konami System 573 security cartridge tool"
@@ -12,20 +12,29 @@ project(
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_program(
-	XORRISO_PATH xorriso
-	PATHS "C:/msys64/usr/bin"
-	DOC   "Path to xorriso tool (optional)"
-)
-find_program(
 	CHDMAN_PATH chdman
-	PATHS "C:/Program Files/MAME" "C:/Program Files (x86)/MAME"
-	DOC   "Path to MAME chdman tool (optional)"
+	PATHS
+		"C:/Program Files/MAME"
+		"C:/Program Files (x86)/MAME"
+		"/opt/mame"
+	DOC "Path to MAME chdman tool (optional)"
 )
 
+string(TOUPPER "${PROJECT_NAME}" _name)
 string(REPLACE "." "_" _version "${PROJECT_VERSION}")
-set(releaseInfo  "cart_tool build ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg")
-set(releaseName  "cart_tool_${PROJECT_VERSION}")
-set(cdVolumeName "CART_TOOL_${_version}")
+
+set(
+	RELEASE_INFO "${PROJECT_NAME} ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg"
+	CACHE STRING "Executable description and version string (optional)"
+)
+set(
+	RELEASE_NAME "${PROJECT_NAME}_${PROJECT_VERSION}"
+	CACHE STRING "CD-ROM image and release package file name"
+)
+set(
+	CD_VOLUME_NAME "${_name}_${_version}"
+	CACHE STRING   "CD-ROM image volume label"
+)
 
 ## Files common to all executables
 
@@ -61,7 +70,7 @@ function(addExecutable name address stackTop)
 		COMMAND
 			"${Python3_EXECUTABLE}"
 			"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
-			-r "${releaseInfo}"
+			-r "${RELEASE_INFO}"
 			-s 0x${stackTop}
 			"$<TARGET_FILE:${name}>"
 			"${name}.psexe"
@@ -157,8 +166,6 @@ addExecutable(
 )
 target_link_libraries(boot PRIVATE bootFlags)
 
-list(APPEND packageContents boot.psexe)
-
 function(addLauncher address stackTop)
 	addExecutable(
 		launcher${address} ${address} ${stackTop}
@@ -236,9 +243,9 @@ add_custom_command(
 		resources.json
 		assets/app.palette.json
 		assets/app.strings.json
-		main
-		launcher801f8000
-		launcher803f8000
+		main.psexe
+		launcher801f8000.psexe
+		launcher803f8000.psexe
 	COMMENT "Building resource archive"
 	VERBATIM
 )
@@ -249,80 +256,57 @@ addBinaryFile(
 
 ## CD-ROM image
 
+configure_file(cd.json             cd.json    ESCAPE_QUOTES)
 configure_file(assets/cdreadme.txt readme.txt NEWLINE_STYLE CRLF)
 
-if(EXISTS "${XORRISO_PATH}")
+add_custom_command(
+	COMMAND
+		"${Python3_EXECUTABLE}"
+		"${PROJECT_SOURCE_DIR}/tools/buildCDImage.py"
+		cd.json
+		"${RELEASE_NAME}.iso"
+	OUTPUT  "${RELEASE_NAME}.iso"
+	DEPENDS
+		cd.json
+		boot.psexe
+	COMMENT "Building CD-ROM image"
+	VERBATIM
+)
+
+if(EXISTS "${CHDMAN_PATH}")
 	add_custom_command(
 		COMMAND
-			"${XORRISO_PATH}"
-			-outdev         "${releaseName}.iso"
-			-blank          all
-			-rockridge      off
-			-joliet         off
-			-padding        2M
-			-volid          "${cdVolumeName}"
-			-volset_id      "${cdVolumeName}"
-			-publisher      "SPICYJPEG"
-			-application_id "PLAYSTATION"
-			-system_id      "PLAYSTATION"
-			-preparer_id    "CART_TOOL BUILD SCRIPT"
-			-map   readme.txt README.TXT
-			-map   boot.psexe PSX.EXE
-			-clone PSX.EXE    GSE.NXX
-			-clone PSX.EXE    NSE.GXX
-			-clone PSX.EXE    OSE.FXX
-			-clone PSX.EXE    QSU.DXH
-			-clone PSX.EXE    QSX.DXE
-			-clone PSX.EXE    QSY.DXD
-			-clone PSX.EXE    QSZ.DXC
-			-clone PSX.EXE    RSU.CXH
-			-clone PSX.EXE    RSV.CXG
-			-clone PSX.EXE    RSW.CXF
-			-clone PSX.EXE    RSZ.CXC
-			-clone PSX.EXE    SSW.BXF
-			-clone PSX.EXE    SSX.BXE
-			-clone PSX.EXE    SSY.BXD
-			-clone PSX.EXE    TSV.AXG
-			-clone PSX.EXE    TSW.AXF
-			-clone PSX.EXE    TSX.AXE
-			-clone PSX.EXE    TSY.AXD
-			-clone PSX.EXE    TSZ.AXC
-		OUTPUT  "${releaseName}.iso"
-		DEPENDS boot
-		COMMENT "Building CD-ROM image"
+			"${CHDMAN_PATH}" createcd -f
+			-i "${RELEASE_NAME}.iso"
+			-o "${RELEASE_NAME}.chd"
+		OUTPUT  "${RELEASE_NAME}.chd"
+		DEPENDS "${RELEASE_NAME}.iso"
+		COMMENT "Building MAME CHD image"
 		VERBATIM
 	)
 
-	list(APPEND packageContents "${releaseName}.iso")
-
-	if(EXISTS "${CHDMAN_PATH}")
-		add_custom_command(
-			COMMAND
-				"${CHDMAN_PATH}" createcd -f
-				-i "${releaseName}.iso"
-				-o "${releaseName}.chd"
-			OUTPUT  "${releaseName}.chd"
-			DEPENDS "${releaseName}.iso"
-			COMMENT "Building MAME CHD image"
-			VERBATIM
-		)
-
-		list(APPEND packageContents "${releaseName}.chd")
-	endif()
+	list(APPEND packageFiles "${RELEASE_NAME}.chd")
 endif()
 
 ## Release package
 
+list(
+	APPEND packageFiles
+	readme.txt
+	boot.psexe
+	"${RELEASE_NAME}.iso"
+)
+
 add_custom_command(
 	COMMAND
 		"${CMAKE_COMMAND}" -E tar cf
-		"${releaseName}.zip"
+		"${RELEASE_NAME}.zip"
 		--format=zip
-		${packageContents} readme.txt
-	OUTPUT  "${releaseName}.zip"
-	DEPENDS ${packageContents}
+		${packageFiles}
+	OUTPUT  "${RELEASE_NAME}.zip"
+	DEPENDS ${packageFiles}
 	COMMENT "Packaging built files"
 	VERBATIM
 )
 
-add_custom_target(package ALL DEPENDS "${releaseName}.zip")
+add_custom_target(package ALL DEPENDS "${RELEASE_NAME}.zip")
