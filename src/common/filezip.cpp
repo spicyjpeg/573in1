@@ -66,14 +66,17 @@ bool ZIPProvider::init(File *file) {
 		return _file->read(output, length);
 	};
 
-	if (!mz_zip_reader_init(&_zip, file->length, _ZIP_FLAGS)) {
+	if (!mz_zip_reader_init(&_zip, file->size, _ZIP_FLAGS)) {
 		auto error = mz_zip_get_last_error(&_zip);
 
 		LOG("%s, file=0x%08x", _MINIZ_ZIP_ERROR_NAMES[error], file);
 		return false;
 	}
 
-	LOG("ZIP init ok, file=0x%08x", file);
+	type     = ZIP_FILE;
+	capacity = _zip.m_archive_size;
+
+	LOG("mounted ZIP, file=0x%08x", file);
 	return true;
 }
 
@@ -88,7 +91,10 @@ bool ZIPProvider::init(const void *zipData, size_t length) {
 		return false;
 	}
 
-	LOG("ZIP init ok, ptr=0x%08x", zipData);
+	type     = ZIP_MEMORY;
+	capacity = _zip.m_archive_size;
+
+	LOG("mounted ZIP, ptr=0x%08x", zipData);
 	return true;
 }
 
@@ -99,17 +105,9 @@ void ZIPProvider::close(void) {
 		_file->close();
 		delete _file;
 	}
-}
 
-FileSystemType ZIPProvider::getFileSystemType(void) {
-	if (!_zip.m_zip_mode)
-		return NONE;
-
-	return _file ? ZIP_FILE : ZIP_MEMORY;
-}
-
-uint64_t ZIPProvider::getCapacity(void) {
-	return _zip.m_archive_size;
+	type     = NONE;
+	capacity = 0;
 }
 
 bool ZIPProvider::getFileInfo(FileInfo &output, const char *path) {
@@ -132,7 +130,7 @@ bool ZIPProvider::getFileInfo(FileInfo &output, const char *path) {
 		ptr = info.m_filename;
 
 	__builtin_strncpy(output.name, ptr, sizeof(output.name));
-	output.length     = info.m_uncomp_size;
+	output.size       = info.m_uncomp_size;
 	output.attributes = READ_ONLY | ARCHIVE;
 
 	if (info.m_is_directory)

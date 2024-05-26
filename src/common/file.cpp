@@ -10,6 +10,19 @@
 
 namespace file {
 
+/* File fragment table */
+
+uint64_t FileFragmentTable::get(uint64_t sector) const {
+	auto fragment = as<const FileFragment>();
+
+	while (sector > fragment->length) {
+		sector -= fragment->length;
+		fragment++;
+	}
+
+	return fragment->lba + sector;
+}
+
 /* Base file and directory classes */
 
 File::~File(void) {
@@ -27,7 +40,6 @@ size_t HostFile::read(void *output, size_t length) {
 	return size_t(actualLength);
 }
 
-#ifdef ENABLE_FILE_WRITING
 size_t HostFile::write(const void *input, size_t length) {
 	int actualLength = pcdrvWrite(_fd, input, length);
 
@@ -38,7 +50,6 @@ size_t HostFile::write(const void *input, size_t length) {
 
 	return size_t(actualLength);
 }
-#endif
 
 uint64_t HostFile::seek(uint64_t offset) {
 	int actualOffset = pcdrvSeek(_fd, int(offset), PCDRV_SEEK_SET);
@@ -84,8 +95,8 @@ size_t Provider::loadData(util::Data &output, const char *path) {
 	if (!_file)
 		return 0;
 
-	//assert(file->length <= SIZE_MAX);
-	if (!output.allocate(size_t(_file->length))) {
+	//assert(_file->size <= SIZE_MAX);
+	if (!output.allocate(size_t(_file->size))) {
 		_file->close();
 		delete _file;
 		return 0;
@@ -113,7 +124,6 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 }
 
 size_t Provider::saveData(const void *input, size_t length, const char *path) {
-#ifdef ENABLE_FILE_WRITING
 	auto _file = openFile(path, WRITE | ALLOW_CREATE);
 
 	if (!_file)
@@ -124,9 +134,6 @@ size_t Provider::saveData(const void *input, size_t length, const char *path) {
 	_file->close();
 	delete _file;
 	return actualLength;
-#else
-	return 0;
-#endif
 }
 
 size_t Provider::loadTIM(gpu::Image &output, const char *path) {
@@ -210,7 +217,6 @@ public:
 };
 
 size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
-#ifdef ENABLE_FILE_WRITING
 	auto _file = openFile(path, WRITE | ALLOW_CREATE);
 
 	if (!_file)
@@ -259,9 +265,6 @@ size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
 	delete _file;
 
 	return length;
-#else
-	return 0;
-#endif
 }
 
 bool HostProvider::init(void) {
@@ -272,14 +275,10 @@ bool HostProvider::init(void) {
 		return false;
 	}
 
+	type = HOST;
 	return true;
 }
 
-FileSystemType HostProvider::getFileSystemType(void) {
-	return HOST;
-}
-
-#ifdef ENABLE_FILE_WRITING
 bool HostProvider::createDirectory(const char *path) {
 	int fd = pcdrvCreate(path, DIRECTORY);
 
@@ -291,7 +290,6 @@ bool HostProvider::createDirectory(const char *path) {
 	pcdrvClose(fd);
 	return true;
 }
-#endif
 
 File *HostProvider::openFile(const char *path, uint32_t flags) {
 	PCDRVOpenMode mode = PCDRV_MODE_READ;
@@ -310,8 +308,8 @@ File *HostProvider::openFile(const char *path, uint32_t flags) {
 
 	auto file = new HostFile();
 
-	file->_fd    = fd;
-	file->length = pcdrvSeek(fd, 0, PCDRV_SEEK_END);
+	file->_fd  = fd;
+	file->size = pcdrvSeek(fd, 0, PCDRV_SEEK_END);
 	pcdrvSeek(fd, 0, PCDRV_SEEK_SET);
 
 	return file;

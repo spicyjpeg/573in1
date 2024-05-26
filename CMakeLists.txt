@@ -87,6 +87,7 @@ addExecutable(
 	main 80080000 801dfff0
 	src/common/args.cpp
 	src/common/file.cpp
+	src/common/file9660.cpp
 	src/common/filefat.cpp
 	src/common/filezip.cpp
 	src/common/gpu.cpp
@@ -125,21 +126,21 @@ addExecutable(
 target_compile_definitions(
 	main PRIVATE
 	$<IF:$<CONFIG:Debug>,
-		ENABLE_LOGGING=1
-		ENABLE_FILE_WRITING=1
-		ENABLE_LOG_BUFFER=1
-		ENABLE_PS1_CONTROLLER=1
-		#ENABLE_X76F100_DRIVER=1
 		ENABLE_DUMMY_DRIVER=1
+		ENABLE_FULL_IDE_DRIVER=1
 		ENABLE_I2C_LOGGING=1
-	,
-		ENABLE_LOGGING=1
-		ENABLE_FILE_WRITING=1
 		ENABLE_LOG_BUFFER=1
+		ENABLE_LOGGING=1
 		ENABLE_PS1_CONTROLLER=1
 		#ENABLE_X76F100_DRIVER=1
+	,
 		#ENABLE_DUMMY_DRIVER=1
+		ENABLE_FULL_IDE_DRIVER=1
 		#ENABLE_I2C_LOGGING=1
+		ENABLE_LOG_BUFFER=1
+		ENABLE_LOGGING=1
+		ENABLE_PS1_CONTROLLER=1
+		#ENABLE_X76F100_DRIVER=1
 	>
 )
 

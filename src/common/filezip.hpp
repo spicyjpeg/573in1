@@ -21,9 +21,6 @@ public:
 	bool init(const void *zipData, size_t length);
 	void close(void);
 
-	FileSystemType getFileSystemType(void);
-	uint64_t getCapacity(void);
-
 	bool getFileInfo(FileInfo &output, const char *path);
 
 	size_t loadData(util::Data &output, const char *path);

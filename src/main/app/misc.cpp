@@ -73,16 +73,15 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 	// FAT file system
-	auto &fs    = APP->_fileProvider;
-	auto fsType = fs.getFileSystemType();
+	auto &fs = APP->_fileProvider;
 
 	_PRINT(STR("IDEInfoScreen.fat.header"));
 
-	if (fsType)
+	if (fs.type)
 		_PRINT(
-			STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fsType], fs.volumeLabel,
+			STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fs.type], fs.volumeLabel,
 			fs.serialNumber >> 16, fs.serialNumber & 0xffff,
-			fs.getCapacity() / 0x100000, fs.getFreeSpace() / 0x100000
+			fs.capacity / 0x100000, fs.getFreeSpace() / 0x100000
 		);
 	else
 		_PRINT(STR("IDEInfoScreen.fat.error"));

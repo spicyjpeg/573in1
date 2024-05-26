@@ -26,6 +26,25 @@ static constexpr int _RESET_STATUS_TIMEOUT = 2000000;
 static constexpr int _DATA_STATUS_TIMEOUT  = 2000000;
 static constexpr int _DMA_TIMEOUT          = 10000;
 
+static const char *const _SENSE_KEY_NAMES[]{
+	"NO_SENSE",
+	"RECOVERED_ERROR",
+	"NOT_READY",
+	"MEDIUM_ERROR",
+	"HARDWARE_ERROR",
+	"ILLEGAL_REQUEST",
+	"UNIT_ATTENTION",
+	"DATA_PROTECT",
+	"BLANK_CHECK",
+	nullptr,
+	nullptr,
+	"ABORTED_COMMAND",
+	nullptr,
+	nullptr,
+	"MISCOMPARE",
+	nullptr
+};
+
 const char *const DEVICE_ERROR_NAMES[]{
 	"NO_ERROR",
 	"UNSUPPORTED_OP",
@@ -37,6 +56,7 @@ const char *const DEVICE_ERROR_NAMES[]{
 
 /* Utilities */
 
+#ifdef ENABLE_FULL_IDE_DRIVER
 static void _copyString(char *output, const uint16_t *input, size_t length) {
 	// The strings in the identification block are byte-swapped and padded with
 	// spaces. To make them printable, any span of consecutive space characters
@@ -64,6 +84,7 @@ static void _copyString(char *output, const uint16_t *input, size_t length) {
 		*(--output) = b;
 	}
 }
+#endif
 
 bool IdentifyBlock::validateChecksum(void) const {
 	if ((checksum & 0xff) != 0xa5)
@@ -144,6 +165,7 @@ DeviceError Device::_command(uint8_t cmd, bool drdy) {
 	uint8_t     mask = drdy ? CS0_STATUS_DRDY : 0;
 
 	error = _waitForStatus(CS0_STATUS_BSY | mask, mask, _STATUS_TIMEOUT);
+
 	if (error)
 		return error;
 
@@ -157,6 +179,7 @@ DeviceError Device::_transferPIO(void *data, size_t length, bool write) {
 	auto error = _waitForStatus(
 		CS0_STATUS_DRQ, CS0_STATUS_DRQ, _DATA_STATUS_TIMEOUT
 	);
+
 	if (error)
 		return error;
 
@@ -181,6 +204,7 @@ DeviceError Device::_transferDMA(void *data, size_t length, bool write) {
 	auto error = _waitForStatus(
 		CS0_STATUS_DRQ, CS0_STATUS_DRQ, _DATA_STATUS_TIMEOUT
 	);
+
 	if (error)
 		return error;
 
@@ -213,6 +237,7 @@ DeviceError Device::enumerate(void) {
 	_select();
 
 	auto error = _waitForStatus(CS0_STATUS_BSY, 0, _RESET_STATUS_TIMEOUT);
+
 	if (error)
 		return error;
 
@@ -225,10 +250,12 @@ DeviceError Device::enumerate(void) {
 		flags |= DEVICE_ATAPI;
 
 		error = _command(ATA_IDENTIFY_PACKET, false);
+
 		if (error)
 			return error;
 
 		error = _transferPIO(&block, sizeof(IdentifyBlock));
+
 		if (error)
 			return error;
 
@@ -246,10 +273,12 @@ DeviceError Device::enumerate(void) {
 			flags |= DEVICE_HAS_PACKET16;
 	} else {
 		error = _command(ATA_IDENTIFY);
+
 		if (error)
 			return error;
 
 		error = _transferPIO(&block, sizeof(IdentifyBlock));
+
 		if (error)
 			return error;
 
@@ -265,18 +294,22 @@ DeviceError Device::enumerate(void) {
 			flags |= DEVICE_HAS_FLUSH;
 	}
 
+#ifdef ENABLE_FULL_IDE_DRIVER
 	_copyString(model, block.model, sizeof(block.model));
 	_copyString(revision, block.revision, sizeof(block.revision));
 	_copyString(serialNumber, block.serialNumber, sizeof(block.serialNumber));
 
 	LOG("drive %d: %s", (flags / DEVICE_SECONDARY) & 1, model);
+#endif
 
 	// Find out the fastest PIO transfer mode supported and enable it.
 	int mode = block.getHighestPIOMode();
 
 	_write(CS0_FEATURES, FEATURE_TRANSFER_MODE);
 	_write(CS0_COUNT,    (1 << 3) | mode);
+
 	error = _command(ATA_SET_FEATURES, false);
+
 	if (error)
 		return error;
 
@@ -303,19 +336,21 @@ DeviceError Device::_ideReadWrite(
 	}
 
 	while (count) {
-		size_t length = util::min(count, maxLength);
+		size_t chunkLength = util::min(count, maxLength);
 
-		_setLBA(lba, count);
+		_setLBA(lba, chunkLength);
 		auto error = _command(cmd);
+
 		if (error)
 			return error;
 
 		// Data must be transferred one sector at a time as the drive may
 		// deassert DRQ between sectors.
-		for (size_t i = length; i; i--) {
+		for (size_t i = chunkLength; i; i--) {
 			error = _transferPIO(
 				reinterpret_cast<void *>(ptr), ATA_SECTOR_SIZE, write
 			);
+
 			if (error)
 				return error;
 
@@ -325,16 +360,64 @@ DeviceError Device::_ideReadWrite(
 		error = _waitForStatus(
 			CS0_STATUS_BSY | CS0_STATUS_DRDY, CS0_STATUS_DRDY, _STATUS_TIMEOUT
 		);
+
 		if (error)
 			return error;
 
-		count -= length;
+		count -= chunkLength;
 	}
 
 	return NO_ERROR;
 }
 
-DeviceError Device::ideIdle(bool standby) {
+DeviceError Device::_atapiRead(uintptr_t ptr, uint32_t lba, size_t count) {
+	Packet packet;
+
+	packet.setRead(lba, count);
+	auto error = atapiPacket(packet);
+
+	if (error)
+		return error;
+
+	// Data must be transferred one sector at a time as the drive may deassert
+	// DRQ between sectors.
+	for (; count; count--) {
+		error = _transferPIO(
+			reinterpret_cast<void *>(ptr), ATAPI_SECTOR_SIZE
+		);
+
+		if (error)
+			return error;
+
+		ptr += ATAPI_SECTOR_SIZE;
+	}
+
+	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
+}
+
+#ifdef ENABLE_FULL_IDE_DRIVER
+DeviceError Device::_atapiRequestSense(void){
+	Packet packet;
+
+	packet.setRequestSense();
+	auto error = atapiPacket(packet);
+
+	if (error)
+		return error;
+
+	SenseData sense;
+
+	error = _transferPIO(&sense, sizeof(sense));
+
+	if (error)
+		return error;
+
+	LOG("%s (0x%02x)", _SENSE_KEY_NAMES[sense.senseKey & 0xf], sense.senseKey);
+	LOG("asc=0x%02x, ascq=0x%02x", sense.asc, sense.ascQualifier);
+	return NO_ERROR;
+}
+
+DeviceError Device::goIdle(bool standby) {
 	_select();
 
 	auto error = _command(standby ? ATA_STANDBY_IMMEDIATE : ATA_IDLE_IMMEDIATE);
@@ -353,7 +436,7 @@ DeviceError Device::ideIdle(bool standby) {
 	return error;
 }
 
-DeviceError Device::ideFlushCache(void) {
+DeviceError Device::flushCache(void) {
 	if (!(flags & DEVICE_HAS_FLUSH))
 		return NO_ERROR;
 		//return UNSUPPORTED_OP;
@@ -364,6 +447,7 @@ DeviceError Device::ideFlushCache(void) {
 		(flags & DEVICE_HAS_LBA48) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE
 	);
 }
+#endif
 
 DeviceError Device::atapiPacket(Packet &packet, size_t transferLength) {
 	if (!(flags & DEVICE_ATAPI))
@@ -373,15 +457,49 @@ DeviceError Device::atapiPacket(Packet &packet, size_t transferLength) {
 
 	_write(CS0_CYLINDER_L, (transferLength >> 0) & 0xff);
 	_write(CS0_CYLINDER_H, (transferLength >> 8) & 0xff);
+
 	auto error = _command(ATA_PACKET, false);
+
 	if (error)
 		return error;
 
 	error = _transferPIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
+
 	if (error)
 		return error;
 
 	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
+}
+
+DeviceError Device::read(void *data, uint64_t lba, size_t count) {
+	util::assertAligned<uint32_t>(data);
+
+	if (flags & DEVICE_ATAPI) {
+		auto error = _atapiRead(
+			reinterpret_cast<uintptr_t>(data), static_cast<uint32_t>(lba), count
+		);
+
+#ifdef ENABLE_FULL_IDE_DRIVER
+		// Log sense information in case of read errors.
+		if (error)
+			_atapiRequestSense();
+#endif
+
+		return error;
+	} else {
+		return _ideReadWrite(
+			reinterpret_cast<uintptr_t>(data), lba, count, false
+		);
+	}
+}
+
+DeviceError Device::write(const void *data, uint64_t lba, size_t count) {
+	util::assertAligned<uint32_t>(data);
+
+	if (flags & (DEVICE_READ_ONLY | DEVICE_ATAPI))
+		return UNSUPPORTED_OP;
+
+	return _ideReadWrite(reinterpret_cast<uintptr_t>(data), lba, count, true);
 }
 
 }

@@ -289,7 +289,7 @@ bool App::_romRestoreWorker(void) {
 
 	util::Hash message;
 
-	message = (_file->length > regionLength)
+	message = (_file->size > regionLength)
 		? "App.romRestoreWorker.overflow"_h
 		: "App.romRestoreWorker.success"_h;
 

@@ -139,6 +139,7 @@ enum ATAPISenseKey : uint8_t {
 	SENSE_KEY_ILLEGAL_REQUEST = 0x5,
 	SENSE_KEY_UNIT_ATTENTION  = 0x6,
 	SENSE_KEY_DATA_PROTECT    = 0x7,
+	SENSE_KEY_BLANK_CHECK     = 0x8,
 	SENSE_KEY_ABORTED_COMMAND = 0xb,
 	SENSE_KEY_MISCOMPARE      = 0xe
 };
@@ -236,7 +237,32 @@ public:
 	int getHighestPIOMode(void) const;
 };
 
-class [[gnu::packed]] Packet {
+/* ATAPI data structures */
+
+class SenseData {
+public:
+	uint8_t errorCode;              // 0
+	uint8_t _reserved;              // 1
+	uint8_t senseKey;               // 2
+	uint8_t info[4];                // 3-6
+	uint8_t additionalLength;       // 7
+	uint8_t commandSpecificInfo[4]; // 8-11
+	uint8_t asc;                    // 12
+	uint8_t ascQualifier;           // 13
+	uint8_t unitCode;               // 14
+	uint8_t senseKeySpecificHeader; // 15
+	uint8_t senseKeySpecific[2];    // 16-17
+
+	inline uint32_t getErrorLBA(void) const {
+		return 0
+			| (info[0] << 24)
+			| (info[1] << 16)
+			| (info[2] <<  8)
+			| (info[3] <<  0);
+	}
+};
+
+class Packet {
 public:
 	uint8_t command;
 	uint8_t param[11];
@@ -267,6 +293,12 @@ public:
 		command  = ATAPI_SET_CD_SPEED;
 		param[1] = (value >> 8) & 0xff;
 		param[2] = (value >> 0) & 0xff;
+	}
+	inline void setRequestSense(uint8_t additionalLength = 0) {
+		util::clear(*this);
+
+		command  = ATAPI_REQUEST_SENSE;
+		param[3] = sizeof(SenseData) + additionalLength;
 	}
 };
 
@@ -325,11 +357,17 @@ private:
 	DeviceError _ideReadWrite(
 		uintptr_t ptr, uint64_t lba, size_t count, bool write
 	);
+	DeviceError _atapiRead(uintptr_t ptr, uint32_t lba, size_t count);
+#ifdef ENABLE_FULL_IDE_DRIVER
+	DeviceError _atapiRequestSense(void);
+#endif
 
 public:
 	uint32_t flags;
 
+#ifdef ENABLE_FULL_IDE_DRIVER
 	char     model[41], revision[9], serialNumber[21];
+#endif
 	uint64_t capacity;
 
 	inline Device(uint32_t flags)
@@ -338,19 +376,27 @@ public:
 	inline size_t getSectorSize(void) const {
 		return (flags & DEVICE_ATAPI) ? ATAPI_SECTOR_SIZE : ATA_SECTOR_SIZE;
 	}
-	inline DeviceError ideRead(void *data, uint64_t lba, size_t count) {
-		return _ideReadWrite(reinterpret_cast<uint32_t>(data), lba, count, false);
-	}
-	inline DeviceError ideWrite(const void *data, uint64_t lba, size_t count) {
-		return _ideReadWrite(reinterpret_cast<uint32_t>(data), lba, count, true);
+	inline bool isPointerAligned(const void *ptr) {
+		// DMA transfers require 4-byte alignment, while PIO transfers require
+		// 2-byte alignment.
+#if 0
+		return bool(!(reinterpret_cast<uintptr_t>(ptr) % alignof(uint32_t)));
+#else
+		return bool(!(reinterpret_cast<uintptr_t>(ptr) % alignof(uint16_t)));
+#endif
 	}
 
 	DeviceError enumerate(void);
-	DeviceError ideIdle(bool standby = false);
-	DeviceError ideFlushCache(void);
+#ifdef ENABLE_FULL_IDE_DRIVER
+	DeviceError goIdle(bool standby = false);
+	DeviceError flushCache(void);
+#endif
 	DeviceError atapiPacket(
 		Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
 	);
+
+	DeviceError read(void *data, uint64_t lba, size_t count);
+	DeviceError write(const void *data, uint64_t lba, size_t count);
 };
 
 extern const char *const DEVICE_ERROR_NAMES[];

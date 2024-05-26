@@ -48,7 +48,6 @@ size_t FATFile::read(void *output, size_t length) {
 	return uint64_t(actualLength);
 }
 
-#ifdef ENABLE_FILE_WRITING
 size_t FATFile::write(const void *input, size_t length) {
 	size_t actualLength;
 	auto   error = f_write(&_fd, input, length, &actualLength);
@@ -60,7 +59,6 @@ size_t FATFile::write(const void *input, size_t length) {
 
 	return uint64_t(actualLength);
 }
-#endif
 
 uint64_t FATFile::seek(uint64_t offset) {
 	auto error = f_lseek(&_fd, offset);
@@ -93,7 +91,7 @@ bool FATDirectory::getEntry(FileInfo &output) {
 		return false;
 
 	__builtin_strncpy(output.name, info.fname, sizeof(output.name));
-	output.length     = info.fsize;
+	output.size       = info.fsize;
 	output.attributes = info.fattrib;
 
 	return true;
@@ -115,8 +113,12 @@ bool FATProvider::init(const char *drive) {
 		return false;
 	}
 
+	type     = FileSystemType(_fs.fs_type);
+	capacity = uint64_t(_fs.n_fatent - 2) * _fs.csize * _fs.ssize;
+
 	f_getlabel(_drive, volumeLabel, &serialNumber);
-	LOG("FAT mount ok, drive=%s", drive);
+
+	LOG("mounted FAT: %s, drive=%s", volumeLabel, drive);
 	return true;
 }
 
@@ -128,23 +130,12 @@ void FATProvider::close(void) {
 		return;
 	}
 
+	type     = NONE;
+	capacity = 0;
+
 	LOG("FAT unmount ok, drive=%s", _drive);
 }
 
-FileSystemType FATProvider::getFileSystemType(void) {
-	return FileSystemType(_fs.fs_type);
-}
-
-uint64_t FATProvider::getCapacity(void) {
-	if (!_fs.fs_type)
-		return 0;
-
-	size_t clusterSize = size_t(_fs.csize) * size_t(_fs.ssize);
-
-	return uint64_t(_fs.n_fatent - 2) * uint64_t(clusterSize);
-}
-
-#ifdef ENABLE_FILE_WRITING
 uint64_t FATProvider::getFreeSpace(void) {
 	if (!_fs.fs_type)
 		return 0;
@@ -162,7 +153,6 @@ uint64_t FATProvider::getFreeSpace(void) {
 
 	return uint64_t(count) * uint64_t(clusterSize);
 }
-#endif
 
 bool FATProvider::_selectDrive(void) {
 	if (!_fs.fs_type)
@@ -184,10 +174,45 @@ bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 	}
 
 	__builtin_strncpy(output.name, info.fname, sizeof(output.name));
-	output.length     = info.fsize;
+	output.size       = info.fsize;
 	output.attributes = info.fattrib;
 
 	return true;
+}
+
+bool FATProvider::getFileFragments(
+	FileFragmentTable &output, const char *path
+) {
+	if (!_selectDrive())
+		return false;
+
+	FIL    fd;
+	size_t length = 0;
+	auto   error  = f_open(&fd, path, READ);
+
+	if (error)
+		goto _openError;
+
+	// Note that this function is not normally part of FatFs.
+	error = f_getlbas(&fd, nullptr, 0, &length);
+
+	if (error)
+		goto _fileError;
+
+	if (!output.allocate<uint64_t>(length)) {
+		f_close(&fd);
+		return false;
+	}
+
+	f_getlbas(&fd, output.as<uint64_t>(), 0, &length);
+	f_close(&fd);
+	return true;
+
+_fileError:
+	f_close(&fd);
+_openError:
+	LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+	return false;
 }
 
 Directory *FATProvider::openDirectory(const char *path) {
@@ -206,7 +231,6 @@ Directory *FATProvider::openDirectory(const char *path) {
 	return dir;
 }
 
-#ifdef ENABLE_FILE_WRITING
 bool FATProvider::createDirectory(const char *path) {
 	if (!_selectDrive())
 		return false;
@@ -220,7 +244,6 @@ bool FATProvider::createDirectory(const char *path) {
 
 	return true;
 }
-#endif
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
 	if (!_selectDrive())
@@ -235,7 +258,7 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 		return nullptr;
 	}
 
-	_file->length = f_size(&(_file->_fd));
+	_file->size = f_size(&(_file->_fd));
 	return _file;
 }
 
@@ -275,7 +298,7 @@ extern "C" DRESULT disk_read(
 
 	if (!(dev.flags & ide::DEVICE_READY))
 		return RES_NOTRDY;
-	if (dev.ideRead(data, lba, count))
+	if (dev.read(data, lba, count))
 		return RES_ERROR;
 
 	return RES_OK;
@@ -290,7 +313,7 @@ extern "C" DRESULT disk_write(
 		return RES_NOTRDY;
 	if (dev.flags & ide::DEVICE_READ_ONLY)
 		return RES_WRPRT;
-	if (dev.ideWrite(data, lba, count))
+	if (dev.write(data, lba, count))
 		return RES_ERROR;
 
 	return RES_OK;
@@ -303,8 +326,10 @@ extern "C" DRESULT disk_ioctl(uint8_t drive, uint8_t cmd, void *data) {
 		return RES_NOTRDY;
 
 	switch (cmd) {
+#ifdef ENABLE_FULL_IDE_DRIVER
 		case CTRL_SYNC:
-			return dev.ideFlushCache() ? RES_ERROR : RES_OK;
+			return dev.flushCache() ? RES_ERROR : RES_OK;
+#endif
 
 		case GET_SECTOR_COUNT:
 			__builtin_memcpy(data, &dev.capacity, sizeof(LBA_t));

@@ -1,5 +1,12 @@
+/*
+ * This library has been modified to add a function for building file fragment
+ * tables (similar to the existing "fastseek" functionality). Additionally, all
+ * patches available on http://elm-chan.org/fsw/ff/patches.html have been
+ * applied. The original license and copyright notice is below.
+ */
+
 /*----------------------------------------------------------------------------/
-/  FatFs - Generic FAT Filesystem Module  R0.15 w/patch1                      /
+/  FatFs - Generic FAT Filesystem Module  R0.15 w/patch3                      /
 /-----------------------------------------------------------------------------/
 /
 / Copyright (C) 2022, ChaN, all right reserved.
@@ -468,10 +475,11 @@ static WORD Fsid;					/* Filesystem mount ID */
 static BYTE CurrVol;				/* Current drive set by f_chdrive() */
 #endif
 
-#if FF_FS_LOCK != 0
+#if FF_FS_LOCK
 static FILESEM Files[FF_FS_LOCK];	/* Open object lock semaphores */
 #if FF_FS_REENTRANT
-static BYTE SysLock;				/* System lock flag (0:no mutex, 1:unlocked, 2:locked) */
+static volatile BYTE SysLock;		/* System lock flag to protect Files[] (0:no mutex, 1:unlocked, 2:locked) */
+static volatile BYTE SysLockVolume;	/* Volume id who is locking Files[] */
 #endif
 #endif
 
@@ -905,6 +913,7 @@ static int lock_volume (	/* 1:Ok, 0:timeout */
 	if (rv && syslock) {			/* System lock reqiered? */
 		rv = ff_mutex_take(FF_VOLUMES);	/* Lock the system */
 		if (rv) {
+			SysLockVolume = fs->ldrv;
 			SysLock = 2;				/* System lock succeeded */
 		} else {
 			ff_mutex_give(fs->ldrv);	/* Failed system lock */
@@ -924,7 +933,7 @@ static void unlock_volume (
 {
 	if (fs && res != FR_NOT_ENABLED && res != FR_INVALID_DRIVE && res != FR_TIMEOUT) {
 #if FF_FS_LOCK
-		if (SysLock == 2) {	/* Is the system locked? */
+		if (SysLock == 2 && SysLockVolume == fs->ldrv) {	/* Unlock system if it has been locked by this task */
 			SysLock = 1;
 			ff_mutex_give(FF_VOLUMES);
 		}
@@ -5460,6 +5469,9 @@ FRESULT f_setlabel (
 	/* Get logical drive */
 	res = mount_volume(&label, &fs, FA_WRITE);
 	if (res != FR_OK) LEAVE_FF(fs, res);
+#if FF_STR_VOLUME_ID == 2
+	for ( ; *label == '/'; label++) ;	/* Snip the separators off */
+#endif
 
 #if FF_FS_EXFAT
 	if (fs->fs_type == FS_EXFAT) {	/* On the exFAT volume */
@@ -7081,4 +7093,62 @@ FRESULT f_setcp (
 	return FR_OK;
 }
 #endif	/* FF_CODE_PAGE == 0 */
+
+
+#if FF_FS_MINIMIZE <= 1
+/*-----------------------------------------------------------------------*/
+/* Get list of LBAs used by file                                         */
+/*-----------------------------------------------------------------------*/
+
+FRESULT f_getlbas (
+	FIL* fp,
+	LBA_t* tbl,
+	UINT ofs,
+	UINT* len
+)
+{
+	FRESULT res;
+	FATFS *fs;
+	DWORD cl, pcl, ncl, tcl, tlen, ulen;
+
+	res = validate(&fp->obj, &fs);		/* Check validity of the file object */
+	if (res == FR_OK) res = (FRESULT)fp->err;
+#if FF_FS_EXFAT && !FF_FS_READONLY
+	if (res == FR_OK && fs->fs_type == FS_EXFAT) {
+		res = fill_last_frag(&fp->obj, fp->clust, 0xFFFFFFFF);	/* Fill last fragment on the FAT if needed */
+	}
+#endif
+	if (res != FR_OK) LEAVE_FF(fs, res);
+
+	tlen = *len + ofs; 		/* Given table size and required table size */
+	ulen = 2;
+	cl = fp->obj.sclust;	/* Origin of the chain */
+	if (cl != 0) {
+		do {
+			// TODO ofs
+			/* Get a fragment */
+			tcl = cl; ncl = 0; ulen += 2;	/* Top, length and used items */
+			do {
+				pcl = cl; ncl++;
+				cl = get_fat(&fp->obj, cl);
+				if (cl <= 1) ABORT(fs, FR_INT_ERR);
+				if (cl == 0xFFFFFFFF) ABORT(fs, FR_DISK_ERR);
+			} while (cl == pcl + 1);
+			if (tbl && (ulen >= ofs) && (ulen <= tlen)) {	/* Store the length and top of the fragment */
+				*tbl++ = (LBA_t)fs->csize * ncl;
+				*tbl++ = clst2sect(fs, tcl);
+			}
+		} while (cl < fs->n_fatent);	/* Repeat until end of chain */
+	}
+	*len = ulen - ofs;	/* Number of items used */
+	if (tbl && (ulen >= ofs) && (ulen <= tlen)) {
+		*tbl++ = 0;		/* Terminate table */
+		*tbl = 0;
+	} else {
+		res = FR_NOT_ENOUGH_CORE;	/* Given table size is smaller than required */
+	}
+
+	LEAVE_FF(fs, res);
+}
+#endif /* FF_FS_MINIMIZE <= 1 */
 
