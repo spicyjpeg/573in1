@@ -47,15 +47,31 @@ enum FileAttributeFlag {
 struct FileInfo {
 public:
 	char     name[MAX_NAME_LENGTH];
-	uint64_t length;
+	uint64_t size;
 	uint32_t attributes;
+};
+
+/* File fragment table */
+
+struct FileFragment {
+public:
+	uint64_t lba, length;
+};
+
+class FileFragmentTable : public util::Data {
+public:
+	inline uint64_t operator[](uint64_t sector) const {
+		return get(sector);
+	}
+
+	uint64_t get(uint64_t sector) const;
 };
 
 /* Base file and directory classes */
 
 class File {
 public:
-	uint64_t length;
+	uint64_t size;
 
 	virtual ~File(void);
 
@@ -74,9 +90,7 @@ private:
 
 public:
 	size_t read(void *output, size_t length);
-#ifdef ENABLE_FILE_WRITING
 	size_t write(const void *input, size_t length);
-#endif
 	uint64_t seek(uint64_t offset);
 	uint64_t tell(void) const;
 	void close(void);
@@ -96,11 +110,13 @@ extern uint32_t currentSPUOffset;
 
 class Provider {
 public:
-	char     volumeLabel[MAX_NAME_LENGTH];
-	uint32_t serialNumber;
+	FileSystemType type;
+	uint32_t       serialNumber;
+	uint64_t       capacity;
+	char           volumeLabel[MAX_NAME_LENGTH];
 
 	inline Provider(void)
-	: serialNumber(0) {
+	: type(NONE), serialNumber(0), capacity(0) {
 		volumeLabel[0] = 0;
 	}
 	template<class T> inline size_t loadStruct(T &output, const char *path) {
@@ -113,12 +129,14 @@ public:
 	virtual ~Provider(void);
 
 	virtual void close(void) {}
-
-	virtual FileSystemType getFileSystemType(void) { return NONE; }
-	virtual uint64_t getCapacity(void) { return 0; }
 	virtual uint64_t getFreeSpace(void) { return 0; }
 
-	virtual bool getFileInfo(FileInfo &output, const char *path) { return false; }
+	virtual bool getFileInfo(FileInfo &output, const char *path) {
+		return false;
+	}
+	virtual bool getFileFragments(FileFragmentTable &output, const char *path) {
+		return false;
+	}
 	virtual Directory *openDirectory(const char *path) { return nullptr; }
 	virtual bool createDirectory(const char *path) { return false; }
 
@@ -136,11 +154,7 @@ class HostProvider : public Provider {
 public:
 	bool init(void);
 
-	FileSystemType getFileSystemType(void);
-
-#ifdef ENABLE_FILE_WRITING
 	bool createDirectory(const char *path);
-#endif
 
 	File *openFile(const char *path, uint32_t flags);
 };

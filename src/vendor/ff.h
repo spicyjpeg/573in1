@@ -1,3 +1,10 @@
+/*
+ * This library has been modified to add a function for building file fragment
+ * tables (similar to the existing "fastseek" functionality). Additionally, all
+ * patches available on http://elm-chan.org/fsw/ff/patches.html have been
+ * applied. The original license and copyright notice is below.
+ */
+
 /*----------------------------------------------------------------------------/
 /  FatFs - Generic FAT Filesystem module  R0.15                               /
 /-----------------------------------------------------------------------------/
@@ -331,6 +338,7 @@ int f_putc (TCHAR c, FIL* fp);										/* Put a character to the file */
 int f_puts (const TCHAR* str, FIL* cp);								/* Put a string to the file */
 int f_printf (FIL* fp, const TCHAR* str, ...);						/* Put a formatted string to the file */
 TCHAR* f_gets (TCHAR* buff, int len, FIL* fp);						/* Get a string from the file */
+FRESULT f_getlbas (FIL* fp, LBA_t* tbl, UINT ofs, UINT* len);		/* Get list of LBAs used by file */
 
 /* Some API fucntions are implemented as macro */
 

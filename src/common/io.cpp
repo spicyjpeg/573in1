@@ -87,7 +87,7 @@ void setRTCTime(const util::Date &value, bool stop) {
 	//assert((value.year >= 1970) && (value.year <= 2069));
 
 	int _year   = value.year % 100;
-	int weekday = value.getDayOfWeek();
+	int weekday = value.getDayOfWeek() + 1;
 
 	int year    = (_year        % 10) | (((_year        / 10) & 15) << 4);
 	int month   = (value.month  % 10) | (((value.month  / 10) &  1) << 4);
@@ -123,7 +123,7 @@ bool isRTCBatteryLow(void) {
 
 enum BitstreamTagType : uint8_t {
 	_TAG_SOURCE_FILE = 'a',
-	_TAG_CHIP_TYPE   = 'b',
+	_TAG_PART_NAME   = 'b',
 	_TAG_BUILD_DATE  = 'c',
 	_TAG_BUILD_TIME  = 'd',
 	_TAG_DATA        = 'e'
@@ -194,10 +194,10 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 	uint8_t id1 = data[1], id2 = data[4];
 	void    (*writeFunc)(const uint8_t *, size_t);
 
-	if (((id1 & 0x0f) == 0x04) && ((id2 & 0xf0) == 0xf0))
-		writeFunc = &_writeBitstreamLSB;
-	else if (((id1 & 0xf0) == 0x20) && ((id2 & 0x0f) == 0x0f))
+	if (((id1 & 0xf0) == 0x20) && ((id2 & 0x0f) == 0x0f))
 		writeFunc = &_writeBitstreamMSB;
+	else if (((id1 & 0x0f) == 0x04) && ((id2 & 0xf0) == 0xf0))
+		writeFunc = &_writeBitstreamLSB;
 	else
 		return false;
 

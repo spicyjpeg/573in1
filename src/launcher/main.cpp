@@ -1,4 +1,5 @@
 
+#include <stdint.h>
 #include "common/args.hpp"
 #include "common/io.hpp"
 #include "common/rom.hpp"
