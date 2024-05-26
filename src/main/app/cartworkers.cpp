@@ -27,7 +27,7 @@ bool App::_cartDetectWorker(void) {
 
 #ifdef ENABLE_DUMMY_DRIVER
 	if (!cart::dummyDriverDump.chipType)
-		_resourceProvider.loadStruct(cart::dummyDriverDump, "data/test.573");
+		_fileIO.resource.loadStruct(cart::dummyDriverDump, "data/test.573");
 
 	if (cart::dummyDriverDump.chipType) {
 		LOG("using dummy cart driver");
@@ -60,7 +60,7 @@ bool App::_cartDetectWorker(void) {
 		_workerStatus.update(1, 3, WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!_cartDB.ptr) {
-			if (!_resourceProvider.loadData(
+			if (!_fileIO.resource.loadData(
 				_cartDB, _CARTDB_PATHS[_cartDump.chipType])
 			) {
 				LOG("%s not found", _CARTDB_PATHS[_cartDump.chipType]);
@@ -99,7 +99,7 @@ _cartInitDone:
 		util::Data bitstream;
 		bool       ready;
 
-		if (!_resourceProvider.loadData(bitstream, "data/fpga.bit")) {
+		if (!_fileIO.resource.loadData(bitstream, "data/fpga.bit")) {
 			LOG("bitstream unavailable");
 			return true;
 		}
@@ -224,7 +224,7 @@ bool App::_cartDumpWorker(void) {
 
 	LOG("saving %s, length=%d", path, length);
 
-	if (_fileProvider.saveData(&_cartDump, length, path) != length)
+	if (_fileIO.vfs.saveData(&_cartDump, length, path) != length)
 		goto _error;
 
 	_messageScreen.setMessage(
@@ -269,8 +269,8 @@ bool App::_cartWriteWorker(void) {
 bool App::_cartRestoreWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.cartRestoreWorker.init"));
 
-	const char *path = _filePickerScreen.selectedPath;
-	auto       _file = _fileProvider.openFile(path, file::READ);
+	const char *path = _fileBrowserScreen.selectedPath;
+	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
 	cart::CartDump newDump;
 	size_t         length;
@@ -292,7 +292,7 @@ bool App::_cartRestoreWorker(void) {
 
 	if (_cartDump.chipType != newDump.chipType) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _filePickerScreen,
+			MESSAGE_ERROR, _fileBrowserScreen,
 			WSTR("App.cartRestoreWorker.typeError"), path
 		);
 		_workerStatus.setNextScreen(_messageScreen);
@@ -322,7 +322,7 @@ bool App::_cartRestoreWorker(void) {
 
 	if (error) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _filePickerScreen,
+			MESSAGE_ERROR, _fileBrowserScreen,
 			WSTR("App.cartRestoreWorker.writeError"),
 			cart::getErrorString(error)
 		);
@@ -338,7 +338,7 @@ _fileError:
 
 _fileOpenError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _filePickerScreen,
+		MESSAGE_ERROR, _fileBrowserScreen,
 		WSTR("App.cartRestoreWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);

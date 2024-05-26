@@ -101,10 +101,12 @@ bool ZIPProvider::init(const void *zipData, size_t length) {
 void ZIPProvider::close(void) {
 	mz_zip_reader_end(&_zip);
 
+#if 0
 	if (_file) {
 		_file->close();
 		delete _file;
 	}
+#endif
 
 	type     = NONE;
 	capacity = 0;

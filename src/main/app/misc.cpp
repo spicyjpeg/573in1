@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "common/file.hpp"
 #include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
@@ -13,9 +14,21 @@
 
 /* System information screens */
 
-static const util::Hash _IDE_HEADERS[]{
-	"IDEInfoScreen.ide.header.primary"_h,
-	"IDEInfoScreen.ide.header.secondary"_h
+struct IDEInfoHeader {
+public:
+	util::Hash device, fat, iso9660;
+};
+
+static const IDEInfoHeader _IDE_INFO_HEADERS[]{
+	{
+		.device  = "IDEInfoScreen.device.header.primary"_h,
+		.fat     = "IDEInfoScreen.fat.header.primary"_h,
+		.iso9660 = "IDEInfoScreen.iso9660.header.primary"_h
+	}, {
+		.device  = "IDEInfoScreen.device.header.secondary"_h,
+		.fat     = "IDEInfoScreen.fat.header.secondary"_h,
+		.iso9660 = "IDEInfoScreen.iso9660.header.secondary"_h
+	}
 };
 
 static const char *const _FAT_TYPES[]{
@@ -36,57 +49,69 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
-	// IDE drives
 	for (int i = 0; i < 2; i++) {
-		auto &dev = ide::devices[i];
+		auto &header = _IDE_INFO_HEADERS[i];
+		auto &dev    = ide::devices[i];
+		auto fs      = APP->_fileIO.ide[i];
 
-		_PRINT(STRH(_IDE_HEADERS[i]));
+		// Device information
+		_PRINT(STRH(header.device));
 
 		if (dev.flags & ide::DEVICE_READY) {
 			_PRINT(
-				STR("IDEInfoScreen.ide.commonInfo"), dev.model, dev.revision,
+				STR("IDEInfoScreen.device.commonInfo"), dev.model, dev.revision,
 				dev.serialNumber
 			);
 
 			if (dev.flags & ide::DEVICE_ATAPI) {
 				_PRINT(
-					STR("IDEInfoScreen.ide.atapiInfo"),
+					STR("IDEInfoScreen.device.atapiInfo"),
 					(dev.flags & ide::DEVICE_HAS_PACKET16) ? 16 : 12
 				);
 			} else {
 				_PRINT(
-					STR("IDEInfoScreen.ide.ataInfo"),
+					STR("IDEInfoScreen.device.ataInfo"),
 					uint64_t(dev.capacity / (0x100000 / ide::ATA_SECTOR_SIZE)),
 					(dev.flags & ide::DEVICE_HAS_LBA48) ? 48 : 28
 				);
 
 				if (dev.flags & ide::DEVICE_HAS_TRIM)
-					_PRINT(STR("IDEInfoScreen.ide.hasTrim"));
+					_PRINT(STR("IDEInfoScreen.device.hasTrim"));
 				if (dev.flags & ide::DEVICE_HAS_FLUSH)
-					_PRINT(STR("IDEInfoScreen.ide.hasFlush"));
+					_PRINT(STR("IDEInfoScreen.device.hasFlush"));
 			}
 		} else {
-			_PRINT(STR("IDEInfoScreen.ide.error"));
+			_PRINT(STR("IDEInfoScreen.device.error"));
+		}
+
+		_PRINTLN();
+
+		// Filesystem information
+		if (!fs)
+			continue;
+
+		if (fs->type == file::ISO9660) {
+			_PRINT(STRH(header.iso9660));
+
+			_PRINT(
+				STR("IDEInfoScreen.iso9660.info"), fs->volumeLabel,
+				fs->capacity / 0x100000
+			);
+		} else {
+			_PRINT(STRH(header.fat));
+
+			_PRINT(
+				STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fs->type],
+				fs->volumeLabel, fs->serialNumber >> 16,
+				fs->serialNumber & 0xffff, fs->capacity / 0x100000,
+				fs->getFreeSpace() / 0x100000
+			);
 		}
 
 		_PRINTLN();
 	}
 
-	// FAT file system
-	auto &fs = APP->_fileProvider;
-
-	_PRINT(STR("IDEInfoScreen.fat.header"));
-
-	if (fs.type)
-		_PRINT(
-			STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fs.type], fs.volumeLabel,
-			fs.serialNumber >> 16, fs.serialNumber & 0xffff,
-			fs.capacity / 0x100000, fs.getFreeSpace() / 0x100000
-		);
-	else
-		_PRINT(STR("IDEInfoScreen.fat.error"));
-
-	//*(--ptr) = 0;
+	*(--ptr) = 0;
 	LOG("remaining=%d", end - ptr);
 
 	TextScreen::show(ctx, goBack);
@@ -224,7 +249,7 @@ void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	_title  = STR("AboutScreen.title");
 	_prompt = STR("AboutScreen.prompt");
 
-	APP->_resourceProvider.loadData(_text, "assets/about.txt");
+	APP->_fileIO.resource.loadData(_text, "assets/about.txt");
 
 	auto ptr = reinterpret_cast<char *>(_text.ptr);
 	_body    = ptr;

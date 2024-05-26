@@ -7125,7 +7125,6 @@ FRESULT f_getlbas (
 	cl = fp->obj.sclust;	/* Origin of the chain */
 	if (cl != 0) {
 		do {
-			// TODO ofs
 			/* Get a fragment */
 			tcl = cl; ncl = 0; ulen += 2;	/* Top, length and used items */
 			do {

@@ -189,7 +189,7 @@ def createParser() -> ArgumentParser:
 	)
 	group.add_argument(
 		"gameList",
-		type = Path,
+		type = FileType("rt"),
 		help = "Path to JSON file containing game list"
 	)
 	group.add_argument(
@@ -206,7 +206,7 @@ def main():
 	args:   Namespace      = parser.parse_args()
 	setupLogger(args.verbose)
 
-	with args.gameList.open("rt") as _file:
+	with args.gameList as _file:
 		gameList: Sequence[Mapping[str, Any]] = json.load(_file)
 
 	gameDB: GameDB = GameDB(gameList)

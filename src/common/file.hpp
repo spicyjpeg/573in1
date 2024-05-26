@@ -23,7 +23,8 @@ enum FileSystemType {
 	ISO9660    = 4,
 	ZIP_MEMORY = 5,
 	ZIP_FILE   = 6,
-	HOST       = 7
+	HOST       = 7,
+	VFS        = 8
 };
 
 // These are functionally equivalent to the FA_* flags used by FatFs.
@@ -82,20 +83,6 @@ public:
 	virtual void close(void) {}
 };
 
-class HostFile : public File {
-	friend class HostProvider;
-
-private:
-	int _fd;
-
-public:
-	size_t read(void *output, size_t length);
-	size_t write(const void *input, size_t length);
-	uint64_t seek(uint64_t offset);
-	uint64_t tell(void) const;
-	void close(void);
-};
-
 class Directory {
 public:
 	virtual ~Directory(void);
@@ -148,15 +135,6 @@ public:
 	size_t loadTIM(gpu::Image &output, const char *path);
 	size_t loadVAG(spu::Sound &output, const char *path);
 	size_t saveVRAMBMP(gpu::RectWH &rect, const char *path);
-};
-
-class HostProvider : public Provider {
-public:
-	bool init(void);
-
-	bool createDirectory(const char *path);
-
-	File *openFile(const char *path, uint32_t flags);
 };
 
 /* String table parser */

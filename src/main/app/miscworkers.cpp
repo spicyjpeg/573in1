@@ -22,41 +22,24 @@ bool App::_startupWorker(void) {
 		auto &dev = ide::devices[i];
 
 		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
-
 		if (dev.enumerate())
 			continue;
-		if (!(dev.flags & ide::DEVICE_ATAPI))
-			continue;
 
-		// Try to prevent the disc from keeping spinning unnecessarily.
-		ide::Packet packet;
-		packet.setStartStopUnit(ide::START_STOP_MODE_STOP_DISC);
+		if (dev.flags & ide::DEVICE_ATAPI) {
+			// Force the drive to stop the spindle motor immediately.
+			ide::Packet packet;
 
-		dev.atapiPacket(packet);
+			packet.setStartStopUnit(ide::START_STOP_MODE_STOP_DISC);
+			dev.atapiPacket(packet);
+		}
 	}
 
-	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFAT"));
-
-#if 0
-	// Attempt to mount the secondary drive first, then in case of failure try
-	// mounting the primary drive instead.
-	if (!_fileProvider.init("1:"))
-		_fileProvider.init("0:");
-#else
-	_fileProvider.init("1:");
-#endif
+	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFileIO"));
+	_fileIO.initIDE();
 
 	_workerStatus.update(3, 4, WSTR("App.startupWorker.loadResources"));
-
-	_resourceFile = _fileProvider.openFile(
-		EXTERNAL_DATA_DIR "/resource.zip", file::READ
-	);
-
-	if (_resourceFile) {
-		_resourceProvider.close();
-		if (_resourceProvider.init(_resourceFile))
-			_loadResources();
-	}
+	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
+		_loadResources();
 
 	_ctx.sounds[ui::SOUND_STARTUP].play();
 	return true;
@@ -90,8 +73,8 @@ static const uint32_t _EXECUTABLE_OFFSETS[]{
 bool App::_executableWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
 
-	const char *path = _filePickerScreen.selectedPath;
-	auto       _file = _fileProvider.openFile(path, file::READ);
+	const char *path = _fileBrowserScreen.selectedPath;
+	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
 	if (!_file)
 		goto _fileOpenError;
@@ -115,7 +98,7 @@ bool App::_executableWorker(void) {
 
 _fileOpenError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _filePickerScreen,
+		MESSAGE_ERROR, _fileBrowserScreen,
 		WSTR("App.executableWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -154,7 +137,7 @@ _validFile:
 		// location and pass it the path to the executable to be loaded.
 		util::Data data;
 
-		if (!_resourceProvider.loadData(data, launcher.path))
+		if (!_fileIO.resource.loadData(data, launcher.path))
 			continue;
 
 		LOG("using %s", launcher.path);
@@ -173,24 +156,13 @@ _validFile:
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
 		_unloadCartData();
-		_resourceProvider.close();
-
-		if (_resourceFile) {
-			_resourceFile->close();
-			delete _resourceFile;
-		}
-
-		_fileProvider.close();
+		_fileIO.close();
 
 		util::ExecutableLoader loader(
 			header, reinterpret_cast<void *>(launcherEnd)
 		);
 		char arg[128];
 
-		snprintf(
-			arg, sizeof(arg), "launcher.drive=%s", _fileProvider.getDriveString()
-		);
-		loader.copyArgument(arg);
 		snprintf(arg, sizeof(arg), "launcher.path=%s", path);
 		loader.copyArgument(arg);
 
@@ -199,7 +171,7 @@ _validFile:
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _filePickerScreen,
+		MESSAGE_ERROR, _fileBrowserScreen,
 		WSTR("App.executableWorker.addressError"), path, header.textOffset,
 		executableEnd - 1, stackTop
 	);
@@ -246,14 +218,7 @@ bool App::_rebootWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.rebootWorker.reboot"));
 
 	_unloadCartData();
-	_resourceProvider.close();
-
-	if (_resourceFile) {
-		_resourceFile->close();
-		delete _resourceFile;
-	}
-
-	_fileProvider.close();
+	_fileIO.close();
 	_workerStatus.setStatus(WORKER_REBOOT);
 
 	// Fall back to a soft reboot if the watchdog fails to reset the system.

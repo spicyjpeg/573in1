@@ -85,7 +85,7 @@ void CartActionsScreen::hddRestore(ui::Context &ctx) {
 		STR("CartActionsScreen.hddRestore.filePrompt")
 	);
 	APP->_confirmScreen.setMessage(
-		APP->_filePickerScreen,
+		APP->_fileBrowserScreen,
 		[](ui::Context &ctx) {
 			APP->_setupWorker(&App::_cartRestoreWorker);
 			ctx.show(APP->_workerStatusScreen, false, true);

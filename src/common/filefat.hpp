@@ -40,21 +40,19 @@ public:
 class FATProvider : public Provider {
 private:
 	FATFS _fs;
-	char  _drive[8];
+	char  _drive[4];
 
 	bool _selectDrive(void);
 
 public:
 	inline FATProvider(void) {
 		_fs.fs_type = 0;
-		_drive[0]   = 0;
+		_drive[0]   = '#';
+		_drive[1]   = ':';
+		_drive[2]   = 0;
 	}
 
-	inline const char *getDriveString(void) {
-		return _drive;
-	}
-
-	bool init(const char *drive);
+	bool init(int drive);
 	void close(void);
 	uint64_t getFreeSpace(void);
 

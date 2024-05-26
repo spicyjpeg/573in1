@@ -101,6 +101,7 @@
 		"~":  { "x": 84, "y": 45, "width": 6, "height": 9 },
 
 		"\u007f": { "x": 90, "y": 45, "width":  6, "height": 9 },
+
 		"\u0080": { "x":  0, "y": 54, "width":  6, "height": 9 },
 		"\u0081": { "x":  6, "y": 54, "width":  6, "height": 9 },
 		"\u0082": { "x": 12, "y": 54, "width":  4, "height": 9 },
@@ -111,14 +112,18 @@
 		"\u0087": { "x": 42, "y": 54, "width":  6, "height": 9 },
 
 		"\u0090": { "x":  0, "y": 63, "width":  7, "height":  9, "icon": true },
-		"\u0091": { "x":  7, "y": 63, "width":  7, "height":  9, "icon": true },
-		"\u0092": { "x": 14, "y": 63, "width":  9, "height":  9, "icon": true },
-		"\u0093": { "x": 23, "y": 63, "width":  8, "height": 10, "icon": true },
-		"\u0094": { "x": 31, "y": 63, "width": 11, "height": 10, "icon": true },
-		"\u0095": { "x": 42, "y": 63, "width":  9, "height":  9, "icon": true },
-		"\u0096": { "x": 51, "y": 63, "width":  9, "height":  9, "icon": true },
-		"\u0097": { "x": 60, "y": 63, "width":  9, "height": 10, "icon": true },
-		"\u0098": { "x": 69, "y": 63, "width": 12, "height": 10, "icon": true },
-		"\u0099": { "x": 81, "y": 63, "width": 14, "height": 10, "icon": true }
+		"\u0091": { "x": 12, "y": 63, "width":  7, "height":  9, "icon": true },
+		"\u0092": { "x": 24, "y": 63, "width":  9, "height":  9, "icon": true },
+		"\u0093": { "x": 36, "y": 63, "width":  8, "height": 10, "icon": true },
+		"\u0094": { "x": 48, "y": 63, "width": 11, "height": 10, "icon": true },
+		"\u0095": { "x": 60, "y": 63, "width": 12, "height": 10, "icon": true },
+		"\u0096": { "x": 72, "y": 63, "width": 14, "height":  9, "icon": true },
+
+		"\u00a0": { "x":  0, "y": 73, "width": 10, "height": 10, "icon": true },
+		"\u00a1": { "x": 12, "y": 73, "width": 10, "height": 10, "icon": true },
+		"\u00a2": { "x": 24, "y": 73, "width": 10, "height": 10, "icon": true },
+		"\u00a3": { "x": 36, "y": 73, "width": 10, "height":  9, "icon": true },
+		"\u00a4": { "x": 48, "y": 73, "width": 10, "height":  9, "icon": true },
+		"\u00a5": { "x": 60, "y": 73, "width": 10, "height": 10, "icon": true }
 	}
 }
