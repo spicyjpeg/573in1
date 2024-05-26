@@ -173,7 +173,7 @@ public:
 	inline ISO9660Provider(void)
 	: _device(nullptr) {}
 
-	bool init(const char *drive);
+	bool init(int drive);
 	void close(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);

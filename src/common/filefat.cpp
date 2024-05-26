@@ -103,13 +103,13 @@ void FATDirectory::close(void) {
 
 /* FAT filesystem provider */
 
-bool FATProvider::init(const char *drive) {
-	__builtin_strncpy(_drive, drive, sizeof(_drive));
+bool FATProvider::init(int drive) {
+	_drive[0] = drive + '0';
 
-	auto error = f_mount(&_fs, drive, 1);
+	auto error = f_mount(&_fs, _drive, 1);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], drive);
+		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
 		return false;
 	}
 
@@ -118,7 +118,7 @@ bool FATProvider::init(const char *drive) {
 
 	f_getlabel(_drive, volumeLabel, &serialNumber);
 
-	LOG("mounted FAT: %s, drive=%s", volumeLabel, drive);
+	LOG("mounted FAT: %s, drive=%s", volumeLabel, _drive);
 	return true;
 }
 

@@ -11,7 +11,7 @@
 #define VERSION_STRING VERSION "-debug"
 #endif
 
-#define EXTERNAL_DATA_DIR "cartdata"
+#define EXTERNAL_DATA_DIR "hdd:cartdata"
 
 enum Character : char {
 	CH_UP_ARROW        = '\x80',
@@ -22,14 +22,19 @@ enum Character : char {
 	CH_DOWN_ARROW_ALT  = '\x85',
 	CH_LEFT_ARROW_ALT  = '\x86',
 	CH_RIGHT_ARROW_ALT = '\x87',
-	CH_LEFT_BUTTON     = '\x90',
-	CH_RIGHT_BUTTON    = '\x91',
-	CH_START_BUTTON    = '\x92',
-	CH_CLOSED_LOCK     = '\x93',
-	CH_OPEN_LOCK       = '\x94',
-	CH_DIR_ICON        = '\x95',
-	CH_PARENT_DIR_ICON = '\x96',
-	CH_FILE_ICON       = '\x97',
-	CH_CHIP_ICON       = '\x98',
-	CH_CART_ICON       = '\x99'
+
+	CH_LEFT_BUTTON  = '\x90',
+	CH_RIGHT_BUTTON = '\x91',
+	CH_START_BUTTON = '\x92',
+	CH_CLOSED_LOCK  = '\x93',
+	CH_OPEN_LOCK    = '\x94',
+	CH_CHIP_ICON    = '\x95',
+	CH_CART_ICON    = '\x96',
+
+	CH_CDROM_ICON      = '\xa0',
+	CH_HDD_ICON        = '\xa1',
+	CH_HOST_ICON       = '\xa2',
+	CH_DIR_ICON        = '\xa3',
+	CH_PARENT_DIR_ICON = '\xa4',
+	CH_FILE_ICON       = '\xa5'
 };

@@ -89,6 +89,7 @@ addExecutable(
 	src/common/file.cpp
 	src/common/file9660.cpp
 	src/common/filefat.cpp
+	src/common/filemisc.cpp
 	src/common/filezip.cpp
 	src/common/gpu.cpp
 	src/common/gpufont.cpp

@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "common/defs.hpp"
 #include "common/file.hpp"
+#include "common/filemisc.hpp"
+#include "common/ide.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/modals.hpp"
@@ -110,66 +112,26 @@ void ConfirmScreen::update(ui::Context &ctx) {
 
 /* File picker screen */
 
-void FilePickerScreen::_setPathToParent(void) {
-	auto ptr = __builtin_strrchr(_currentPath, '/');
-
-	if (ptr) {
-		size_t length = ptr - _currentPath;
-
-		__builtin_memcpy(selectedPath, _currentPath, length);
-		selectedPath[length] = 0;
-	} else {
-		selectedPath[0] = 0;
-	}
-}
-
-void FilePickerScreen::_setPathToChild(const char *entry) {
-	size_t length = __builtin_strlen(_currentPath);
-
-	if (length) {
-		__builtin_memcpy(selectedPath, _currentPath, length);
-		selectedPath[length++] = '/';
-	}
-
-	__builtin_strncpy(
-		&selectedPath[length], entry, sizeof(selectedPath) - length
-	);
-}
-
-void FilePickerScreen::_unloadDirectory(void) {
-	_numFiles       = 0;
-	_numDirectories = 0;
-	_files.destroy();
-	_directories.destroy();
-}
-
 const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
 	static char name[file::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
 
-	if (_currentPath[0])
-		index--;
+	int  drive = _drives[index];
+	auto &dev  = ide::devices[drive];
+	auto fs    = APP->_fileIO.ide[drive];
 
-	const char *path;
-	char       icon;
+	if (dev.flags & ide::DEVICE_ATAPI)
+		name[0] = CH_CDROM_ICON;
+	else
+		name[0] = CH_HDD_ICON;
 
-	if (index < 0) {
-		path = STR("FilePickerScreen.parentDir");
-		icon = CH_PARENT_DIR_ICON;
-	} else if (index < _numDirectories) {
-		auto entries = _directories.as<file::FileInfo>();
-
-		path = entries[index].name;
-		icon = CH_DIR_ICON;
-	} else {
-		auto entries = _files.as<file::FileInfo>();
-
-		path = entries[index - _numDirectories].name;
-		icon = CH_FILE_ICON;
-	}
-
-	name[0] = icon;
 	name[1] = ' ';
-	__builtin_strncpy(&name[2], path, sizeof(name) - 2);
+
+	if (fs)
+		snprintf(
+			&name[2], sizeof(name) - 2, "%s: %s", dev.model, fs->volumeLabel
+		);
+	else
+		__builtin_strncpy(&name[2], dev.model, sizeof(name) - 2);
 
 	return name;
 }
@@ -188,12 +150,141 @@ void FilePickerScreen::setMessage(
 	va_end(ap);
 }
 
-int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
+int FilePickerScreen::loadRootAndShow(ui::Context &ctx) {
+	_listLength = 0;
+
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
+		if (ide::devices[i].flags & ide::DEVICE_READY)
+			_drives[_listLength++] = i;
+	}
+
+	if (_listLength) {
+		ctx.show(APP->_filePickerScreen, false, true);
+	} else {
+		APP->_messageScreen.setMessage(
+			MESSAGE_ERROR, *_prevScreen, STR("FilePickerScreen.noDeviceError")
+		);
+		ctx.show(APP->_messageScreen, false, true);
+	}
+
+	return _listLength;
+}
+
+void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("FilePickerScreen.title");
+	_prompt     = _promptText;
+	_itemPrompt = STR("FilePickerScreen.itemPrompt");
+
+	ListScreen::show(ctx, goBack);
+}
+
+void FilePickerScreen::update(ui::Context &ctx) {
+	ListScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
+			ctx.show(*_prevScreen, true, true);
+		} else {
+			char name[6]{ "ide#:" };
+
+			int  drive = _drives[_activeItem];
+			auto &dev  = ide::devices[drive];
+
+			name[3]   = drive + '0';
+			int count = APP->_fileBrowserScreen.loadDirectory(ctx, name);
+
+			if (count > 0) {
+				ctx.show(APP->_fileBrowserScreen, false, true);
+			} else {
+				util::Hash error;
+
+				if (!count)
+					error = "FilePickerScreen.noFilesError"_h;
+				else if (dev.flags & ide::DEVICE_ATAPI)
+					error = "FilePickerScreen.atapiError"_h;
+				else
+					error = "FilePickerScreen.ideError"_h;
+
+				APP->_messageScreen.setMessage(
+					MESSAGE_ERROR, *this, STRH(error)
+				);
+				ctx.show(APP->_messageScreen, false, true);
+			}
+		}
+	}
+}
+
+void FileBrowserScreen::_setPathToParent(void) {
+	auto ptr = __builtin_strrchr(_currentPath, '/');
+
+	if (ptr) {
+		size_t length = ptr - _currentPath;
+
+		__builtin_memcpy(selectedPath, _currentPath, length);
+		selectedPath[length] = 0;
+	} else {
+		ptr      = __builtin_strchr(_currentPath, file::VFS_PREFIX_SEPARATOR);
+		*(++ptr) = 0;
+	}
+}
+
+void FileBrowserScreen::_setPathToChild(const char *entry) {
+	size_t length = __builtin_strlen(_currentPath);
+
+	if (length) {
+		__builtin_memcpy(selectedPath, _currentPath, length);
+		selectedPath[length++] = '/';
+	}
+
+	__builtin_strncpy(
+		&selectedPath[length], entry, sizeof(selectedPath) - length
+	);
+}
+
+void FileBrowserScreen::_unloadDirectory(void) {
+	_numFiles       = 0;
+	_numDirectories = 0;
+
+	_files.destroy();
+	_directories.destroy();
+}
+
+const char *FileBrowserScreen::_getItemName(ui::Context &ctx, int index) const {
+	static char name[file::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
+
+	if (!_isRoot)
+		index--;
+
+	const char *path;
+
+	if (index < 0) {
+		name[0] = CH_PARENT_DIR_ICON;
+		path    = STR("FileBrowserScreen.parentDir");
+	} else if (index < _numDirectories) {
+		auto entries = _directories.as<file::FileInfo>();
+
+		name[0] = CH_DIR_ICON;
+		path    = entries[index].name;
+	} else {
+		auto entries = _files.as<file::FileInfo>();
+
+		name[0] = CH_FILE_ICON;
+		path    = entries[index - _numDirectories].name;
+	}
+
+	name[1] = ' ';
+	__builtin_strncpy(&name[2], path, sizeof(name) - 2);
+
+	return name;
+}
+
+int FileBrowserScreen::loadDirectory(ui::Context &ctx, const char *path) {
 	_unloadDirectory();
 
 	// Count the number of files and subfolders in the current directory, so
 	// that we can allocate enough space for them.
-	auto directory = APP->_fileProvider.openDirectory(path);
+	auto directory = APP->_fileIO.vfs.openDirectory(path);
+
 	if (!directory)
 		return -1;
 
@@ -211,10 +302,11 @@ int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
 
 	_activeItem = 0;
 	_listLength = _numFiles + _numDirectories;
-	if (path[0])
+	_isRoot     = bool(!__builtin_strchr(path, '/'));
+
+	if (!_isRoot)
 		_listLength++;
 
-	LOG("path: %s", path);
 	LOG("files=%d, dirs=%d", _numFiles, _numDirectories);
 
 	file::FileInfo *files, *directories;
@@ -225,7 +317,8 @@ int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
 		directories = _directories.allocate<file::FileInfo>(_numDirectories);
 
 	// Iterate over all entries again to populate the newly allocated arrays.
-	directory = APP->_fileProvider.openDirectory(path);
+	directory = APP->_fileIO.vfs.openDirectory(path);
+
 	if (!directory)
 		return -1;
 
@@ -243,50 +336,25 @@ int FilePickerScreen::loadDirectory(ui::Context &ctx, const char *path) {
 	return _numFiles + _numDirectories;
 }
 
-int FilePickerScreen::loadRootAndShow(ui::Context &ctx) {
-	int count = loadDirectory(ctx, "");
-
-	if (count > 0) {
-		ctx.show(*this, false, true);
-	} else {
-		auto error = (count < 0)
-			? "FilePickerScreen.rootError"_h
-			: "FilePickerScreen.noFilesError"_h;
-
-		APP->_messageScreen.setMessage(MESSAGE_ERROR, *_prevScreen, STRH(error));
-		ctx.show(APP->_messageScreen, false, true);
-	}
-
-	return count;
-}
-
-void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
-	_title      = STR("FilePickerScreen.title");
-	_prompt     = _promptText;
-	_itemPrompt = STR("FilePickerScreen.itemPrompt");
-
-	//loadDirectory(ctx, "");
+void FileBrowserScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("FileBrowserScreen.title");
+	_prompt     = APP->_filePickerScreen._promptText;
+	_itemPrompt = STR("FileBrowserScreen.itemPrompt");
 
 	ListScreen::show(ctx, goBack);
 }
 
-void FilePickerScreen::hide(ui::Context &ctx, bool goBack) {
-	//_unloadDirectory();
-
-	ListScreen::hide(ctx, goBack);
-}
-
-void FilePickerScreen::update(ui::Context &ctx) {
+void FileBrowserScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 			_unloadDirectory();
-			ctx.show(*_prevScreen, true, true);
+			ctx.show(APP->_filePickerScreen, true, true);
 		} else {
 			int index = _activeItem;
 
-			if (_currentPath[0])
+			if (!_isRoot)
 				index--;
 
 			if (index < _numDirectories) {
@@ -300,7 +368,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 				if (loadDirectory(ctx, selectedPath) < 0) {
 					APP->_messageScreen.setMessage(
 						MESSAGE_ERROR, *this,
-						STR("FilePickerScreen.subdirError"), selectedPath
+						STR("FileBrowserScreen.subdirError"), selectedPath
 					);
 
 					ctx.show(APP->_messageScreen, false, true);
@@ -309,7 +377,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 				auto entries = _files.as<file::FileInfo>();
 
 				_setPathToChild(entries[index - _numDirectories].name);
-				_callback(ctx);
+				APP->_filePickerScreen._callback(ctx);
 			}
 		}
 	}

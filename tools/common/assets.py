@@ -213,16 +213,21 @@ _TABLE_ESCAPE_REPL:  Mapping[bytes, bytes] = {
 	b"DOWN_ARROW_ALT":  b"\x85",
 	b"LEFT_ARROW_ALT":  b"\x86",
 	b"RIGHT_ARROW_ALT": b"\x87",
-	b"LEFT_BUTTON":     b"\x90",
-	b"RIGHT_BUTTON":    b"\x91",
-	b"START_BUTTON":    b"\x92",
-	b"CLOSED_LOCK":     b"\x93",
-	b"OPEN_LOCK":       b"\x94",
-	b"DIR_ICON":        b"\x95",
-	b"PARENT_DIR_ICON": b"\x96",
-	b"FILE_ICON":       b"\x97",
-	b"CHIP_ICON":       b"\x98",
-	b"CART_ICON":       b"\x99"
+
+	b"LEFT_BUTTON":  b"\x90",
+	b"RIGHT_BUTTON": b"\x91",
+	b"START_BUTTON": b"\x92",
+	b"CLOSED_LOCK":  b"\x93",
+	b"OPEN_LOCK":    b"\x94",
+	b"CHIP_ICON":    b"\x95",
+	b"CART_ICON":    b"\x96",
+
+	b"CDROM_ICON":      b"\xa0",
+	b"HDD_ICON":        b"\xa1",
+	b"HOST_ICON":       b"\xa2",
+	b"DIR_ICON":        b"\xa3",
+	b"PARENT_DIR_ICON": b"\xa4",
+	b"FILE_ICON":       b"\xa5"
 }
 
 def _convertString(string: str) -> bytes:

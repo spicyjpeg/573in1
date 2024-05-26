@@ -108,7 +108,7 @@ bool App::_romDumpWorker(void) {
 		dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%04d"
 	))
 		goto _initError;
-	if (!_fileProvider.createDirectory(dirPath))
+	if (!_fileIO.vfs.createDirectory(dirPath))
 		goto _initError;
 
 	LOG("saving dumps to %s", dirPath);
@@ -123,7 +123,7 @@ bool App::_romDumpWorker(void) {
 
 		snprintf(filePath, sizeof(filePath), entry.path, dirPath);
 
-		auto _file = _fileProvider.openFile(
+		auto _file = _fileIO.vfs.openFile(
 			filePath, file::WRITE | file::ALLOW_CREATE
 		);
 
@@ -184,8 +184,8 @@ _fileError:
 bool App::_romRestoreWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romRestoreWorker.init"));
 
-	const char *path = _filePickerScreen.selectedPath;
-	auto       _file = _fileProvider.openFile(path, file::READ);
+	const char *path = _fileBrowserScreen.selectedPath;
+	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
 	auto region       = _storageActionsScreen.selectedRegion;
 	auto regionLength = _cardSizeScreen.selectedLength;

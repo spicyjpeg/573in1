@@ -7,7 +7,7 @@
 	"App": {
 		"startupWorker": {
 			"initIDE":       "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
-			"initFAT":       "Attempting to mount FAT filesystem...\nDo not turn off the 573 or unplug drives.",
+			"initFileIO":    "Detecting and mounting filesystems...\nDo not turn off the 573 or unplug drives.",
 			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives."
 		},
 		"cartDetectWorker": {
@@ -49,7 +49,7 @@
 		"cartDumpWorker": {
 			"save":    "Saving cartridge dump...\nDo not turn off the 573 or unplug drives.",
 			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with this tool.",
-			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
+			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"executableWorker": {
 			"init":         "Validating executable file...\nDo not turn off the 573 or unplug drives.",
@@ -82,7 +82,7 @@
 			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...\nDo not turn off the 573 or unplug drives.",
 			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573 or unplug drives.",
 			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
-			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
+			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
 			"fileError":   "An error occurred while saving one of the dumps. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"romEraseWorker": {
@@ -142,7 +142,7 @@
 		},
 		"hddDump": {
 			"name":   "Dump cartridge to hard drive",
-			"prompt": "Save the contents of the cartridge's EEPROM to a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+			"prompt": "Save the contents of the cartridge's EEPROM to a file on the IDE hard drive or CF card (if connected)."
 		},
 		"hexdump": {
 			"name":   "View cartridge hexdump",
@@ -150,7 +150,7 @@
 		},
 		"hddRestore": {
 			"name":       "Restore cartridge from dump",
-			"prompt":     "Wipe all data and restore the cartridge's contents from a previously saved dump on the IDE hard drive or CF card connected as secondary drive (if any).",
+			"prompt":     "Wipe all data and restore the cartridge's contents from a previously saved dump on the CD-ROM, IDE hard drive or CF card (if connected).",
 			"filePrompt": "Note that the dump must have the same chip type, and should have the same DS2401 ID (if any), as the cartridge.",
 			"confirm":    "The contents of the cartridge's EEPROM will be altered and the unlocking key updated to match the selected dump.\n\nDo you wish to proceed?"
 		},
@@ -261,14 +261,22 @@
 		"yes":   "Yes, continue"
 	},
 
-	"FilePickerScreen": {
-		"title":      "{CART_ICON} Select file from hard drive",
+	"FileBrowserScreen": {
+		"title":      "{CART_ICON} Select file",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
-		"parentDir":    "[Parent directory]",
-		"noFilesError": "No files or directories have been found in the root of the hard drive's filesystem.",
-		"rootError":    "An error occurred while enumerating files in the root directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
-		"subdirError":  "An error occurred while enumerating files in the selected subdirectory. The filesystem may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
+		"parentDir":   "[Parent directory]",
+		"subdirError": "An error occurred while enumerating files in the selected subdirectory. The filesystem may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
+	},
+
+	"FilePickerScreen": {
+		"title":      "{CART_ICON} Select IDE drive",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+
+		"noDeviceError": "No drives have been found and successfully initialized on the IDE bus. Make sure the drives are appropriately configured as primary or secondary and are receiving power.\n\nPress the Test button to view debug logs.",
+		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
+		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
+		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem."
 	},
 
 	"HexdumpScreen": {
@@ -280,7 +288,7 @@
 		"title":  "{CART_ICON} IDE device information",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back.",
 
-		"ide": {
+		"device": {
 			"header": {
 				"primary":   "Primary IDE drive:\n",
 				"secondary": "Secondary IDE drive:\n"
@@ -294,9 +302,20 @@
 			"error":      "  No drive present or initialization failed\n"
 		},
 		"fat": {
-			"header": "FAT filesystem:\n",
-			"info":   "  Type:\t\t%s\n  Volume label:\t%s\n  Serial number:\t%04X-%04X\n  Formatted:\t\t%llu MB\n  Free space:\t%llu MB\n",
-			"error":  "  No filesystem mounted\n"
+			"header": {
+				"primary":   "FAT filesystem on primary drive:\n",
+				"secondary": "FAT filesystem on secondary drive:\n"
+			},
+
+			"info": "  Type:\t\t%s\n  Volume label:\t%s\n  Serial number:\t%04X-%04X\n  Formatted:\t\t%llu MB\n  Free space:\t%llu MB\n"
+		},
+		"iso9660": {
+			"header": {
+				"primary":   "ISO9660 filesystem on primary drive:\n",
+				"secondary": "ISO9660 filesystem on secondary drive:\n"
+			},
+
+			"info": "  Volume label:\t%s\n  Formatted:\t\t%llu MB\n"
 		}
 	},
 
@@ -321,11 +340,11 @@
 		},
 		"ideInfo": {
 			"name":   "View IDE device and filesystem information",
-			"prompt": "Display information about the connected IDE/ATAPI devices and mounted FAT filesystem (if any)."
+			"prompt": "Display information about the connected IDE/ATAPI devices and mounted FAT and ISO9660 filesystems (if any)."
 		},
 		"runExecutable": {
-			"name":       "Run executable from hard drive",
-			"prompt":     "Load and launch a System 573 executable file from the IDE hard drive or CF card connected as secondary drive (if any).",
+			"name":       "Run executable from CD-ROM or hard drive",
+			"prompt":     "Load and launch a System 573 executable from the CD-ROM, IDE hard drive or CF card (if connected).",
 			"filePrompt": "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled."
 		},
 		"setRTCTime": {
@@ -405,7 +424,7 @@
 		},
 		"dump": {
 			"name":    "Dump flash, cards, RTC and BIOS ROM",
-			"prompt":  "Dump the contents of the internal ROMs and any inserted flash cards to the IDE hard drive or CF card connected as secondary drive (if any).",
+			"prompt":  "Dump the contents of the internal ROMs and any inserted flash cards to the IDE hard drive or CF card (if connected).",
 			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and the dumps saved to a new directory in the root of the hard drive or CF card currently configured as secondary on the IDE bus.\n\nDo you wish to proceed?"
 		},
 		"restore": {
@@ -414,19 +433,19 @@
 
 			"rtc": {
 				"name":   "Restore RTC RAM from dump",
-				"prompt": "Erase RTC memory and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+				"prompt": "Erase RTC memory and restore its contents from a file on the CD-ROM, IDE hard drive or CF card (if connected)."
 			},
 			"flash": {
 				"name":   "Restore internal flash from dump",
-				"prompt": "Erase the system's flash memory and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+				"prompt": "Erase the system's flash memory and restore its contents from a file on the CD-ROM, IDE hard drive or CF card (if connected)."
 			},
 			"pcmcia1": {
 				"name":   "Restore PCMCIA card in slot 1 from dump",
-				"prompt": "Erase the flash card and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+				"prompt": "Erase the flash card and restore its contents from a file on the CD-ROM, IDE hard drive or CF card (if connected)."
 			},
 			"pcmcia2": {
 				"name":   "Restore PCMCIA card in slot 2 from dump",
-				"prompt": "Erase the flash card and restore its contents from a file on the IDE hard drive or CF card connected as secondary drive (if any)."
+				"prompt": "Erase the flash card and restore its contents from a file on the CD-ROM, IDE hard drive or CF card (if connected)."
 			}
 		},
 		"erase": {

@@ -199,6 +199,9 @@ bool ISO9660Provider::_readData(
 bool ISO9660Provider::_getRecord(
 	ISORecordBuffer &output, const ISORecord &root, const char *path
 ) {
+	if (!type)
+		return false;
+
 	util::Data records;
 	auto       numSectors =
 		(root.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
@@ -245,13 +248,8 @@ bool ISO9660Provider::_getRecord(
 	return false;
 }
 
-bool ISO9660Provider::init(const char *drive) {
-	int driveID = drive[0] - '0';
-
-	if ((driveID < 0) || (driveID >= int(util::countOf(ide::devices))))
-		return false;
-
-	_device = &ide::devices[driveID];
+bool ISO9660Provider::init(int drive) {
+	_device = &ide::devices[drive];
 
 	// Locate and parse the primary volume descriptor.
 	ISOPrimaryVolumeDesc pvd;
@@ -286,7 +284,7 @@ bool ISO9660Provider::init(const char *drive) {
 		type     = ISO9660;
 		capacity = uint64_t(pvd.volumeLength.le) * ide::ATAPI_SECTOR_SIZE;
 
-		LOG("mounted ISO: %s, drive=%d", volumeLabel, driveID);
+		LOG("mounted ISO: %s, drive=%d:", volumeLabel, drive);
 		return true;
 	}
 

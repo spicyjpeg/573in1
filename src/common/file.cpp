@@ -6,7 +6,6 @@
 #include "common/file.hpp"
 #include "common/gpu.hpp"
 #include "common/util.hpp"
-#include "ps1/pcdrv.h"
 
 namespace file {
 
@@ -27,54 +26,6 @@ uint64_t FileFragmentTable::get(uint64_t sector) const {
 
 File::~File(void) {
 	close();
-}
-
-size_t HostFile::read(void *output, size_t length) {
-	int actualLength = pcdrvRead(_fd, output, length);
-
-	if (actualLength < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualLength, this);
-		return 0;
-	}
-
-	return size_t(actualLength);
-}
-
-size_t HostFile::write(const void *input, size_t length) {
-	int actualLength = pcdrvWrite(_fd, input, length);
-
-	if (actualLength < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualLength, this);
-		return 0;
-	}
-
-	return size_t(actualLength);
-}
-
-uint64_t HostFile::seek(uint64_t offset) {
-	int actualOffset = pcdrvSeek(_fd, int(offset), PCDRV_SEEK_SET);
-
-	if (actualOffset < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualOffset, this);
-		return 0;
-	}
-
-	return uint64_t(actualOffset);
-}
-
-uint64_t HostFile::tell(void) const {
-	int actualOffset = pcdrvSeek(_fd, 0, PCDRV_SEEK_CUR);
-
-	if (actualOffset < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualOffset, this);
-		return 0;
-	}
-
-	return uint64_t(actualOffset);
-}
-
-void HostFile::close(void) {
-	pcdrvClose(_fd);
 }
 
 Directory::~Directory(void) {
@@ -115,7 +66,7 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 	if (!_file)
 		return 0;
 
-	//assert(file->length >= length);
+	//assert(file->size >= length);
 	size_t actualLength = _file->read(output, length);
 
 	_file->close();
@@ -265,54 +216,6 @@ size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
 	delete _file;
 
 	return length;
-}
-
-bool HostProvider::init(void) {
-	int error = pcdrvInit();
-
-	if (error < 0) {
-		LOG("PCDRV error, code=%d", error);
-		return false;
-	}
-
-	type = HOST;
-	return true;
-}
-
-bool HostProvider::createDirectory(const char *path) {
-	int fd = pcdrvCreate(path, DIRECTORY);
-
-	if (fd < 0) {
-		LOG("PCDRV error, code=%d", fd);
-		return false;
-	}
-
-	pcdrvClose(fd);
-	return true;
-}
-
-File *HostProvider::openFile(const char *path, uint32_t flags) {
-	PCDRVOpenMode mode = PCDRV_MODE_READ;
-
-	if ((flags & (READ | WRITE)) == (READ | WRITE))
-		mode = PCDRV_MODE_READ_WRITE;
-	else if (flags & WRITE)
-		mode = PCDRV_MODE_WRITE;
-
-	int fd = pcdrvOpen(path, mode);
-
-	if (fd < 0) {
-		LOG("PCDRV error, code=%d", fd);
-		return nullptr;
-	}
-
-	auto file = new HostFile();
-
-	file->_fd  = fd;
-	file->size = pcdrvSeek(fd, 0, PCDRV_SEEK_END);
-	pcdrvSeek(fd, 0, PCDRV_SEEK_SET);
-
-	return file;
 }
 
 /* String table parser */

@@ -3,8 +3,9 @@
 
 #include <stddef.h>
 #include "common/file.hpp"
-#include "common/filefat.hpp"
+#include "common/filemisc.hpp"
 #include "common/filezip.hpp"
+#include "common/ide.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
 #include "main/app/main.hpp"
@@ -50,6 +51,31 @@ public:
 	void finish(void);
 };
 
+/* Filesystem manager class */
+
+class FileIOManager {
+private:
+	file::File *_resourceFile;
+
+	void _closeResourceFile(void);
+
+public:
+	file::Provider     *ide[util::countOf(ide::devices)];
+	file::ZIPProvider  resource;
+	file::HostProvider host;
+	file::VFSProvider  vfs;
+
+	inline ~FileIOManager(void) {
+		close();
+	}
+
+	FileIOManager(void);
+
+	void initIDE(void);
+	bool loadResourceFile(const char *path);
+	void close(void);
+};
+
 /* App class */
 
 class App {
@@ -57,6 +83,7 @@ class App {
 	friend class MessageScreen;
 	friend class ConfirmScreen;
 	friend class FilePickerScreen;
+	friend class FileBrowserScreen;
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
@@ -82,6 +109,7 @@ private:
 	MessageScreen        _messageScreen;
 	ConfirmScreen        _confirmScreen;
 	FilePickerScreen     _filePickerScreen;
+	FileBrowserScreen    _fileBrowserScreen;
 	WarningScreen        _warningScreen;
 	ButtonMappingScreen	 _buttonMappingScreen;
 	MainMenuScreen       _mainMenuScreen;
@@ -111,10 +139,8 @@ private:
 	ui::ScreenshotOverlay _screenshotOverlay;
 
 	ui::Context       &_ctx;
-	file::ZIPProvider &_resourceProvider;
-	file::File        *_resourceFile;
-	file::FATProvider _fileProvider;
 	file::StringTable _stringTable;
+	FileIOManager     _fileIO;
 
 	cart::CartDump      _cartDump;
 	cart::ROMHeaderDump _romHeaderDump;
@@ -165,9 +191,10 @@ private:
 	void _interruptHandler(void);
 
 public:
-	App(ui::Context &ctx, file::ZIPProvider &resourceProvider);
+	App(ui::Context &ctx);
 	~App(void);
-	[[noreturn]] void run(void);
+
+	[[noreturn]] void run(const void *resourcePtr, size_t resourceLength);
 };
 
 #define APP      (reinterpret_cast<App *>(ctx.screenData))

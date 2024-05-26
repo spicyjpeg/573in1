@@ -3,10 +3,13 @@
 #include <stdio.h>
 #include "common/defs.hpp"
 #include "common/file.hpp"
+#include "common/file9660.hpp"
 #include "common/filefat.hpp"
+#include "common/filemisc.hpp"
 #include "common/filezip.hpp"
 #include "common/gpu.hpp"
 #include "common/io.hpp"
+#include "common/spu.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/cart.hpp"
@@ -61,29 +64,113 @@ void WorkerStatus::finish(void) {
 		enableInterrupts();
 }
 
+/* Filesystem manager class */
+
+FileIOManager::FileIOManager(void)
+: _resourceFile(nullptr) {
+	__builtin_memset(ide, 0, sizeof(ide));
+
+	vfs.mount("resource:", &resource);
+	vfs.mount("host:",     &host);
+}
+
+void FileIOManager::_closeResourceFile(void) {
+	if (!_resourceFile)
+		return;
+
+	_resourceFile->close();
+	delete _resourceFile;
+	_resourceFile = nullptr;
+}
+
+void FileIOManager::initIDE(void) {
+	char name[6]{ "ide#:" };
+
+	for (int i = 0; i < util::countOf(ide::devices); i++) {
+		if (ide[i])
+			continue;
+
+		auto &dev = ide::devices[i];
+		name[3]   = i + '0';
+
+		// Note that calling vfs.mount() multiple times will *not* update any
+		// already mounted device, so if two hard drives or CD-ROMs are present
+		// the hdd:/cdrom: prefix will be assigned to the first one.
+		if (dev.flags & ide::DEVICE_ATAPI) {
+			auto iso = new file::ISO9660Provider();
+
+			if (!iso->init(i)) {
+				delete iso;
+				continue;
+			}
+
+			ide[i]      = iso;
+			bool mapped = vfs.mount("cdrom:", iso);
+
+			if (mapped)
+				LOG("mapped cdrom: -> %s", name);
+		} else {
+			auto fat = new file::FATProvider();
+
+			if (!fat->init(i)) {
+				delete fat;
+				continue;
+			}
+
+			ide[i]      = fat;
+			bool mapped = vfs.mount("hdd:", fat);
+
+			if (mapped)
+				LOG("mapped hdd: -> %s", name);
+		}
+
+		vfs.mount(name, ide[i]);
+	}
+}
+
+bool FileIOManager::loadResourceFile(const char *path) {
+	_closeResourceFile();
+
+	_resourceFile = vfs.openFile(path, file::READ);
+
+	if (!_resourceFile)
+		return false;
+
+	resource.close();
+	return resource.init(_resourceFile);
+}
+
+void FileIOManager::close(void) {
+	vfs.close();
+	resource.close();
+	host.close();
+	_closeResourceFile();
+
+	for (int i = 0; i < util::countOf(ide::devices); i++) {
+		if (!ide[i])
+			continue;
+
+		ide[i]->close();
+		delete ide[i];
+		ide[i] = nullptr;
+	}
+}
+
 /* App class */
 
 static constexpr size_t _WORKER_STACK_SIZE = 0x20000;
 
-App::App(ui::Context &ctx, file::ZIPProvider &resourceProvider)
+App::App(ui::Context &ctx)
 #ifdef ENABLE_LOG_BUFFER
 : _logOverlay(_logBuffer),
 #else
 :
 #endif
-_ctx(ctx), _resourceProvider(resourceProvider), _resourceFile(nullptr),
-_cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {}
+_ctx(ctx), _cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {}
 
 App::~App(void) {
 	_unloadCartData();
-	//_resourceProvider.close();
-
-	if (_resourceFile) {
-		_resourceFile->close();
-		delete _resourceFile;
-	}
-
-	//_fileProvider.close();
+	_fileIO.close();
 }
 
 void App::_unloadCartData(void) {
@@ -148,21 +235,25 @@ static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 };
 
 void App::_loadResources(void) {
-	_resourceProvider.loadTIM(_background.tile,     "assets/textures/background.tim");
-	_resourceProvider.loadTIM(_ctx.font.image,      "assets/textures/font.tim");
-	_resourceProvider.loadStruct(_ctx.font.metrics, "assets/textures/font.metrics");
-	_resourceProvider.loadStruct(_ctx.colors,       "assets/app.palette");
-	_resourceProvider.loadData(_stringTable,        "assets/app.strings");
+	auto &res = _fileIO.resource;
+
+	res.loadTIM(_background.tile,     "assets/textures/background.tim");
+	res.loadTIM(_ctx.font.image,      "assets/textures/font.tim");
+	res.loadStruct(_ctx.font.metrics, "assets/textures/font.metrics");
+	res.loadStruct(_ctx.colors,       "assets/app.palette");
+	res.loadData(_stringTable,        "assets/app.strings");
+
+	file::currentSPUOffset = spu::DUMMY_BLOCK_END;
 
 	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
-		_resourceProvider.loadVAG(_ctx.sounds[i], _UI_SOUND_PATHS[i]);
+		res.loadVAG(_ctx.sounds[i], _UI_SOUND_PATHS[i]);
 }
 
 bool App::_createDataDirectory(void) {
 	file::FileInfo info;
 
-	if (!_fileProvider.getFileInfo(info, EXTERNAL_DATA_DIR))
-		return _fileProvider.createDirectory(EXTERNAL_DATA_DIR);
+	if (!_fileIO.vfs.getFileInfo(info, EXTERNAL_DATA_DIR))
+		return _fileIO.vfs.createDirectory(EXTERNAL_DATA_DIR);
 	if (info.attributes & file::DIRECTORY)
 		return true;
 
@@ -178,7 +269,7 @@ bool App::_getNumberedPath(char *output, size_t length, const char *path) {
 			return false;
 
 		snprintf(output, length, path, index);
-	} while (_fileProvider.getFileInfo(info, output));
+	} while (_fileIO.vfs.getFileInfo(info, output));
 
 	return true;
 }
@@ -194,7 +285,7 @@ bool App::_takeScreenshot(void) {
 	gpu::RectWH clip;
 
 	_ctx.gpuCtx.getVRAMClipRect(clip);
-	if (!_fileProvider.saveVRAMBMP(clip, path))
+	if (!_fileIO.vfs.saveVRAMBMP(clip, path))
 		return false;
 
 	LOG("%s saved", path);
@@ -223,7 +314,7 @@ void App::_interruptHandler(void) {
 	}
 }
 
-[[noreturn]] void App::run(void) {
+[[noreturn]] void App::run(const void *resourcePtr, size_t resourceLength) {
 #ifdef ENABLE_LOG_BUFFER
 	util::logger.setLogBuffer(&_logBuffer);
 #endif
@@ -234,6 +325,8 @@ void App::_interruptHandler(void) {
 	_ctx.screenData = this;
 	_setupWorker(&App::_startupWorker);
 	_setupInterrupts();
+
+	_fileIO.resource.init(resourcePtr, resourceLength);
 	_loadResources();
 
 	char dateString[24];

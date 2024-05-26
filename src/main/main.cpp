@@ -1,6 +1,5 @@
 
 #include "common/args.hpp"
-#include "common/file.hpp"
 #include "common/gpu.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
@@ -33,21 +32,16 @@ int main(int argc, const char **argv) {
 		return 1;
 	}
 
-	auto resourceProvider = new file::ZIPProvider;
-
-	resourceProvider->init(args.resourcePtr, args.resourceLength);
-	io::clearWatchdog();
-
 	auto gpuCtx = new gpu::Context(
 		GP1_MODE_NTSC, args.screenWidth, args.screenHeight, args.forceInterlace
 	);
 	auto uiCtx  = new ui::Context(*gpuCtx);
-	auto app    = new App(*uiCtx, *resourceProvider);
+	auto app    = new App(*uiCtx);
 
 	gpu::enableDisplay(true);
 	spu::setMasterVolume(spu::MAX_VOLUME);
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
-	app->run();
+	app->run(args.resourcePtr, args.resourceLength);
 
 	delete app;
 	delete uiCtx;
