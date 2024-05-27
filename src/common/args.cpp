@@ -105,7 +105,7 @@ bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 			return true;
 
 		case "arg"_h:
-			if (numArgs >= int(util::countOf(executableArgs)))
+			if (numArgs >= util::countOf(executableArgs))
 				return false;
 
 			executableArgs[numArgs++] = &arg[4];

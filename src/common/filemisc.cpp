@@ -8,7 +8,15 @@
 
 namespace file {
 
-/* PCDRV file class */
+/* PCDRV utilities */
+
+static void _dirEntryToFileInfo(FileInfo &output, const PCDRVDirEntry &entry) {
+	__builtin_strncpy(output.name, entry.name, sizeof(output.name));
+	output.size       = entry.size;
+	output.attributes = entry.attributes;
+}
+
+/* PCDRV file and directory classes */
 
 size_t HostFile::read(void *output, size_t length) {
 	int actualLength = pcdrvRead(_fd, output, length);
@@ -58,6 +66,18 @@ void HostFile::close(void) {
 	pcdrvClose(_fd);
 }
 
+bool HostDirectory::getEntry(FileInfo &output) {
+	if (_fd < 0)
+		return false;
+
+	// Return the last entry fetched while also fetching the next one (if any).
+	_dirEntryToFileInfo(output, _entry);
+	if (pcdrvFindNext(_fd, &_entry) < 0)
+		_fd = -1;
+
+	return true;
+}
+
 /* PCDRV filesystem provider */
 
 bool HostProvider::init(void) {
@@ -72,15 +92,51 @@ bool HostProvider::init(void) {
 	return true;
 }
 
-bool HostProvider::createDirectory(const char *path) {
-	int fd = pcdrvCreate(path, DIRECTORY);
+bool HostProvider::getFileInfo(FileInfo &output, const char *path) {
+	PCDRVDirEntry entry;
+
+	int fd = pcdrvFindFirst(path, &entry);
 
 	if (fd < 0) {
 		LOG("PCDRV error, code=%d", fd);
 		return false;
 	}
 
-	pcdrvClose(fd);
+	_dirEntryToFileInfo(output, entry);
+	return true;
+}
+
+Directory *HostProvider::openDirectory(const char *path) {
+	char pattern[MAX_PATH_LENGTH];
+	char *ptr = pattern;
+
+	while (*path)
+		*(ptr++) = *(path++);
+
+	*(ptr++) = '/';
+	*(ptr++) = '*';
+	*(ptr++) = 0;
+
+	auto dir = new HostDirectory();
+	int  fd  = pcdrvFindFirst(pattern, &(dir->_entry));
+
+	if (fd < 0) {
+		LOG("PCDRV error, code=%d", fd);
+		delete dir;
+		return nullptr;
+	}
+
+	return dir;
+}
+
+bool HostProvider::createDirectory(const char *path) {
+	int error = pcdrvCreateDir(path);
+
+	if (error < 0) {
+		LOG("PCDRV error, code=%d", error);
+		return false;
+	}
+
 	return true;
 }
 
@@ -99,12 +155,11 @@ File *HostProvider::openFile(const char *path, uint32_t flags) {
 		return nullptr;
 	}
 
-	auto file = new HostFile();
-
+	auto file  = new HostFile();
 	file->_fd  = fd;
 	file->size = pcdrvSeek(fd, 0, PCDRV_SEEK_END);
-	pcdrvSeek(fd, 0, PCDRV_SEEK_SET);
 
+	pcdrvSeek(fd, 0, PCDRV_SEEK_SET);
 	return file;
 }
 

@@ -43,6 +43,53 @@ static const char *const _MINIZ_ZIP_ERROR_NAMES[]{
 	"WRITE_CALLBACK_FAILED"
 };
 
+/* Utilities */
+
+static bool _zipStatToFileInfo(
+	FileInfo &output, const mz_zip_archive_file_stat &stat
+) {
+	// Ignore all unsupported files.
+	if (!stat.m_is_supported)
+		return false;
+
+#if 0
+	auto ptr = __builtin_strrchr(stat.m_filename, '/');
+
+	if (ptr)
+		ptr++;
+	else
+		ptr = (char *) stat.m_filename;
+#else
+	auto ptr = stat.m_filename;
+#endif
+
+	__builtin_strncpy(output.name, ptr, sizeof(output.name));
+	output.size       = stat.m_uncomp_size;
+	output.attributes = READ_ONLY | ARCHIVE;
+
+	if (stat.m_is_directory)
+		output.attributes |= DIRECTORY;
+
+	return true;
+}
+
+/* ZIP directory class */
+
+bool ZIPDirectory::getEntry(FileInfo &output) {
+	mz_zip_archive_file_stat stat;
+
+	while (_index < _zip->m_total_files) {
+		if (!mz_zip_reader_file_stat(_zip, _index++, &stat))
+			continue;
+		if (!_zipStatToFileInfo(output, stat))
+			continue;
+
+		return true;
+	}
+
+	return false;
+}
+
 /* ZIP filesystem provider */
 
 static constexpr uint32_t _ZIP_FLAGS = 0
@@ -113,35 +160,38 @@ void ZIPProvider::close(void) {
 }
 
 bool ZIPProvider::getFileInfo(FileInfo &output, const char *path) {
-	mz_zip_archive_file_stat info;
+	// Any leading path separators must be stripped manually.
+	while ((*path == '/') || (*path == '\\'))
+		path++;
+
+	mz_zip_archive_file_stat stat;
 
 	int index = mz_zip_reader_locate_file(&_zip, path, nullptr, 0);
 
 	if (index < 0)
 		return false;
-	if (!mz_zip_reader_file_stat(&_zip, index, &info))
-		return false;
-	if (!info.m_is_supported)
+	if (!mz_zip_reader_file_stat(&_zip, index, &stat))
 		return false;
 
-	auto ptr = __builtin_strrchr(info.m_filename, '/');
+	return _zipStatToFileInfo(output, stat);
+}
 
-	if (ptr)
-		ptr++;
-	else
-		ptr = info.m_filename;
+Directory *ZIPProvider::openDirectory(const char *path) {
+	while ((*path == '/') || (*path == '\\'))
+		path++;
 
-	__builtin_strncpy(output.name, ptr, sizeof(output.name));
-	output.size       = info.m_uncomp_size;
-	output.attributes = READ_ONLY | ARCHIVE;
+	// ZIP subdirectories are not currently handled; all files are instead
+	// returned as if they were part of the root directory.
+	if (*path)
+		return nullptr;
 
-	if (info.m_is_directory)
-		output.attributes |= DIRECTORY;
-
-	return true;
+	return new ZIPDirectory(_zip);
 }
 
 size_t ZIPProvider::loadData(util::Data &output, const char *path) {
+	while ((*path == '/') || (*path == '\\'))
+		path++;
+
 	output.destroy();
 	output.ptr = mz_zip_reader_extract_file_to_heap(
 		&_zip, path, &(output.length), 0
@@ -158,6 +208,9 @@ size_t ZIPProvider::loadData(util::Data &output, const char *path) {
 }
 
 size_t ZIPProvider::loadData(void *output, size_t length, const char *path) {
+	while ((*path == '/') || (*path == '\\'))
+		path++;
+
 	if (!mz_zip_reader_extract_file_to_mem(&_zip, path, output, length, 0)) {
 		auto error = mz_zip_get_last_error(&_zip);
 

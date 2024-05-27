@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "common/file.hpp"
 #include "common/util.hpp"
+#include "ps1/pcdrv.h"
 
 namespace file {
 
@@ -24,10 +25,23 @@ public:
 	void close(void);
 };
 
+class HostDirectory : public Directory {
+	friend class HostProvider;
+
+private:
+	int           _fd;
+	PCDRVDirEntry _entry;
+
+public:
+	bool getEntry(FileInfo &output);
+};
+
 class HostProvider : public Provider {
 public:
 	bool init(void);
 
+	bool getFileInfo(FileInfo &output, const char *path);
+	Directory *openDirectory(const char *path);
 	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
