@@ -76,22 +76,12 @@ FileIOManager::FileIOManager(void)
 #endif
 }
 
-void FileIOManager::_closeResourceFile(void) {
-	if (!_resourceFile)
-		return;
-
-	_resourceFile->close();
-	delete _resourceFile;
-	_resourceFile = nullptr;
-}
-
 void FileIOManager::initIDE(void) {
+	closeIDE();
+
 	char name[6]{ "ide#:" };
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (ide[i])
-			continue;
-
 		auto &dev = ide::devices[i];
 		name[3]   = i + '0';
 
@@ -107,7 +97,7 @@ void FileIOManager::initIDE(void) {
 			}
 
 			ide[i]      = iso;
-			bool mapped = vfs.mount("cdrom:", iso);
+			bool mapped = vfs.mount("cdrom:", iso, true);
 
 			if (mapped)
 				LOG("mapped cdrom: -> %s", name);
@@ -120,18 +110,29 @@ void FileIOManager::initIDE(void) {
 			}
 
 			ide[i]      = fat;
-			bool mapped = vfs.mount("hdd:", fat);
+			bool mapped = vfs.mount("hdd:", fat, true);
 
 			if (mapped)
 				LOG("mapped hdd: -> %s", name);
 		}
 
-		vfs.mount(name, ide[i]);
+		vfs.mount(name, ide[i], true);
+	}
+}
+
+void FileIOManager::closeIDE(void) {
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
+		if (!ide[i])
+			continue;
+
+		ide[i]->close();
+		delete ide[i];
+		ide[i] = nullptr;
 	}
 }
 
 bool FileIOManager::loadResourceFile(const char *path) {
-	_closeResourceFile();
+	closeResourceFile();
 
 	_resourceFile = vfs.openFile(path, file::READ);
 
@@ -142,22 +143,24 @@ bool FileIOManager::loadResourceFile(const char *path) {
 	return resource.init(_resourceFile);
 }
 
+void FileIOManager::closeResourceFile(void) {
+	if (!_resourceFile)
+		return;
+
+	_resourceFile->close();
+	delete _resourceFile;
+	_resourceFile = nullptr;
+}
+
 void FileIOManager::close(void) {
 	vfs.close();
 	resource.close();
 #ifndef NDEBUG
 	host.close();
 #endif
-	_closeResourceFile();
 
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (!ide[i])
-			continue;
-
-		ide[i]->close();
-		delete ide[i];
-		ide[i] = nullptr;
-	}
+	closeResourceFile();
+	closeIDE();
 }
 
 /* App class */
@@ -327,11 +330,18 @@ void App::_interruptHandler(void) {
 	LOG("(C) 2022-2024 spicyjpeg");
 
 	_ctx.screenData = this;
-	_setupWorker(&App::_startupWorker);
-	_setupInterrupts();
 
 	_fileIO.resource.init(resourcePtr, resourceLength);
 	_loadResources();
+
+#ifdef NDEBUG
+	_workerStatus.setNextScreen(_warningScreen);
+#else
+	// Skip the warning screen in debug builds.
+	_workerStatus.setNextScreen(_buttonMappingScreen);
+#endif
+	_setupWorker(&App::_ideInitWorker);
+	_setupInterrupts();
 
 	char dateString[24];
 

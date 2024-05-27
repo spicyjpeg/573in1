@@ -72,7 +72,7 @@ public:
 		__builtin_memset(_mountPoints, 0, sizeof(_mountPoints));
 	}
 
-	bool mount(const char *prefix, Provider *provider);
+	bool mount(const char *prefix, Provider *provider, bool force = false);
 	bool unmount(const char *prefix);
 
 	bool getFileInfo(FileInfo &output, const char *path);

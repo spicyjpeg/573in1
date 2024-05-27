@@ -7,13 +7,13 @@
 	},
 	{
 		"type":   "binary",
-		"name":   "binaries/launcher801f8000.psexe",
-		"source": "${PROJECT_BINARY_DIR}/launcher801f8000.psexe"
+		"name":   "binaries/launcher801fd000.psexe",
+		"source": "${PROJECT_BINARY_DIR}/launcher801fd000.psexe"
 	},
 	{
 		"type":   "binary",
-		"name":   "binaries/launcher803f8000.psexe",
-		"source": "${PROJECT_BINARY_DIR}/launcher803f8000.psexe"
+		"name":   "binaries/launcher803fd000.psexe",
+		"source": "${PROJECT_BINARY_DIR}/launcher803fd000.psexe"
 	},
 
 	{

@@ -5,6 +5,8 @@
 #include "common/io.hpp"
 #include "common/util.hpp"
 
+extern "C" uint8_t _textStart[];
+
 int main(int argc, const char **argv) {
 	io::init();
 
@@ -19,6 +21,8 @@ int main(int argc, const char **argv) {
 
 	if (!args.entryPoint || !args.loadAddress || !args.numFragments)
 		return 1;
+	if (!args.stackTop)
+		args.stackTop = _textStart - 16;
 
 	auto &dev = ide::devices[args.drive];
 

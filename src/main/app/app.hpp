@@ -57,8 +57,6 @@ class FileIOManager {
 private:
 	file::File *_resourceFile;
 
-	void _closeResourceFile(void);
-
 public:
 	file::Provider     *ide[util::countOf(ide::devices)];
 	file::ZIPProvider  resource;
@@ -74,7 +72,9 @@ public:
 	FileIOManager(void);
 
 	void initIDE(void);
+	void closeIDE(void);
 	bool loadResourceFile(const char *path);
+	void closeResourceFile(void);
 	void close(void);
 };
 
@@ -184,7 +184,7 @@ private:
 	bool _flashHeaderWriteWorker(void);
 
 	// miscworkers.cpp
-	bool _startupWorker(void);
+	bool _ideInitWorker(void);
 	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);

@@ -9,8 +9,6 @@ namespace args {
 
 /* Command line argument parsers */
 
-extern "C" uint8_t _textStart[];
-
 static constexpr char VALUE_SEPARATOR = '=';
 
 static constexpr int DEFAULT_BAUD_RATE     = 115200;
@@ -61,8 +59,8 @@ public:
 	file::FileFragment fragments[MAX_LAUNCHER_FRAGMENTS];
 
 	inline ExecutableLauncherArgs(void)
-	: entryPoint(nullptr), initialGP(nullptr), stackTop(_textStart - 16),
-	drive(0), numArgs(0), numFragments(0) {}
+	: entryPoint(nullptr), initialGP(nullptr), stackTop(nullptr),
+	loadAddress(nullptr), drive(0), numArgs(0), numFragments(0) {}
 
 	bool parseArgument(const char *arg);
 };

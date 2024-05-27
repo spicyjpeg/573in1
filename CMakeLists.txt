@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	cart_tool
 	LANGUAGES    C CXX ASM
-	VERSION      0.4.2
+	VERSION      0.4.3
 	DESCRIPTION  "Konami System 573 security cartridge tool"
 )
 
@@ -183,10 +183,10 @@ function(addLauncher address stackTop)
 endfunction()
 
 # IMPORTANT: these addresses assume the launcher's total size (including code,
-# heap and stack allocations, but excluding the executable header) is <32 KB
-# (0x8000 bytes).
-addLauncher(801f8000 801ffff0)
-addLauncher(803f8000 803ffff0)
+# heap and stack allocations, but excluding the executable header) is <12 KB
+# (0x3000 bytes).
+addLauncher(801fd000 801ffff0)
+addLauncher(803fd000 803ffff0)
 
 ## Default resource archive
 
@@ -241,8 +241,8 @@ add_custom_command(
 		assets/app.palette.json
 		assets/app.strings.json
 		main.psexe
-		launcher801f8000.psexe
-		launcher803f8000.psexe
+		launcher801fd000.psexe
+		launcher803fd000.psexe
 	COMMENT "Building resource archive"
 	VERBATIM
 )
