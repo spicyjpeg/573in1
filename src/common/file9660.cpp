@@ -42,7 +42,7 @@ static size_t _comparePath(const ISORecord &record, const char *path) {
 	auto nameLength = record.nameLength;
 
 	for (; nameLength && (*recordName != ';'); nameLength--) {
-		if (*(recordName++) != __builtin_toupper(*(ptr++)))
+		if (__builtin_toupper(*(recordName++)) != __builtin_toupper(*(ptr++)))
 			return 0;
 	}
 

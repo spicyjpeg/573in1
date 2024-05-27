@@ -8,28 +8,23 @@
 #include "main/app/app.hpp"
 #include "ps1/system.h"
 
-bool App::_startupWorker(void) {
-#ifdef NDEBUG
-	_workerStatus.setNextScreen(_warningScreen);
-#else
-	// Skip the warning screen in debug builds.
-	_workerStatus.setNextScreen(_buttonMappingScreen);
-#endif
+bool App::_ideInitWorker(void) {
+	_workerStatus.update(0, 3, WSTR("App.ideInitWorker.initDrives"));
 
-	for (int i = 0; i < 2; i++) {
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		auto &dev = ide::devices[i];
 
-		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
-
 		// Spin down all drives by default.
+		if (dev.flags & ide::DEVICE_READY)
+			continue;
 		if (dev.enumerate())
 			dev.goIdle();
 	}
 
-	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFileIO"));
+	_workerStatus.update(1, 3, WSTR("App.ideInitWorker.initFileIO"));
 	_fileIO.initIDE();
 
-	_workerStatus.update(3, 4, WSTR("App.startupWorker.loadResources"));
+	_workerStatus.update(2, 3, WSTR("App.ideInitWorker.loadResources"));
 	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
 		_loadResources();
 
@@ -46,13 +41,13 @@ public:
 
 static const Launcher _LAUNCHERS[]{
 	{
-		.path       = "binaries/launcher801f8000.psexe",
-		.loadOffset = 0x801f8000,
-		.length     = 0x8000
+		.path       = "binaries/launcher801fd000.psexe",
+		.loadOffset = 0x801fd000,
+		.length     = 0x3000
 	}, {
-		.path       = "binaries/launcher803f8000.psexe",
-		.loadOffset = 0x803f8000,
-		.length     = 0x8000
+		.path       = "binaries/launcher803fd000.psexe",
+		.loadOffset = 0x803fd000,
+		.length     = 0x3000
 	}
 };
 

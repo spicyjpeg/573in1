@@ -73,7 +73,7 @@ public:
 		ui::Screen &prev, void (*callback)(ui::Context &ctx),
 		const char *format, ...
 	);
-	int loadRootAndShow(ui::Context &ctx);
+	void reloadAndShow(ui::Context &ctx);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);

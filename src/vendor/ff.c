@@ -7121,7 +7121,7 @@ FRESULT f_getlbas (
 	if (res != FR_OK) LEAVE_FF(fs, res);
 
 	tlen = *len + ofs; 		/* Given table size and required table size */
-	ulen = 2;
+	ulen = 0;
 	cl = fp->obj.sclust;	/* Origin of the chain */
 	if (cl != 0) {
 		do {
@@ -7134,16 +7134,13 @@ FRESULT f_getlbas (
 				if (cl == 0xFFFFFFFF) ABORT(fs, FR_DISK_ERR);
 			} while (cl == pcl + 1);
 			if (tbl && (ulen >= ofs) && (ulen <= tlen)) {	/* Store the length and top of the fragment */
-				*tbl++ = (LBA_t)fs->csize * ncl;
 				*tbl++ = clst2sect(fs, tcl);
+				*tbl++ = (LBA_t)fs->csize * ncl;
 			}
 		} while (cl < fs->n_fatent);	/* Repeat until end of chain */
 	}
 	*len = ulen - ofs;	/* Number of items used */
-	if (tbl && (ulen >= ofs) && (ulen <= tlen)) {
-		*tbl++ = 0;		/* Terminate table */
-		*tbl = 0;
-	} else {
+	if (tbl && (ulen > tlen)) {
 		res = FR_NOT_ENOUGH_CORE;	/* Given table size is smaller than required */
 	}
 

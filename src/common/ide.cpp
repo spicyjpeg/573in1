@@ -120,7 +120,7 @@ int IdentifyBlock::getHighestPIOMode(void) const {
 
 Device devices[2]{ (DEVICE_PRIMARY), (DEVICE_SECONDARY) };
 
-void Device::_setLBA(uint64_t lba, uint16_t count) {
+void Device::_setLBA(uint64_t lba, size_t count) {
 	if (flags & DEVICE_HAS_LBA48) {
 		//assert(lba < (1ULL << 48));
 		//assert(count <= (1 << 16));
@@ -358,6 +358,7 @@ DeviceError Device::_ideReadWrite(
 		if (error)
 			return error;
 
+		lba   += chunkLength;
 		count -= chunkLength;
 	}
 
@@ -386,29 +387,6 @@ DeviceError Device::_atapiRead(uintptr_t ptr, uint32_t lba, size_t count) {
 
 	return _waitForStatus(CS0_STATUS_BSY, 0);
 }
-
-#ifdef ENABLE_FULL_IDE_DRIVER
-DeviceError Device::_atapiRequestSense(void){
-	Packet packet;
-
-	packet.setRequestSense();
-	auto error = atapiPacket(packet);
-
-	if (error)
-		return error;
-
-	SenseData sense;
-
-	error = _readPIO(&sense, sizeof(sense));
-
-	if (error)
-		return error;
-
-	LOG("%s (0x%02x)", _SENSE_KEY_NAMES[sense.senseKey & 0xf], sense.senseKey);
-	LOG("asc=0x%02x, ascq=0x%02x", sense.asc, sense.ascQualifier);
-	return NO_ERROR;
-}
-#endif
 
 DeviceError Device::enumerate(void) {
 	flags &= DEVICE_PRIMARY | DEVICE_SECONDARY;
@@ -512,6 +490,48 @@ DeviceError Device::atapiPacket(const Packet &packet, size_t transferLength) {
 	return _waitForStatus(CS0_STATUS_BSY, 0);
 }
 
+DeviceError Device::atapiPoll(void) {
+	Packet packet;
+	int    senseKey = -1;
+
+	packet.setRequestSense();
+
+	if (!atapiPacket(packet)) {
+		SenseData data;
+
+		if (!_readPIO(&data, sizeof(data))) {
+			senseKey = data.senseKey & 15;
+			LOG(
+				"key=0x%02x, asc=0x%02x, ascq=0x%02x", data.senseKey, data.asc,
+				data.ascQualifier
+			);
+		}
+	}
+
+	// If the request sense command fails, fall back to reading the sense key
+	// from the IDE error register.
+	if (senseKey < 0)
+		senseKey = (_read(CS0_ERROR) >> 4) & 15;
+
+	LOG("%s, key=%d", _SENSE_KEY_NAMES[senseKey], senseKey);
+
+	switch (senseKey) {
+		case SENSE_KEY_NO_SENSE:
+			return NO_ERROR;
+
+		case SENSE_KEY_NOT_READY:
+		case SENSE_KEY_MEDIUM_ERROR:
+		case SENSE_KEY_DATA_PROTECT:
+			return DISC_ERROR;
+
+		case SENSE_KEY_UNIT_ATTENTION:
+			return DISC_CHANGED;
+
+		default:
+			return DRIVE_ERROR;
+	}
+}
+
 DeviceError Device::read(void *data, uint64_t lba, size_t count) {
 	util::assertAligned<uint32_t>(data);
 
@@ -524,9 +544,8 @@ DeviceError Device::read(void *data, uint64_t lba, size_t count) {
 		);
 
 #ifdef ENABLE_FULL_IDE_DRIVER
-		// Log sense information in case of read errors.
 		if (error)
-			_atapiRequestSense();
+			error = atapiPoll();
 #endif
 
 		return error;
@@ -548,7 +567,6 @@ DeviceError Device::write(const void *data, uint64_t lba, size_t count) {
 	return _ideReadWrite(reinterpret_cast<uintptr_t>(data), lba, count, true);
 }
 
-#ifdef ENABLE_FULL_IDE_DRIVER
 DeviceError Device::goIdle(bool standby) {
 	if (!(flags & DEVICE_READY))
 		return NO_DRIVE;
@@ -595,6 +613,5 @@ DeviceError Device::flushCache(void) {
 		CS0_STATUS_DRDY
 	);
 }
-#endif
 
 }

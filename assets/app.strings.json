@@ -5,8 +5,8 @@
 	},
 
 	"App": {
-		"startupWorker": {
-			"initIDE":       "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
+		"ideInitWorker": {
+			"initDrives":    "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
 			"initFileIO":    "Detecting and mounting filesystems...\nDo not turn off the 573 or unplug drives.",
 			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives."
 		},

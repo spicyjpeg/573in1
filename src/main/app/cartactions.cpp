@@ -93,7 +93,7 @@ void CartActionsScreen::hddRestore(ui::Context &ctx) {
 		STR("CartActionsScreen.hddRestore.confirm")
 	);
 
-	APP->_filePickerScreen.loadRootAndShow(ctx);
+	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
 void CartActionsScreen::reflash(ui::Context &ctx) {

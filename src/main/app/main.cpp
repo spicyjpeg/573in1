@@ -160,7 +160,7 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 		STR("MainMenuScreen.runExecutable.filePrompt")
 	);
 
-	APP->_filePickerScreen.loadRootAndShow(ctx);
+	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
 void MainMenuScreen::setRTCTime(ui::Context &ctx) {

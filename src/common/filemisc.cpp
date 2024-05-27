@@ -176,10 +176,15 @@ VFSMountPoint *VFSProvider::_getMounted(const char *path) {
 	return nullptr;
 }
 
-bool VFSProvider::mount(const char *prefix, Provider *provider) {
+bool VFSProvider::mount(const char *prefix, Provider *provider, bool force) {
 	for (auto &mp : _mountPoints) {
-		if (mp.provider)
-			continue;
+		if (force) {
+			if (mp.provider && (mp.provider != provider))
+				continue;
+		} else {
+			if (mp.provider)
+				continue;
+		}
 
 		mp.prefix     = util::hash(prefix, VFS_PREFIX_SEPARATOR);
 		mp.pathOffset = 0;

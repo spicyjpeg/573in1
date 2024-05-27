@@ -145,10 +145,25 @@ enum ATAPISenseKey : uint8_t {
 };
 
 enum ATAPIStartStopMode : uint8_t {
-	START_STOP_MODE_STOP_DISC  = 0x0,
-	START_STOP_MODE_START_DISC = 0x1,
-	START_STOP_MODE_OPEN_TRAY  = 0x2,
-	START_STOP_MODE_CLOSE_TRAY = 0x3
+	START_STOP_MODE_STOP_DISC  = 0,
+	START_STOP_MODE_START_DISC = 1,
+	START_STOP_MODE_OPEN_TRAY  = 2,
+	START_STOP_MODE_CLOSE_TRAY = 3
+};
+
+enum ATAPIModePage : uint8_t {
+	MODE_PAGE_ERROR_RECOVERY     = 0x01,
+	MODE_PAGE_CDROM              = 0x0d,
+	MODE_PAGE_CDROM_AUDIO        = 0x0e,
+	MODE_PAGE_CDROM_CAPABILITIES = 0x2a,
+	MODE_PAGE_ALL                = 0x3f
+};
+
+enum ATAPIModePageType : uint8_t {
+	MODE_PAGE_TYPE_CURRENT    = 0,
+	MODE_PAGE_TYPE_CHANGEABLE = 1,
+	MODE_PAGE_TYPE_DEFAULT    = 2,
+	MODE_PAGE_TYPE_SAVED      = 3
 };
 
 /* Identification blocks */
@@ -272,7 +287,7 @@ public:
 		util::clear(*this);
 
 		command  = ATAPI_START_STOP_UNIT;
-		param[3] = mode & 3;
+		param[3] = mode;
 	}
 	inline void setRead(uint32_t lba, size_t count) {
 		util::clear(*this);
@@ -300,6 +315,17 @@ public:
 		command  = ATAPI_REQUEST_SENSE;
 		param[3] = sizeof(SenseData) + additionalLength;
 	}
+	inline void setModeSense(
+		ATAPIModePage page, size_t length,
+		ATAPIModePageType type = MODE_PAGE_TYPE_CURRENT
+	) {
+		util::clear(*this);
+
+		command  = ATAPI_MODE_SENSE;
+		param[1] = (page & 0x3f) | (type << 6);
+		param[6] = (length >> 8) & 0xff;
+		param[7] = (length >> 0) & 0xff;
+	}
 };
 
 /* Device class */
@@ -310,8 +336,10 @@ enum DeviceError {
 	NO_DRIVE          = 2,
 	STATUS_TIMEOUT    = 3,
 	DRIVE_ERROR       = 4,
-	INCOMPLETE_DATA   = 5,
-	CHECKSUM_MISMATCH = 6
+	DISC_ERROR        = 5,
+	DISC_CHANGED      = 6,
+	INCOMPLETE_DATA   = 7,
+	CHECKSUM_MISMATCH = 8
 };
 
 enum DeviceFlag {
@@ -349,7 +377,7 @@ private:
 			_write(CS0_DEVICE_SEL, regFlags | CS0_DEVICE_SEL_PRIMARY);
 	}
 
-	void _setLBA(uint64_t lba, uint16_t count);
+	void _setLBA(uint64_t lba, size_t count);
 	DeviceError _waitForStatus(uint8_t mask, uint8_t value, int timeout = 0);
 	DeviceError _command(uint8_t cmd, uint8_t status, int timeout = 0);
 	DeviceError _detectDrive(void);
@@ -363,9 +391,6 @@ private:
 		uintptr_t ptr, uint64_t lba, size_t count, bool write
 	);
 	DeviceError _atapiRead(uintptr_t ptr, uint32_t lba, size_t count);
-#ifdef ENABLE_FULL_IDE_DRIVER
-	DeviceError _atapiRequestSense(void);
-#endif
 
 public:
 	uint32_t flags;
@@ -395,13 +420,12 @@ public:
 	DeviceError atapiPacket(
 		const Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
 	);
+	DeviceError atapiPoll(void);
 
 	DeviceError read(void *data, uint64_t lba, size_t count);
 	DeviceError write(const void *data, uint64_t lba, size_t count);
-#ifdef ENABLE_FULL_IDE_DRIVER
 	DeviceError goIdle(bool standby = false);
 	DeviceError flushCache(void);
-#endif
 };
 
 extern const char *const DEVICE_ERROR_NAMES[];

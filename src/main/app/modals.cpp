@@ -174,30 +174,20 @@ void FilePickerScreen::setMessage(
 	va_end(ap);
 }
 
-int FilePickerScreen::loadRootAndShow(ui::Context &ctx) {
-	int numDrives = 0;
+void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
+	// Check if any disc has been changed and reload all filesystems if
+	// necessary.
+	for (auto &dev : ide::devices) {
+		if (!dev.atapiPoll())
+			continue;
 
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (ide::devices[i].flags & ide::DEVICE_READY)
-			_drives[numDrives++] = i;
+		APP->_workerStatus.setNextScreen(*this);
+		APP->_setupWorker(&App::_ideInitWorker);
+		ctx.show(APP->_workerStatusScreen, false, true);
+		return;
 	}
 
-#ifdef NDEBUG
-	_listLength = numDrives;
-#else
-	_listLength = numDrives + util::countOf(_SPECIAL_ENTRIES);
-#endif
-
-	if (_listLength) {
-		ctx.show(APP->_filePickerScreen, false, true);
-	} else {
-		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, *_prevScreen, STR("FilePickerScreen.noDeviceError")
-		);
-		ctx.show(APP->_messageScreen, false, true);
-	}
-
-	return _listLength;
+	ctx.show(*this, false, true);
 }
 
 void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
@@ -205,11 +195,30 @@ void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = _promptText;
 	_itemPrompt = STR("FilePickerScreen.itemPrompt");
 
+	_listLength = 0;
+
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
+		if (ide::devices[i].flags & ide::DEVICE_READY)
+			_drives[_listLength++] = i;
+	}
+
+#ifndef NDEBUG
+	_listLength += util::countOf(_SPECIAL_ENTRIES);
+#endif
+
 	ListScreen::show(ctx, goBack);
 }
 
 void FilePickerScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
+
+	if (!_listLength) {
+		APP->_messageScreen.setMessage(
+			MESSAGE_ERROR, *_prevScreen, STR("FilePickerScreen.noDeviceError")
+		);
+		ctx.show(APP->_messageScreen, false, true);
+		return;
+	}
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {

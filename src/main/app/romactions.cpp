@@ -243,7 +243,7 @@ void StorageActionsScreen::restore(ui::Context &ctx) {
 		STR("StorageActionsScreen.restore.confirm")
 	);
 
-	APP->_filePickerScreen.loadRootAndShow(ctx);
+	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
 void StorageActionsScreen::erase(ui::Context &ctx) {
