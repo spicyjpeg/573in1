@@ -216,13 +216,6 @@ void CartInfoScreen::update(ui::Context &ctx) {
 	}
 }
 
-enum SpecialEntryIndex {
-	ENTRY_AUTO_UNLOCK = -4,
-	ENTRY_CUSTOM_KEY  = -3,
-	ENTRY_NULL_KEY1   = -2,
-	ENTRY_NULL_KEY2   = -1
-};
-
 struct SpecialEntry {
 public:
 	util::Hash name;
@@ -231,9 +224,6 @@ public:
 
 static const SpecialEntry _SPECIAL_ENTRIES[]{
 	{
-		.name   = 0,
-		.target = nullptr
-	}, {
 		.name   = "UnlockKeyScreen.useFFKey"_h,
 		.target = &UnlockKeyScreen::useFFKey
 	}, {
@@ -248,19 +238,26 @@ static const SpecialEntry _SPECIAL_ENTRIES[]{
 	}
 };
 
-int UnlockKeyScreen::_getSpecialEntryOffset(ui::Context &ctx) const {
-	return APP->_identified ? ENTRY_AUTO_UNLOCK : ENTRY_CUSTOM_KEY;
+int UnlockKeyScreen::_getNumSpecialEntries(ui::Context &ctx) const {
+	int count = util::countOf(_SPECIAL_ENTRIES);
+
+	if (!(APP->_identified))
+		count--;
+
+	return count;
 }
 
 const char *UnlockKeyScreen::_getItemName(ui::Context &ctx, int index) const {
-	index += _getSpecialEntryOffset(ctx);
+	int offset = _getNumSpecialEntries(ctx);
 
-	if (index < 0)
-		return STRH(_SPECIAL_ENTRIES[-index].name);
+	if (index < offset) {
+		offset -= index + 1;
+		return STRH(_SPECIAL_ENTRIES[offset].name);
+	}
 
 	static char name[96]; // TODO: get rid of this ugly crap
 
-	APP->_cartDB.get(index)->getDisplayName(name, sizeof(name));
+	APP->_cartDB.get(index - offset)->getDisplayName(name, sizeof(name));
 	return name;
 }
 
@@ -296,7 +293,7 @@ void UnlockKeyScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = STR("UnlockKeyScreen.prompt");
 	_itemPrompt = STR("UnlockKeyScreen.itemPrompt");
 
-	_listLength = APP->_cartDB.getNumEntries() - _getSpecialEntryOffset(ctx);
+	_listLength = APP->_cartDB.getNumEntries() + _getNumSpecialEntries(ctx);
 
 	ListScreen::show(ctx, goBack);
 }
@@ -308,8 +305,8 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 			ctx.show(APP->_cartInfoScreen, true, true);
 		} else {
-			auto &dump = APP->_cartDump;
-			int  index = _activeItem + _getSpecialEntryOffset(ctx);
+			auto &dump  = APP->_cartDump;
+			int  offset = _getNumSpecialEntries(ctx);
 
 			APP->_confirmScreen.setMessage(
 				APP->_unlockKeyScreen,
@@ -320,12 +317,13 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
 			);
 
-			if (index < 0) {
-				(this->*_SPECIAL_ENTRIES[-index].target)(ctx);
+			if (_activeItem < offset) {
+				offset -= _activeItem + 1;
+				(this->*_SPECIAL_ENTRIES[offset].target)(ctx);
 			} else {
-				dump.copyKeyFrom(APP->_cartDB.get(index)->dataKey);
+				APP->_selectedEntry = APP->_cartDB.get(_activeItem - offset);
 
-				APP->_selectedEntry = APP->_cartDB.get(index);
+				dump.copyKeyFrom(APP->_selectedEntry->dataKey);
 				ctx.show(APP->_confirmScreen, false, true);
 			}
 		}

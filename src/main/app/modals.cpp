@@ -112,7 +112,31 @@ void ConfirmScreen::update(ui::Context &ctx) {
 
 /* File picker screen */
 
+#ifndef NDEBUG
+struct SpecialEntry {
+public:
+	util::Hash name;
+	const char *prefix;
+};
+
+static const SpecialEntry _SPECIAL_ENTRIES[]{
+	{
+		.name   = "FilePickerScreen.host"_h,
+		.prefix = "host:"
+	}
+};
+#endif
+
 const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
+#ifndef NDEBUG
+	int offset = util::countOf(_SPECIAL_ENTRIES);
+
+	if (index < offset)
+		return STRH(_SPECIAL_ENTRIES[index].name);
+	else
+		index -= offset;
+#endif
+
 	static char name[file::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
 
 	int  drive = _drives[index];
@@ -151,12 +175,18 @@ void FilePickerScreen::setMessage(
 }
 
 int FilePickerScreen::loadRootAndShow(ui::Context &ctx) {
-	_listLength = 0;
+	int numDrives = 0;
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		if (ide::devices[i].flags & ide::DEVICE_READY)
-			_drives[_listLength++] = i;
+			_drives[numDrives++] = i;
 	}
+
+#ifdef NDEBUG
+	_listLength = numDrives;
+#else
+	_listLength = numDrives + util::countOf(_SPECIAL_ENTRIES);
+#endif
 
 	if (_listLength) {
 		ctx.show(APP->_filePickerScreen, false, true);
@@ -185,9 +215,24 @@ void FilePickerScreen::update(ui::Context &ctx) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 			ctx.show(*_prevScreen, true, true);
 		} else {
+			int index  = _activeItem;
+#ifndef NDEBUG
+			int offset = util::countOf(_SPECIAL_ENTRIES);
+
+			if (index < offset) {
+				APP->_fileBrowserScreen.loadDirectory(
+					ctx, _SPECIAL_ENTRIES[index].prefix
+				);
+				ctx.show(APP->_fileBrowserScreen, false, true);
+				return;
+			} else {
+				index -= offset;
+			}
+#endif
+
 			char name[6]{ "ide#:" };
 
-			int  drive = _drives[_activeItem];
+			int  drive = _drives[index];
 			auto &dev  = ide::devices[drive];
 
 			name[3]   = drive + '0';
@@ -242,6 +287,7 @@ void FileBrowserScreen::_setPathToChild(const char *entry) {
 }
 
 void FileBrowserScreen::_unloadDirectory(void) {
+	_listLength     = 0;
 	_numFiles       = 0;
 	_numDirectories = 0;
 
@@ -278,7 +324,9 @@ const char *FileBrowserScreen::_getItemName(ui::Context &ctx, int index) const {
 	return name;
 }
 
-int FileBrowserScreen::loadDirectory(ui::Context &ctx, const char *path) {
+int FileBrowserScreen::loadDirectory(
+	ui::Context &ctx, const char *path, bool updateCurrent
+) {
 	_unloadDirectory();
 
 	// Count the number of files and subfolders in the current directory, so
@@ -309,7 +357,8 @@ int FileBrowserScreen::loadDirectory(ui::Context &ctx, const char *path) {
 
 	LOG("files=%d, dirs=%d", _numFiles, _numDirectories);
 
-	file::FileInfo *files, *directories;
+	file::FileInfo *files       = nullptr;
+	file::FileInfo *directories = nullptr;
 
 	if (_numFiles)
 		files       = _files.allocate<file::FileInfo>(_numFiles);
@@ -332,7 +381,9 @@ int FileBrowserScreen::loadDirectory(ui::Context &ctx, const char *path) {
 	directory->close();
 	delete directory;
 
-	__builtin_strncpy(_currentPath, path, sizeof(_currentPath));
+	if (updateCurrent)
+		__builtin_strncpy(_currentPath, path, sizeof(_currentPath));
+
 	return _numFiles + _numDirectories;
 }
 
@@ -349,7 +400,6 @@ void FileBrowserScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
-			_unloadDirectory();
 			ctx.show(APP->_filePickerScreen, true, true);
 		} else {
 			int index = _activeItem;
@@ -366,11 +416,12 @@ void FileBrowserScreen::update(ui::Context &ctx) {
 					_setPathToChild(entries[index].name);
 
 				if (loadDirectory(ctx, selectedPath) < 0) {
+					loadDirectory(ctx, _currentPath, false);
+
 					APP->_messageScreen.setMessage(
 						MESSAGE_ERROR, *this,
 						STR("FileBrowserScreen.subdirError"), selectedPath
 					);
-
 					ctx.show(APP->_messageScreen, false, true);
 				}
 			} else {

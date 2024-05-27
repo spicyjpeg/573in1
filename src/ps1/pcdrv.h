@@ -39,9 +39,16 @@ typedef enum {
 	PCDRV_ATTR_ARCHIVE   = 1 << 5
 } PCDRVAttribute;
 
+typedef struct {
+	uint32_t attributes, size;
+	char     name[32];
+} PCDRVDirEntry;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Standard PCDRV API */
 
 int pcdrvInit(void);
 int pcdrvCreate(const char *path, uint32_t attributes);
@@ -50,6 +57,16 @@ int pcdrvClose(int fd);
 int pcdrvRead(int fd, void *data, size_t length);
 int pcdrvWrite(int fd, const void *data, size_t length);
 int pcdrvSeek(int fd, int offset, PCDRVSeekMode mode);
+
+/* Extended PCDRV API */
+
+int pcdrvCreateDir(const char *path);
+int pcdrvRemoveDir(const char *path);
+int pcdrvUnlink(const char *path);
+int pcdrvChmod(const char *path, uint32_t attributes);
+int pcdrvFindFirst(const char *path, PCDRVDirEntry *entry);
+int pcdrvFindNext(int fd, PCDRVDirEntry *entry);
+int pcdrvRename(const char *path, const char *newPath);
 
 #ifdef __cplusplus
 }

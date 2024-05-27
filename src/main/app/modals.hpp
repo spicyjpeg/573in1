@@ -97,7 +97,9 @@ protected:
 public:
 	char selectedPath[file::MAX_PATH_LENGTH];
 
-	int loadDirectory(ui::Context &ctx, const char *path);
+	int loadDirectory(
+		ui::Context &ctx, const char *path, bool updateCurrent = true
+	);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);

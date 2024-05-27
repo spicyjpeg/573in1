@@ -14,12 +14,14 @@
 
 .set noreorder
 
+## Standard PCDRV API
+
 .section .text.pcdrvInit, "ax", @progbits
 .global pcdrvInit
 .type pcdrvInit, @function
 
 pcdrvInit:
-	break 0, 0x101 # () -> error
+	break 0, 0x101 # (_) -> error
 
 	jr    $ra
 	nop
@@ -31,7 +33,7 @@ pcdrvInit:
 pcdrvCreate:
 	move  $a2, $a1
 	move  $a1, $a0
-	break 0, 0x102 # (path, path, 0) -> error, fd
+	break 0, 0x102 # (_, path, attributes) -> error, fd
 
 	bgez  $v0, .LcreateOK # if (error < 0) fd = error
 	nop
@@ -47,7 +49,7 @@ pcdrvCreate:
 pcdrvOpen:
 	move  $a2, $a1
 	move  $a1, $a0
-	break 0, 0x103 # (path, path, mode) -> error, fd
+	break 0, 0x103 # (_, path, mode) -> error, fd
 
 	bgez  $v0, .LopenOK # if (error < 0) fd = error
 	nop
@@ -62,7 +64,7 @@ pcdrvOpen:
 
 pcdrvClose:
 	move  $a1, $a0
-	break 0, 0x104 # (fd, fd) -> error
+	break 0, 0x104 # (_, fd) -> error
 
 	jr    $ra
 	nop
@@ -74,7 +76,7 @@ pcdrvClose:
 pcdrvRead:
 	move  $a3, $a1
 	move  $a1, $a0
-	break 0, 0x105 # (fd, fd, length, data) -> error, length
+	break 0, 0x105 # (_, fd, length, data) -> error, length
 
 	bgez  $v0, .LreadOK # if (error < 0) length = error
 	nop
@@ -90,7 +92,7 @@ pcdrvRead:
 pcdrvWrite:
 	move  $a3, $a1
 	move  $a1, $a0
-	break 0, 0x106 # (fd, fd, length, data) -> error, length
+	break 0, 0x106 # (_, fd, length, data) -> error, length
 
 	bgez  $v0, .LwriteOK # if (error < 0) length = error
 	nop
@@ -107,7 +109,7 @@ pcdrvSeek:
 	move  $a3, $a2
 	move  $a2, $a1
 	move  $a1, $a0
-	break 0, 0x107 # (fd, fd, offset, mode) -> error, offset
+	break 0, 0x107 # (_, fd, offset, mode) -> error, offset
 
 	bgez  $v0, .LseekOK # if (error < 0) offset = error
 	nop
@@ -115,3 +117,90 @@ pcdrvSeek:
 .LseekOK:
 	jr    $ra # return offset
 	move  $v0, $v1
+
+## Extended PCDRV API
+
+.section .text.pcdrvCreateDir, "ax", @progbits
+.global pcdrvCreateDir
+.type pcdrvCreateDir, @function
+
+pcdrvCreateDir:
+	move  $a1, $a0
+	break 0, 0x108 # (_, path) -> error
+
+	jr    $ra
+	nop
+
+.section .text.pcdrvRemoveDir, "ax", @progbits
+.global pcdrvRemoveDir
+.type pcdrvRemoveDir, @function
+
+pcdrvRemoveDir:
+	move  $a1, $a0
+	break 0, 0x109 # (_, path) -> error
+
+	jr    $ra
+	nop
+
+.section .text.pcdrvUnlink, "ax", @progbits
+.global pcdrvUnlink
+.type pcdrvUnlink, @function
+
+pcdrvUnlink:
+	move  $a1, $a0
+	break 0, 0x10a # (_, path) -> error
+
+	jr    $ra
+	nop
+
+.section .text.pcdrvChmod, "ax", @progbits
+.global pcdrvChmod
+.type pcdrvChmod, @function
+
+pcdrvChmod:
+	move  $a2, $a1
+	move  $a1, $a0
+	break 0, 0x10b # (_, path, attributes) -> error
+
+	jr    $ra
+	nop
+
+.section .text.pcdrvFindFirst, "ax", @progbits
+.global pcdrvFindFirst
+.type pcdrvFindFirst, @function
+
+pcdrvFindFirst:
+	move  $a2, $a1
+	move  $a1, $a0
+	break 0, 0x10c # (_, path, entry) -> error, fd
+
+	bgez  $v0, .LfindFirstOK # if (error < 0) fd = error
+	nop
+	move  $v1, $v0
+.LfindFirstOK:
+	jr    $ra # return fd
+	move  $v0, $v1
+
+.section .text.pcdrvFindNext, "ax", @progbits
+.global pcdrvFindNext
+.type pcdrvFindNext, @function
+
+pcdrvFindNext:
+	move  $a2, $a1
+	move  $a1, $a0
+	break 0, 0x10d # (_, fd, entry) -> error
+
+	jr    $ra
+	nop
+
+.section .text.pcdrvRename, "ax", @progbits
+.global pcdrvRename
+.type pcdrvRename, @function
+
+pcdrvRename:
+	move  $a2, $a1
+	move  $a1, $a0
+	break 0, 0x10e # (_, path, newPath) -> error
+
+	jr    $ra
+	nop

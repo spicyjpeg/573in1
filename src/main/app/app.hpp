@@ -62,7 +62,9 @@ private:
 public:
 	file::Provider     *ide[util::countOf(ide::devices)];
 	file::ZIPProvider  resource;
+#ifndef NDEBUG
 	file::HostProvider host;
+#endif
 	file::VFSProvider  vfs;
 
 	inline ~FileIOManager(void) {

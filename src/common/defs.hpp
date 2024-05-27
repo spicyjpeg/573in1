@@ -11,7 +11,7 @@
 #define VERSION_STRING VERSION "-debug"
 #endif
 
-#define EXTERNAL_DATA_DIR "hdd:cartdata"
+#define EXTERNAL_DATA_DIR "hdd:/cartdata"
 
 enum Character : char {
 	CH_UP_ARROW        = '\x80',

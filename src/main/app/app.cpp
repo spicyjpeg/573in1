@@ -71,7 +71,9 @@ FileIOManager::FileIOManager(void)
 	__builtin_memset(ide, 0, sizeof(ide));
 
 	vfs.mount("resource:", &resource);
+#ifndef NDEBUG
 	vfs.mount("host:",     &host);
+#endif
 }
 
 void FileIOManager::_closeResourceFile(void) {
@@ -86,7 +88,7 @@ void FileIOManager::_closeResourceFile(void) {
 void FileIOManager::initIDE(void) {
 	char name[6]{ "ide#:" };
 
-	for (int i = 0; i < util::countOf(ide::devices); i++) {
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		if (ide[i])
 			continue;
 
@@ -143,10 +145,12 @@ bool FileIOManager::loadResourceFile(const char *path) {
 void FileIOManager::close(void) {
 	vfs.close();
 	resource.close();
+#ifndef NDEBUG
 	host.close();
+#endif
 	_closeResourceFile();
 
-	for (int i = 0; i < util::countOf(ide::devices); i++) {
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		if (!ide[i])
 			continue;
 

@@ -18,7 +18,7 @@ public:
 
 class UnlockKeyScreen : public ui::ListScreen {
 private:
-	int _getSpecialEntryOffset(ui::Context &ctx) const;
+	int _getNumSpecialEntries(ui::Context &ctx) const;
 
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;

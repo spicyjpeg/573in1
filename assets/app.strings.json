@@ -1,6 +1,6 @@
 {
 	"AboutScreen": {
-		"title":  "{CART_ICON} About this tool",
+		"title":  "{RIGHT_ARROW} About this tool",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
@@ -111,7 +111,7 @@
 	},
 
 	"ButtonMappingScreen": {
-		"title":      "{CART_ICON} Select button mapping",
+		"title":      "{RIGHT_ARROW} Select button mapping",
 		"prompt":     "Use {START_BUTTON} or the Test button to select a mapping preset suitable for your cabinet or JAMMA setup. Other buttons will be enabled once a mapping is selected.",
 		"itemPrompt": "{RIGHT_ARROW} Press and hold {START_BUTTON} or Test to confirm",
 
@@ -132,7 +132,7 @@
 	},
 
 	"CartActionsScreen": {
-		"title":      "{CART_ICON} Cartridge options",
+		"title":      "{RIGHT_ARROW} Cartridge options",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"qrDump": {
@@ -184,7 +184,7 @@
 	},
 
 	"CartInfoScreen": {
-		"title": "{CART_ICON} Cartridge information",
+		"title": "{RIGHT_ARROW} Cartridge information",
 
 		"digitalIO": {
 			"header":  "Digital I/O board:\n",
@@ -244,7 +244,7 @@
 	},
 
 	"ChecksumScreen": {
-		"title":  "{CART_ICON} Storage device checksums",
+		"title":  "{RIGHT_ARROW} Storage device checksums",
 		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back.",
 
 		"bios":        "BIOS ROM (512 KB):\t\t\t\t%08X\n",
@@ -261,7 +261,7 @@
 	},
 
 	"FileBrowserScreen": {
-		"title":      "{CART_ICON} Select file",
+		"title":      "{RIGHT_ARROW} Select file",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"parentDir":   "[Parent directory]",
@@ -269,8 +269,10 @@
 	},
 
 	"FilePickerScreen": {
-		"title":      "{CART_ICON} Select IDE drive",
+		"title":      "{RIGHT_ARROW} Select IDE drive",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+
+		"host": "{HOST_ICON} Host filesystem (PCDRV)",
 
 		"noDeviceError": "No drives have been found and successfully initialized on the IDE bus. Make sure the drives are appropriately configured as primary or secondary and are receiving power.\n\nPress the Test button to view debug logs.",
 		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
@@ -279,12 +281,12 @@
 	},
 
 	"HexdumpScreen": {
-		"title":  "{CART_ICON} Cartridge dump",
+		"title":  "{RIGHT_ARROW} Cartridge dump",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
 	"IDEInfoScreen": {
-		"title":  "{CART_ICON} IDE device information",
+		"title":  "{RIGHT_ARROW} IDE device information",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back.",
 
 		"device": {
@@ -326,7 +328,7 @@
 	},
 
 	"MainMenuScreen": {
-		"title":      "{CART_ICON} Main menu",
+		"title":      "{RIGHT_ARROW} Main menu",
 		"itemPrompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to move, select by pressing {START_BUTTON}",
 
 		"cartInfo": {
@@ -379,18 +381,18 @@
 	},
 
 	"QRCodeScreen": {
-		"title":  "{CART_ICON} Cartridge dump",
+		"title":  "{RIGHT_ARROW} Cartridge dump",
 		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
 	},
 
 	"ReflashGameScreen": {
-		"title":      "{CART_ICON} Select game to convert cartridge to",
+		"title":      "{RIGHT_ARROW} Select game to convert cartridge to",
 		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back"
 	},
 
 	"ResolutionScreen": {
-		"title":      "{CART_ICON} Select screen resolution",
+		"title":      "{RIGHT_ARROW} Select screen resolution",
 		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
@@ -413,7 +415,7 @@
 	},
 
 	"StorageActionsScreen": {
-		"title":      "{CART_ICON} Storage device options",
+		"title":      "{RIGHT_ARROW} Storage device options",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
 
@@ -486,7 +488,7 @@
 	},
 
 	"StorageInfoScreen": {
-		"title":  "{CART_ICON} Storage device information",
+		"title":  "{RIGHT_ARROW} Storage device information",
 		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} for more options, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
 
 		"bios": {
@@ -540,7 +542,7 @@
 	},
 
 	"UnlockKeyScreen": {
-		"title":      "{CART_ICON} Select unlocking key",
+		"title":      "{RIGHT_ARROW} Select unlocking key",
 		"prompt":     "If the cartridge has been converted before, select the game it was last converted to. If it is currently blank, select 00-00-00-00-00-00-00-00.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
