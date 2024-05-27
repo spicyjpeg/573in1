@@ -11,15 +11,17 @@ namespace file {
 
 /* File fragment table */
 
-uint64_t FileFragmentTable::get(uint64_t sector) const {
-	auto fragment = as<const FileFragment>();
+uint64_t FileFragment::getLBA(uint64_t sector, size_t tableLength) const {
+	auto fragment = this;
 
-	while (sector > fragment->length) {
+	for (; tableLength; tableLength--, fragment++) {
+		if (sector < fragment->length)
+			return fragment->lba + sector;
+
 		sector -= fragment->length;
-		fragment++;
 	}
 
-	return fragment->lba + sector;
+	return 0;
 }
 
 /* Base file and directory classes */

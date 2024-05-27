@@ -71,28 +71,48 @@ bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 		return false;
 
 	switch (util::hash(arg, VALUE_SEPARATOR)) {
-		case "launcher.drive"_h:
-			drive = &arg[15];
+		case "entry.pc"_h:
+			entryPoint = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
 			return true;
 
-		case "launcher.path"_h:
-			path = &arg[14];
+		case "entry.gp"_h:
+			initialGP = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
 			return true;
 
-		case "launcher.arg"_h:
-			if (argCount >= int(util::countOf(executableArgs)))
+		case "entry.sp"_h:
+			stackTop = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
+			return true;
+
+		case "load"_h:
+			loadAddress = reinterpret_cast<void *>(strtol(&arg[5], nullptr, 16));
+			return true;
+
+		case "drive"_h:
+			drive = int(strtol(&arg[6], nullptr, 0));
+			return true;
+
+		case "frag"_h:
+			if (numFragments >= util::countOf(fragments))
 				return false;
 
-			executableArgs[argCount++] = &arg[13];
+			{
+				auto &fragment = fragments[numFragments++];
+				char *ptr;
+
+				fragment.lba    = strtoll(&arg[5], &ptr,    16);
+				fragment.length = strtoll(&ptr[1], nullptr, 16);
+			}
+			return true;
+
+		case "arg"_h:
+			if (numArgs >= int(util::countOf(executableArgs)))
+				return false;
+
+			executableArgs[numArgs++] = &arg[4];
 			return true;
 
 		default:
-#if 0
 			return CommonArgs::parseArgument(arg);
-#else
-			// Avoid pulling in strtol().
-			return false;
-#endif
 	}
 }
 

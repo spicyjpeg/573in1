@@ -54,18 +54,21 @@ public:
 
 /* File fragment table */
 
-struct FileFragment {
+class FileFragment {
 public:
 	uint64_t lba, length;
+
+	uint64_t getLBA(uint64_t sector, size_t tableLength) const;
 };
 
 class FileFragmentTable : public util::Data {
 public:
-	inline uint64_t operator[](uint64_t sector) const {
-		return get(sector);
+	inline size_t getNumFragments(void) const {
+		return length / sizeof(FileFragment);
 	}
-
-	uint64_t get(uint64_t sector) const;
+	inline uint64_t getLBA(uint64_t sector) const {
+		return as<FileFragment>()->getLBA(sector, getNumFragments());
+	}
 };
 
 /* Base file and directory classes */

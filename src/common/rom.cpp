@@ -551,8 +551,8 @@ enum IntelStatusFlag : uint16_t {
 DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 	volatile uint16_t *ptr  = _region.getRawPtr(offset & ~1);
 
-	int     shift = (offset & 1) * 8;
-	uint8_t status;
+	int     shift  = (offset & 1) * 8;
+	uint8_t status = 0;
 
 	// Not required as all write/erase commands already put the chip into status
 	// reading mode.

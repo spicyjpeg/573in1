@@ -604,28 +604,34 @@ bool ExecutableHeader::validateMagic(void) const {
 }
 
 ExecutableLoader::ExecutableLoader(
-	const ExecutableHeader &header, void *defaultStackTop
-) : _header(header), _argCount(0) {
-	auto stackTop = header.getStackPtr();
-
-	if (!stackTop)
-		stackTop = defaultStackTop;
-
+	void *entryPoint, void *initialGP, void *stackTop
+) : _entryPoint(entryPoint), _initialGP(initialGP), _numArgs(0) {
 	_argListPtr      = reinterpret_cast<const char **>(uintptr_t(stackTop) & ~7)
 		- MAX_EXECUTABLE_ARGS;
 	_currentStackPtr = reinterpret_cast<char *>(_argListPtr);
 }
 
-void ExecutableLoader::copyArgument(const char *arg) {
+void ExecutableLoader::copyArgument(const char *arg, size_t length) {
 	// Command-line arguments must be copied to the top of the new stack in
 	// order to ensure the executable is going to be able to access them at any
 	// time.
-	size_t length     = __builtin_strlen(arg) + 1;
+	length++;
 	_currentStackPtr -= (length + 7) & ~7;
 
 	addArgument(_currentStackPtr);
 	__builtin_memcpy(_currentStackPtr, arg, length);
 	//assert(_argCount <= MAX_EXECUTABLE_ARGS);
+}
+
+void ExecutableLoader::formatArgument(const char *format, ...) {
+	char    buffer[64];
+	va_list ap;
+
+	va_start(ap, format);
+	int length = vsnprintf(buffer, sizeof(buffer), format, ap);
+	va_end(ap);
+
+	copyArgument(buffer, length + 1);
 }
 
 [[noreturn]] void ExecutableLoader::run(
@@ -636,7 +642,7 @@ void ExecutableLoader::copyArgument(const char *arg) {
 
 	register int               a0  __asm__("a0") = rawArgc;
 	register const char *const *a1 __asm__("a1") = rawArgv;
-	register uintptr_t         gp  __asm__("gp") = _header.initialGP;
+	register void              *gp __asm__("gp") = _initialGP;
 
 	// Changing the stack pointer and return address is not something that
 	// should be done in a C++ function, but hopefully it's fine here since
@@ -648,7 +654,7 @@ void ExecutableLoader::copyArgument(const char *arg) {
 		"jr    %1\n"
 		"addiu $sp, %2, -8\n"
 		".set pop\n"
-		:: "i"(DEV2_BASE), "r"(_header.entryPoint), "r"(_currentStackPtr),
+		:: "i"(DEV2_BASE), "r"(_entryPoint), "r"(_currentStackPtr),
 		"r"(a0), "r"(a1), "r"(gp)
 	);
 	__builtin_unreachable();

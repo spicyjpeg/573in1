@@ -56,7 +56,10 @@ int main(int argc, const char **argv) {
 		reinterpret_cast<uint8_t *>(offset), ptr, length, compLength
 	);
 
-	util::ExecutableLoader loader(exeHeader, nullptr);
+	util::ExecutableLoader loader(
+		exeHeader.getEntryPoint(), exeHeader.getInitialGP(),
+		exeHeader.getStackPtr()
+	);
 
 	util::hexValueToString(
 		&_ptrArg[13], reinterpret_cast<uint32_t>(_resourceArchive), 8

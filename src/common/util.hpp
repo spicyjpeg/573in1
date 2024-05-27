@@ -299,14 +299,20 @@ public:
 	uint32_t stackOffset, stackLength;
 	uint32_t _reserved[5];
 
+	inline void *getEntryPoint(void) const {
+		return reinterpret_cast<void *>(entryPoint);
+	}
+	inline void *getInitialGP(void) const {
+		return reinterpret_cast<void *>(initialGP);
+	}
 	inline void *getTextPtr(void) const {
 		return reinterpret_cast<void *>(textOffset);
 	}
 	inline void *getStackPtr(void) const {
 		return reinterpret_cast<void *>(stackOffset + stackLength);
 	}
-	inline void copyFrom(const void *source) {
-		__builtin_memcpy(this, source, sizeof(ExecutableHeader));
+	inline void relocateText(const void *source) const {
+		__builtin_memcpy(getTextPtr(), source, textLength);
 	}
 
 	bool validateMagic(void) const;
@@ -314,22 +320,26 @@ public:
 
 class ExecutableLoader {
 private:
-	const ExecutableHeader &_header;
+	void *_entryPoint, *_initialGP;
 
-	int        _argCount;
+	int        _numArgs;
 	const char **_argListPtr;
 	char       *_currentStackPtr;
 
 public:
 	inline void addArgument(const char *arg) {
-		_argListPtr[_argCount++] = arg;
+		_argListPtr[_numArgs++] = arg;
+	}
+	inline void copyArgument(const char *arg) {
+		copyArgument(arg, __builtin_strlen(arg));
 	}
 	[[noreturn]] inline void run(void) {
-		run(_argCount, _argListPtr);
+		run(_numArgs, _argListPtr);
 	}
 
-	ExecutableLoader(const ExecutableHeader &header, void *defaultStackTop);
-	void copyArgument(const char *arg);
+	ExecutableLoader(void *entryPoint, void *initialGP, void *stackTop);
+	void copyArgument(const char *arg, size_t length);
+	void formatArgument(const char *format, ...);
 	[[noreturn]] void run(int rawArgc, const char *const *rawArgv);
 };
 

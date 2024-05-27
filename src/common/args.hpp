@@ -2,17 +2,22 @@
 #pragma once
 
 #include <stddef.h>
+#include "common/file.hpp"
 #include "common/util.hpp"
 
 namespace args {
 
 /* Command line argument parsers */
 
+extern "C" uint8_t _textStart[];
+
 static constexpr char VALUE_SEPARATOR = '=';
 
 static constexpr int DEFAULT_BAUD_RATE     = 115200;
 static constexpr int DEFAULT_SCREEN_WIDTH  = 320;
 static constexpr int DEFAULT_SCREEN_HEIGHT = 240;
+
+static constexpr size_t MAX_LAUNCHER_FRAGMENTS = 64;
 
 class CommonArgs {
 public:
@@ -46,12 +51,18 @@ public:
 
 class ExecutableLauncherArgs : public CommonArgs {
 public:
-	int        argCount;
-	const char *drive, *path;
-	const char *executableArgs[util::MAX_EXECUTABLE_ARGS];
+	void *entryPoint, *initialGP, *stackTop;
+
+	void *loadAddress;
+	int  drive;
+
+	size_t             numArgs, numFragments;
+	const char         *executableArgs[util::MAX_EXECUTABLE_ARGS];
+	file::FileFragment fragments[MAX_LAUNCHER_FRAGMENTS];
 
 	inline ExecutableLauncherArgs(void)
-	: argCount(0), drive(nullptr), path(nullptr) {}
+	: entryPoint(nullptr), initialGP(nullptr), stackTop(_textStart - 16),
+	drive(0), numArgs(0), numFragments(0) {}
 
 	bool parseArgument(const char *arg);
 };

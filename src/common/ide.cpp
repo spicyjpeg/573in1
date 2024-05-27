@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/ide.hpp"
+#include "common/io.hpp"
 #include "common/util.hpp"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
@@ -21,10 +22,10 @@
 
 namespace ide {
 
-static constexpr int _STATUS_TIMEOUT       = 1000000;
-static constexpr int _RESET_STATUS_TIMEOUT = 2000000;
-static constexpr int _DATA_STATUS_TIMEOUT  = 2000000;
-static constexpr int _DMA_TIMEOUT          = 10000;
+static constexpr int _STATUS_TIMEOUT = 30000000;
+static constexpr int _DETECT_TIMEOUT = 500000;
+static constexpr int _DMA_TIMEOUT    = 10000;
+static constexpr int _SRST_DELAY     = 5000;
 
 static const char *const _SENSE_KEY_NAMES[]{
 	"NO_SENSE",
@@ -48,6 +49,7 @@ static const char *const _SENSE_KEY_NAMES[]{
 const char *const DEVICE_ERROR_NAMES[]{
 	"NO_ERROR",
 	"UNSUPPORTED_OP",
+	"NO_DRIVE",
 	"STATUS_TIMEOUT",
 	"DRIVE_ERROR",
 	"INCOMPLETE_DATA",
@@ -143,121 +145,294 @@ void Device::_setLBA(uint64_t lba, uint16_t count) {
 }
 
 DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
+	if (!timeout)
+		timeout = _STATUS_TIMEOUT;
+
 	for (; timeout > 0; timeout -= 10) {
 		uint8_t status = _read(CS0_STATUS);
 
 		if (status & CS0_STATUS_ERR) {
-			LOG("IDE error, stat=0x%02x, err=0x%02x", _read(CS0_STATUS), _read(CS0_ERROR));
+			LOG(
+				"IDE error, stat=0x%02x, err=0x%02x", _read(CS0_STATUS),
+				_read(CS0_ERROR)
+			);
+
+			_write(CS0_COMMAND, ATA_DEVICE_RESET);
 			return DRIVE_ERROR;
 		}
 		if ((status & mask) == value)
 			return NO_ERROR;
 
 		delayMicroseconds(10);
+#ifndef ENABLE_FULL_IDE_DRIVER
+		io::clearWatchdog();
+#endif
 	}
 
-	LOG("IDE timeout, stat=0x%02x, err=0x%02x", _read(CS0_STATUS), _read(CS0_ERROR));
+	LOG(
+		"IDE timeout, stat=0x%02x, err=0x%02x", _read(CS0_STATUS),
+		_read(CS0_ERROR)
+	);
+
+	_write(CS0_COMMAND, ATA_DEVICE_RESET);
 	return STATUS_TIMEOUT;
 }
 
-DeviceError Device::_command(uint8_t cmd, bool drdy) {
-	DeviceError error;
-	uint8_t     mask = drdy ? CS0_STATUS_DRDY : 0;
-
-	error = _waitForStatus(CS0_STATUS_BSY | mask, mask, _STATUS_TIMEOUT);
+DeviceError Device::_command(uint8_t cmd, uint8_t status, int timeout) {
+	auto error = _waitForStatus(CS0_STATUS_BSY | status, status, timeout);
 
 	if (error)
 		return error;
 
 	_write(CS0_COMMAND, cmd);
-	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
+	return _waitForStatus(CS0_STATUS_BSY, 0, timeout);
 }
 
-DeviceError Device::_transferPIO(void *data, size_t length, bool write) {
+DeviceError Device::_detectDrive(void) {
+	// Issue a software reset, which affects both devices on the bus.
+	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN | CS1_DEVICE_CTRL_SRST);
+	delayMicroseconds(_SRST_DELAY);
+	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN);
+	delayMicroseconds(_SRST_DELAY);
+
+	_select();
+#ifndef ENABLE_FULL_IDE_DRIVER
+	io::clearWatchdog();
+#endif
+
+	// Issue dummy writes to the sector count register and attempt to read back
+	// the written value. This should not fail even if the drive is busy.
+	uint8_t pattern = 0x55;
+
+	for (int timeout = _DETECT_TIMEOUT; timeout > 0; timeout -= 10) {
+		_write(CS0_COUNT, pattern);
+
+		// Note that ATA drives will also assert DRDY when ready, but ATAPI
+		// drives will not.
+		if (_read(CS0_COUNT) == pattern)
+			return _waitForStatus(CS0_STATUS_BSY, 0);
+
+		pattern >>= 1;
+		if (!(pattern & 1))
+			pattern |= 1 << 7;
+
+		delayMicroseconds(10);
+#ifndef ENABLE_FULL_IDE_DRIVER
+		io::clearWatchdog();
+#endif
+	}
+
+	LOG("drive %d not found", (flags / DEVICE_SECONDARY) & 1);
+	return NO_DRIVE;
+}
+
+DeviceError Device::_readPIO(void *data, size_t length, int timeout) {
 	util::assertAligned<uint16_t>(data);
 
-	auto error = _waitForStatus(
-		CS0_STATUS_DRQ, CS0_STATUS_DRQ, _DATA_STATUS_TIMEOUT
-	);
+	auto error = _waitForStatus(CS0_STATUS_DRQ, CS0_STATUS_DRQ, timeout);
 
 	if (error)
 		return error;
 
 	auto ptr = reinterpret_cast<uint16_t *>(data);
 
-	if (write) {
-		for (; length; length -= 2)
-			SYS573_IDE_CS0_BASE[CS0_DATA] = *(ptr++);
-	} else {
-		for (; length; length -= 2)
-			*(ptr++) = SYS573_IDE_CS0_BASE[CS0_DATA];
-	}
+	for (; length; length -= 2)
+		*(ptr++) = SYS573_IDE_CS0_BASE[CS0_DATA];
 
 	return NO_ERROR;
 }
 
-DeviceError Device::_transferDMA(void *data, size_t length, bool write) {
-	length /= 4;
+DeviceError Device::_writePIO(const void *data, size_t length, int timeout) {
+	util::assertAligned<uint16_t>(data);
 
-	util::assertAligned<uint32_t>(data);
-
-	auto error = _waitForStatus(
-		CS0_STATUS_DRQ, CS0_STATUS_DRQ, _DATA_STATUS_TIMEOUT
-	);
+	auto error = _waitForStatus(CS0_STATUS_DRQ, CS0_STATUS_DRQ, timeout);
 
 	if (error)
 		return error;
 
-	uint32_t flags = DMA_CHCR_MODE_BURST | DMA_CHCR_ENABLE | DMA_CHCR_TRIGGER;
-	flags         |= write ? DMA_CHCR_WRITE : DMA_CHCR_READ;
+	auto ptr = reinterpret_cast<const uint16_t *>(data);
 
-	// TODO: is this actually needed?
-	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(SYS573_IDE_CS0_BASE) & 0x1fffffff;
+	for (; length; length -= 2)
+		SYS573_IDE_CS0_BASE[CS0_DATA] = *(ptr++);
+
+	return NO_ERROR;
+}
+
+DeviceError Device::_readDMA(void *data, size_t length, int timeout) {
+	length /= 4;
+
+	util::assertAligned<uint32_t>(data);
+
+	auto error = _waitForStatus(CS0_STATUS_DRQ, CS0_STATUS_DRQ, timeout);
+
+	if (error)
+		return error;
 
 	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
 	DMA_BCR (DMA_PIO) = length;
-	DMA_CHCR(DMA_PIO) = flags;
+	DMA_CHCR(DMA_PIO) = 0
+		| DMA_CHCR_READ
+		| DMA_CHCR_MODE_BURST
+		| DMA_CHCR_ENABLE
+		| DMA_CHCR_TRIGGER;
 
 	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT)) {
 		LOG("DMA transfer timeout");
 		return INCOMPLETE_DATA;
 	}
 
-	BIU_DEV0_ADDR = DEV0_BASE & 0x1fffffff;
 	return NO_ERROR;
 }
 
-DeviceError Device::enumerate(void) {
-	flags &= DEVICE_PRIMARY | DEVICE_SECONDARY;
+DeviceError Device::_writeDMA(const void *data, size_t length, int timeout) {
+	length /= 4;
 
-	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN | CS1_DEVICE_CTRL_SRST);
-	delayMicroseconds(5000);
-	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN);
-	delayMicroseconds(5000);
-	_select();
+	util::assertAligned<uint32_t>(data);
 
-	auto error = _waitForStatus(CS0_STATUS_BSY, 0, _RESET_STATUS_TIMEOUT);
+	auto error = _waitForStatus(CS0_STATUS_DRQ, CS0_STATUS_DRQ, timeout);
 
 	if (error)
 		return error;
 
-	// Check whether the ATAPI signature is present. Note that ATAPI drives will
-	// not assert DRDY until the first command is issued.
-	// FIXME: some drives may not provide the signature immediately
+	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
+	DMA_BCR (DMA_PIO) = length;
+	DMA_CHCR(DMA_PIO) = 0
+		| DMA_CHCR_WRITE
+		| DMA_CHCR_MODE_BURST
+		| DMA_CHCR_ENABLE
+		| DMA_CHCR_TRIGGER;
+
+	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT)) {
+		LOG("DMA transfer timeout");
+		return INCOMPLETE_DATA;
+	}
+
+	return NO_ERROR;
+}
+
+DeviceError Device::_ideReadWrite(
+	uintptr_t ptr, uint64_t lba, size_t count, bool write
+) {
+	uint8_t cmd;
+	size_t  maxLength;
+
+	if (flags & DEVICE_HAS_LBA48) {
+		cmd       = write ? ATA_WRITE_SECTORS_EXT : ATA_READ_SECTORS_EXT;
+		maxLength = 1 << 16;
+	} else {
+		cmd       = write ? ATA_WRITE_SECTORS : ATA_READ_SECTORS;
+		maxLength = 1 << 8;
+	}
+
+	while (count) {
+		size_t chunkLength = util::min(count, maxLength);
+
+		_setLBA(lba, chunkLength);
+		auto error = _command(cmd, CS0_STATUS_DRDY);
+
+		if (error)
+			return error;
+
+		// Data must be transferred one sector at a time as the drive may
+		// deassert DRQ between sectors.
+		for (size_t i = chunkLength; i; i--) {
+			if (write)
+				error = _writePIO(
+					reinterpret_cast<const void *>(ptr), ATA_SECTOR_SIZE
+				);
+			else
+				error = _readPIO(
+					reinterpret_cast<void *>(ptr), ATA_SECTOR_SIZE
+				);
+
+			if (error)
+				return error;
+
+			ptr += ATA_SECTOR_SIZE;
+		}
+
+		error = _waitForStatus(
+			CS0_STATUS_BSY | CS0_STATUS_DRDY, CS0_STATUS_DRDY
+		);
+
+		if (error)
+			return error;
+
+		count -= chunkLength;
+	}
+
+	return NO_ERROR;
+}
+
+DeviceError Device::_atapiRead(uintptr_t ptr, uint32_t lba, size_t count) {
+	Packet packet;
+
+	packet.setRead(lba, count);
+	auto error = atapiPacket(packet);
+
+	if (error)
+		return error;
+
+	// Data must be transferred one sector at a time as the drive may deassert
+	// DRQ between sectors.
+	for (; count; count--) {
+		error = _readPIO(reinterpret_cast<void *>(ptr), ATAPI_SECTOR_SIZE);
+
+		if (error)
+			return error;
+
+		ptr += ATAPI_SECTOR_SIZE;
+	}
+
+	return _waitForStatus(CS0_STATUS_BSY, 0);
+}
+
+#ifdef ENABLE_FULL_IDE_DRIVER
+DeviceError Device::_atapiRequestSense(void){
+	Packet packet;
+
+	packet.setRequestSense();
+	auto error = atapiPacket(packet);
+
+	if (error)
+		return error;
+
+	SenseData sense;
+
+	error = _readPIO(&sense, sizeof(sense));
+
+	if (error)
+		return error;
+
+	LOG("%s (0x%02x)", _SENSE_KEY_NAMES[sense.senseKey & 0xf], sense.senseKey);
+	LOG("asc=0x%02x, ascq=0x%02x", sense.asc, sense.ascQualifier);
+	return NO_ERROR;
+}
+#endif
+
+DeviceError Device::enumerate(void) {
+	flags &= DEVICE_PRIMARY | DEVICE_SECONDARY;
+
+	auto error = _detectDrive();
+
+	if (error)
+		return error;
+
+	// Check whether the ATAPI signature is present and fetch the appropriate
+	// identification block.
+	// NOTE: the primary drive may respond to all secondary drive register
+	// accesses, with the exception of command writes, if no secondary drive is
+	// actually present. A strict timeout is used in the commands below in order
+	// to prevent blocking for too long.
 	IdentifyBlock block;
 
 	if ((_read(CS0_CYLINDER_L) == 0x14) && (_read(CS0_CYLINDER_H) == 0xeb)) {
 		flags |= DEVICE_ATAPI;
 
-		error = _command(ATA_IDENTIFY_PACKET, false);
-
-		if (error)
-			return error;
-
-		error = _transferPIO(&block, sizeof(IdentifyBlock));
-
-		if (error)
-			return error;
+		if (_command(ATA_IDENTIFY_PACKET, 0, _DETECT_TIMEOUT))
+			return NO_DRIVE;
+		if (_readPIO(&block, sizeof(IdentifyBlock), _DETECT_TIMEOUT))
+			return NO_DRIVE;
 
 		if (!block.validateChecksum())
 			return CHECKSUM_MISMATCH;
@@ -272,15 +447,10 @@ DeviceError Device::enumerate(void) {
 		)
 			flags |= DEVICE_HAS_PACKET16;
 	} else {
-		error = _command(ATA_IDENTIFY);
-
-		if (error)
-			return error;
-
-		error = _transferPIO(&block, sizeof(IdentifyBlock));
-
-		if (error)
-			return error;
+		if (_command(ATA_IDENTIFY, CS0_STATUS_DRDY, _DETECT_TIMEOUT))
+			return NO_DRIVE;
+		if (_readPIO(&block, sizeof(IdentifyBlock), _DETECT_TIMEOUT))
+			return NO_DRIVE;
 
 		if (!block.validateChecksum())
 			return CHECKSUM_MISMATCH;
@@ -308,7 +478,7 @@ DeviceError Device::enumerate(void) {
 	_write(CS0_FEATURES, FEATURE_TRANSFER_MODE);
 	_write(CS0_COUNT,    (1 << 3) | mode);
 
-	error = _command(ATA_SET_FEATURES, false);
+	error = _command(ATA_SET_FEATURES, 0);
 
 	if (error)
 		return error;
@@ -318,138 +488,9 @@ DeviceError Device::enumerate(void) {
 	return NO_ERROR;
 }
 
-DeviceError Device::_ideReadWrite(
-	uintptr_t ptr, uint64_t lba, size_t count, bool write
-) {
-	if (flags & DEVICE_ATAPI)
-		return UNSUPPORTED_OP;
-
-	uint8_t cmd;
-	size_t  maxLength;
-
-	if (flags & DEVICE_HAS_LBA48) {
-		cmd       = write ? ATA_WRITE_SECTORS_EXT : ATA_READ_SECTORS_EXT;
-		maxLength = 1 << 16;
-	} else {
-		cmd       = write ? ATA_WRITE_SECTORS : ATA_READ_SECTORS;
-		maxLength = 1 << 8;
-	}
-
-	while (count) {
-		size_t chunkLength = util::min(count, maxLength);
-
-		_setLBA(lba, chunkLength);
-		auto error = _command(cmd);
-
-		if (error)
-			return error;
-
-		// Data must be transferred one sector at a time as the drive may
-		// deassert DRQ between sectors.
-		for (size_t i = chunkLength; i; i--) {
-			error = _transferPIO(
-				reinterpret_cast<void *>(ptr), ATA_SECTOR_SIZE, write
-			);
-
-			if (error)
-				return error;
-
-			ptr += ATA_SECTOR_SIZE;
-		}
-
-		error = _waitForStatus(
-			CS0_STATUS_BSY | CS0_STATUS_DRDY, CS0_STATUS_DRDY, _STATUS_TIMEOUT
-		);
-
-		if (error)
-			return error;
-
-		count -= chunkLength;
-	}
-
-	return NO_ERROR;
-}
-
-DeviceError Device::_atapiRead(uintptr_t ptr, uint32_t lba, size_t count) {
-	Packet packet;
-
-	packet.setRead(lba, count);
-	auto error = atapiPacket(packet);
-
-	if (error)
-		return error;
-
-	// Data must be transferred one sector at a time as the drive may deassert
-	// DRQ between sectors.
-	for (; count; count--) {
-		error = _transferPIO(
-			reinterpret_cast<void *>(ptr), ATAPI_SECTOR_SIZE
-		);
-
-		if (error)
-			return error;
-
-		ptr += ATAPI_SECTOR_SIZE;
-	}
-
-	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
-}
-
-#ifdef ENABLE_FULL_IDE_DRIVER
-DeviceError Device::_atapiRequestSense(void){
-	Packet packet;
-
-	packet.setRequestSense();
-	auto error = atapiPacket(packet);
-
-	if (error)
-		return error;
-
-	SenseData sense;
-
-	error = _transferPIO(&sense, sizeof(sense));
-
-	if (error)
-		return error;
-
-	LOG("%s (0x%02x)", _SENSE_KEY_NAMES[sense.senseKey & 0xf], sense.senseKey);
-	LOG("asc=0x%02x, ascq=0x%02x", sense.asc, sense.ascQualifier);
-	return NO_ERROR;
-}
-
-DeviceError Device::goIdle(bool standby) {
-	_select();
-
-	auto error = _command(standby ? ATA_STANDBY_IMMEDIATE : ATA_IDLE_IMMEDIATE);
-
-#if 0
-	if (error) {
-		// If the immediate command failed, fall back to setting the inactivity
-		// timeout to the lowest allowed value (5 seconds).
-		// FIXME: the original timeout would have to be restored once the drive
-		// is accessed again
-		_write(CS0_COUNT, 1);
-		return _command(standby ? ATA_STANDBY : ATA_IDLE);
-	}
-#endif
-
-	return error;
-}
-
-DeviceError Device::flushCache(void) {
-	if (!(flags & DEVICE_HAS_FLUSH))
-		return NO_ERROR;
-		//return UNSUPPORTED_OP;
-
-	_select();
-
-	return _command(
-		(flags & DEVICE_HAS_LBA48) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE
-	);
-}
-#endif
-
-DeviceError Device::atapiPacket(Packet &packet, size_t transferLength) {
+DeviceError Device::atapiPacket(const Packet &packet, size_t transferLength) {
+	if (!(flags & DEVICE_READY))
+		return NO_DRIVE;
 	if (!(flags & DEVICE_ATAPI))
 		return UNSUPPORTED_OP;
 
@@ -458,21 +499,24 @@ DeviceError Device::atapiPacket(Packet &packet, size_t transferLength) {
 	_write(CS0_CYLINDER_L, (transferLength >> 0) & 0xff);
 	_write(CS0_CYLINDER_H, (transferLength >> 8) & 0xff);
 
-	auto error = _command(ATA_PACKET, false);
+	auto error = _command(ATA_PACKET, 0);
 
 	if (error)
 		return error;
 
-	error = _transferPIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
+	error = _writePIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
 
 	if (error)
 		return error;
 
-	return _waitForStatus(CS0_STATUS_BSY, 0, _STATUS_TIMEOUT);
+	return _waitForStatus(CS0_STATUS_BSY, 0);
 }
 
 DeviceError Device::read(void *data, uint64_t lba, size_t count) {
 	util::assertAligned<uint32_t>(data);
+
+	if (!(flags & DEVICE_READY))
+		return NO_DRIVE;
 
 	if (flags & DEVICE_ATAPI) {
 		auto error = _atapiRead(
@@ -496,10 +540,61 @@ DeviceError Device::read(void *data, uint64_t lba, size_t count) {
 DeviceError Device::write(const void *data, uint64_t lba, size_t count) {
 	util::assertAligned<uint32_t>(data);
 
+	if (!(flags & DEVICE_READY))
+		return NO_DRIVE;
 	if (flags & (DEVICE_READ_ONLY | DEVICE_ATAPI))
 		return UNSUPPORTED_OP;
 
 	return _ideReadWrite(reinterpret_cast<uintptr_t>(data), lba, count, true);
 }
+
+#ifdef ENABLE_FULL_IDE_DRIVER
+DeviceError Device::goIdle(bool standby) {
+	if (!(flags & DEVICE_READY))
+		return NO_DRIVE;
+
+	if (flags & DEVICE_ATAPI) {
+		Packet packet;
+
+		packet.setStartStopUnit(START_STOP_MODE_STOP_DISC);
+		return atapiPacket(packet);
+	} else {
+		_select();
+
+		auto error = _command(
+			standby ? ATA_STANDBY_IMMEDIATE : ATA_IDLE_IMMEDIATE,
+			CS0_STATUS_DRDY
+		);
+
+#if 0
+		if (error) {
+			// If the immediate command failed, fall back to setting the
+			// inactivity timeout to the lowest allowed value (5 seconds).
+			// FIXME: the original timeout would have to be restored once the
+			// drive is accessed again
+			_write(CS0_COUNT, 1);
+			error = _command(standby ? ATA_STANDBY : ATA_IDLE, CS0_STATUS_DRDY);
+		}
+#endif
+
+		return error;
+	}
+}
+
+DeviceError Device::flushCache(void) {
+	if (!(flags & DEVICE_READY))
+		return NO_DRIVE;
+	if (!(flags & DEVICE_HAS_FLUSH))
+		return NO_ERROR;
+		//return UNSUPPORTED_OP;
+
+	_select();
+
+	return _command(
+		(flags & DEVICE_HAS_LBA48) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE,
+		CS0_STATUS_DRDY
+	);
+}
+#endif
 
 }

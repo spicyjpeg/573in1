@@ -1,11 +1,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/ide.hpp"
-#include "common/rom.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "ps1/system.h"
@@ -22,16 +20,10 @@ bool App::_startupWorker(void) {
 		auto &dev = ide::devices[i];
 
 		_workerStatus.update(i, 4, WSTR("App.startupWorker.initIDE"));
+
+		// Spin down all drives by default.
 		if (dev.enumerate())
-			continue;
-
-		if (dev.flags & ide::DEVICE_ATAPI) {
-			// Force the drive to stop the spindle motor immediately.
-			ide::Packet packet;
-
-			packet.setStartStopUnit(ide::START_STOP_MODE_STOP_DISC);
-			dev.atapiPacket(packet);
-		}
+			dev.goIdle();
 	}
 
 	_workerStatus.update(2, 4, WSTR("App.startupWorker.initFileIO"));
@@ -64,54 +56,33 @@ static const Launcher _LAUNCHERS[]{
 	}
 };
 
-static const uint32_t _EXECUTABLE_OFFSETS[]{
-	0,
-	rom::FLASH_EXECUTABLE_OFFSET,
-	util::EXECUTABLE_BODY_OFFSET
-};
-
 bool App::_executableWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
 
 	const char *path = _fileBrowserScreen.selectedPath;
 	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
-	if (!_file)
-		goto _fileOpenError;
-
 	util::ExecutableHeader header;
 
-	// Check for the presence of an executable at several different offsets
-	// within the file before giving up.
-	for (auto offset : _EXECUTABLE_OFFSETS) {
-		_file->seek(offset);
-		size_t length = _file->read(&header, sizeof(header));
+	__builtin_memset(header.magic, 0, sizeof(header.magic));
 
-		if (length != sizeof(header))
-			break;
-		if (header.validateMagic())
-			goto _validFile;
+	if (_file) {
+		_file->read(&header, sizeof(header));
+		_file->close();
+		delete _file;
 	}
 
-	_file->close();
-	delete _file;
+	if (!header.validateMagic()) {
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, _fileBrowserScreen,
+			WSTR("App.executableWorker.fileError"), path
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
 
-_fileOpenError:
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, _fileBrowserScreen,
-		WSTR("App.executableWorker.fileError"), path
-	);
-	_workerStatus.setNextScreen(_messageScreen);
-	return false;
-
-_validFile:
-	_file->close();
-	delete _file;
-
-	uintptr_t executableEnd, stackTop;
-
-	executableEnd = header.textOffset + header.textLength;
-	stackTop      = uintptr_t(header.getStackPtr());
+	auto executableEnd = header.textOffset + header.textLength;
+	auto stackTop      = uintptr_t(header.getStackPtr());
 
 	LOG("ptr=0x%08x, length=0x%x", header.textOffset, header.textLength);
 
@@ -133,38 +104,51 @@ _validFile:
 		)
 			continue;
 
-		// Load the launcher into memory, relocate it to the appropriate
-		// location and pass it the path to the executable to be loaded.
-		util::Data data;
+		// Decompress the launcher into memory and relocate it to the
+		// appropriate location.
+		util::Data binary;
 
-		if (!_fileIO.resource.loadData(data, launcher.path))
+		if (!_fileIO.resource.loadData(binary, launcher.path))
 			continue;
 
-		LOG("using %s", launcher.path);
 		_workerStatus.update(0, 1, WSTR("App.executableWorker.load"));
+		auto launcherHeader = binary.as<const util::ExecutableHeader>();
 
-		header.copyFrom(data.ptr);
-		__builtin_memcpy(
-			header.getTextPtr(),
-			reinterpret_cast<void *>(
-				uintptr_t(data.ptr) + util::EXECUTABLE_BODY_OFFSET
-			),
-			header.textLength
+		util::ExecutableLoader loader(
+			launcherHeader->getEntryPoint(), launcherHeader->getInitialGP(),
+			reinterpret_cast<void *>(launcherEnd)
 		);
-		data.destroy();
+
+		launcherHeader->relocateText(
+			binary.as<uint8_t>() + util::EXECUTABLE_BODY_OFFSET
+		);
+		binary.destroy();
+
+		// Pass the list of LBAs taken up by the executable to the launcher
+		// through the command line.
+		loader.formatArgument("entry.pc=%08x", header.getEntryPoint());
+		loader.formatArgument("entry.gp=%08x", header.getInitialGP());
+		loader.formatArgument("entry.sp=%08x", header.getStackPtr());
+		loader.formatArgument("load=%08x",     header.getTextPtr());
+		loader.formatArgument("drive=%c",      path[3]); // ide#:...
+
+		file::FileFragmentTable fragments;
+
+		_fileIO.vfs.getFileFragments(fragments, path);
+
+		auto fragment = fragments.as<const file::FileFragment>();
+
+		for (size_t i = fragments.getNumFragments(); i; i--, fragment++)
+			loader.formatArgument(
+				"frag=%llx,%llx", fragment->lba, fragment->length
+			);
+
+		fragments.destroy();
 
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
 		_unloadCartData();
 		_fileIO.close();
-
-		util::ExecutableLoader loader(
-			header, reinterpret_cast<void *>(launcherEnd)
-		);
-		char arg[128];
-
-		snprintf(arg, sizeof(arg), "launcher.path=%s", path);
-		loader.copyArgument(arg);
 
 		uninstallExceptionHandler();
 		loader.run();
@@ -180,38 +164,36 @@ _validFile:
 }
 
 bool App::_atapiEjectWorker(void) {
+	_workerStatus.setNextScreen(_mainMenuScreen, true);
 	_workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
 
-	if (!(ide::devices[0].flags & ide::DEVICE_ATAPI)) {
-		LOG("primary drive is not ATAPI");
+	for (auto &dev : ide::devices) {
+		if (!(dev.flags & ide::DEVICE_ATAPI))
+			continue;
 
-		_messageScreen.setMessage(
-			MESSAGE_ERROR, _mainMenuScreen,
-			WSTR("App.atapiEjectWorker.atapiError")
-		);
-		_workerStatus.setNextScreen(_messageScreen);
-		return false;
-	}
+		ide::Packet packet;
 
-	ide::Packet packet;
-	packet.setStartStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
+		packet.setStartStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
+		auto error = ide::devices[0].atapiPacket(packet);
 
-	auto error = ide::devices[0].atapiPacket(packet);
+		if (error) {
+			_messageScreen.setMessage(
+				MESSAGE_ERROR, _mainMenuScreen,
+				WSTR("App.atapiEjectWorker.ejectError"),
+				ide::getErrorString(error)
+			);
+			_workerStatus.setNextScreen(_messageScreen);
+			return false;
+		}
 
-	if (error) {
-		_messageScreen.setMessage(
-			MESSAGE_ERROR, _mainMenuScreen,
-			WSTR("App.atapiEjectWorker.ejectError"), ide::getErrorString(error)
-		);
-		_workerStatus.setNextScreen(_messageScreen);
-		return false;
+		return true;
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _mainMenuScreen, WSTR("App.atapiEjectWorker.success")
+		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.atapiEjectWorker.noDrive")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
-	return true;
+	return false;
 }
 
 bool App::_rebootWorker(void) {
