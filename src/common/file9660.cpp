@@ -202,6 +202,11 @@ bool ISO9660Provider::_getRecord(
 	if (!type)
 		return false;
 
+	if (!(*path)) {
+		output.copyFrom(&root);
+		return true;
+	}
+
 	util::Data records;
 	auto       numSectors =
 		(root.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
@@ -231,16 +236,12 @@ bool ISO9660Provider::_getRecord(
 		}
 
 		// If the name matches, move onto the next component of the path and
-		// recursively search the subdirectory (if any).
-		path += record.nameLength;
-		records.destroy();
+		// recursively search the subdirectory.
+		path      += nameLength;
+		auto found = _getRecord(output, record, path);
 
-		if (*path && (record.flags & ISO_RECORD_DIRECTORY)) {
-			return _getRecord(output, record, path);
-		} else {
-			output.copyFrom(&record);
-			return true;
-		}
+		records.destroy();
+		return found;
 	}
 
 	records.destroy();

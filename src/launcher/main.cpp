@@ -1,57 +1,70 @@
 
 #include <stdint.h>
 #include "common/args.hpp"
+#include "common/ide.hpp"
 #include "common/io.hpp"
-#include "common/rom.hpp"
 #include "common/util.hpp"
-#include "launcher/launcher.hpp"
-
-static const uint32_t _EXECUTABLE_OFFSETS[]{
-	0,
-	rom::FLASH_EXECUTABLE_OFFSET,
-	util::EXECUTABLE_BODY_OFFSET
-};
 
 int main(int argc, const char **argv) {
 	io::init();
 
-	ExecutableLauncher launcher;
+	args::ExecutableLauncherArgs args;
 
 	for (; argc > 0; argc--)
-		launcher.args.parseArgument(*(argv++));
+		args.parseArgument(*(argv++));
 
 #ifdef ENABLE_LOGGING
 	util::logger.setupSyslog(launcher.args.baudRate);
 #endif
 
-	auto error = launcher.openFile();
+	if (!args.entryPoint || !args.loadAddress || !args.numFragments)
+		return 1;
+
+	auto &dev = ide::devices[args.drive];
+
+	if (dev.enumerate())
+		return 2;
+
 	io::clearWatchdog();
 
-	if (error)
-		goto _exit;
+	size_t sectorSize  = dev.getSectorSize();
+	size_t skipSectors = util::EXECUTABLE_BODY_OFFSET / sectorSize;
 
-	// Check for the presence of an executable at several different offsets
-	// within the file before giving up.
-	for (auto offset : _EXECUTABLE_OFFSETS) {
-		error = launcher.parseHeader(offset);
-		io::clearWatchdog();
+	auto ptr      = reinterpret_cast<uintptr_t>(args.loadAddress);
+	auto fragment = args.fragments;
 
-		if (error == INVALID_FILE)
+	for (size_t i = args.numFragments; i; i--, fragment++) {
+		auto lba    = fragment->lba;
+		auto length = fragment->length;
+
+		// Skip the executable header by either shrinking the current fragment
+		// or ignoring it altogether.
+		if (skipSectors >= length) {
+			skipSectors -= length;
 			continue;
-		if (error)
-			goto _exit;
+		}
+		if (skipSectors) {
+			lba    += skipSectors;
+			length -= skipSectors;
+		}
 
-		error = launcher.loadBody();
+		if (dev.read(reinterpret_cast<void *>(ptr), lba, length))
+			return 3;
+
 		io::clearWatchdog();
-
-		if (error)
-			goto _exit;
-
-		launcher.closeFile();
-		launcher.run();
+		ptr += length * sectorSize;
 	}
 
-_exit:
-	launcher.closeFile();
-	return error;
+	// Launch the executable.
+	util::ExecutableLoader loader(
+		args.entryPoint, args.initialGP, args.stackTop
+	);
+
+	auto executableArg = args.executableArgs;
+
+	for (size_t i = args.numArgs; i; i--)
+		loader.copyArgument(*(executableArg++));
+
+	loader.run();
+	return 0;
 }

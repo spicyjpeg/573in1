@@ -307,10 +307,11 @@ public:
 enum DeviceError {
 	NO_ERROR          = 0,
 	UNSUPPORTED_OP    = 1,
-	STATUS_TIMEOUT    = 2,
-	DRIVE_ERROR       = 3,
-	INCOMPLETE_DATA   = 4,
-	CHECKSUM_MISMATCH = 5
+	NO_DRIVE          = 2,
+	STATUS_TIMEOUT    = 3,
+	DRIVE_ERROR       = 4,
+	INCOMPLETE_DATA   = 5,
+	CHECKSUM_MISMATCH = 6
 };
 
 enum DeviceFlag {
@@ -349,10 +350,14 @@ private:
 	}
 
 	void _setLBA(uint64_t lba, uint16_t count);
-	DeviceError _waitForStatus(uint8_t mask, uint8_t value, int timeout);
-	DeviceError _command(uint8_t cmd, bool drdy = true);
-	DeviceError _transferPIO(void *data, size_t length, bool write = false);
-	DeviceError _transferDMA(void *data, size_t length, bool write = false);
+	DeviceError _waitForStatus(uint8_t mask, uint8_t value, int timeout = 0);
+	DeviceError _command(uint8_t cmd, uint8_t status, int timeout = 0);
+	DeviceError _detectDrive(void);
+
+	DeviceError _readPIO(void *data, size_t length, int timeout = 0);
+	DeviceError _writePIO(const void *data, size_t length, int timeout = 0);
+	DeviceError _readDMA(void *data, size_t length, int timeout = 0);
+	DeviceError _writeDMA(const void *data, size_t length, int timeout = 0);
 
 	DeviceError _ideReadWrite(
 		uintptr_t ptr, uint64_t lba, size_t count, bool write
@@ -387,16 +392,16 @@ public:
 	}
 
 	DeviceError enumerate(void);
-#ifdef ENABLE_FULL_IDE_DRIVER
-	DeviceError goIdle(bool standby = false);
-	DeviceError flushCache(void);
-#endif
 	DeviceError atapiPacket(
-		Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
+		const Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
 	);
 
 	DeviceError read(void *data, uint64_t lba, size_t count);
 	DeviceError write(const void *data, uint64_t lba, size_t count);
+#ifdef ENABLE_FULL_IDE_DRIVER
+	DeviceError goIdle(bool standby = false);
+	DeviceError flushCache(void);
+#endif
 };
 
 extern const char *const DEVICE_ERROR_NAMES[];

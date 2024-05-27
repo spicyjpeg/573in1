@@ -20,7 +20,12 @@ void init(void) {
 		| SYS573_MISC_OUT_ADC_SCK
 		| SYS573_MISC_OUT_JVS_RESET;
 
-	BIU_DEV0_ADDR = DEV0_BASE & 0x1fffffff;
+	// Remapping the base address is required in order for IDE DMA to work
+	// properly, as the BIU will output it over the address lines during a DMA
+	// transfer. It does not affect non-DMA access since the BIU will replace
+	// the bottommost N bits, where N is the number of address lines used, with
+	// the respective CPU address bits.
+	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(SYS573_IDE_CS0_BASE) & 0x1fffffff;
 	BIU_DEV0_CTRL = 0
 		| (7 << 0) // Write delay
 		| (4 << 4) // Read delay
