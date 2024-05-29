@@ -12,14 +12,6 @@ namespace io {
 uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
 
 void init(void) {
-	_bankSwitchReg = 0;
-	_cartOutputReg = 0;
-	_miscOutputReg = 0
-		| SYS573_MISC_OUT_ADC_MOSI
-		| SYS573_MISC_OUT_ADC_CS
-		| SYS573_MISC_OUT_ADC_SCK
-		| SYS573_MISC_OUT_JVS_RESET;
-
 	// Remapping the base address is required in order for IDE DMA to work
 	// properly, as the BIU will output it over the address lines during a DMA
 	// transfer. It does not affect non-DMA access since the BIU will replace
@@ -39,11 +31,29 @@ void init(void) {
 		| ( 4 << 24) // DMA read/write delay
 		| BIU_CTRL_DMA_DELAY;
 
-	SYS573_WATCHDOG  = 0;
+	// Revision D of the main board has footprints for either eight 8-bit RAM
+	// chips wired as two 32-bit banks, or two 16-bit chips wired as a single
+	// bank. Normally the kernel takes care of setting up the memory controller
+	// appropriately, but this makes sure the configuration is correct if e.g.
+	// the tool is booted through OpenBIOS instead.
+	DRAM_CTRL = isDualBankRAM() ? 0x0c80 : 0x4788;
+
+	_bankSwitchReg = 0;
+	_cartOutputReg = 0;
+	_miscOutputReg = 0
+		| SYS573_MISC_OUT_ADC_MOSI
+		| SYS573_MISC_OUT_ADC_CS
+		| SYS573_MISC_OUT_ADC_SCK
+		| SYS573_MISC_OUT_JVS_RESET;
+
 	SYS573_BANK_CTRL = _bankSwitchReg;
 	SYS573_CART_OUT  = _cartOutputReg;
 	SYS573_MISC_OUT  = _miscOutputReg;
 
+	clearWatchdog();
+}
+
+void initIOBoard(void) {
 	// Some of the digital I/O board's light outputs are controlled by the FPGA
 	// and cannot be turned off until the FPGA is initialized.
 	if (isDigitalIOPresent()) {

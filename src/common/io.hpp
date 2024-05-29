@@ -40,7 +40,7 @@ enum JAMMAInput : uint32_t {
 	// SYS573_JAMMA_EXT2
 	JAMMA_P2_BUTTON4 = 1 << 20,
 	JAMMA_P2_BUTTON5 = 1 << 21,
-	JAMMA_UNKNOWN    = 1 << 22,
+	JAMMA_RAM_LAYOUT = 1 << 22,
 	JAMMA_P2_BUTTON6 = 1 << 23,
 
 	// SYS573_MISC_IN
@@ -72,13 +72,17 @@ enum MiscOutputPin {
 	MISC_AMP_ENABLE  = 5,
 	MISC_CDDA_ENABLE = 6,
 	MISC_SPU_ENABLE  = 7,
-	MISC_JVS_STAT    = 8
+	MISC_JVS_RESET   = 8
 };
 
 /* Inputs */
 
 static inline void clearWatchdog(void) {
 	SYS573_WATCHDOG = 0;
+}
+
+static inline bool isDualBankRAM(void) {
+	return (SYS573_JAMMA_EXT2 >> 10) & 1;
 }
 
 static inline bool getDIPSwitch(int bit) {
@@ -159,6 +163,7 @@ static inline void setDIO1Wire(bool value) {
 /* Other APIs */
 
 void init(void);
+void initIOBoard(void);
 uint32_t getJAMMAInputs(void);
 void getRTCTime(util::Date &output);
 void setRTCTime(const util::Date &value, bool stop = false);

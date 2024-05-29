@@ -54,13 +54,10 @@ public:
 		return (recordLength + 1) & ~1;
 	}
 	inline const ISOCharD *getName(void) const {
-		return &(this->recordLength) + sizeof(ISORecord);
+		return &(this->nameLength) + 1;
 	}
 	inline const uint8_t *getSystemUseData(void) const {
 		return getName() + ((nameLength + 1) & ~1);
-	}
-	inline void copyFrom(const void *source) {
-		__builtin_memcpy(this, source, sizeof(ISORecord));
 	}
 };
 

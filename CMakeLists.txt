@@ -218,6 +218,7 @@ function(addBootStub name resourceName)
 		${name} 80010000 0
 		src/boot/crt0.s
 		src/boot/main.cpp
+		src/common/io.cpp
 		src/common/util.cpp
 	)
 	addBinaryFile(

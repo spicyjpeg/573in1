@@ -41,7 +41,7 @@ size_t FATFile::read(void *output, size_t length) {
 	auto   error = f_read(&_fd, output, length, &actualLength);
 
 	if (error) {
-		LOG("%s, file=0x%08x", _FATFS_ERROR_NAMES[error], this);
+		LOG("%s", _FATFS_ERROR_NAMES[error]);
 		return 0;
 	}
 
@@ -53,7 +53,7 @@ size_t FATFile::write(const void *input, size_t length) {
 	auto   error = f_write(&_fd, input, length, &actualLength);
 
 	if (error) {
-		LOG("%s, file=0x%08x", _FATFS_ERROR_NAMES[error], this);
+		LOG("%s", _FATFS_ERROR_NAMES[error]);
 		return 0;
 	}
 
@@ -64,7 +64,7 @@ uint64_t FATFile::seek(uint64_t offset) {
 	auto error = f_lseek(&_fd, offset);
 
 	if (error) {
-		LOG("%s, file=0x%08x", _FATFS_ERROR_NAMES[error], this);
+		LOG("%s", _FATFS_ERROR_NAMES[error]);
 		return 0;
 	}
 
@@ -109,7 +109,7 @@ bool FATProvider::init(int drive) {
 	auto error = f_mount(&_fs, _drive, 1);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s", _FATFS_ERROR_NAMES[error], _drive);
 		return false;
 	}
 
@@ -118,7 +118,7 @@ bool FATProvider::init(int drive) {
 
 	f_getlabel(_drive, volumeLabel, &serialNumber);
 
-	LOG("mounted FAT: %s, drive=%s", volumeLabel, _drive);
+	LOG("mounted FAT: %s", _drive);
 	return true;
 }
 
@@ -126,14 +126,14 @@ void FATProvider::close(void) {
 	auto error = f_unmount(_drive);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s", _FATFS_ERROR_NAMES[error], _drive);
 		return;
 	}
 
 	type     = NONE;
 	capacity = 0;
 
-	LOG("FAT unmount ok, drive=%s", _drive);
+	LOG("unmounted FAT: %s", _drive);
 }
 
 uint64_t FATProvider::getFreeSpace(void) {
@@ -145,7 +145,7 @@ uint64_t FATProvider::getFreeSpace(void) {
 	auto     error = f_getfree(_drive, &count, &dummy);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s", _FATFS_ERROR_NAMES[error], _drive);
 		return 0;
 	}
 
@@ -169,7 +169,7 @@ bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 	auto    error = f_stat(path, &info);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 		return false;
 	}
 
@@ -211,7 +211,7 @@ bool FATProvider::getFileFragments(
 _fileError:
 	f_close(&fd);
 _openError:
-	LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+	LOG("%s, %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 	return false;
 }
 
@@ -223,7 +223,7 @@ Directory *FATProvider::openDirectory(const char *path) {
 	auto error = f_opendir(&(dir->_fd), path);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 		delete dir;
 		return nullptr;
 	}
@@ -238,7 +238,7 @@ bool FATProvider::createDirectory(const char *path) {
 	auto error = f_mkdir(path);
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 		return false;
 	}
 
@@ -253,7 +253,7 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 	auto error = f_open(&(_file->_fd), path, uint8_t(flags));
 
 	if (error) {
-		LOG("%s, drive=%s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 		delete _file;
 		return nullptr;
 	}
