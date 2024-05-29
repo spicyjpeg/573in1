@@ -52,14 +52,14 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 };
 
 ButtonState::ButtonState(void)
-: _held(0), _prevHeld(0), _longHeld(0), _prevLongHeld(0), _pressed(0),
-_released(0), _longPressed(0), _longReleased(0), _repeatTimer(0),
-buttonMap(MAP_JOYSTICK) {}
+: _buttonMap(MAP_JOYSTICK), _held(0), _prevHeld(0), _longHeld(0),
+_prevLongHeld(0), _pressed(0), _released(0), _longPressed(0), _longReleased(0),
+_repeatTimer(0) {}
 
 uint8_t ButtonState::_getHeld(void) const {
 	uint32_t inputs = io::getJAMMAInputs();
 	uint8_t  held   = 0;
-	auto     map    = _BUTTON_MAPPINGS[buttonMap];
+	auto     map    = _BUTTON_MAPPINGS[_buttonMap];
 
 #ifdef ENABLE_PS1_CONTROLLER
 	if (pad::ports[0].pollPad() || pad::ports[1].pollPad()) {
@@ -115,40 +115,43 @@ void ButtonState::update(void) {
 
 	uint32_t changed = _prevHeld ^ _held;
 
-	if (buttonMap == MAP_SINGLE_BUTTON) {
+	if (_buttonMap == MAP_SINGLE_BUTTON) {
 		_pressed  = 0;
 		_released = 0;
 		_longHeld = 0;
 
 		// In single-button mode, interpret a short button press as the right
-		// button and a long press as start.
-		if (_held) {
+		// button and a long press as start. Note that the repeat timer is not
+		// started if single button mode is enabled while a button is held down.
+		if (changed & _held) {
+			_repeatTimer = 1;
+		} else if (changed & _prevHeld) {
+			if (_repeatTimer && (_repeatTimer < REPEAT_DELAY))
+				_pressed  |= 1 << BTN_RIGHT;
+
+			_repeatTimer = 0;
+		} else if (_held && _repeatTimer) {
 			if (_repeatTimer == REPEAT_DELAY)
 				_pressed |= 1 << BTN_START;
 
 			_repeatTimer++;
-		} else if (_prevHeld) {
-			if (_repeatTimer >= REPEAT_DELAY)
-				_released |= 1 << BTN_START;
-			else
-				_pressed |= 1 << BTN_RIGHT;
-
-			_repeatTimer = 0;
 		}
 	} else {
-		if (changed)
+		if (changed & _held)
+			_repeatTimer = 1;
+		else if (changed & _prevHeld)
 			_repeatTimer = 0;
-		else if (_held)
+		else if (_held && _repeatTimer)
 			_repeatTimer++;
 
-		_pressed  = (changed & _held) & ~_pressed;
+		_pressed  = (changed & _held)     & ~_pressed;
 		_released = (changed & _prevHeld) & ~_released;
 		_longHeld = (_repeatTimer >= REPEAT_DELAY) ? _held : 0;
 	}
 
 	changed = _prevLongHeld ^ _longHeld;
 
-	_longPressed  = (changed & _longHeld) & ~_longPressed;
+	_longPressed  = (changed & _longHeld)     & ~_longPressed;
 	_longReleased = (changed & _prevLongHeld) & ~_longReleased;
 }
 
@@ -162,7 +165,7 @@ Context::Context(gpu::Context &gpuCtx, void *screenData)
 }
 
 void Context::show(Screen &screen, bool goBack, bool playSound) {
-	auto oldScreen = _screens[_currentScreen];
+	auto oldScreen = getCurrentScreen();
 
 	if (oldScreen)
 		oldScreen->hide(*this, goBack);
@@ -177,8 +180,8 @@ void Context::show(Screen &screen, bool goBack, bool playSound) {
 }
 
 void Context::draw(void) {
-	auto oldScreen = _screens[_currentScreen ^ 1];
-	auto newScreen = _screens[_currentScreen];
+	auto oldScreen = getInactiveScreen();
+	auto newScreen = getCurrentScreen();
 
 	for (auto layer : backgrounds) {
 		if (layer)
@@ -204,8 +207,10 @@ void Context::update(void) {
 			layer->update(*this);
 	}
 
-	if (_screens[_currentScreen])
-		_screens[_currentScreen]->update(*this);
+	auto screen = getCurrentScreen();
+
+	if (screen)
+		screen->update(*this);
 }
 
 /* Layer classes */

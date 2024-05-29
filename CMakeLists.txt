@@ -57,6 +57,15 @@ target_include_directories(
 	src
 	src/libc
 )
+target_compile_options(
+	common PUBLIC
+	-Wall
+	-Wextra
+	-Wno-unused-parameter
+	$<$<COMPILE_LANGUAGE:CXX>:
+		-Wno-pmf-conversions
+	>
+)
 target_compile_definitions(common PUBLIC VERSION="${PROJECT_VERSION}")
 link_libraries(common)
 
@@ -127,6 +136,7 @@ addExecutable(
 target_compile_definitions(
 	main PRIVATE
 	$<IF:$<CONFIG:Debug>,
+		ENABLE_AUTOBOOT=1
 		ENABLE_DUMMY_DRIVER=1
 		ENABLE_FULL_IDE_DRIVER=1
 		ENABLE_I2C_LOGGING=1
@@ -135,6 +145,7 @@ target_compile_definitions(
 		ENABLE_PS1_CONTROLLER=1
 		#ENABLE_X76F100_DRIVER=1
 	,
+		ENABLE_AUTOBOOT=1
 		#ENABLE_DUMMY_DRIVER=1
 		ENABLE_FULL_IDE_DRIVER=1
 		#ENABLE_I2C_LOGGING=1

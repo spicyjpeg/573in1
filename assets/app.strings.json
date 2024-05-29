@@ -8,7 +8,8 @@
 		"ideInitWorker": {
 			"initDrives":    "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
 			"initFileIO":    "Detecting and mounting filesystems...\nDo not turn off the 573 or unplug drives.",
-			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives."
+			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives.",
+			"autoboot":      "Searching for boot executables...\nDo not turn off the 573 or unplug drives."
 		},
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
@@ -108,6 +109,13 @@
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
 		}
+	},
+
+	"AutobootScreen": {
+		"title": "Note",
+		"body":  "A valid boot executable has been found and will be launched shortly. You may disable automatic booting by turning off DIP switch 1 or creating a file named noboot.txt in the root of the filesystem.\n\nFile: %s",
+
+		"cancel": "{START_BUTTON} Cancel (%ds)"
 	},
 
 	"ButtonMappingScreen": {

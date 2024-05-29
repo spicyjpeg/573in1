@@ -57,7 +57,6 @@ static constexpr size_t _DUMP_CHUNKS_PER_CRC = 32; // Save CRC32 every 16 MB
 // TODO: all these *really* need a cleanup...
 
 bool App::_romChecksumWorker(void) {
-	_workerStatus.setNextScreen(_checksumScreen);
 	_checksumScreen.valid = false;
 
 	for (auto &entry : _REGION_INFO) {
@@ -100,7 +99,7 @@ bool App::_romDumpWorker(void) {
 
 	// Store all dumps in a subdirectory named "dumpNNNN" within the main data
 	// folder.
-	char dirPath[32], filePath[32];
+	char dirPath[file::MAX_PATH_LENGTH], filePath[file::MAX_PATH_LENGTH];
 
 	if (!_createDataDirectory())
 		goto _initError;
@@ -158,26 +157,20 @@ bool App::_romDumpWorker(void) {
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageInfoScreen, WSTR("App.romDumpWorker.success"),
-		dirPath
+		MESSAGE_SUCCESS, WSTR("App.romDumpWorker.success"), dirPath
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return true;
 
 _initError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen, WSTR("App.romDumpWorker.initError"),
-		dirPath
+		MESSAGE_ERROR, WSTR("App.romDumpWorker.initError"), dirPath
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 
 _fileError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen, WSTR("App.romDumpWorker.fileError"),
-		filePath
+		MESSAGE_ERROR, WSTR("App.romDumpWorker.fileError"), filePath
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 }
 
@@ -299,18 +292,13 @@ bool App::_romRestoreWorker(void) {
 	delete _file;
 	delete driver;
 
-	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageInfoScreen, WSTRH(message), bytesWritten
-	);
-	_workerStatus.setNextScreen(_messageScreen);
+	_messageScreen.setMessage(MESSAGE_SUCCESS, WSTRH(message), bytesWritten);
 	return true;
 
 _fileError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.romRestoreWorker.fileError"), path
+		MESSAGE_ERROR, WSTR("App.romRestoreWorker.fileError"), path
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 
 _flashError:
@@ -321,11 +309,9 @@ _flashError:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.romRestoreWorker.flashError"), rom::getErrorString(error),
-		bytesWritten
+		MESSAGE_ERROR, WSTR("App.romRestoreWorker.flashError"),
+		rom::getErrorString(error), bytesWritten
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 }
 
@@ -366,31 +352,25 @@ bool App::_romEraseWorker(void) {
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _storageInfoScreen, WSTR("App.romEraseWorker.success"),
-		sectorsErased
+		MESSAGE_SUCCESS, WSTR("App.romEraseWorker.success"), sectorsErased
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return true;
 
 _flashError:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.romEraseWorker.flashError"), rom::getErrorString(error),
-		sectorsErased
+		MESSAGE_ERROR, WSTR("App.romEraseWorker.flashError"),
+		rom::getErrorString(error), sectorsErased
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 
 _unsupported:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.romEraseWorker.unsupported")
+		MESSAGE_ERROR, WSTR("App.romEraseWorker.unsupported")
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 }
 
@@ -460,8 +440,6 @@ bool App::_flashHeaderWriteWorker(void) {
 
 	buffer.destroy();
 	delete driver;
-
-	_workerStatus.setNextScreen(_storageInfoScreen);
 	return true;
 
 _flashError:
@@ -469,8 +447,7 @@ _flashError:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.flashHeaderWriteWorker.flashError"),
+		MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.flashError"),
 		rom::getErrorString(error)
 	);
 	_workerStatus.setNextScreen(_messageScreen);
@@ -480,8 +457,7 @@ _unsupported:
 	delete driver;
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _storageInfoScreen,
-		WSTR("App.flashHeaderWriteWorker.unsupported")
+		MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.unsupported")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;

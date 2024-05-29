@@ -4,12 +4,23 @@
 #include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/ide.hpp"
+#include "common/io.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "ps1/system.h"
 
+static const char *const _AUTOBOOT_PATHS[][2]{
+	{ "hdd:/noboot.txt",   "hdd:/psx.exe"   },
+	{ "cdrom:/noboot.txt", "cdrom:/psx.exe" },
+	{ "cdrom:/noboot.txt", "cdrom:/qsy.dxd" },
+	{ "cdrom:/noboot.txt", "cdrom:/ssw.bxf" },
+	{ "cdrom:/noboot.txt", "cdrom:/tsv.axg" },
+	{ "cdrom:/noboot.txt", "cdrom:/gse.nxx" },
+	{ "cdrom:/noboot.txt", "cdrom:/nse.gxx" }
+};
+
 bool App::_ideInitWorker(void) {
-	_workerStatus.update(0, 3, WSTR("App.ideInitWorker.initDrives"));
+	_workerStatus.update(0, 4, WSTR("App.ideInitWorker.initDrives"));
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		auto &dev = ide::devices[i];
@@ -21,12 +32,32 @@ bool App::_ideInitWorker(void) {
 			dev.goIdle();
 	}
 
-	_workerStatus.update(1, 3, WSTR("App.ideInitWorker.initFileIO"));
+	_workerStatus.update(1, 4, WSTR("App.ideInitWorker.initFileIO"));
 	_fileIO.initIDE();
 
-	_workerStatus.update(2, 3, WSTR("App.ideInitWorker.loadResources"));
+	_workerStatus.update(2, 4, WSTR("App.ideInitWorker.loadResources"));
 	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
 		_loadResources();
+
+#ifdef ENABLE_AUTOBOOT
+	// Only try to autoboot if DIP switch 1 is on.
+	if (io::getDIPSwitch(0)) {
+		_workerStatus.update(3, 4, WSTR("App.ideInitWorker.autoboot"));
+
+		for (auto path : _AUTOBOOT_PATHS) {
+			file::FileInfo info;
+
+			if (_fileIO.vfs.getFileInfo(info, path[0]))
+				continue;
+			if (!_fileIO.vfs.getFileInfo(info, path[1]))
+				continue;
+
+			_autobootScreen.path = path[1];
+			_workerStatus.setNextScreen(_autobootScreen);
+			break;
+		}
+	}
+#endif
 
 	_ctx.sounds[ui::SOUND_STARTUP].play();
 	return true;
@@ -69,8 +100,7 @@ bool App::_executableWorker(void) {
 
 	if (!header.validateMagic()) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _fileBrowserScreen,
-			WSTR("App.executableWorker.fileError"), path
+			MESSAGE_ERROR, WSTR("App.executableWorker.fileError"), path
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -79,7 +109,7 @@ bool App::_executableWorker(void) {
 	auto executableEnd = header.textOffset + header.textLength;
 	auto stackTop      = uintptr_t(header.getStackPtr());
 
-	LOG("ptr=0x%08x, length=0x%x", header.textOffset, header.textLength);
+	LOG("load=0x%08x, length=0x%x", header.textOffset, header.textLength);
 
 	// Find a launcher that does not overlap the new executable and can thus be
 	// used to load it. Note that this implicitly assumes that none of the
@@ -150,16 +180,14 @@ bool App::_executableWorker(void) {
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _fileBrowserScreen,
-		WSTR("App.executableWorker.addressError"), path, header.textOffset,
-		executableEnd - 1, stackTop
+		MESSAGE_ERROR, WSTR("App.executableWorker.addressError"), path,
+		header.textOffset, executableEnd - 1, stackTop
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 }
 
 bool App::_atapiEjectWorker(void) {
-	_workerStatus.setNextScreen(_mainMenuScreen, true);
 	_workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
 
 	for (auto &dev : ide::devices) {
@@ -173,8 +201,7 @@ bool App::_atapiEjectWorker(void) {
 
 		if (error) {
 			_messageScreen.setMessage(
-				MESSAGE_ERROR, _mainMenuScreen,
-				WSTR("App.atapiEjectWorker.ejectError"),
+				MESSAGE_ERROR, WSTR("App.atapiEjectWorker.ejectError"),
 				ide::getErrorString(error)
 			);
 			_workerStatus.setNextScreen(_messageScreen);
@@ -185,7 +212,7 @@ bool App::_atapiEjectWorker(void) {
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _mainMenuScreen, WSTR("App.atapiEjectWorker.noDrive")
+		MESSAGE_ERROR, WSTR("App.atapiEjectWorker.noDrive")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;

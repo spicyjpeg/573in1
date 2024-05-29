@@ -18,12 +18,13 @@
 
 /* Worker status class */
 
-void WorkerStatus::reset(void) {
+void WorkerStatus::reset(ui::Screen &next, bool goBack) {
 	status        = WORKER_IDLE;
 	progress      = 0;
 	progressTotal = 1;
 	message       = nullptr;
-	nextScreen    = nullptr;
+	nextScreen    = &next;
+	nextGoBack    = goBack;
 }
 
 void WorkerStatus::update(int part, int total, const char *text) {
@@ -38,30 +39,27 @@ void WorkerStatus::update(int part, int total, const char *text) {
 		enableInterrupts();
 }
 
-void WorkerStatus::setStatus(WorkerStatusType value) {
-	auto enable = disableInterrupts();
-	status      = value;
+ui::Screen &WorkerStatus::setNextScreen(ui::Screen &next, bool goBack) {
+	auto enable  = disableInterrupts();
+	auto oldNext = nextScreen;
+	nextScreen   = &next;
+	nextGoBack   = goBack;
 
 	if (enable)
 		enableInterrupts();
+
+	return *oldNext;
 }
 
-void WorkerStatus::setNextScreen(ui::Screen &next, bool goBack) {
-	auto enable = disableInterrupts();
-	_nextGoBack = goBack;
-	_nextScreen = &next;
+WorkerStatusType WorkerStatus::setStatus(WorkerStatusType value) {
+	auto enable    = disableInterrupts();
+	auto oldStatus = status;
+	status         = value;
 
 	if (enable)
 		enableInterrupts();
-}
 
-void WorkerStatus::finish(void) {
-	auto enable = disableInterrupts();
-	status      = _nextGoBack ? WORKER_NEXT_BACK : WORKER_NEXT;
-	nextScreen  = _nextScreen;
-
-	if (enable)
-		enableInterrupts();
+	return oldStatus;
 }
 
 /* Filesystem manager class */
@@ -96,11 +94,8 @@ void FileIOManager::initIDE(void) {
 				continue;
 			}
 
-			ide[i]      = iso;
-			bool mapped = vfs.mount("cdrom:", iso, true);
-
-			if (mapped)
-				LOG("mapped cdrom: -> %s", name);
+			ide[i] = iso;
+			vfs.mount("cdrom:", iso, true);
 		} else {
 			auto fat = new file::FATProvider();
 
@@ -109,11 +104,8 @@ void FileIOManager::initIDE(void) {
 				continue;
 			}
 
-			ide[i]      = fat;
-			bool mapped = vfs.mount("hdd:", fat, true);
-
-			if (mapped)
-				LOG("mapped hdd: -> %s", name);
+			ide[i] = fat;
+			vfs.mount("hdd:", fat, true);
 		}
 
 		vfs.mount(name, ide[i], true);
@@ -199,26 +191,6 @@ void App::_unloadCartData(void) {
 	//_selectedEntry = nullptr;
 }
 
-void App::_setupWorker(bool (App::*func)(void)) {
-	LOG("restarting worker, func=0x%08x", func);
-
-	auto enable = disableInterrupts();
-
-	_workerStack.allocate(_WORKER_STACK_SIZE);
-	_workerStatus.reset();
-
-	_workerFunction  = func;
-	auto stackBottom = _workerStack.as<uint8_t>();
-
-	initThread(
-		// This is not how you implement delegates in C++.
-		&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
-		&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
-	);
-	if (enable)
-		enableInterrupts();
-}
-
 void App::_setupInterrupts(void) {
 	setInterruptHandler(
 		util::forcedCast<ArgFunction>(&App::_interruptHandler), this
@@ -282,7 +254,7 @@ bool App::_getNumberedPath(char *output, size_t length, const char *path) {
 }
 
 bool App::_takeScreenshot(void) {
-	char path[32];
+	char path[file::MAX_PATH_LENGTH];
 
 	if (!_createDataDirectory())
 		return false;
@@ -299,10 +271,31 @@ bool App::_takeScreenshot(void) {
 	return true;
 }
 
+void App::_runWorker(
+	bool (App::*func)(void), ui::Screen &next, bool goBack, bool playSound
+) {
+	auto enable = disableInterrupts();
+
+	_workerStatus.reset(next, goBack);
+	_workerStack.allocate(_WORKER_STACK_SIZE);
+
+	_workerFunction  = func;
+	auto stackBottom = _workerStack.as<uint8_t>();
+
+	initThread(
+		&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
+		&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
+	);
+	if (enable)
+		enableInterrupts();
+
+	_ctx.show(_workerStatusScreen, false, playSound);
+}
+
 void App::_worker(void) {
 	if (_workerFunction) {
 		(this->*_workerFunction)();
-		_workerStatus.finish();
+		_workerStatus.setStatus(WORKER_DONE);
 	}
 
 	// Do nothing while waiting for vblank once the task is done.
@@ -334,15 +327,6 @@ void App::_interruptHandler(void) {
 	_fileIO.resource.init(resourcePtr, resourceLength);
 	_loadResources();
 
-#ifdef NDEBUG
-	_workerStatus.setNextScreen(_warningScreen);
-#else
-	// Skip the warning screen in debug builds.
-	_workerStatus.setNextScreen(_buttonMappingScreen);
-#endif
-	_setupWorker(&App::_ideInitWorker);
-	_setupInterrupts();
-
 	char dateString[24];
 
 	_textOverlay.leftText       = dateString;
@@ -357,7 +341,9 @@ void App::_interruptHandler(void) {
 	_ctx.overlays[0]    = &_logOverlay;
 #endif
 	_ctx.overlays[1]    = &_screenshotOverlay;
-	_ctx.show(_workerStatusScreen);
+
+	_runWorker(&App::_ideInitWorker, _warningScreen);
+	_setupInterrupts();
 
 	for (;;) {
 		util::Date date;

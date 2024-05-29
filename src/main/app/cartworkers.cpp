@@ -141,11 +141,9 @@ bool App::_cartUnlockWorker(void) {
 
 	if (error) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen,
-			WSTRH(_UNLOCK_ERRORS[_cartDump.chipType]),
+			MESSAGE_ERROR, WSTRH(_UNLOCK_ERRORS[_cartDump.chipType]),
 			cart::getErrorString(error)
 		);
-
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
 	}
@@ -189,7 +187,6 @@ bool App::_cartUnlockWorker(void) {
 bool App::_qrCodeWorker(void) {
 	char qrString[cart::MAX_QR_STRING_LENGTH];
 
-	_workerStatus.setNextScreen(_qrCodeScreen);
 	_workerStatus.update(0, 2, WSTR("App.qrCodeWorker.compress"));
 	_cartDump.toQRString(qrString);
 
@@ -202,7 +199,7 @@ bool App::_qrCodeWorker(void) {
 bool App::_cartDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
-	char   path[32], code[8], region[8];
+	char   path[file::MAX_PATH_LENGTH], code[8], region[8];
 	size_t length = _cartDump.getDumpLength();
 
 	if (!_createDataDirectory())
@@ -228,17 +225,14 @@ bool App::_cartDumpWorker(void) {
 		goto _error;
 
 	_messageScreen.setMessage(
-		MESSAGE_SUCCESS, _cartInfoScreen, WSTR("App.cartDumpWorker.success"),
-		path
+		MESSAGE_SUCCESS, WSTR("App.cartDumpWorker.success"), path
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return true;
 
 _error:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartDumpWorker.error"), path
+		MESSAGE_ERROR, WSTR("App.cartDumpWorker.error"), path
 	);
-	_workerStatus.setNextScreen(_messageScreen);
 	return false;
 }
 
@@ -255,7 +249,7 @@ bool App::_cartWriteWorker(void) {
 
 	if (error) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartWriteWorker.error"),
+			MESSAGE_ERROR, WSTR("App.cartWriteWorker.error"),
 			cart::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
@@ -292,8 +286,7 @@ bool App::_cartRestoreWorker(void) {
 
 	if (_cartDump.chipType != newDump.chipType) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _fileBrowserScreen,
-			WSTR("App.cartRestoreWorker.typeError"), path
+			MESSAGE_ERROR, WSTR("App.cartRestoreWorker.typeError"), path
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -322,8 +315,7 @@ bool App::_cartRestoreWorker(void) {
 
 	if (error) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _fileBrowserScreen,
-			WSTR("App.cartRestoreWorker.writeError"),
+			MESSAGE_ERROR, WSTR("App.cartRestoreWorker.writeError"),
 			cart::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
@@ -338,8 +330,7 @@ _fileError:
 
 _fileOpenError:
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, _fileBrowserScreen,
-		WSTR("App.cartRestoreWorker.fileError"), path
+		MESSAGE_ERROR, WSTR("App.cartRestoreWorker.fileError"), path
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
@@ -352,8 +343,7 @@ bool App::_cartReflashWorker(void) {
 		!(_cartDump.flags & cart::DUMP_CART_ID_OK)
 	) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen,
-			WSTR("App.cartReflashWorker.idError")
+			MESSAGE_ERROR, WSTR("App.cartReflashWorker.idError")
 		);
 		_workerStatus.setNextScreen(_messageScreen);
 		return false;
@@ -418,8 +408,7 @@ bool App::_cartReflashWorker(void) {
 
 	if (error) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen,
-			WSTR("App.cartReflashWorker.writeError"),
+			MESSAGE_ERROR, WSTR("App.cartReflashWorker.writeError"),
 			cart::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);
@@ -437,7 +426,7 @@ bool App::_cartEraseWorker(void) {
 
 	if (error) {
 		_messageScreen.setMessage(
-			MESSAGE_ERROR, _cartInfoScreen, WSTR("App.cartEraseWorker.error"),
+			MESSAGE_ERROR, WSTR("App.cartEraseWorker.error"),
 			cart::getErrorString(error)
 		);
 		_workerStatus.setNextScreen(_messageScreen);

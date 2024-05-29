@@ -16,6 +16,8 @@ public:
 	void update(ui::Context &ctx);
 };
 
+static constexpr size_t NUM_MESSAGE_TYPES = 3;
+
 enum MessageType {
 	MESSAGE_SUCCESS = 0,
 	MESSAGE_WARNING = 1,
@@ -26,12 +28,11 @@ class MessageScreen : public ui::MessageBoxScreen {
 private:
 	MessageType _type;
 	char        _bodyText[512];
-	ui::Screen  *_prevScreen;
 
 public:
-	void setMessage(
-		MessageType type, ui::Screen &prev, const char *format, ...
-	);
+	ui::Screen *previousScreens[NUM_MESSAGE_TYPES];
+
+	void setMessage(MessageType type, const char *format, ...);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
@@ -39,14 +40,14 @@ public:
 
 class ConfirmScreen : public ui::MessageBoxScreen {
 private:
-	char       _bodyText[512];
-	ui::Screen *_prevScreen;
-	void       (*_callback)(ui::Context &ctx);
+	char _bodyText[512];
+	void (*_callback)(ui::Context &ctx);
 
 public:
+	ui::Screen *previousScreen;
+
 	void setMessage(
-		ui::Screen &prev, void (*callback)(ui::Context &ctx),
-		const char *format, ...
+		void (*callback)(ui::Context &ctx), const char *format, ...
 	);
 
 	void show(ui::Context &ctx, bool goBack = false);
@@ -59,9 +60,8 @@ class FilePickerScreen : public ui::ListScreen {
 	friend class FileBrowserScreen;
 
 private:
-	char       _promptText[512];
-	ui::Screen *_prevScreen;
-	void       (*_callback)(ui::Context &ctx);
+	char _promptText[512];
+	void (*_callback)(ui::Context &ctx);
 
 	int _drives[util::countOf(ide::devices)];
 
@@ -69,9 +69,10 @@ protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
 
 public:
+	ui::Screen *previousScreen;
+
 	void setMessage(
-		ui::Screen &prev, void (*callback)(ui::Context &ctx),
-		const char *format, ...
+		void (*callback)(ui::Context &ctx), const char *format, ...
 	);
 	void reloadAndShow(ui::Context &ctx);
 

@@ -59,17 +59,18 @@ const char *CartActionsScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void CartActionsScreen::qrDump(ui::Context &ctx) {
-	if (APP->_qrCodeScreen.valid) {
+	if (APP->_qrCodeScreen.valid)
 		ctx.show(APP->_qrCodeScreen, false, true);
-	} else {
-		APP->_setupWorker(&App::_qrCodeWorker);
-		ctx.show(APP->_workerStatusScreen, false, true);
-	}
+	else
+		APP->_runWorker(&App::_qrCodeWorker, APP->_qrCodeScreen, false, true);
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {
-	APP->_setupWorker(&App::_cartDumpWorker);
-	ctx.show(APP->_workerStatusScreen, false, true);
+	APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
+		&(APP->_cartInfoScreen);
+	APP->_messageScreen.previousScreens[MESSAGE_ERROR]   = this;
+
+	APP->_runWorker(&App::_cartDumpWorker, APP->_messageScreen, false, true);
 }
 
 void CartActionsScreen::hexdump(ui::Context &ctx) {
@@ -77,18 +78,23 @@ void CartActionsScreen::hexdump(ui::Context &ctx) {
 }
 
 void CartActionsScreen::hddRestore(ui::Context &ctx) {
+	APP->_filePickerScreen.previousScreen = this;
 	APP->_filePickerScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
 			ctx.show(APP->_confirmScreen, false, true);
 		},
 		STR("CartActionsScreen.hddRestore.filePrompt")
 	);
+
+	APP->_confirmScreen.previousScreen = &(APP->_fileBrowserScreen);
 	APP->_confirmScreen.setMessage(
-		APP->_fileBrowserScreen,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_cartRestoreWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+				&(APP->_fileBrowserScreen);
+
+			APP->_runWorker(
+				&App::_cartRestoreWorker, APP->_cartInfoScreen, true, true
+			);
 		},
 		STR("CartActionsScreen.hddRestore.confirm")
 	);
@@ -101,11 +107,15 @@ void CartActionsScreen::reflash(ui::Context &ctx) {
 }
 
 void CartActionsScreen::erase(ui::Context &ctx) {
+	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_cartEraseWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+				&(APP->_cartActionsScreen);
+
+			APP->_runWorker(
+				&App::_cartEraseWorker, APP->_cartInfoScreen, true, true
+			);
 		},
 		STR("CartActionsScreen.erase.confirm")
 	);
@@ -115,22 +125,27 @@ void CartActionsScreen::erase(ui::Context &ctx) {
 
 void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 	if (!(APP->_cartParser->getIdentifiers()->systemID.isEmpty())) {
+		APP->_confirmScreen.previousScreen = this;
 		APP->_confirmScreen.setMessage(
-			*this,
 			[](ui::Context &ctx) {
 				util::clear(APP->_cartParser->getIdentifiers()->systemID);
 				APP->_cartParser->flush();
 
-				APP->_setupWorker(&App::_cartWriteWorker);
-				ctx.show(APP->_workerStatusScreen, false, true);
+				APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+					&(APP->_cartActionsScreen);
+
+				APP->_runWorker(
+					&App::_cartWriteWorker, APP->_cartInfoScreen, true, true
+				);
 			},
 			STR("CartActionsScreen.resetSystemID.confirm")
 		);
 
 		ctx.show(APP->_confirmScreen, false, true);
 	} else {
+		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, *this, STR("CartActionsScreen.resetSystemID.error")
+			MESSAGE_ERROR, STR("CartActionsScreen.resetSystemID.error")
 		);
 
 		ctx.show(APP->_messageScreen, false, true);
@@ -139,24 +154,29 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 
 void CartActionsScreen::matchSystemID(ui::Context &ctx) {
 	if (APP->_cartDump.flags & cart::DUMP_SYSTEM_ID_OK) {
+		APP->_confirmScreen.previousScreen = this;
 		APP->_confirmScreen.setMessage(
-			*this,
 			[](ui::Context &ctx) {
 				APP->_cartParser->getIdentifiers()->systemID.copyFrom(
 					APP->_cartDump.systemID.data
 				);
 				APP->_cartParser->flush();
 
-				APP->_setupWorker(&App::_cartWriteWorker);
-				ctx.show(APP->_workerStatusScreen, false, true);
+				APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+					&(APP->_cartActionsScreen);
+
+				APP->_runWorker(
+					&App::_cartWriteWorker, APP->_cartInfoScreen, true, true
+				);
 			},
 			STR("CartActionsScreen.matchSystemID.confirm")
 		);
 
 		ctx.show(APP->_confirmScreen, false, true);
 	} else {
+		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, *this, STR("CartActionsScreen.matchSystemID.error")
+			MESSAGE_ERROR, STR("CartActionsScreen.matchSystemID.error")
 		);
 
 		ctx.show(APP->_messageScreen, false, true);
@@ -164,22 +184,6 @@ void CartActionsScreen::matchSystemID(ui::Context &ctx) {
 }
 
 void CartActionsScreen::editSystemID(ui::Context &ctx) {
-	APP->_confirmScreen.setMessage(
-		APP->_systemIDEntryScreen,
-		[](ui::Context &ctx) {
-			APP->_systemIDEntryScreen.setSystemID(*(APP->_cartParser));
-
-			APP->_setupWorker(&App::_cartWriteWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
-		},
-		STR("CartActionsScreen.editSystemID.confirm")
-	);
-
-	APP->_messageScreen.setMessage(
-		MESSAGE_ERROR, APP->_systemIDEntryScreen,
-		STR("CartActionsScreen.editSystemID.error")
-	);
-
 	APP->_systemIDEntryScreen.getSystemID(*(APP->_cartParser));
 	ctx.show(APP->_systemIDEntryScreen, false, true);
 }
@@ -284,11 +288,16 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 			ctx.show(APP->_cartActionsScreen, true, true);
 		} else {
+			APP->_confirmScreen.previousScreen = this;
 			APP->_confirmScreen.setMessage(
-				*this,
 				[](ui::Context &ctx) {
-					APP->_setupWorker(&App::_cartReflashWorker);
-					ctx.show(APP->_workerStatusScreen, false, true);
+					APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+						&(APP->_reflashGameScreen);
+
+					APP->_runWorker(
+						&App::_cartReflashWorker, APP->_cartInfoScreen, true,
+						true
+					);
 				},
 				STR("CartActionsScreen.reflash.confirm")
 			);
@@ -319,10 +328,35 @@ void SystemIDEntryScreen::update(ui::Context &ctx) {
 		if (_activeButton == _buttonIndexOffset) {
 			ctx.show(APP->_cartActionsScreen, true, true);
 		} else if (_activeButton == (_buttonIndexOffset + 1)) {
-			if (util::dsCRC8(_buffer, 7) == _buffer[7])
+			if (util::dsCRC8(_buffer, 7) == _buffer[7]) {
+				APP->_confirmScreen.previousScreen = this;
+				APP->_confirmScreen.setMessage(
+					[](ui::Context &ctx) {
+						APP->_systemIDEntryScreen.setSystemID(
+							*(APP->_cartParser)
+						);
+
+						APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+							&(APP->_systemIDEntryScreen);
+
+						APP->_runWorker(
+							&App::_cartWriteWorker, APP->_cartInfoScreen, true,
+							true
+						);
+					},
+					STR("CartActionsScreen.editSystemID.confirm")
+				);
+
 				ctx.show(APP->_confirmScreen, false, true);
-			else
+			} else {
+				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
+				APP->_messageScreen.setMessage(
+					MESSAGE_ERROR,
+					STR("CartActionsScreen.editSystemID.error")
+				);
+
 				ctx.show(APP->_messageScreen, false, true);
+			}
 		}
 	}
 }

@@ -105,7 +105,9 @@ enum ButtonMap {
 
 class ButtonState {
 private:
-	uint32_t _mappings[NUM_BUTTONS];
+	ButtonMap _buttonMap;
+	uint32_t  _mappings[NUM_BUTTONS];
+
 	uint8_t  _held, _prevHeld;
 	uint8_t  _longHeld, _prevLongHeld;
 	uint8_t  _pressed, _released;
@@ -116,7 +118,10 @@ private:
 	uint8_t _getHeld(void) const;
 
 public:
-	ButtonMap buttonMap;
+	inline void setButtonMap(ButtonMap map) {
+		reset();
+		_buttonMap = map;
+	}
 
 	inline bool held(Button button) const {
 		return (_held >> button) & 1;
@@ -167,6 +172,12 @@ public:
 	int  time;
 	void *screenData; // Opaque, can be accessed by screens
 
+	inline Screen *getCurrentScreen(void) const {
+		return _screens[_currentScreen];
+	}
+	inline Screen *getInactiveScreen(void) const {
+		return _screens[_currentScreen ^ 1];
+	}
 	inline void tick(void) {
 		//buttons.update();
 		time++;

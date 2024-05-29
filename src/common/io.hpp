@@ -81,8 +81,8 @@ static inline void clearWatchdog(void) {
 	SYS573_WATCHDOG = 0;
 }
 
-static inline uint32_t getDIPSwitches(void) {
-	return SYS573_DIP_CART & 0xf;
+static inline bool getDIPSwitch(int bit) {
+	return !((SYS573_DIP_CART >> bit) & 1);
 }
 
 static inline bool getCartInsertionStatus(void) {

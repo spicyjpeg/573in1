@@ -25,17 +25,12 @@ enum WorkerStatusType {
 	WORKER_REBOOT       = 1,
 	WORKER_BUSY         = 2,
 	WORKER_BUSY_SUSPEND = 3, // Prevent main thread from running
-	WORKER_NEXT         = 4, // Go to next screen (goBack=false)
-	WORKER_NEXT_BACK    = 5  // Go to next screen (goBack=true)
+	WORKER_DONE         = 4  // Go to next screen
 };
 
 // This class is used by the worker thread to report its current status back to
 // the main thread and the WorkerStatusScreen.
 class WorkerStatus {
-private:
-	volatile bool        _nextGoBack;
-	ui::Screen *volatile _nextScreen;
-
 public:
 	volatile WorkerStatusType status;
 
@@ -43,12 +38,12 @@ public:
 
 	const char *volatile message;
 	ui::Screen *volatile nextScreen;
+	volatile bool        nextGoBack;
 
-	void reset(void);
+	void reset(ui::Screen &next, bool goBack = false);
 	void update(int part, int total, const char *text = nullptr);
-	void setStatus(WorkerStatusType value);
-	void setNextScreen(ui::Screen &next, bool goBack = false);
-	void finish(void);
+	ui::Screen &setNextScreen(ui::Screen &next, bool goBack = false);
+	WorkerStatusType setStatus(WorkerStatusType value);
 };
 
 /* Filesystem manager class */
@@ -86,6 +81,7 @@ class App {
 	friend class ConfirmScreen;
 	friend class FilePickerScreen;
 	friend class FileBrowserScreen;
+	friend class AutobootScreen;
 	friend class WarningScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
@@ -112,6 +108,7 @@ private:
 	ConfirmScreen        _confirmScreen;
 	FilePickerScreen     _filePickerScreen;
 	FileBrowserScreen    _fileBrowserScreen;
+	AutobootScreen       _autobootScreen;
 	WarningScreen        _warningScreen;
 	ButtonMappingScreen	 _buttonMappingScreen;
 	MainMenuScreen       _mainMenuScreen;
@@ -159,12 +156,15 @@ private:
 	const cart::CartDBEntry *_identified, *_selectedEntry;
 
 	void _unloadCartData(void);
-	void _setupWorker(bool (App::*func)(void));
 	void _setupInterrupts(void);
 	void _loadResources(void);
 	bool _createDataDirectory(void);
 	bool _getNumberedPath(char *output, size_t length, const char *path);
 	bool _takeScreenshot(void);
+	void _runWorker(
+		bool (App::*func)(void), ui::Screen &next, bool goBack = false,
+		bool playSound = false
+	);
 
 	// cartworkers.cpp
 	bool _cartDetectWorker(void);
