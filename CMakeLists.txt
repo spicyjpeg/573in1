@@ -4,10 +4,26 @@ cmake_minimum_required(VERSION 3.25)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 
 project(
-	cart_tool
+	cart-tool
 	LANGUAGES    C CXX ASM
 	VERSION      0.4.3
 	DESCRIPTION  "Konami System 573 security cartridge tool"
+)
+
+set(
+	RELEASE_INFO "${PROJECT_NAME} ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg"
+	CACHE STRING "Executable description and version string (optional)"
+)
+set(
+	RELEASE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}"
+	CACHE STRING "CD-ROM image and release package file name"
+)
+
+string(TOUPPER "${RELEASE_NAME}" _cdVolumeName)
+string(REGEX REPLACE "[^0-9A-Z_]" "_" _cdVolumeName "${_cdVolumeName}")
+set(
+	CD_VOLUME_NAME "${_cdVolumeName}"
+	CACHE STRING   "CD-ROM image volume label"
 )
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
@@ -18,22 +34,6 @@ find_program(
 		"C:/Program Files (x86)/MAME"
 		"/opt/mame"
 	DOC "Path to MAME chdman tool (optional)"
-)
-
-string(TOUPPER "${PROJECT_NAME}" _name)
-string(REPLACE "." "_" _version "${PROJECT_VERSION}")
-
-set(
-	RELEASE_INFO "${PROJECT_NAME} ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg"
-	CACHE STRING "Executable description and version string (optional)"
-)
-set(
-	RELEASE_NAME "${PROJECT_NAME}_${PROJECT_VERSION}"
-	CACHE STRING "CD-ROM image and release package file name"
-)
-set(
-	CD_VOLUME_NAME "${_name}_${_version}"
-	CACHE STRING   "CD-ROM image volume label"
 )
 
 ## Files common to all executables
@@ -171,14 +171,6 @@ target_compile_definitions(
 	>
 )
 
-addExecutable(
-	boot 80010000 0
-	src/boot/crt0.s
-	src/boot/main.cpp
-	src/common/util.cpp
-)
-target_link_libraries(boot PRIVATE bootFlags)
-
 function(addLauncher address stackTop)
 	addExecutable(
 		launcher${address} ${address} ${stackTop}
@@ -199,84 +191,60 @@ endfunction()
 addLauncher(801fd000 801ffff0)
 addLauncher(803fd000 803ffff0)
 
-## Default resource archive
+## Boot stub and resource archive
 
-function(addBinaryFile target name sizeName path)
-	set(_file "${PROJECT_BINARY_DIR}/includes/${target}_${name}.s")
-	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE _path)
+function(addBootStub name resourceName)
+	configure_file(${resourceName}.json ${resourceName}.json ESCAPE_QUOTES)
 
-	file(
-		CONFIGURE
-		OUTPUT  "${_file}"
-		CONTENT [[
-.section .rodata.${name}, "a"
-.balign 8
-
-.global ${name}
-.type ${name}, @object
-.size ${name}, (${name}_end - ${name})
-
-${name}:
-	.incbin "${_path}"
-${name}_end:
-
-.section .rodata.${sizeName}, "a"
-.balign 4
-
-.global ${sizeName}
-.type ${sizeName}, @object
-.size ${sizeName}, 4
-
-${sizeName}:
-	.int (${name}_end - ${name})
-]]
-		ESCAPE_QUOTES
-		NEWLINE_STYLE LF
+	add_custom_command(
+		COMMAND
+			"${Python3_EXECUTABLE}"
+			"${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
+			${resourceName}.json
+			${resourceName}.zip
+		OUTPUT  ${resourceName}.zip
+		DEPENDS
+			${resourceName}.json
+			assets/app.palette.json
+			assets/app.strings.json
+			main.psexe
+			launcher801fd000.psexe
+			launcher803fd000.psexe
+		COMMENT "Building ${name} resource archive"
+		VERBATIM
 	)
 
-	target_sources(${target} PRIVATE "${_file}")
-	set_source_files_properties("${_file}" PROPERTIES OBJECT_DEPENDS "${_path}")
+	addExecutable(
+		${name} 80010000 0
+		src/boot/crt0.s
+		src/boot/main.cpp
+		src/common/util.cpp
+	)
+	addBinaryFile(
+		${name} _resourceArchive _resourceArchiveLength
+		"${PROJECT_BINARY_DIR}/${resourceName}.zip"
+	)
+	target_link_libraries(${name} PRIVATE bootFlags)
 endfunction()
 
-configure_file(resources.json resources.json ESCAPE_QUOTES)
-
-add_custom_command(
-	COMMAND
-		"${Python3_EXECUTABLE}"
-		"${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
-		resources.json
-		resources.zip
-	OUTPUT  resources.zip
-	DEPENDS
-		resources.json
-		assets/app.palette.json
-		assets/app.strings.json
-		main.psexe
-		launcher801fd000.psexe
-		launcher803fd000.psexe
-	COMMENT "Building resource archive"
-	VERBATIM
-)
-addBinaryFile(
-	boot _resourceArchive _resourceArchiveLength
-	"${PROJECT_BINARY_DIR}/resources.zip"
-)
+addBootStub("${RELEASE_NAME}"      resources)
+addBootStub("${RELEASE_NAME}-tiny" resourcestiny)
 
 ## CD-ROM image
 
-configure_file(cd.json             cd.json    ESCAPE_QUOTES)
+configure_file(cdrom.json          cdrom.json ESCAPE_QUOTES)
 configure_file(assets/cdreadme.txt readme.txt NEWLINE_STYLE CRLF)
 
 add_custom_command(
 	COMMAND
 		"${Python3_EXECUTABLE}"
 		"${PROJECT_SOURCE_DIR}/tools/buildCDImage.py"
-		cd.json
+		cdrom.json
 		"${RELEASE_NAME}.iso"
 	OUTPUT  "${RELEASE_NAME}.iso"
 	DEPENDS
-		cd.json
-		boot.psexe
+		cdrom.json
+		"${RELEASE_NAME}"
 	COMMENT "Building CD-ROM image"
 	VERBATIM
 )
@@ -293,28 +261,7 @@ if(EXISTS "${CHDMAN_PATH}")
 		VERBATIM
 	)
 
-	list(APPEND packageFiles "${RELEASE_NAME}.chd")
+	add_custom_target(cdrom ALL DEPENDS "${RELEASE_NAME}.chd")
+else()
+	add_custom_target(cdrom ALL DEPENDS "${RELEASE_NAME}.iso")
 endif()
-
-## Release package
-
-list(
-	APPEND packageFiles
-	readme.txt
-	boot.psexe
-	"${RELEASE_NAME}.iso"
-)
-
-add_custom_command(
-	COMMAND
-		"${CMAKE_COMMAND}" -E tar cf
-		"${RELEASE_NAME}.zip"
-		--format=zip
-		${packageFiles}
-	OUTPUT  "${RELEASE_NAME}.zip"
-	DEPENDS ${packageFiles}
-	COMMENT "Packaging built files"
-	VERBATIM
-)
-
-add_custom_target(package ALL DEPENDS "${RELEASE_NAME}.zip")

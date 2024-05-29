@@ -1,0 +1,112 @@
+[
+	{
+		"type":        "binary",
+		"name":        "binaries/main.psexe.lz4",
+		"source":      "${PROJECT_BINARY_DIR}/main.psexe",
+		"compression": "lz4"
+	},
+	{
+		"type":   "binary",
+		"name":   "binaries/launcher801fd000.psexe",
+		"source": "${PROJECT_BINARY_DIR}/launcher801fd000.psexe"
+	},
+	{
+		"type":   "binary",
+		"name":   "binaries/launcher803fd000.psexe",
+		"source": "${PROJECT_BINARY_DIR}/launcher803fd000.psexe"
+	},
+
+	{
+		"type":     "tim",
+		"name":     "assets/textures/background.tim",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/textures/background.png",
+		"quantize": 16,
+		"imagePos": { "x":  960, "y": 0 },
+		"clutPos":  { "x": 1008, "y": 0 }
+	},
+	{
+		"type":     "tim",
+		"name":     "assets/textures/font.tim",
+		"source":   "${PROJECT_SOURCE_DIR}/assets/textures/font.png",
+		"quantize": 16,
+		"imagePos": { "x":  984, "y": 0 },
+		"clutPos":  { "x": 1008, "y": 1 }
+	},
+	{
+		"type":   "metrics",
+		"name":   "assets/textures/font.metrics",
+		"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.metrics.json"
+	},
+	{
+		"type":        "binary",
+		"name":        "assets/sounds/alert.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/alert.vag",
+		"compression": "none"
+	},
+	{
+		"type":        "binary",
+		"name":        "assets/sounds/move.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/move.vag",
+		"compression": "none"
+	},
+	{
+		"type":        "binary",
+		"name":        "assets/sounds/enter.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/enter.vag",
+		"compression": "none"
+	},
+	{
+		"type":        "binary",
+		"name":        "assets/sounds/exit.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/exit.vag",
+		"compression": "none"
+	},
+	{
+		"type":        "binary",
+		"name":        "assets/sounds/click.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/click.vag",
+		"compression": "none"
+	},
+	{
+		"type":        "binary",
+		"name":        "assets/sounds/screenshot.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/screenshot.vag",
+		"compression": "none"
+	},
+	{
+		"type":   "palette",
+		"name":   "assets/app.palette",
+		"source": "${PROJECT_SOURCE_DIR}/assets/app.palette.json"
+	},
+	{
+		"type":   "strings",
+		"name":   "assets/app.strings",
+		"source": "${PROJECT_SOURCE_DIR}/assets/app.strings.json"
+	},
+	{
+		"type":   "text",
+		"name":   "assets/about.txt",
+		"source": "${PROJECT_SOURCE_DIR}/assets/about.txt"
+	},
+
+	{
+		"type":   "binary",
+		"name":   "data/fpga.bit",
+		"source": "${PROJECT_SOURCE_DIR}/data/fpga.bit"
+	},
+	{
+		"type":   "binary",
+		"name":   "data/x76f041.db",
+		"source": "${PROJECT_SOURCE_DIR}/data/x76f041.db"
+	},
+	{
+		"type":   "binary",
+		"name":   "data/zs01.db",
+		"source": "${PROJECT_SOURCE_DIR}/data/zs01.db"
+	},
+	{
+		"type":   "binary",
+		"name":   "data/flash.db",
+		"source": "${PROJECT_SOURCE_DIR}/data/flash.db"
+	}
+]

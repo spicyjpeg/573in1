@@ -15,11 +15,15 @@
 			"name":   "README.TXT",
 			"source": "${PROJECT_BINARY_DIR}/readme.txt"
 		},
+		{
+			"type": "empty",
+			"name": "NOBOOT.TXT"
+		},
 
 		{
 			"type":   "file",
 			"name":   "PSX.EXE",
-			"source": "${PROJECT_BINARY_DIR}/boot.psexe"
+			"source": "${PROJECT_BINARY_DIR}/${RELEASE_NAME}.psexe"
 		},
 		{
 			"type":   "fileAlias",
@@ -118,7 +122,7 @@
 		},
 
 		{
-			"type": "padding",
+			"type": "empty",
 			"name": "PADDING.BIN",
 			"size": 1048576
 		}

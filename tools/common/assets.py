@@ -65,18 +65,18 @@ def convertIndexedImage(imageObj: Image.Image) -> tuple[ndarray, ndarray]:
 	# Pad the palette to 16 or 256 colors.
 	padAmount: int = (16 if (numColors <= 16) else 256) - numColors
 	if padAmount:
-		clut = numpy.c_[ clut, numpy.zeros(padAmount, "<H") ]
+		clut = numpy.c_[ clut, numpy.zeros(( 1, padAmount ), "<H") ]
 
 	image: ndarray = numpy.asarray(imageObj, "B")
 	if image.shape[1] % 2:
-		image = numpy.c_[ image, numpy.zeros(image.shape[0], "B") ]
+		image = numpy.c_[ image, numpy.zeros((image.shape[0], 1 ), "B") ]
 
 	# Pack two pixels into each byte for 4bpp images.
 	if numColors <= 16:
 		image = image[:, 0::2] | (image[:, 1::2] << 4)
 
 		if image.shape[1] % 2:
-			image = numpy.c_[ image, numpy.zeros(image.shape[0], "B") ]
+			image = numpy.c_[ image, numpy.zeros(( image.shape[0], 1 ), "B") ]
 
 	return image, clut
 

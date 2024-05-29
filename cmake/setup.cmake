@@ -81,3 +81,41 @@ target_link_options(
 		-G8
 		"-T${CMAKE_CURRENT_LIST_DIR}/executable.ld"
 )
+
+# Define a helper function to embed binary data into executables and libraries.
+function(addBinaryFile target name sizeName path)
+	set(_file "${PROJECT_BINARY_DIR}/includes/${target}_${name}.s")
+	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE _path)
+
+	file(
+		CONFIGURE
+		OUTPUT  "${_file}"
+		CONTENT [[
+.section .rodata.${name}, "a"
+.balign 8
+
+.global ${name}
+.type ${name}, @object
+.size ${name}, (${name}_end - ${name})
+
+${name}:
+	.incbin "${_path}"
+${name}_end:
+
+.section .rodata.${sizeName}, "a"
+.balign 4
+
+.global ${sizeName}
+.type ${sizeName}, @object
+.size ${sizeName}, 4
+
+${sizeName}:
+	.int (${name}_end - ${name})
+]]
+		ESCAPE_QUOTES
+		NEWLINE_STYLE LF
+	)
+
+	target_sources(${target} PRIVATE "${_file}")
+	set_source_files_properties("${_file}" PROPERTIES OBJECT_DEPENDS "${_path}")
+endfunction()
