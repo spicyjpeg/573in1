@@ -22,7 +22,7 @@
 
 namespace ide {
 
-static constexpr int _STATUS_TIMEOUT = 30000000;
+static constexpr int _WAIT_TIMEOUT   = 30000000;
 static constexpr int _DETECT_TIMEOUT = 500000;
 static constexpr int _DMA_TIMEOUT    = 10000;
 static constexpr int _SRST_DELAY     = 5000;
@@ -144,14 +144,16 @@ void Device::_setLBA(uint64_t lba, size_t count) {
 	_write(CS0_CYLINDER_H, (lba   >> 16) & 0xff);
 }
 
-DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
+DeviceError Device::_waitForStatus(
+	uint8_t mask, uint8_t value, int timeout, bool ignoreErrors
+) {
 	if (!timeout)
-		timeout = _STATUS_TIMEOUT;
+		timeout = _WAIT_TIMEOUT;
 
 	for (; timeout > 0; timeout -= 10) {
 		uint8_t status = _read(CS0_STATUS);
 
-		if (status & CS0_STATUS_ERR) {
+		if (!ignoreErrors && (status & CS0_STATUS_ERR)) {
 			LOG(
 				"IDE error, stat=0x%02x, err=0x%02x", _read(CS0_STATUS),
 				_read(CS0_ERROR)
@@ -160,6 +162,7 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 			_write(CS0_COMMAND, ATA_DEVICE_RESET);
 			return DRIVE_ERROR;
 		}
+
 		if ((status & mask) == value)
 			return NO_ERROR;
 
@@ -178,8 +181,12 @@ DeviceError Device::_waitForStatus(uint8_t mask, uint8_t value, int timeout) {
 	return STATUS_TIMEOUT;
 }
 
-DeviceError Device::_command(uint8_t cmd, uint8_t status, int timeout) {
-	auto error = _waitForStatus(CS0_STATUS_BSY | status, status, timeout);
+DeviceError Device::_command(
+	uint8_t cmd, uint8_t status, int timeout, bool ignoreErrors
+) {
+	auto error = _waitForStatus(
+		CS0_STATUS_BSY | status, status, timeout, ignoreErrors
+	);
 
 	if (error)
 		return error;
@@ -479,41 +486,47 @@ DeviceError Device::atapiPacket(const Packet &packet, size_t transferLength) {
 
 	auto error = _command(ATA_PACKET, 0);
 
-	if (error)
-		return error;
+	if (!error)
+		error = _writePIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
+	if (!error)
+		return _waitForStatus(CS0_STATUS_BSY, 0);
 
-	error = _writePIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
-
-	if (error)
-		return error;
-
-	return _waitForStatus(CS0_STATUS_BSY, 0);
+	return atapiPoll();
 }
 
 DeviceError Device::atapiPoll(void) {
-	Packet packet;
-	int    senseKey = -1;
+	Packet    packet;
+	SenseData data;
 
 	packet.setRequestSense();
 
-	if (!atapiPacket(packet)) {
-		SenseData data;
+	// If an error occurs, the error flag in the status register will be set but
+	// the drive will still accept a request sense command.
+	auto error = _command(ATA_PACKET, 0, 0, true);
 
-		if (!_readPIO(&data, sizeof(data))) {
-			senseKey = data.senseKey & 15;
-			LOG(
-				"key=0x%02x, asc=0x%02x, ascq=0x%02x", data.senseKey, data.asc,
-				data.ascQualifier
-			);
-		}
+	if (!error)
+		error = _writePIO(&packet, (flags & DEVICE_HAS_PACKET16) ? 16 : 12);
+	if (!error)
+		error = _waitForStatus(CS0_STATUS_BSY, 0);
+	if (!error)
+		error = _readPIO(&data, sizeof(data));
+
+	int senseKey;
+
+	if (error) {
+		// If the request sense command fails, fall back to reading the sense
+		// key from the IDE error register.
+		senseKey = (_read(CS0_ERROR) >> 4) & 15;
+		LOG("request sense failed");
+	} else {
+		senseKey = data.senseKey & 15;
+		LOG(
+			"key=0x%02x, asc=0x%02x, ascq=0x%02x", data.senseKey, data.asc,
+			data.ascQualifier
+		);
 	}
 
-	// If the request sense command fails, fall back to reading the sense key
-	// from the IDE error register.
-	if (senseKey < 0)
-		senseKey = (_read(CS0_ERROR) >> 4) & 15;
-
-	LOG("%s, key=%d", _SENSE_KEY_NAMES[senseKey], senseKey);
+	LOG("%s (%d)", _SENSE_KEY_NAMES[senseKey], senseKey);
 
 	switch (senseKey) {
 		case SENSE_KEY_NO_SENSE:

@@ -27,7 +27,7 @@ public:
 };
 
 int main(int argc, const char **argv) {
-	//io::init();
+	io::init();
 
 	// Parse the header of the archive's first entry manually. This avoids
 	// pulling in miniz and bloating the binary.

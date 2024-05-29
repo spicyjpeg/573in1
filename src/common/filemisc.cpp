@@ -22,7 +22,7 @@ size_t HostFile::read(void *output, size_t length) {
 	int actualLength = pcdrvRead(_fd, output, length);
 
 	if (actualLength < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualLength, this);
+		LOG("PCDRV error %d, fd=%d", actualLength, _fd);
 		return 0;
 	}
 
@@ -33,7 +33,7 @@ size_t HostFile::write(const void *input, size_t length) {
 	int actualLength = pcdrvWrite(_fd, input, length);
 
 	if (actualLength < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualLength, this);
+		LOG("PCDRV error %d, fd=%d", actualLength, _fd);
 		return 0;
 	}
 
@@ -44,7 +44,7 @@ uint64_t HostFile::seek(uint64_t offset) {
 	int actualOffset = pcdrvSeek(_fd, int(offset), PCDRV_SEEK_SET);
 
 	if (actualOffset < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualOffset, this);
+		LOG("PCDRV error %d, fd=%d", actualOffset, _fd);
 		return 0;
 	}
 
@@ -55,7 +55,7 @@ uint64_t HostFile::tell(void) const {
 	int actualOffset = pcdrvSeek(_fd, 0, PCDRV_SEEK_CUR);
 
 	if (actualOffset < 0) {
-		LOG("PCDRV error, code=%d, file=0x%08x", actualOffset, this);
+		LOG("PCDRV error %d, fd=%d", actualOffset, _fd);
 		return 0;
 	}
 
@@ -84,7 +84,7 @@ bool HostProvider::init(void) {
 	int error = pcdrvInit();
 
 	if (error < 0) {
-		LOG("PCDRV error, code=%d", error);
+		LOG("PCDRV error %d", error);
 		return false;
 	}
 
@@ -98,7 +98,7 @@ bool HostProvider::getFileInfo(FileInfo &output, const char *path) {
 	int fd = pcdrvFindFirst(path, &entry);
 
 	if (fd < 0) {
-		LOG("PCDRV error, code=%d", fd);
+		LOG("PCDRV error %d: %s", fd, path);
 		return false;
 	}
 
@@ -121,7 +121,7 @@ Directory *HostProvider::openDirectory(const char *path) {
 	int  fd  = pcdrvFindFirst(pattern, &(dir->_entry));
 
 	if (fd < 0) {
-		LOG("PCDRV error, code=%d", fd);
+		LOG("PCDRV error %d: %s", fd, path);
 		delete dir;
 		return nullptr;
 	}
@@ -133,7 +133,7 @@ bool HostProvider::createDirectory(const char *path) {
 	int error = pcdrvCreateDir(path);
 
 	if (error < 0) {
-		LOG("PCDRV error, code=%d", error);
+		LOG("PCDRV error %d: %s", error, path);
 		return false;
 	}
 
@@ -151,7 +151,7 @@ File *HostProvider::openFile(const char *path, uint32_t flags) {
 	int fd = pcdrvOpen(path, mode);
 
 	if (fd < 0) {
-		LOG("PCDRV error, code=%d", fd);
+		LOG("PCDRV error %d: %s", fd, path);
 		return nullptr;
 	}
 
@@ -173,27 +173,27 @@ VFSMountPoint *VFSProvider::_getMounted(const char *path) {
 			return &mp;
 	}
 
+	LOG("unknown device: %s", path);
 	return nullptr;
 }
 
 bool VFSProvider::mount(const char *prefix, Provider *provider, bool force) {
+	auto hash = util::hash(prefix, VFS_PREFIX_SEPARATOR);
+
 	for (auto &mp : _mountPoints) {
 		if (force) {
-			if (mp.provider && (mp.provider != provider))
+			if (mp.prefix && (mp.prefix != hash))
 				continue;
 		} else {
-			if (mp.provider)
+			if (mp.prefix)
 				continue;
 		}
 
-		mp.prefix     = util::hash(prefix, VFS_PREFIX_SEPARATOR);
-		mp.pathOffset = 0;
+		mp.prefix     = hash;
+		mp.pathOffset = __builtin_strlen(prefix);
 		mp.provider   = provider;
 
-		while (prefix[mp.pathOffset] != VFS_PREFIX_SEPARATOR)
-			mp.pathOffset++;
-
-		mp.pathOffset++;
+		LOG("mapped %s, dev=0x%08x", prefix, provider);
 		return true;
 	}
 
@@ -210,6 +210,8 @@ bool VFSProvider::unmount(const char *prefix) {
 		mp.prefix     = 0;
 		mp.pathOffset = 0;
 		mp.provider   = nullptr;
+
+		LOG("unmapped %s", prefix);
 		return true;
 	}
 

@@ -378,8 +378,12 @@ private:
 	}
 
 	void _setLBA(uint64_t lba, size_t count);
-	DeviceError _waitForStatus(uint8_t mask, uint8_t value, int timeout = 0);
-	DeviceError _command(uint8_t cmd, uint8_t status, int timeout = 0);
+	DeviceError _waitForStatus(
+		uint8_t mask, uint8_t value, int timeout = 0, bool ignoreErrors = false
+	);
+	DeviceError _command(
+		uint8_t cmd, uint8_t status, int timeout = 0, bool ignoreErrors = false
+	);
 	DeviceError _detectDrive(void);
 
 	DeviceError _readPIO(void *data, size_t length, int timeout = 0);

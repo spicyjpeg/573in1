@@ -41,7 +41,14 @@ static size_t _comparePath(const ISORecord &record, const char *path) {
 	auto recordName = record.getName();
 	auto nameLength = record.nameLength;
 
-	for (; nameLength && (*recordName != ';'); nameLength--) {
+	for (; nameLength; nameLength--) {
+		// Files with no extension still have a trailing period, which needs to
+		// be stripped.
+		if (*recordName == ';')
+			break;
+		if ((recordName[0] == '.') && (recordName[1] == ';'))
+			break;
+
 		if (__builtin_toupper(*(recordName++)) != __builtin_toupper(*(ptr++)))
 			return 0;
 	}
@@ -60,8 +67,14 @@ static bool _recordToFileInfo(FileInfo &output, const ISORecord &record) {
 
 	auto outputName = output.name;
 
-	for (; nameLength && (*recordName != ';'); nameLength--)
+	for (; nameLength; nameLength--) {
+		if (*recordName == ';')
+			break;
+		if ((recordName[0] == '.') && (recordName[1] == ';'))
+			break;
+
 		*(outputName++) = *(recordName++);
+	}
 
 	*outputName = 0;
 
@@ -93,13 +106,14 @@ bool ISO9660File::_loadSector(uint32_t lba) {
 }
 
 size_t ISO9660File::read(void *output, size_t length) {
-	auto offset = uint32_t(_offset);
+	auto offset   = uint32_t(_offset);
+	auto fileSize = size_t(size);
 
 	// Do not read any data past the end of the file.
-	if (offset > (size_t(size) - length))
-		length = size_t(size) - _offset;
-	if (!length)
+	if (!length || (offset >= fileSize))
 		return 0;
+	if (offset > (fileSize - length))
+		length = fileSize - offset;
 
 	auto ptr       = reinterpret_cast<uintptr_t>(output);
 	auto remaining = length;
@@ -203,7 +217,7 @@ bool ISO9660Provider::_getRecord(
 		return false;
 
 	if (!(*path)) {
-		output.copyFrom(&root);
+		__builtin_memcpy(&output, &root, root.getRecordLength());
 		return true;
 	}
 
@@ -245,7 +259,7 @@ bool ISO9660Provider::_getRecord(
 	}
 
 	records.destroy();
-	LOG("%s not found", path);
+	LOG("not found: %s", path);
 	return false;
 }
 
@@ -285,7 +299,7 @@ bool ISO9660Provider::init(int drive) {
 		type     = ISO9660;
 		capacity = uint64_t(pvd.volumeLength.le) * ide::ATAPI_SECTOR_SIZE;
 
-		LOG("mounted ISO: %s, drive=%d:", volumeLabel, drive);
+		LOG("mounted ISO: %d", drive);
 		return true;
 	}
 
@@ -341,7 +355,7 @@ Directory *ISO9660Provider::openDirectory(const char *path) {
 		(record.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
 
 	if (!_readData(dir->_records, record.lba.le, dirLength)) {
-		LOG("read failed, path=%s", path);
+		LOG("read failed: %s", path);
 		delete dir;
 		return nullptr;
 	}

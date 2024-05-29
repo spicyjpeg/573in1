@@ -10,13 +10,13 @@
 #include "ps1/system.h"
 
 static const char *const _AUTOBOOT_PATHS[][2]{
-	{ "hdd:/noboot.txt",   "hdd:/psx.exe"   },
 	{ "cdrom:/noboot.txt", "cdrom:/psx.exe" },
 	{ "cdrom:/noboot.txt", "cdrom:/qsy.dxd" },
 	{ "cdrom:/noboot.txt", "cdrom:/ssw.bxf" },
 	{ "cdrom:/noboot.txt", "cdrom:/tsv.axg" },
 	{ "cdrom:/noboot.txt", "cdrom:/gse.nxx" },
-	{ "cdrom:/noboot.txt", "cdrom:/nse.gxx" }
+	{ "cdrom:/noboot.txt", "cdrom:/nse.gxx" },
+	{ "hdd:/noboot.txt",   "hdd:/psx.exe"   }
 };
 
 bool App::_ideInitWorker(void) {

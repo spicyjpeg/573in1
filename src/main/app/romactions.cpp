@@ -185,6 +185,7 @@ static const Action _ACTIONS[]{
 		.prompt = "StorageActionsScreen.resetFlashHeader.prompt"_h,
 		.region = rom::flash,
 		.target = &StorageActionsScreen::resetFlashHeader
+#if 0
 	}, {
 		.name   = "StorageActionsScreen.matchFlashHeader.name"_h,
 		.prompt = "StorageActionsScreen.matchFlashHeader.prompt"_h,
@@ -195,6 +196,7 @@ static const Action _ACTIONS[]{
 		.prompt = "StorageActionsScreen.editFlashHeader.prompt"_h,
 		.region = rom::flash,
 		.target = &StorageActionsScreen::editFlashHeader
+#endif
 	}
 };
 

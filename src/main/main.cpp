@@ -14,6 +14,7 @@ int main(int argc, const char **argv) {
 	gpu::init();
 	spu::init();
 	io::init();
+	io::initIOBoard();
 	util::initZipCRC32();
 
 	args::MainArgs args;
