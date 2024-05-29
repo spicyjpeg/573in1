@@ -223,12 +223,12 @@ def main():
 
 	for entry in entryList:
 		match entry.get("type", "file").strip():
-			case "padding":
+			case "empty":
 				name: str = normalizePath(entry["name"])
 
 				iso.add_fp(
 					fp       = paddingFile,
-					length   = int(entry["size"]),
+					length   = int(entry.get("size", 0)),
 					iso_path = name
 				)
 				iso.set_hidden(iso_path = name)
