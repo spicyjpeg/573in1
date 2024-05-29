@@ -9,10 +9,22 @@
 
 class WarningScreen : public ui::MessageBoxScreen {
 private:
-	int  _cooldownTimer;
+	int  _timer;
 	char _buttonText[16];
 
 public:
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class AutobootScreen : public ui::MessageBoxScreen {
+private:
+	int  _timer;
+	char _bodyText[512], _buttonText[16];
+
+public:
+	const char *path;
+
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };

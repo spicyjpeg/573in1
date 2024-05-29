@@ -308,11 +308,16 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 			auto &dump  = APP->_cartDump;
 			int  offset = _getNumSpecialEntries(ctx);
 
+			APP->_confirmScreen.previousScreen = this;
 			APP->_confirmScreen.setMessage(
-				APP->_unlockKeyScreen,
 				[](ui::Context &ctx) {
-					APP->_setupWorker(&App::_cartUnlockWorker);
-					ctx.show(APP->_workerStatusScreen, false, true);
+					APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+						&(APP->_unlockKeyScreen);
+
+					APP->_runWorker(
+						&App::_cartUnlockWorker, APP->_cartInfoScreen, false,
+						true
+					);
 				},
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
 			);
@@ -353,11 +358,16 @@ void KeyEntryScreen::update(ui::Context &ctx) {
 			auto &dump = APP->_cartDump;
 
 			// TODO: deduplicate this code (it is the same as UnlockKeyScreen)
+			APP->_confirmScreen.previousScreen = this;
 			APP->_confirmScreen.setMessage(
-				APP->_unlockKeyScreen,
 				[](ui::Context &ctx) {
-					APP->_setupWorker(&App::_cartUnlockWorker);
-					ctx.show(APP->_workerStatusScreen, false, true);
+					APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+						&(APP->_keyEntryScreen);
+
+					APP->_runWorker(
+						&App::_cartUnlockWorker, APP->_cartInfoScreen, false,
+						true
+					);
 				},
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
 			);

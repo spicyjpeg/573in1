@@ -205,20 +205,26 @@ const char *StorageActionsScreen::_getItemName(
 }
 
 void StorageActionsScreen::checksum(ui::Context &ctx) {
-	if (APP->_checksumScreen.valid) {
+	if (APP->_checksumScreen.valid)
 		ctx.show(APP->_checksumScreen, false, true);
-	} else {
-		APP->_setupWorker(&App::_romChecksumWorker);
-		ctx.show(APP->_workerStatusScreen, false, true);
-	}
+	else
+		APP->_runWorker(
+			&App::_romChecksumWorker, APP->_checksumScreen, false, true
+		);
 }
 
 void StorageActionsScreen::dump(ui::Context &ctx) {
+	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_romDumpWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
+				&(APP->_storageInfoScreen);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
+				&(APP->_storageActionsScreen);
+
+			APP->_runWorker(
+				&App::_romDumpWorker, APP->_messageScreen, false, true
+			);
 		},
 		STR("StorageActionsScreen.dump.confirm")
 	);
@@ -227,18 +233,25 @@ void StorageActionsScreen::dump(ui::Context &ctx) {
 }
 
 void StorageActionsScreen::restore(ui::Context &ctx) {
+	APP->_filePickerScreen.previousScreen = this;
 	APP->_filePickerScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
 			ctx.show(APP->_confirmScreen, false, true);
 		},
 		STR("StorageActionsScreen.restore.filePrompt")
 	);
+
+	APP->_confirmScreen.previousScreen = &(APP->_fileBrowserScreen);
 	APP->_confirmScreen.setMessage(
-		APP->_fileBrowserScreen,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_romRestoreWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
+				&(APP->_storageInfoScreen);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
+				&(APP->_fileBrowserScreen);
+
+			APP->_runWorker(
+				&App::_romRestoreWorker, APP->_messageScreen, false, true
+			);
 		},
 		STR("StorageActionsScreen.restore.confirm")
 	);
@@ -247,11 +260,17 @@ void StorageActionsScreen::restore(ui::Context &ctx) {
 }
 
 void StorageActionsScreen::erase(ui::Context &ctx) {
+	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_romEraseWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
+				&(APP->_storageInfoScreen);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
+				&(APP->_storageActionsScreen);
+
+			APP->_runWorker(
+				&App::_romEraseWorker, APP->_messageScreen, false, true
+			);
 		},
 		STR("StorageActionsScreen.erase.confirm")
 	);
@@ -260,12 +279,18 @@ void StorageActionsScreen::erase(ui::Context &ctx) {
 }
 
 void StorageActionsScreen::resetFlashHeader(ui::Context &ctx) {
+	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
 			util::clear(APP->_romHeaderDump.data);
-			APP->_setupWorker(&App::_flashHeaderWriteWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+				&(APP->_storageActionsScreen);
+
+			APP->_runWorker(
+				&App::_flashHeaderWriteWorker, APP->_storageInfoScreen, true,
+				true
+			);
 		},
 		STR("StorageActionsScreen.resetFlashHeader.confirm")
 	);
@@ -313,8 +338,9 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 					(this->*action.target)(ctx);
 				}
 			} else {
+				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 				APP->_messageScreen.setMessage(
-					MESSAGE_ERROR, *this, STR("StorageActionsScreen.cardError")
+					MESSAGE_ERROR, STR("StorageActionsScreen.cardError")
 				);
 
 				ctx.show(APP->_messageScreen, false, true);

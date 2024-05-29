@@ -8,6 +8,7 @@
 /* Main menu screens */
 
 static constexpr int _WARNING_COOLDOWN = 10;
+static constexpr int _AUTOBOOT_DELAY   =  5;
 
 void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("WarningScreen.title");
@@ -17,18 +18,20 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_locked     = true;
 	_numButtons = 1;
 
-	_cooldownTimer = ctx.time + ctx.gpuCtx.refreshRate * _WARNING_COOLDOWN;
+#ifdef NDEBUG
+	_timer         = ctx.time + ctx.gpuCtx.refreshRate * _WARNING_COOLDOWN;
+#else
+	_timer         = 0;
+#endif
+	_buttonText[0] = 0;
 
 	MessageBoxScreen::show(ctx, goBack);
-
-	ctx.buttons.buttonMap = ui::MAP_SINGLE_BUTTON;
-	ctx.buttons.reset();
 }
 
 void WarningScreen::update(ui::Context &ctx) {
 	MessageBoxScreen::update(ctx);
 
-	int time = _cooldownTimer - ctx.time;
+	int time = _timer - ctx.time;
 	_locked  = (time > 0);
 
 	if (_locked) {
@@ -43,8 +46,51 @@ void WarningScreen::update(ui::Context &ctx) {
 
 	_buttons[0] = STR("WarningScreen.ok");
 
-	if (ctx.buttons.pressed(ui::BTN_RIGHT) || ctx.buttons.pressed(ui::BTN_START))
+	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_buttonMappingScreen, false, true);
+}
+
+void AutobootScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("AutobootScreen.title");
+	_body       = _bodyText;
+	_buttons[0] = _buttonText;
+
+	_numButtons = 1;
+
+	_timer         = ctx.time + ctx.gpuCtx.refreshRate * _AUTOBOOT_DELAY;
+	_buttonText[0] = 0;
+
+	snprintf(_bodyText, sizeof(_bodyText), STR("AutobootScreen.body"), path);
+
+	MessageBoxScreen::show(ctx, goBack);
+}
+
+void AutobootScreen::update(ui::Context &ctx) {
+	MessageBoxScreen::update(ctx);
+
+	int time = _timer - ctx.time;
+
+	if (time < 0) {
+		__builtin_strncpy(
+			APP->_fileBrowserScreen.selectedPath, path,
+			sizeof(APP->_fileBrowserScreen.selectedPath)
+		);
+
+		APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+			&(APP->_warningScreen);
+
+		APP->_runWorker(&App::_executableWorker, APP->_mainMenuScreen, true);
+		return;
+	}
+
+	time = (time / ctx.gpuCtx.refreshRate) + 1;
+
+	snprintf(
+		_buttonText, sizeof(_buttonText), STR("AutobootScreen.cancel"), time
+	);
+
+	if (ctx.buttons.pressed(ui::BTN_START))
+		ctx.show(APP->_warningScreen, false, true);
 }
 
 static const util::Hash _MAPPING_NAMES[]{
@@ -55,7 +101,9 @@ static const util::Hash _MAPPING_NAMES[]{
 	"ButtonMappingScreen.dmxCab"_h
 };
 
-const char *ButtonMappingScreen::_getItemName(ui::Context &ctx, int index) const {
+const char *ButtonMappingScreen::_getItemName(
+	ui::Context &ctx, int index
+) const {
 	return STRH(_MAPPING_NAMES[index]);
 }
 
@@ -67,18 +115,14 @@ void ButtonMappingScreen::show(ui::Context &ctx, bool goBack) {
 	_listLength = ui::NUM_BUTTON_MAPS - 1;
 
 	ListScreen::show(ctx, goBack);
-
-	ctx.buttons.buttonMap = ui::MAP_SINGLE_BUTTON;
-	ctx.buttons.reset();
+	ctx.buttons.setButtonMap(ui::MAP_SINGLE_BUTTON);
 }
 
 void ButtonMappingScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
-		ctx.buttons.buttonMap = ui::ButtonMap(_activeItem);
-		ctx.buttons.reset();
-
+		ctx.buttons.setButtonMap(ui::ButtonMap(_activeItem));
 		ctx.show(APP->_mainMenuScreen, false, true);
 	}
 }
@@ -134,12 +178,12 @@ const char *MainMenuScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void MainMenuScreen::cartInfo(ui::Context &ctx) {
-	if (APP->_cartDriver) {
+	if (APP->_cartDriver)
 		ctx.show(APP->_cartInfoScreen, false, true);
-	} else {
-		APP->_setupWorker(&App::_cartDetectWorker);
-		ctx.show(APP->_workerStatusScreen, false, true);
-	}
+	else
+		APP->_runWorker(
+			&App::_cartDetectWorker, APP->_cartInfoScreen, false, true
+		);
 }
 
 void MainMenuScreen::storageInfo(ui::Context &ctx) {
@@ -151,11 +195,15 @@ void MainMenuScreen::ideInfo(ui::Context &ctx) {
 }
 
 void MainMenuScreen::runExecutable(ui::Context &ctx) {
+	APP->_filePickerScreen.previousScreen = this;
 	APP->_filePickerScreen.setMessage(
-		*this,
 		[](ui::Context &ctx) {
-			APP->_setupWorker(&App::_executableWorker);
-			ctx.show(APP->_workerStatusScreen, false, true);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
+				&(APP->_fileBrowserScreen);
+
+			APP->_runWorker(
+				&App::_executableWorker, APP->_mainMenuScreen, true, true
+			);
 		},
 		STR("MainMenuScreen.runExecutable.filePrompt")
 	);
@@ -176,13 +224,14 @@ void MainMenuScreen::about(ui::Context &ctx) {
 }
 
 void MainMenuScreen::ejectCD(ui::Context &ctx) {
-	APP->_setupWorker(&App::_atapiEjectWorker);
-	ctx.show(APP->_workerStatusScreen, false, true);
+	APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] = this;
+	APP->_messageScreen.previousScreens[MESSAGE_ERROR]   = this;
+
+	APP->_runWorker(&App::_atapiEjectWorker, *this, true, true);
 }
 
 void MainMenuScreen::reboot(ui::Context &ctx) {
-	APP->_setupWorker(&App::_rebootWorker);
-	ctx.show(APP->_workerStatusScreen, false, true);
+	APP->_runWorker(&App::_rebootWorker, *this, true, true);
 }
 
 void MainMenuScreen::show(ui::Context &ctx, bool goBack) {

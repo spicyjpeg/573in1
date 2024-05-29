@@ -20,14 +20,11 @@ void WorkerStatusScreen::show(ui::Context &ctx, bool goBack) {
 }
 
 void WorkerStatusScreen::update(ui::Context &ctx) {
-	auto &worker    = APP->_workerStatus;
-	auto nextScreen = worker.nextScreen;
+	auto &worker = APP->_workerStatus;
 
-	if ((worker.status == WORKER_NEXT) || (worker.status == WORKER_NEXT_BACK)) {
-		worker.reset();
-		ctx.show(*nextScreen, worker.status == WORKER_NEXT_BACK);
-
-		LOG("worker finished, next=0x%08x", nextScreen);
+	if (worker.status == WORKER_DONE) {
+		worker.setStatus(WORKER_IDLE);
+		ctx.show(*worker.nextScreen, worker.nextGoBack);
 		return;
 	}
 
@@ -41,11 +38,8 @@ static const util::Hash _MESSAGE_TITLES[]{
 	"MessageScreen.title.error"_h
 };
 
-void MessageScreen::setMessage(
-	MessageType type, ui::Screen &prev, const char *format, ...
-) {
-	_type       = type;
-	_prevScreen = &prev;
+void MessageScreen::setMessage(MessageType type, const char *format, ...) {
+	_type = type;
 
 	va_list ap;
 
@@ -60,7 +54,7 @@ void MessageScreen::show(ui::Context &ctx, bool goBack) {
 	_buttons[0] = STR("MessageScreen.ok");
 
 	_numButtons = 1;
-	_locked     = _prevScreen ? false : true;
+	//_locked     = !previousScreen;
 
 	MessageBoxScreen::show(ctx, goBack);
 	ctx.sounds[ui::SOUND_ALERT].play();
@@ -70,15 +64,13 @@ void MessageScreen::update(ui::Context &ctx) {
 	MessageBoxScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START))
-		ctx.show(*_prevScreen, true, true);
+		ctx.show(*previousScreens[_type], true, true);
 }
 
 void ConfirmScreen::setMessage(
-	ui::Screen &prev, void (*callback)(ui::Context &ctx), const char *format,
-	...
+	void (*callback)(ui::Context &ctx), const char *format, ...
 ) {
-	_prevScreen = &prev;
-	_callback   = callback;
+	_callback = callback;
 
 	va_list ap;
 
@@ -106,7 +98,7 @@ void ConfirmScreen::update(ui::Context &ctx) {
 		if (_activeButton)
 			_callback(ctx);
 		else
-			ctx.show(*_prevScreen, true, true);
+			ctx.show(*previousScreen, true, true);
 	}
 }
 
@@ -161,11 +153,9 @@ const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void FilePickerScreen::setMessage(
-	ui::Screen &prev, void (*callback)(ui::Context &ctx), const char *format,
-	...
+	void (*callback)(ui::Context &ctx), const char *format, ...
 ) {
-	_prevScreen = &prev;
-	_callback   = callback;
+	_callback = callback;
 
 	va_list ap;
 
@@ -181,9 +171,9 @@ void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
 		if (!dev.atapiPoll())
 			continue;
 
-		APP->_workerStatus.setNextScreen(*this);
-		APP->_setupWorker(&App::_ideInitWorker);
-		ctx.show(APP->_workerStatusScreen, false, true);
+		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
+
+		APP->_runWorker(&App::_ideInitWorker, *this, false, true);
 		return;
 	}
 
@@ -213,8 +203,9 @@ void FilePickerScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
 
 	if (!_listLength) {
+		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = previousScreen;
 		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, *_prevScreen, STR("FilePickerScreen.noDeviceError")
+			MESSAGE_ERROR, STR("FilePickerScreen.noDeviceError")
 		);
 		ctx.show(APP->_messageScreen, false, true);
 		return;
@@ -222,7 +213,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
-			ctx.show(*_prevScreen, true, true);
+			ctx.show(*previousScreen, true, true);
 		} else {
 			int index  = _activeItem;
 #ifndef NDEBUG
@@ -259,9 +250,8 @@ void FilePickerScreen::update(ui::Context &ctx) {
 				else
 					error = "FilePickerScreen.ideError"_h;
 
-				APP->_messageScreen.setMessage(
-					MESSAGE_ERROR, *this, STRH(error)
-				);
+				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
+				APP->_messageScreen.setMessage(MESSAGE_ERROR, STRH(error));
 				ctx.show(APP->_messageScreen, false, true);
 			}
 		}
@@ -427,9 +417,10 @@ void FileBrowserScreen::update(ui::Context &ctx) {
 				if (loadDirectory(ctx, selectedPath) < 0) {
 					loadDirectory(ctx, _currentPath, false);
 
+					APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 					APP->_messageScreen.setMessage(
-						MESSAGE_ERROR, *this,
-						STR("FileBrowserScreen.subdirError"), selectedPath
+						MESSAGE_ERROR, STR("FileBrowserScreen.subdirError"),
+						selectedPath
 					);
 					ctx.show(APP->_messageScreen, false, true);
 				}
