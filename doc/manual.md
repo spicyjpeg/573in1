@@ -224,7 +224,53 @@ TODO: add this section
 
 ## Connecting a hard drive
 
-TODO: add this section
+The 573 supports up to two devices being connected to the IDE bus. 
+Typically, only a CD-ROM drive will be connected as a master device. 
+This tool supports using an optional harddrive if it is connected to the IDE bus 
+as a slave device. It *should* be fine to leave this hard drive permenantly
+connected, but this setup is not garenteed to work with every game.
+
+With the Harddrive, you will be able to:
+
+- Dump a security cart EEPROM to disk.
+- Dump the internal flash ROM chips, BIOS, RTC and any inserted PCMCIA cards to
+  disk.
+- Restore a security cart from a file on the disk.
+- Restore either or all of the internal flash ROM chips, RTC and PCMCIA cards.
+- Load any 573 executables from disk.
+- Take screenshots whilst in the tool.
+
+To connect a hard drive to the 573, you will need the following:
+
+- A HDD, SSD or CompactFlash card. Size should not matter but it must be formatted
+  to FAT12/16/32 or ExFAT. *Note: Some CF cards may have compatibility issues.*
+- An IDE cable with three connectors on it. Both 40-core and 80-core UDMA cables
+  work fine for this. The stock Konami cable is a 40-core single device cable.
+  *Note: Konami's cables and the 573 **do not** have provisions for connectors
+  with key-ing blank pins. You either need to modify your 573 to cut this pin (not
+  recommended) or drill a small hole in the blanking pin to fit it.*
+- An appropriate adaptor if you are using CF Cards or SSDs. For using a SATA SSD,
+  it is recomended to use a good qaulity adaptor, such as a StarTech IDE to SATA
+  adaptor. Lower qaulity adaptors based on a JMicron chipset or similar may work
+  but might have compatibility issues. Any CF card adaptor should work fine as CF
+  cards support being directly connected to an IDE bus.
+
+1. Remove the security cart and any PCMCIA devices from the 573. Remove all the
+   screws from the left, right and top sides and then remove the lid.
+2. Remove the stock 40-core IDE cable and install the motherboard side of your
+   new cable into the 573. If you are using an 80-core cable, this should be the
+   blue connector of the cable.
+3. Depedning on how you may want to mount your HDD/SSD/CF card, you may want to
+   connect the CD drive to the middle connector of the cable. Make sure the
+   HDD/SSD/CF card is set as a SLAVE device using the jumper settings on the drive.
+4. Use a Molex splitter cable to split the power from the CD drive to power your
+   new drive. If you have a Bemani 573 with a slimeline CD drive, you may need to
+   make a custom cable to connect directly to the 573's JST-VL connector.
+5. Test the drive is connected by booting the tool CD and then on the main menu,
+   selecting "View IDE device and filesystem information". If you only see your
+   CD drive listed, you should check your work and the file system of your drive.
+   If you still cannot get the hard drive to show up, press the test button to
+   view any error logs.
 
 ## FAQ and troubleshooting
 
