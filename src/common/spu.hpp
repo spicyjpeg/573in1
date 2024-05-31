@@ -24,12 +24,12 @@ static inline void setMasterVolume(uint16_t master, uint16_t reverb = 0) {
 	SPU_REVERB_VOL_R = reverb;
 }
 
-static inline void setChannelVolume(Channel ch, uint16_t volume) {
+static inline void setChannelVolume(Channel ch, uint16_t left, uint16_t right) {
 	if ((ch < 0) || (ch >= NUM_CHANNELS))
 		return;
 
-	SPU_CH_VOL_L(ch) = volume;
-	SPU_CH_VOL_R(ch) = volume;
+	SPU_CH_VOL_L(ch) = left;
+	SPU_CH_VOL_R(ch) = right;
 }
 
 void init(void);
@@ -54,12 +54,14 @@ public:
 
 	inline Sound(void)
 	: offset(0), length(0) {}
-	inline Channel play(uint16_t volume = MAX_VOLUME) const {
-		return play(volume, getFreeChannel());
+	inline Channel play(
+		uint16_t left = MAX_VOLUME, uint16_t right = MAX_VOLUME
+	) const {
+		return play(left, right, getFreeChannel());
 	}
 
 	bool initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset);
-	Channel play(uint16_t volume, Channel ch) const;
+	Channel play(uint16_t left, uint16_t right, Channel ch) const;
 };
 
 }

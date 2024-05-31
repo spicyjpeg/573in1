@@ -370,26 +370,29 @@ private:
 		SYS573_IDE_CS1_BASE[reg] = value;
 	}
 
-	inline void _select(uint8_t regFlags = 0) {
-		if (flags & DEVICE_SECONDARY)
-			_write(CS0_DEVICE_SEL, regFlags | CS0_DEVICE_SEL_SECONDARY);
-		else
-			_write(CS0_DEVICE_SEL, regFlags | CS0_DEVICE_SEL_PRIMARY);
-	}
-
-	void _setLBA(uint64_t lba, size_t count);
 	DeviceError _waitForStatus(
 		uint8_t mask, uint8_t value, int timeout = 0, bool ignoreErrors = false
 	);
-	DeviceError _command(
-		uint8_t cmd, uint8_t status, int timeout = 0, bool ignoreErrors = false
+	DeviceError _select(
+		uint8_t devSelFlags, int timeout = 0, bool ignoreErrors = false
 	);
+	DeviceError _setLBA(uint64_t lba, size_t count, int timeout = 0);
 	DeviceError _detectDrive(void);
 
-	DeviceError _readPIO(void *data, size_t length, int timeout = 0);
-	DeviceError _writePIO(const void *data, size_t length, int timeout = 0);
-	DeviceError _readDMA(void *data, size_t length, int timeout = 0);
-	DeviceError _writeDMA(const void *data, size_t length, int timeout = 0);
+	DeviceError _readPIO(
+		void *data, size_t length, int timeout = 0, bool ignoreErrors = false
+	);
+	DeviceError _writePIO(
+		const void *data, size_t length, int timeout = 0,
+		bool ignoreErrors = false
+	);
+	DeviceError _readDMA(
+		void *data, size_t length, int timeout = 0, bool ignoreErrors = false
+	);
+	DeviceError _writeDMA(
+		const void *data, size_t length, int timeout = 0,
+		bool ignoreErrors = false
+	);
 
 	DeviceError _ideReadWrite(
 		uintptr_t ptr, uint64_t lba, size_t count, bool write
@@ -421,13 +424,11 @@ public:
 	}
 
 	DeviceError enumerate(void);
-	DeviceError atapiPacket(
-		const Packet &packet, size_t transferLength = ATAPI_SECTOR_SIZE
-	);
+	DeviceError atapiPacket(const Packet &packet, size_t transferLength = 0);
 	DeviceError atapiPoll(void);
 
-	DeviceError read(void *data, uint64_t lba, size_t count);
-	DeviceError write(const void *data, uint64_t lba, size_t count);
+	DeviceError readData(void *data, uint64_t lba, size_t count);
+	DeviceError writeData(const void *data, uint64_t lba, size_t count);
 	DeviceError goIdle(bool standby = false);
 	DeviceError flushCache(void);
 };

@@ -12,6 +12,7 @@
 #include "main/app/misc.hpp"
 #include "main/app/modals.hpp"
 #include "main/app/romactions.hpp"
+#include "main/app/tests.hpp"
 #include "main/cart.hpp"
 #include "main/cartdata.hpp"
 #include "main/cartio.hpp"
@@ -55,7 +56,7 @@ private:
 public:
 	file::Provider     *ide[util::countOf(ide::devices)];
 	file::ZIPProvider  resource;
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 	file::HostProvider host;
 #endif
 	file::VFSProvider  vfs;
@@ -81,53 +82,83 @@ class App {
 	friend class ConfirmScreen;
 	friend class FilePickerScreen;
 	friend class FileBrowserScreen;
-	friend class AutobootScreen;
+
 	friend class WarningScreen;
+	friend class AutobootScreen;
 	friend class ButtonMappingScreen;
 	friend class MainMenuScreen;
-	friend class StorageInfoScreen;
-	friend class StorageActionsScreen;
-	friend class IDEInfoScreen;
-	friend class RTCTimeScreen;
-	friend class ResolutionScreen;
-	friend class AboutScreen;
+
 	friend class CartInfoScreen;
 	friend class UnlockKeyScreen;
 	friend class KeyEntryScreen;
+
 	friend class CartActionsScreen;
 	friend class QRCodeScreen;
 	friend class HexdumpScreen;
 	friend class ReflashGameScreen;
 	friend class SystemIDEntryScreen;
+
+	friend class StorageInfoScreen;
+	friend class StorageActionsScreen;
 	friend class CardSizeScreen;
 	friend class ChecksumScreen;
 
+	friend class TestMenuScreen;
+	friend class JAMMATestScreen;
+	friend class AudioTestScreen;
+	friend class TestPatternScreen;
+	friend class ColorIntensityScreen;
+	friend class GeometryScreen;
+
+	friend class IDEInfoScreen;
+	friend class RTCTimeScreen;
+	friend class ResolutionScreen;
+	friend class AboutScreen;
+
 private:
-	WorkerStatusScreen   _workerStatusScreen;
-	MessageScreen        _messageScreen;
-	ConfirmScreen        _confirmScreen;
-	FilePickerScreen     _filePickerScreen;
-	FileBrowserScreen    _fileBrowserScreen;
-	AutobootScreen       _autobootScreen;
-	WarningScreen        _warningScreen;
-	ButtonMappingScreen	 _buttonMappingScreen;
-	MainMenuScreen       _mainMenuScreen;
+	// modals.cpp
+	WorkerStatusScreen _workerStatusScreen;
+	MessageScreen      _messageScreen;
+	ConfirmScreen      _confirmScreen;
+	FilePickerScreen   _filePickerScreen;
+	FileBrowserScreen  _fileBrowserScreen;
+
+	// main.cpp
+	WarningScreen       _warningScreen;
+	AutobootScreen      _autobootScreen;
+	ButtonMappingScreen	_buttonMappingScreen;
+	MainMenuScreen      _mainMenuScreen;
+
+	// cartunlock.cpp
+	CartInfoScreen  _cartInfoScreen;
+	UnlockKeyScreen _unlockKeyScreen;
+	KeyEntryScreen  _keyEntryScreen;
+
+	// cartactions.cpp
+	CartActionsScreen   _cartActionsScreen;
+	QRCodeScreen        _qrCodeScreen;
+	HexdumpScreen       _hexdumpScreen;
+	ReflashGameScreen   _reflashGameScreen;
+	SystemIDEntryScreen _systemIDEntryScreen;
+
+	// romactions.cpp
 	StorageInfoScreen    _storageInfoScreen;
 	StorageActionsScreen _storageActionsScreen;
-	IDEInfoScreen        _ideInfoScreen;
-	RTCTimeScreen        _rtcTimeScreen;
-	ResolutionScreen     _resolutionScreen;
-	AboutScreen          _aboutScreen;
-	CartInfoScreen       _cartInfoScreen;
-	UnlockKeyScreen      _unlockKeyScreen;
-	KeyEntryScreen       _keyEntryScreen;
-	CartActionsScreen    _cartActionsScreen;
-	QRCodeScreen         _qrCodeScreen;
-	HexdumpScreen        _hexdumpScreen;
-	ReflashGameScreen    _reflashGameScreen;
-	SystemIDEntryScreen  _systemIDEntryScreen;
 	CardSizeScreen       _cardSizeScreen;
 	ChecksumScreen       _checksumScreen;
+
+	// tests.cpp
+	TestMenuScreen       _testMenuScreen;
+	JAMMATestScreen      _jammaTestScreen;
+	AudioTestScreen      _audioTestScreen;
+	ColorIntensityScreen _colorIntensityScreen;
+	GeometryScreen       _geometryScreen;
+
+	// misc.cpp
+	IDEInfoScreen    _ideInfoScreen;
+	RTCTimeScreen    _rtcTimeScreen;
+	ResolutionScreen _resolutionScreen;
+	AboutScreen      _aboutScreen;
 
 #ifdef ENABLE_LOG_BUFFER
 	util::LogBuffer       _logBuffer;
@@ -166,6 +197,9 @@ private:
 		bool playSound = false
 	);
 
+	void _worker(void);
+	void _interruptHandler(void);
+
 	// cartworkers.cpp
 	bool _cartDetectWorker(void);
 	bool _cartUnlockWorker(void);
@@ -188,9 +222,6 @@ private:
 	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);
-
-	void _worker(void);
-	void _interruptHandler(void);
 
 public:
 	App(ui::Context &ctx);

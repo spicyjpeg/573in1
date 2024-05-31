@@ -155,6 +155,10 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.prompt = "MainMenuScreen.setRTCTime.prompt"_h,
 		.target = &MainMenuScreen::setRTCTime
 	}, {
+		.name   = "MainMenuScreen.testMenu.name"_h,
+		.prompt = "MainMenuScreen.testMenu.prompt"_h,
+		.target = &MainMenuScreen::testMenu
+	}, {
 		.name   = "MainMenuScreen.setResolution.name"_h,
 		.prompt = "MainMenuScreen.setResolution.prompt"_h,
 		.target = &MainMenuScreen::setResolution
@@ -213,6 +217,10 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 
 void MainMenuScreen::setRTCTime(ui::Context &ctx) {
 	ctx.show(APP->_rtcTimeScreen, false, true);
+}
+
+void MainMenuScreen::testMenu(ui::Context &ctx) {
+	ctx.show(APP->_testMenuScreen, false, true);
 }
 
 void MainMenuScreen::setResolution(ui::Context &ctx) {

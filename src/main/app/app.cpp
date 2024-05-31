@@ -342,6 +342,7 @@ void App::_interruptHandler(void) {
 
 	_runWorker(&App::_ideInitWorker, _warningScreen);
 	_setupInterrupts();
+	_ctx.sounds[ui::SOUND_STARTUP].play();
 
 	for (;;) {
 		util::Date date;

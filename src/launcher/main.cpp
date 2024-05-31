@@ -16,7 +16,7 @@ int main(int argc, const char **argv) {
 		args.parseArgument(*(argv++));
 
 #ifdef ENABLE_LOGGING
-	util::logger.setupSyslog(launcher.args.baudRate);
+	util::logger.setupSyslog(args.baudRate);
 #endif
 
 	if (!args.entryPoint || !args.loadAddress || !args.numFragments)
@@ -52,7 +52,7 @@ int main(int argc, const char **argv) {
 			length -= skipSectors;
 		}
 
-		if (dev.read(reinterpret_cast<void *>(ptr), lba, length))
+		if (dev.readData(reinterpret_cast<void *>(ptr), lba, length))
 			return 3;
 
 		io::clearWatchdog();

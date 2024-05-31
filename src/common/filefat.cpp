@@ -298,7 +298,7 @@ extern "C" DRESULT disk_read(
 
 	if (!(dev.flags & ide::DEVICE_READY))
 		return RES_NOTRDY;
-	if (dev.read(data, lba, count))
+	if (dev.readData(data, lba, count))
 		return RES_ERROR;
 
 	return RES_OK;
@@ -313,7 +313,7 @@ extern "C" DRESULT disk_write(
 		return RES_NOTRDY;
 	if (dev.flags & ide::DEVICE_READ_ONLY)
 		return RES_WRPRT;
-	if (dev.write(data, lba, count))
+	if (dev.writeData(data, lba, count))
 		return RES_ERROR;
 
 	return RES_OK;

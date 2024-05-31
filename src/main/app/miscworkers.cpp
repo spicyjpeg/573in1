@@ -59,7 +59,6 @@ bool App::_ideInitWorker(void) {
 	}
 #endif
 
-	_ctx.sounds[ui::SOUND_STARTUP].play();
 	return true;
 }
 

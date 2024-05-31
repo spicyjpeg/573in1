@@ -127,6 +127,7 @@ addExecutable(
 	src/main/app/modals.cpp
 	src/main/app/romactions.cpp
 	src/main/app/romworkers.cpp
+	src/main/app/tests.cpp
 	src/vendor/ff.c
 	src/vendor/ffunicode.c
 	src/vendor/miniz.c

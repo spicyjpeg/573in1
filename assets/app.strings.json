@@ -111,6 +111,20 @@
 		}
 	},
 
+	"AudioTestScreen": {
+		"title":      "{RIGHT_ARROW} Audio output test",
+		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by default and will be disabled again once this screen is closed.",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+
+		"playLeft":    "Play sound on left channel",
+		"playRight":   "Play sound on right channel",
+		"playBoth":    "Play sound on both channels",
+		"enableAmp":   "Turn on built-in speaker amplifier",
+		"disableAmp":  "Turn off built-in speaker amplifier",
+		"enableCDDA":  "Unmute CD-DA/MP3 analog audio passthrough",
+		"disableCDDA": "Mute CD-DA/MP3 analog audio passthrough"
+	},
+
 	"AutobootScreen": {
 		"title": "Note",
 		"body":  "A valid boot executable has been found and will be launched shortly. You may disable automatic booting by turning off DIP switch 1 or creating a file named noboot.txt in the root of the filesystem.\n\nFile: %s",
@@ -262,6 +276,16 @@
 		"description": "All checksums are computed using the standard CRC32 algorithm and parameters (polynomial 04C11DB7, initial value FFFFFFFF, input and output reflected, output bits negated)."
 	},
 
+	"ColorIntensityScreen": {
+		"title":  "{RIGHT_ARROW} Monitor color intensity test",
+		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back.",
+
+		"white": "White",
+		"red":   "Red",
+		"green": "Green",
+		"blue":  "Blue"
+	},
+
 	"ConfirmScreen": {
 		"title": "Confirm operation",
 		"no":    "No, go back",
@@ -286,6 +310,11 @@
 		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
 		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem."
+	},
+
+	"GeometryScreen": {
+		"title":  "{RIGHT_ARROW} Monitor geometry test",
+		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back."
 	},
 
 	"HexdumpScreen": {
@@ -328,6 +357,47 @@
 		}
 	},
 
+	"JAMMATestScreen": {
+		"title":  "{RIGHT_ARROW} JAMMA input test",
+		"prompt": "{RIGHT_ARROW} Press and hold {START_BUTTON} to go back.",
+
+		"noInputs":   "No button is currently held down. If a button does not appear here when pressed, make sure the JAMMA harness is wired up correctly and the button is not damaged.\n",
+		"inputs":     "The following buttons are currently held down:\n",
+		"inputsNote": "\nNote that in DDR cabinets each player's up and right inputs may appear to be stuck due to the presence of the stage I/O boards, which use the joystick inputs as a communication bus.\n",
+
+		"p1": {
+			"left":    "  Player 1 joystick left\t\tJAMMA pin 20\n",
+			"right":   "  Player 1 joystick right\t\tJAMMA pin 21\n",
+			"up":      "  Player 1 joystick up\t\tJAMMA pin 18\n",
+			"down":    "  Player 1 joystick down\t\tJAMMA pin 19\n",
+			"button1": "  Player 1 button 1\t\tJAMMA pin 22\n",
+			"button2": "  Player 1 button 2\t\tJAMMA pin 23\n",
+			"button3": "  Player 1 button 3\t\tJAMMA pin 24\n",
+			"button4": "  Player 1 button 4\t\tJAMMA pin 25\n",
+			"button5": "  Player 1 button 5\t\tJAMMA pin 26\n",
+			"button6": "  Player 1 button 6\n",
+			"start":   "  Player 1 start button ({START_BUTTON})\tJAMMA pin 17\n"
+		},
+		"p2": {
+			"left":    "  Player 2 joystick left\t\tJAMMA pin X\n",
+			"right":   "  Player 2 joystick right\t\tJAMMA pin Y\n",
+			"up":      "  Player 2 joystick up\t\tJAMMA pin V\n",
+			"down":    "  Player 2 joystick down\t\tJAMMA pin W\n",
+			"button1": "  Player 2 button 1\t\tJAMMA pin Z\n",
+			"button2": "  Player 2 button 2\t\tJAMMA pin a\n",
+			"button3": "  Player 2 button 3\t\tJAMMA pin b\n",
+			"button4": "  Player 2 button 4\t\tJAMMA pin c\n",
+			"button5": "  Player 2 button 5\t\tJAMMA pin d\n",
+			"button6": "  Player 2 button 6\n",
+			"start":   "  Player 2 start button ({START_BUTTON})\tJAMMA pin U\n"
+		},
+
+		"coin1":   "  Coin switch 1\t\t\tJAMMA pin 16\n",
+		"coin2":   "  Coin switch 2\t\t\tJAMMA pin T\n",
+		"test":    "  Test button\t\t\tJAMMA pin 15\n",
+		"service": "  Service button\t\t\tJAMMA pin R\n"
+	},
+
 	"KeyEntryScreen": {
 		"title":  "Enter unlocking key",
 		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
@@ -359,6 +429,10 @@
 		"setRTCTime": {
 			"name":   "Set RTC date and time",
 			"prompt": "Adjust the current date and time. Note that the time will not persist after a power cycle if the RTC's internal battery is empty."
+		},
+		"testMenu": {
+			"name":   "Hardware test suite",
+			"prompt": "Display monitor test patterns, check if all inputs are functional or test the system and cabinet's hardware."
 		},
 		"setResolution": {
 			"name":   "Change screen resolution",
@@ -547,6 +621,28 @@
 		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
+	},
+
+	"TestMenuScreen": {
+		"title":      "{RIGHT_ARROW} Hardware test suite",
+		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+
+		"jammaTest": {
+			"name":   "Test JAMMA inputs",
+			"prompt": "Show the state of all buttons and inputs wired to the system's JAMMA connector."
+		},
+		"audioTest": {
+			"name":   "Test audio output and speaker amplifier",
+			"prompt": "Play a sound on either audio output channel and test the system's onboard speaker amplification circuitry."
+		},
+		"colorIntensity": {
+			"name":   "Check monitor color intensity levels",
+			"prompt": "Display a series of undithered and dithered color bars to help with monitor color level adjustment and calibration."
+		},
+		"geometry": {
+			"name":   "Check monitor geometry and overscan",
+			"prompt": "Display a grid to help with monitor geometry adjustment. The grid's aspect ratio can be changed by switching to a different screen resolution from the main menu."
+		}
 	},
 
 	"UnlockKeyScreen": {

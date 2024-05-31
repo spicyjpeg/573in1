@@ -165,14 +165,14 @@ bool Sound::initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset) {
 	return true;
 }
 
-Channel Sound::play(uint16_t volume, Channel ch) const {
+Channel Sound::play(uint16_t left, uint16_t right, Channel ch) const {
 	if ((ch < 0) || (ch >= NUM_CHANNELS))
 		return -1;
 	if (!offset)
 		return -1;
 
-	SPU_CH_VOL_L(ch) = volume;
-	SPU_CH_VOL_R(ch) = volume;
+	SPU_CH_VOL_L(ch) = left;
+	SPU_CH_VOL_R(ch) = right;
 	SPU_CH_FREQ (ch) = sampleRate;
 	SPU_CH_ADDR (ch) = offset;
 	SPU_CH_ADSR1(ch) = 0x00ff;

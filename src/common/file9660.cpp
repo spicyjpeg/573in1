@@ -98,7 +98,7 @@ bool ISOVolumeDesc::validateMagic(void) const {
 bool ISO9660File::_loadSector(uint32_t lba) {
 	if (lba == _bufferedLBA)
 		return true;
-	if (_device->read(_sectorBuffer, lba, 1))
+	if (_device->readData(_sectorBuffer, lba, 1))
 		return false;
 
 	_bufferedLBA = lba;
@@ -131,7 +131,7 @@ size_t ISO9660File::read(void *output, size_t length) {
 			auto spanLength = numSectors * ide::ATAPI_SECTOR_SIZE;
 
 			if (numSectors > 0) {
-				if (_device->read(currentPtr, lba, numSectors))
+				if (_device->readData(currentPtr, lba, numSectors))
 					return false;
 
 				offset    += spanLength;
@@ -204,7 +204,7 @@ bool ISO9660Provider::_readData(
 ) {
 	if (!output.allocate(numSectors * ide::ATAPI_SECTOR_SIZE))
 		return false;
-	if (_device->read(output.ptr, lba, numSectors))
+	if (_device->readData(output.ptr, lba, numSectors))
 		return false;
 
 	return true;
@@ -272,7 +272,7 @@ bool ISO9660Provider::init(int drive) {
 	for (
 		uint32_t lba = _VOLUME_DESC_START_LBA; lba < _VOLUME_DESC_END_LBA; lba++
 	) {
-		if (_device->read(&pvd, lba, 1))
+		if (_device->readData(&pvd, lba, 1))
 			return false;
 		if (!pvd.validateMagic()) {
 			LOG("invalid ISO descriptor, lba=0x%x", lba);

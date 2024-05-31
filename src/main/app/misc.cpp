@@ -277,7 +277,7 @@ void AboutScreen::show(ui::Context &ctx, bool goBack) {
 		ctx.time, 0, _LOOP_FADE_IN_VOLUME,
 		ctx.gpuCtx.refreshRate * _LOOP_FADE_IN_TIME
 	);
-	_loopChannel = ctx.sounds[ui::SOUND_ABOUT_SCREEN].play(0);
+	_loopChannel = ctx.sounds[ui::SOUND_ABOUT_SCREEN].play(0, 0);
 }
 
 void AboutScreen::hide(ui::Context &ctx, bool goBack) {
@@ -290,7 +290,9 @@ void AboutScreen::hide(ui::Context &ctx, bool goBack) {
 
 void AboutScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
-	spu::setChannelVolume(_loopChannel, _loopVolume.getValue(ctx.time));
+
+	auto volume = _loopVolume.getValue(ctx.time);
+	spu::setChannelVolume(_loopChannel, volume, volume);
 
 	if (ctx.buttons.pressed(ui::BTN_START))
 		ctx.show(APP->_mainMenuScreen, true, true);
