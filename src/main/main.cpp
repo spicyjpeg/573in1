@@ -14,7 +14,6 @@ int main(int argc, const char **argv) {
 	gpu::init();
 	spu::init();
 	io::init();
-	io::initIOBoard();
 	util::initZipCRC32();
 
 	args::MainArgs args;
@@ -39,9 +38,13 @@ int main(int argc, const char **argv) {
 	auto uiCtx  = new ui::Context(*gpuCtx);
 	auto app    = new App(*uiCtx);
 
+	io::initIOBoard();
+	io::resetIDEDevices();
+
 	gpu::enableDisplay(true);
 	spu::setMasterVolume(spu::MAX_VOLUME);
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
+
 	app->run(args.resourcePtr, args.resourceLength);
 
 	delete app;

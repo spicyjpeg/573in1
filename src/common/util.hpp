@@ -400,6 +400,8 @@ uint16_t zsCRC16(const uint8_t *data, size_t length);
 uint32_t zipCRC32(const uint8_t *data, size_t length, uint32_t crc = 0);
 void initZipCRC32(void);
 
+extern const char HEX_CHARSET[], BASE41_CHARSET[];
+
 size_t hexValueToString(char *output, uint32_t value, size_t numDigits = 8);
 size_t hexToString(
 	char *output, const uint8_t *input, size_t length, char separator = 0
@@ -407,14 +409,6 @@ size_t hexToString(
 size_t serialNumberToString(char *output, const uint8_t *input);
 size_t traceIDToString(char *output, const uint8_t *input);
 size_t encodeBase41(char *output, const uint8_t *input, size_t length);
-
-/* Error strings */
-
-extern const char *const CART_DRIVER_ERROR_NAMES[];
-extern const char *const IDE_DEVICE_ERROR_NAMES[];
-extern const char *const FATFS_ERROR_NAMES[];
-extern const char *const MINIZ_ERROR_NAMES[];
-extern const char *const MINIZ_ZIP_ERROR_NAMES[];
 
 }
 

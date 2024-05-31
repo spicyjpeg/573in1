@@ -1,27 +1,43 @@
 
-Konami System 573 security cartridge tool
-=========================================
+Konami System 573 tool
+======================
 
-Release ${PROJECT_VERSION}
+Version ${PROJECT_VERSION}
+(C) 2022-2024 spicyjpeg
 
-# Usage
+[ Usage ]
 
-Use this disc by simply inserting it into your System 573 and rebooting. Ensure
-DIP switch 4 (the rightmost one) is off in order to force the 573 to boot from
-the CD-ROM drive rather than the internal flash memory. Remember to insert the
-cartridge you want to reset, reflash or dump prior to turning on the system.
+Burn the provided disc image and use it by simply swapping out your System 573's
+current game disc for the burned one. Ensure DIP switch 4 (the rightmost one) is
+off in order to force the 573 to boot from the CD-ROM drive rather than from the
+internal flash memory. Remember to insert any security cartridges, PCMCIA cards
+and/or connect a hard drive, CF card or other storage device as a secondary
+drive on the same IDE bus as the CD-ROM drive, prior to turning on the system.
 
-# Credits
+For more information, full documentation and source code, see:
+    <${PROJECT_HOMEPAGE_URL}>
 
-Lead developer:       spicyjpeg
-Cartridge database:   smf
-Testing:              Naoki Saito
+WARNING: this tool is experimental and provided with no warranty whatsoever. It
+is not guaranteed to work and improper usage can PERMANENTLY BRICK your System
+573 security cartridges. Use this tool at your own risk.
 
-# Disclaimer
+[ License ]
 
-This tool is experimental and provided with no warranty whatsoever. It is not
-guaranteed to work and improper usage can PERMANENTLY BRICK your System 573
-security cartridges. Use this tool at your own risk.
+Copyright (C) 2022-2024 spicyjpeg
 
-More information and source code are available at:
-    ${PROJECT_HOMEPAGE_URL}
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <https://www.gnu.org/licenses/>.
+
+[ Credits and third-party licenses ]
+
+See the "About this tool" page, accessible from the main menu, for more
+information.

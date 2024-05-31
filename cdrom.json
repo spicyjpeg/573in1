@@ -16,6 +16,11 @@
 			"source": "${PROJECT_BINARY_DIR}/readme.txt"
 		},
 		{
+			"type":   "file",
+			"name":   "LICENSE.TXT",
+			"source": "${PROJECT_BINARY_DIR}/license.txt"
+		},
+		{
 			"type": "empty",
 			"name": "NOBOOT.TXT"
 		},

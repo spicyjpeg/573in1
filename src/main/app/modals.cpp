@@ -104,7 +104,7 @@ void ConfirmScreen::update(ui::Context &ctx) {
 
 /* File picker screen */
 
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 struct SpecialEntry {
 public:
 	util::Hash name;
@@ -120,7 +120,7 @@ static const SpecialEntry _SPECIAL_ENTRIES[]{
 #endif
 
 const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 	int offset = util::countOf(_SPECIAL_ENTRIES);
 
 	if (index < offset)
@@ -168,6 +168,8 @@ void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
 	// Check if any disc has been changed and reload all filesystems if
 	// necessary.
 	for (auto &dev : ide::devices) {
+		if (!(dev.flags & ide::DEVICE_ATAPI))
+			continue;
 		if (!dev.atapiPoll())
 			continue;
 
@@ -192,7 +194,7 @@ void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
 			_drives[_listLength++] = i;
 	}
 
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 	_listLength += util::countOf(_SPECIAL_ENTRIES);
 #endif
 
@@ -216,7 +218,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 			ctx.show(*previousScreen, true, true);
 		} else {
 			int index  = _activeItem;
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 			int offset = util::countOf(_SPECIAL_ENTRIES);
 
 			if (index < offset) {

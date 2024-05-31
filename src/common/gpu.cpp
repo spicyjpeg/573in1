@@ -147,13 +147,16 @@ void Context::flip(void) {
 	// The GPU will take some additional time to toggle between odd and even
 	// fields in interlaced mode.
 	if (GPU_GP1 & GP1_STAT_FB_INTERLACE) {
-		uint32_t drawField, dispField;
+		for (;;) {
+			auto status    = GPU_GP1;
+			auto drawField = (status / GP1_STAT_DRAW_FIELD_ODD) & 1;
+			auto dispField = (status / GP1_STAT_DISP_FIELD_ODD) & 1;
 
-		do {
-			auto status = GPU_GP1;
-			drawField   = (status / GP1_STAT_DRAW_FIELD_ODD) & 1;
-			dispField   = (status / GP1_STAT_DISP_FIELD_ODD) & 1;
-		} while (!(drawField ^ dispField));
+			if (drawField == dispField)
+				continue;
+			if (drawField == uint32_t(_currentBuffer))
+				break;
+		}
 	}
 
 	*_currentListPtr = gp0_endTag(0);
@@ -200,6 +203,7 @@ void Context::setResolution(
 
 	flip();
 	_applyResolution(mode, forceInterlace);
+
 	if (enable)
 		enableInterrupts();
 }

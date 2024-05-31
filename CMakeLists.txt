@@ -90,10 +90,10 @@ endfunction()
 ## Main executable
 
 # IMPORTANT: these addresses assume the boot executable's size (including code,
-# heap and stack allocations as well as the resource archive) is <448 KB
-# (0x70000 bytes).
+# heap and stack allocations as well as the resource archive) is <576 KB
+# (0x90000 bytes).
 addExecutable(
-	main 80080000 801dfff0
+	main 800a0000 801dfff0
 	src/common/args.cpp
 	src/common/file.cpp
 	src/common/file9660.cpp
@@ -137,22 +137,24 @@ target_compile_definitions(
 	main PRIVATE
 	$<IF:$<CONFIG:Debug>,
 		ENABLE_AUTOBOOT=1
-		ENABLE_DUMMY_DRIVER=1
-		ENABLE_FULL_IDE_DRIVER=1
-		ENABLE_I2C_LOGGING=1
-		ENABLE_LOG_BUFFER=1
-		ENABLE_LOGGING=1
-		ENABLE_PS1_CONTROLLER=1
-		#ENABLE_X76F100_DRIVER=1
-	,
-		ENABLE_AUTOBOOT=1
-		#ENABLE_DUMMY_DRIVER=1
+		#ENABLE_DUMMY_CART_DRIVER=1
 		ENABLE_FULL_IDE_DRIVER=1
 		#ENABLE_I2C_LOGGING=1
 		ENABLE_LOG_BUFFER=1
 		ENABLE_LOGGING=1
+		#ENABLE_PCDRV=1
 		ENABLE_PS1_CONTROLLER=1
-		#ENABLE_X76F100_DRIVER=1
+		#ENABLE_X76F100_CART_DRIVER=1
+	,
+		ENABLE_AUTOBOOT=1
+		#ENABLE_DUMMY_CART_DRIVER=1
+		ENABLE_FULL_IDE_DRIVER=1
+		#ENABLE_I2C_LOGGING=1
+		ENABLE_LOG_BUFFER=1
+		ENABLE_LOGGING=1
+		#ENABLE_PCDRV=1
+		ENABLE_PS1_CONTROLLER=1
+		#ENABLE_X76F100_CART_DRIVER=1
 	>
 )
 
@@ -192,6 +194,8 @@ addLauncher(801fd000 801ffff0)
 addLauncher(803fd000 803ffff0)
 
 ## Boot stub and resource archive
+
+configure_file(assets/about.txt about.txt NEWLINE_STYLE LF)
 
 function(addBootStub name resourceName)
 	configure_file(${resourceName}.json ${resourceName}.json ESCAPE_QUOTES)
@@ -233,8 +237,9 @@ addBootStub("${RELEASE_NAME}-tiny" resourcestiny)
 
 ## CD-ROM image
 
-configure_file(cdrom.json          cdrom.json ESCAPE_QUOTES)
-configure_file(assets/cdreadme.txt readme.txt NEWLINE_STYLE CRLF)
+configure_file(cdrom.json          cdrom.json  ESCAPE_QUOTES)
+configure_file(assets/cdreadme.txt readme.txt  NEWLINE_STYLE CRLF)
+configure_file(LICENSE             license.txt NEWLINE_STYLE CRLF)
 
 add_custom_command(
 	COMMAND

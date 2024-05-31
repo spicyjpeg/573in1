@@ -69,7 +69,7 @@ FileIOManager::FileIOManager(void)
 	__builtin_memset(ide, 0, sizeof(ide));
 
 	vfs.mount("resource:", &resource);
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 	vfs.mount("host:",     &host);
 #endif
 }
@@ -147,7 +147,7 @@ void FileIOManager::closeResourceFile(void) {
 void FileIOManager::close(void) {
 	vfs.close();
 	resource.close();
-#ifndef NDEBUG
+#ifdef ENABLE_PCDRV
 	host.close();
 #endif
 
@@ -205,8 +205,6 @@ static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 	"assets/sounds/about.vag",     // ui::SOUND_ABOUT_SCREEN
 	"assets/sounds/alert.vag",     // ui::SOUND_ALERT
 	"assets/sounds/move.vag",      // ui::SOUND_MOVE
-	"assets/sounds/moveleft.vag",  // ui::SOUND_MOVE_LEFT
-	"assets/sounds/moveright.vag", // ui::SOUND_MOVE_RIGHT
 	"assets/sounds/enter.vag",     // ui::SOUND_ENTER
 	"assets/sounds/exit.vag",      // ui::SOUND_EXIT
 	"assets/sounds/click.vag",     // ui::SOUND_CLICK

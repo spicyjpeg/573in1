@@ -25,7 +25,7 @@ bool App::_cartDetectWorker(void) {
 	_unloadCartData();
 	_qrCodeScreen.valid = false;
 
-#ifdef ENABLE_DUMMY_DRIVER
+#ifdef ENABLE_DUMMY_CART_DRIVER
 	if (!cart::dummyDriverDump.chipType)
 		_fileIO.resource.loadStruct(cart::dummyDriverDump, "data/test.573");
 
@@ -91,7 +91,7 @@ _cartInitDone:
 	_workerStatus.update(2, 3, WSTR("App.cartDetectWorker.readDigitalIO"));
 
 	if (
-#ifdef ENABLE_DUMMY_DRIVER
+#ifdef ENABLE_DUMMY_CART_DRIVER
 		!(_cartDump.flags & cart::DUMP_SYSTEM_ID_OK) &&
 #endif
 		io::isDigitalIOPresent()

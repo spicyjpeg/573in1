@@ -164,6 +164,8 @@ static inline void setDIO1Wire(bool value) {
 
 void init(void);
 void initIOBoard(void);
+void resetIDEDevices(void);
+
 uint32_t getJAMMAInputs(void);
 void getRTCTime(util::Date &output);
 void setRTCTime(const util::Date &value, bool stop = false);

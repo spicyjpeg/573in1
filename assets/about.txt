@@ -1,28 +1,56 @@
-Konami System 573 security cartridge tool
+- Konami System 573 tool -
 
-# Credits
+Version ${PROJECT_VERSION} 
+(C) 2022-2024 spicyjpeg 
 
-Lead developer:		spicyjpeg 
-Cartridge database:	smf 
-Testing:			Naoki Saito 
+Full documentation, source code and more available here: 
+    <${PROJECT_HOMEPAGE_URL}> 
 
-# Disclaimer
+This tool is completely free and open source. Hopefully you did not get tricked
+into paying for it.
 
-This tool is experimental and provided with no warranty whatsoever. It is not
-guaranteed to work and improper usage can PERMANENTLY BRICK your System 573
-security cartridges. Use this tool at your own risk.
+[ Credits ]
 
-# License
+Lead developer: 
+    spicyjpeg 
 
-(C) 2022-2023 spicyjpeg
+Reverse engineering: 
+    Naoki Saito 
+    smf 
 
-TODO: add a license
+Testing: 
+    AndreaM 
+    tensionvex 
 
-# Third-party licenses
+Special thanks: 
+    987123879113 
+    Gabrimax 
+    Martin Korth (nocash) 
+    Nicolas Noble 
+    Everyone on the Rhythm Game Cabs and PSX.Dev Discord servers 
+
+[ License ]
+
+Copyright (C) 2022-2024 spicyjpeg
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <https://www.gnu.org/licenses/>.
+
+[ Third-party licenses ]
 
 This tool embeds several third-party libraries and projects:
 
-## FatFs (https://elm-chan.org/fsw/ff/00index_e.html)
+--- FatFs 
+--- <https://elm-chan.org/fsw/ff/00index_e.html> 
 
 Copyright (C) 2022, ChaN, all rights reserved.
 
@@ -38,7 +66,8 @@ and any warranties related to this software are DISCLAIMED.
 The copyright owner or contributors be NOT LIABLE for any damages caused
 by use of this software. 
 
-## miniz (https://github.com/richgel999/miniz)
+--- miniz 
+--- <https://github.com/richgel999/miniz> 
 
 Copyright 2013-2014 RAD Game Tools and Valve Software 
 Copyright 2010-2014 Rich Geldreich and Tenacious Software LLC 
@@ -63,7 +92,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-## printf (https://github.com/mpaland/printf)
+--- OpenBIOS 
+--- <https://github.com/grumpycoders/pcsx-redux/tree/main/src/mips/openbios> 
+
+MIT License
+
+Copyright (c) 2019 PCSX-Redux authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--- printf 
+--- <https://github.com/mpaland/printf> 
 
 The MIT License (MIT)
 
@@ -87,7 +142,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## ps1-bare-metal (https://github.com/spicyjpeg/ps1-bare-metal)
+--- ps1-bare-metal 
+--- <https://github.com/spicyjpeg/ps1-bare-metal> 
 
 ps1-bare-metal - (C) 2023 spicyjpeg
 
@@ -103,7 +159,8 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
-## qrcodegen (https://www.nayuki.io/page/qr-code-generator-library)
+--- qrcodegen 
+--- <https://www.nayuki.io/page/qr-code-generator-library> 
 
 Copyright (c) 2022 Project Nayuki. (MIT License)
 
@@ -122,3 +179,10 @@ authors or copyright holders be liable for any claim, damages or other
 liability, whether in an action of contract, tort or otherwise, arising from,
 out of or in connection with the Software or the use or other dealings in the
 Software. 
+
+
+
+
+
+Several security cartridges were killed during the development of this tool. May
+they rest in peace.

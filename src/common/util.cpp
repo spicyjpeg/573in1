@@ -509,14 +509,15 @@ extern "C" uint32_t mz_crc32(uint32_t crc, const uint8_t *data, size_t length) {
 
 /* String manipulation */
 
-static const char _HEX_CHARSET[]{ "0123456789ABCDEF" };
+const char HEX_CHARSET[]{ "0123456789ABCDEF" };
+const char BASE41_CHARSET[]{ "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:" };
 
 size_t hexValueToString(char *output, uint32_t value, size_t numDigits) {
 	output += numDigits;
 	*output = 0;
 
 	for (size_t i = numDigits; i; i--, value >>= 4)
-		*(--output) = _HEX_CHARSET[value & 0xf];
+		*(--output) = HEX_CHARSET[value & 0xf];
 
 	return numDigits;
 }
@@ -529,8 +530,8 @@ size_t hexToString(
 	for (; length; length--) {
 		uint8_t value = *(input++);
 
-		*(output++) = _HEX_CHARSET[value >> 4];
-		*(output++) = _HEX_CHARSET[value & 0xf];
+		*(output++) = HEX_CHARSET[value >> 4];
+		*(output++) = HEX_CHARSET[value & 0xf];
 
 		if (separator && (length > 1)) {
 			*(output++) = separator;
@@ -578,8 +579,6 @@ size_t traceIDToString(char *output, const uint8_t *input) {
 
 // This encoding is similar to standard base45, but with some problematic
 // characters (' ', '$', '%', '*') excluded.
-static const char _BASE41_CHARSET[]{ "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:" };
-
 size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 	size_t outLength = 0;
 
@@ -587,9 +586,9 @@ size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 		int value = *(input++) << 8;
 		value    |= *(input++);
 
-		*(output++) = _BASE41_CHARSET[value % 41];
-		*(output++) = _BASE41_CHARSET[(value / 41) % 41];
-		*(output++) = _BASE41_CHARSET[value / 1681];
+		*(output++) = BASE41_CHARSET[value % 41];
+		*(output++) = BASE41_CHARSET[(value / 41) % 41];
+		*(output++) = BASE41_CHARSET[value / 1681];
 		outLength  += 3;
 	}
 

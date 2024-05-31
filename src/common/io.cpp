@@ -11,6 +11,11 @@ namespace io {
 
 uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
 
+/* System initialization */
+
+static constexpr int _RESET_DELAY     = 5000;
+static constexpr int _FPGA_INIT_DELAY = 1000;
+
 void init(void) {
 	// Remapping the base address is required in order for IDE DMA to work
 	// properly, as the BIU will output it over the address lines during a DMA
@@ -67,6 +72,16 @@ void initIOBoard(void) {
 		SYS573A_LIGHTS_D = 0x00ff;
 	}
 }
+
+void resetIDEDevices(void) {
+	SYS573_IDE_RESET = 0;
+	delayMicroseconds(_RESET_DELAY);
+
+	SYS573_IDE_RESET = 1;
+	delayMicroseconds(_RESET_DELAY);
+}
+
+/* JAMMA and RTC functions */
 
 uint32_t getJAMMAInputs(void) {
 	uint32_t inputs;
@@ -228,7 +243,8 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 			| SYS573D_CPLD_CTRL_DONE
 			| SYS573D_CPLD_CTRL_PROGRAM
 			| SYS573D_CPLD_CTRL_UNKNOWN;
-		delayMicroseconds(5000);
+
+		delayMicroseconds(_RESET_DELAY);
 
 		if (!(SYS573D_CPLD_STAT & SYS573D_CPLD_STAT_INIT))
 			continue;
@@ -241,7 +257,7 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 			if ((SYS573D_CPLD_STAT & mask) == mask)
 				return true;
 
-			delayMicroseconds(1000);
+			delayMicroseconds(_FPGA_INIT_DELAY);
 		}
 	}
 
@@ -251,10 +267,10 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 void initKonamiBitstream(void) {
 	SYS573D_FPGA_INIT = 0xf000;
 	SYS573D_FPGA_INIT = 0x0000;
-	delayMicroseconds(1000);
+	delayMicroseconds(_FPGA_INIT_DELAY);
 
 	SYS573D_FPGA_INIT = 0xf000;
-	delayMicroseconds(1000);
+	delayMicroseconds(_FPGA_INIT_DELAY);
 
 	// Turn off all lights including the ones that were left on by init().
 	SYS573D_FPGA_LIGHTS_A0 = 0xf000;

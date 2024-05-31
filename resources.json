@@ -39,6 +39,12 @@
 	},
 	{
 		"type":        "binary",
+		"name":        "assets/sounds/startup.vag",
+		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/startup.vag",
+		"compression": "none"
+	},
+	{
+		"type":        "binary",
 		"name":        "assets/sounds/about.vag",
 		"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/about.vag",
 		"compression": "none"
@@ -92,7 +98,7 @@
 	{
 		"type":   "text",
 		"name":   "assets/about.txt",
-		"source": "${PROJECT_SOURCE_DIR}/assets/about.txt"
+		"source": "${PROJECT_BINARY_DIR}/about.txt"
 	},
 
 	{

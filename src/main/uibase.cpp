@@ -57,9 +57,9 @@ _prevLongHeld(0), _pressed(0), _released(0), _longPressed(0), _longReleased(0),
 _repeatTimer(0) {}
 
 uint8_t ButtonState::_getHeld(void) const {
-	uint32_t inputs = io::getJAMMAInputs();
-	uint8_t  held   = 0;
-	auto     map    = _BUTTON_MAPPINGS[_buttonMap];
+	auto    inputs = io::getJAMMAInputs();
+	auto    map    = _BUTTON_MAPPINGS[_buttonMap];
+	uint8_t held   = 0;
 
 #ifdef ENABLE_PS1_CONTROLLER
 	if (pad::ports[0].pollPad() || pad::ports[1].pollPad()) {

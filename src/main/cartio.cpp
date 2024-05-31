@@ -665,7 +665,7 @@ CartDriver *newCartDriver(CartDump &dump) {
 		case _ID_X76F041:
 			return new X76F041Driver(dump);
 
-#ifdef ENABLE_X76F100_DRIVER
+#ifdef ENABLE_X76F100_CART_DRIVER
 		case _ID_X76F100:
 			return new X76F100Driver(dump);
 #endif
