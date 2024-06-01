@@ -235,8 +235,10 @@ void AudioTestScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
+#if 0
 			io::setMiscOutput(io::MISC_AMP_ENABLE,  false);
 			io::setMiscOutput(io::MISC_CDDA_ENABLE, false);
+#endif
 
 			ctx.show(APP->_testMenuScreen, true, true);
 		} else {

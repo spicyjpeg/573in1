@@ -54,6 +54,9 @@ private:
 	file::File *_resourceFile;
 
 public:
+	const void *resourcePtr;
+	size_t     resourceLength;
+
 	file::Provider     *ide[util::countOf(ide::devices)];
 	file::ZIPProvider  resource;
 #ifdef ENABLE_PCDRV
@@ -219,6 +222,7 @@ private:
 
 	// miscworkers.cpp
 	bool _ideInitWorker(void);
+	bool _fileInitWorker(void);
 	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);
 	bool _rebootWorker(void);

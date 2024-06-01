@@ -8,6 +8,7 @@
 #include "common/filemisc.hpp"
 #include "common/filezip.hpp"
 #include "common/gpu.hpp"
+#include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
 #include "common/util.hpp"
@@ -65,7 +66,7 @@ WorkerStatusType WorkerStatus::setStatus(WorkerStatusType value) {
 /* Filesystem manager class */
 
 FileIOManager::FileIOManager(void)
-: _resourceFile(nullptr) {
+: _resourceFile(nullptr), resourcePtr(nullptr), resourceLength(0) {
 	__builtin_memset(ide, 0, sizeof(ide));
 
 	vfs.mount("resource:", &resource);
@@ -83,6 +84,9 @@ void FileIOManager::initIDE(void) {
 		auto &dev = ide::devices[i];
 		name[3]   = i + '0';
 
+		if (!(dev.flags & ide::DEVICE_READY))
+			continue;
+
 		// Note that calling vfs.mount() multiple times will *not* update any
 		// already mounted device, so if two hard drives or CD-ROMs are present
 		// the hdd:/cdrom: prefix will be assigned to the first one.
@@ -95,7 +99,7 @@ void FileIOManager::initIDE(void) {
 			}
 
 			ide[i] = iso;
-			vfs.mount("cdrom:", iso, true);
+			vfs.mount("cdrom:", iso);
 		} else {
 			auto fat = new file::FATProvider();
 
@@ -105,7 +109,7 @@ void FileIOManager::initIDE(void) {
 			}
 
 			ide[i] = fat;
-			vfs.mount("hdd:", fat, true);
+			vfs.mount("hdd:", fat);
 		}
 
 		vfs.mount(name, ide[i], true);
@@ -113,35 +117,44 @@ void FileIOManager::initIDE(void) {
 }
 
 void FileIOManager::closeIDE(void) {
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (!ide[i])
-			continue;
+	char name[6]{ "ide#:" };
 
-		ide[i]->close();
-		delete ide[i];
-		ide[i] = nullptr;
+	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
+		if (ide[i]) {
+			ide[i]->close();
+			delete ide[i];
+			ide[i] = nullptr;
+		}
+
+		name[3] = i + '0';
+		vfs.unmount(name);
 	}
 }
 
 bool FileIOManager::loadResourceFile(const char *path) {
 	closeResourceFile();
 
-	_resourceFile = vfs.openFile(path, file::READ);
+	if (path)
+		_resourceFile = vfs.openFile(path, file::READ);
 
-	if (!_resourceFile)
-		return false;
+	// Fall back to the default in-memory resource archive in case of failure.
+	if (_resourceFile) {
+		if (resource.init(_resourceFile))
+			return true;
+	}
 
-	resource.close();
-	return resource.init(_resourceFile);
+	resource.init(resourcePtr, resourceLength);
+	return false;
 }
 
 void FileIOManager::closeResourceFile(void) {
-	if (!_resourceFile)
-		return;
+	resource.close();
 
-	_resourceFile->close();
-	delete _resourceFile;
-	_resourceFile = nullptr;
+	if (_resourceFile) {
+		_resourceFile->close();
+		delete _resourceFile;
+		_resourceFile = nullptr;
+	}
 }
 
 void FileIOManager::close(void) {
@@ -320,9 +333,11 @@ void App::_interruptHandler(void) {
 	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
 	LOG("(C) 2022-2024 spicyjpeg");
 
-	_ctx.screenData = this;
+	_ctx.screenData        = this;
+	_fileIO.resourcePtr    = resourcePtr;
+	_fileIO.resourceLength = resourceLength;
 
-	_fileIO.resource.init(resourcePtr, resourceLength);
+	_fileIO.loadResourceFile(nullptr);
 	_loadResources();
 
 	char dateString[24];

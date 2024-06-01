@@ -3,168 +3,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/idedefs.hpp"
 #include "common/util.hpp"
 #include "ps1/registers573.h"
 
 namespace ide {
 
-/* Register definitions */
-
-enum CS0Register {
-	CS0_DATA       = 0,
-	CS0_ERROR      = 1,
-	CS0_FEATURES   = 1,
-	CS0_COUNT      = 2,
-	CS0_SECTOR     = 3,
-	CS0_CYLINDER_L = 4,
-	CS0_CYLINDER_H = 5,
-	CS0_DEVICE_SEL = 6,
-	CS0_STATUS     = 7,
-	CS0_COMMAND    = 7
-};
-
-enum CS1Register {
-	CS1_ALT_STATUS  = 6,
-	CS1_DEVICE_CTRL = 6
-};
-
-enum CS0StatusFlag : uint8_t {
-	CS0_STATUS_ERR  = 1 << 0, // Error
-	CS0_STATUS_DRQ  = 1 << 3, // Data request
-	CS0_STATUS_DSC  = 1 << 4, // Device seek complete (ATA)
-	CS0_STATUS_SERV = 1 << 4, // Service (ATAPI)
-	CS0_STATUS_DF   = 1 << 5, // Device fault
-	CS0_STATUS_DRDY = 1 << 6, // Device ready
-	CS0_STATUS_BSY  = 1 << 7  // Busy
-};
-
-enum CS0DeviceSelectFlag : uint8_t {
-	CS0_DEVICE_SEL_PRIMARY   = 10 << 4,
-	CS0_DEVICE_SEL_SECONDARY = 11 << 4,
-	CS0_DEVICE_SEL_LBA       =  1 << 6
-};
-
-enum CS1DeviceControlFlag : uint8_t {
-	CS1_DEVICE_CTRL_IEN  = 1 << 1, // Interrupt enable
-	CS1_DEVICE_CTRL_SRST = 1 << 2, // Software reset
-	CS1_DEVICE_CTRL_HOB  = 1 << 7  // High-order bit (LBA48)
-};
-
-/* ATA protocol definitions */
-
-static constexpr size_t ATA_SECTOR_SIZE = 512;
-
-enum ATACommand : uint8_t {
-	ATA_NOP                  = 0x00,
-	ATA_DEVICE_RESET         = 0x08,
-	ATA_READ_SECTORS         = 0x20,
-	ATA_READ_SECTORS_EXT     = 0x24,
-	ATA_READ_DMA_EXT         = 0x25,
-	ATA_READ_DMA_QUEUED_EXT  = 0x26,
-	ATA_WRITE_SECTORS        = 0x30,
-	ATA_WRITE_SECTORS_EXT    = 0x34,
-	ATA_WRITE_DMA_EXT        = 0x35,
-	ATA_WRITE_DMA_QUEUED_EXT = 0x36,
-	ATA_SEEK                 = 0x70,
-	ATA_EXECUTE_DIAGNOSTIC   = 0x90,
-	ATA_PACKET               = 0xa0,
-	ATA_IDENTIFY_PACKET      = 0xa1,
-	ATA_SERVICE              = 0xa2,
-	ATA_DEVICE_CONFIG        = 0xb1,
-	ATA_ERASE_SECTORS        = 0xc0,
-	ATA_READ_DMA_QUEUED      = 0xc7,
-	ATA_READ_DMA             = 0xc8,
-	ATA_WRITE_DMA            = 0xca,
-	ATA_WRITE_DMA_QUEUED     = 0xcc,
-	ATA_STANDBY_IMMEDIATE    = 0xe0,
-	ATA_IDLE_IMMEDIATE       = 0xe1,
-	ATA_STANDBY              = 0xe2,
-	ATA_IDLE                 = 0xe3,
-	ATA_CHECK_POWER_MODE     = 0xe5,
-	ATA_SLEEP                = 0xe6,
-	ATA_FLUSH_CACHE          = 0xe7,
-	ATA_FLUSH_CACHE_EXT      = 0xea,
-	ATA_IDENTIFY             = 0xec,
-	ATA_SET_FEATURES         = 0xef
-};
-
-enum ATAFeature : uint8_t {
-	FEATURE_8BIT_DATA     = 0x01,
-	FEATURE_WRITE_CACHE   = 0x02,
-	FEATURE_TRANSFER_MODE = 0x03,
-	FEATURE_APM           = 0x05,
-	FEATURE_AAM           = 0x42,
-	FEATURE_RELEASE_IRQ   = 0x5d,
-	FEATURE_SERVICE_IRQ   = 0x5e,
-	FEATURE_DISABLE       = 0x80
-};
-
-/* ATAPI protocol definitions */
-
+static constexpr size_t ATA_SECTOR_SIZE   = 512;
 static constexpr size_t ATAPI_SECTOR_SIZE = 2048;
-
-enum ATAPICommand : uint8_t {
-	ATAPI_TEST_UNIT_READY  = 0x00,
-	ATAPI_REQUEST_SENSE    = 0x03,
-	ATAPI_INQUIRY          = 0x12,
-	ATAPI_START_STOP_UNIT  = 0x1b,
-	ATAPI_PREVENT_REMOVAL  = 0x1e,
-	ATAPI_READ_CAPACITY    = 0x25,
-	ATAPI_READ10           = 0x28,
-	ATAPI_SEEK             = 0x2b,
-	ATAPI_READ_SUBCHANNEL  = 0x42,
-	ATAPI_READ_TOC         = 0x43,
-	ATAPI_READ_HEADER      = 0x44,
-	ATAPI_PLAY_AUDIO       = 0x45,
-	ATAPI_PLAY_AUDIO_MSF   = 0x47,
-	ATAPI_PAUSE_RESUME     = 0x4b,
-	ATAPI_STOP             = 0x4e,
-	ATAPI_MODE_SELECT      = 0x55,
-	ATAPI_MODE_SENSE       = 0x5a,
-	ATAPI_LOAD_UNLOAD_CD   = 0xa6,
-	ATAPI_READ12           = 0xa8,
-	ATAPI_READ_CD_MSF      = 0xb9,
-	ATAPI_SCAN             = 0xba,
-	ATAPI_SET_CD_SPEED     = 0xbb,
-	ATAPI_MECHANISM_STATUS = 0xbd,
-	ATAPI_READ_CD          = 0xbe
-};
-
-enum ATAPISenseKey : uint8_t {
-	SENSE_KEY_NO_SENSE        = 0x0,
-	SENSE_KEY_RECOVERED_ERROR = 0x1,
-	SENSE_KEY_NOT_READY       = 0x2,
-	SENSE_KEY_MEDIUM_ERROR    = 0x3,
-	SENSE_KEY_HARDWARE_ERROR  = 0x4,
-	SENSE_KEY_ILLEGAL_REQUEST = 0x5,
-	SENSE_KEY_UNIT_ATTENTION  = 0x6,
-	SENSE_KEY_DATA_PROTECT    = 0x7,
-	SENSE_KEY_BLANK_CHECK     = 0x8,
-	SENSE_KEY_ABORTED_COMMAND = 0xb,
-	SENSE_KEY_MISCOMPARE      = 0xe
-};
-
-enum ATAPIStartStopMode : uint8_t {
-	START_STOP_MODE_STOP_DISC  = 0,
-	START_STOP_MODE_START_DISC = 1,
-	START_STOP_MODE_OPEN_TRAY  = 2,
-	START_STOP_MODE_CLOSE_TRAY = 3
-};
-
-enum ATAPIModePage : uint8_t {
-	MODE_PAGE_ERROR_RECOVERY     = 0x01,
-	MODE_PAGE_CDROM              = 0x0d,
-	MODE_PAGE_CDROM_AUDIO        = 0x0e,
-	MODE_PAGE_CDROM_CAPABILITIES = 0x2a,
-	MODE_PAGE_ALL                = 0x3f
-};
-
-enum ATAPIModePageType : uint8_t {
-	MODE_PAGE_TYPE_CURRENT    = 0,
-	MODE_PAGE_TYPE_CHANGEABLE = 1,
-	MODE_PAGE_TYPE_DEFAULT    = 2,
-	MODE_PAGE_TYPE_SAVED      = 3
-};
 
 /* Identification blocks */
 
@@ -275,6 +121,9 @@ public:
 			| (info[2] <<  8)
 			| (info[3] <<  0);
 	}
+	inline uint16_t getPackedASC(void) const {
+		return asc | (ascQualifier << 8);
+	}
 };
 
 class Packet {
@@ -283,11 +132,33 @@ public:
 	uint8_t param[11];
 	uint8_t _reserved[4];
 
+	inline void setTestUnitReady(void) {
+		util::clear(*this);
+
+		//command = ATAPI_TEST_UNIT_READY;
+	}
+	inline void setRequestSense(uint8_t additionalLength = 0) {
+		util::clear(*this);
+
+		command  = ATAPI_REQUEST_SENSE;
+		param[3] = sizeof(SenseData) + additionalLength;
+	}
 	inline void setStartStopUnit(ATAPIStartStopMode mode) {
 		util::clear(*this);
 
 		command  = ATAPI_START_STOP_UNIT;
 		param[3] = mode;
+	}
+	inline void setModeSense(
+		ATAPIModePage page, size_t length,
+		ATAPIModePageType type = MODE_PAGE_TYPE_CURRENT
+	) {
+		util::clear(*this);
+
+		command  = ATAPI_MODE_SENSE;
+		param[1] = (page & 0x3f) | (type << 6);
+		param[6] = (length >> 8) & 0xff;
+		param[7] = (length >> 0) & 0xff;
 	}
 	inline void setRead(uint32_t lba, size_t count) {
 		util::clear(*this);
@@ -309,23 +180,6 @@ public:
 		param[1] = (value >> 8) & 0xff;
 		param[2] = (value >> 0) & 0xff;
 	}
-	inline void setRequestSense(uint8_t additionalLength = 0) {
-		util::clear(*this);
-
-		command  = ATAPI_REQUEST_SENSE;
-		param[3] = sizeof(SenseData) + additionalLength;
-	}
-	inline void setModeSense(
-		ATAPIModePage page, size_t length,
-		ATAPIModePageType type = MODE_PAGE_TYPE_CURRENT
-	) {
-		util::clear(*this);
-
-		command  = ATAPI_MODE_SENSE;
-		param[1] = (page & 0x3f) | (type << 6);
-		param[6] = (length >> 8) & 0xff;
-		param[7] = (length >> 0) & 0xff;
-	}
 };
 
 /* Device class */
@@ -334,12 +188,12 @@ enum DeviceError {
 	NO_ERROR          = 0,
 	UNSUPPORTED_OP    = 1,
 	NO_DRIVE          = 2,
-	STATUS_TIMEOUT    = 3,
-	DRIVE_ERROR       = 4,
-	DISC_ERROR        = 5,
-	DISC_CHANGED      = 6,
-	INCOMPLETE_DATA   = 7,
-	CHECKSUM_MISMATCH = 8
+	NOT_YET_READY     = 3,
+	STATUS_TIMEOUT    = 4,
+	CHECKSUM_MISMATCH = 5,
+	DRIVE_ERROR       = 6,
+	DISC_ERROR        = 7,
+	DISC_CHANGED      = 8
 };
 
 enum DeviceFlag {
@@ -357,46 +211,53 @@ enum DeviceFlag {
 
 class Device {
 private:
-	inline uint8_t _read(CS0Register reg) {
+	inline uint8_t _read(CS0Register reg) const {
 		return uint8_t(SYS573_IDE_CS0_BASE[reg] & 0xff);
 	}
-	inline void _write(CS0Register reg, uint8_t value) {
+	inline void _write(CS0Register reg, uint8_t value) const {
 		SYS573_IDE_CS0_BASE[reg] = value;
 	}
-	inline uint8_t _read(CS1Register reg) {
+	inline uint8_t _read(CS1Register reg) const {
 		return uint8_t(SYS573_IDE_CS1_BASE[reg] & 0xff);
 	}
-	inline void _write(CS1Register reg, uint8_t value) {
+	inline void _write(CS1Register reg, uint8_t value) const {
 		SYS573_IDE_CS1_BASE[reg] = value;
 	}
 
-	DeviceError _waitForStatus(
-		uint8_t mask, uint8_t value, int timeout = 0, bool ignoreErrors = false
-	);
-	DeviceError _select(
-		uint8_t devSelFlags, int timeout = 0, bool ignoreErrors = false
-	);
-	DeviceError _setLBA(uint64_t lba, size_t count, int timeout = 0);
-	DeviceError _detectDrive(void);
+	inline void _select(uint8_t selFlags) const {
+		if (flags & DEVICE_SECONDARY)
+			_write(CS0_DEVICE_SEL, selFlags | CS0_DEVICE_SEL_SECONDARY);
+		else
+			_write(CS0_DEVICE_SEL, selFlags | CS0_DEVICE_SEL_PRIMARY);
+	}
+	inline void _setCylinder(uint16_t value) const {
+		_write(CS0_CYLINDER_L, (value >> 0) & 0xff);
+		_write(CS0_CYLINDER_H, (value >> 8) & 0xff);
+	}
+	inline uint16_t _getCylinder(void) const {
+		return _read(CS0_CYLINDER_L) | (_read(CS0_CYLINDER_H) << 8);
+	}
 
-	DeviceError _readPIO(
-		void *data, size_t length, int timeout = 0, bool ignoreErrors = false
-	);
-	DeviceError _writePIO(
-		const void *data, size_t length, int timeout = 0,
-		bool ignoreErrors = false
-	);
-	DeviceError _readDMA(
-		void *data, size_t length, int timeout = 0, bool ignoreErrors = false
-	);
-	DeviceError _writeDMA(
-		const void *data, size_t length, int timeout = 0,
-		bool ignoreErrors = false
-	);
+	void _readPIO(void *data, size_t length) const;
+	void _writePIO(const void *data, size_t length) const;
+	bool _readDMA(void *data, size_t length) const;
+	bool _writeDMA(const void *data, size_t length) const;
 
-	DeviceError _ideReadWrite(
+	DeviceError _waitForIdle(
+		bool drdy = false, int timeout = 0, bool ignoreError = false
+	);
+	DeviceError _waitForDRQ(int timeout = 0, bool ignoreError = false);
+	void _handleError(void);
+	void _handleTimeout(void);
+	DeviceError _resetDrive(void);
+
+	DeviceError _ataSetLBA(uint64_t lba, size_t count, int timeout = 0);
+	DeviceError _ataTransfer(
 		uintptr_t ptr, uint64_t lba, size_t count, bool write
 	);
+
+	DeviceError _atapiRequestSense(void);
+	DeviceError _atapiPacket(const Packet &packet, size_t dataLength = 0);
 	DeviceError _atapiRead(uintptr_t ptr, uint32_t lba, size_t count);
 
 public:
@@ -407,13 +268,16 @@ public:
 #endif
 	uint64_t capacity;
 
-	inline Device(uint32_t flags)
-	: flags(flags), capacity(0) {}
+	uint8_t   lastStatusReg, lastErrorReg;
+	SenseData lastSenseData;
 
 	inline size_t getSectorSize(void) const {
 		return (flags & DEVICE_ATAPI) ? ATAPI_SECTOR_SIZE : ATA_SECTOR_SIZE;
 	}
-	inline bool isPointerAligned(const void *ptr) {
+	inline size_t getPacketSize(void) const {
+		return (flags & DEVICE_HAS_PACKET16) ? 16 : 12;
+	}
+	inline bool isPointerAligned(const void *ptr) const {
 		// DMA transfers require 4-byte alignment, while PIO transfers require
 		// 2-byte alignment.
 #if 0
@@ -423,13 +287,14 @@ public:
 #endif
 	}
 
+	Device(uint32_t flags);
 	DeviceError enumerate(void);
-	DeviceError atapiPacket(const Packet &packet, size_t transferLength = 0);
-	DeviceError atapiPoll(void);
+	DeviceError poll(void);
 
 	DeviceError readData(void *data, uint64_t lba, size_t count);
 	DeviceError writeData(const void *data, uint64_t lba, size_t count);
 	DeviceError goIdle(bool standby = false);
+	DeviceError startStopUnit(ATAPIStartStopMode mode);
 	DeviceError flushCache(void);
 };
 

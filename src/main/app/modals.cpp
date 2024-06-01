@@ -165,17 +165,15 @@ void FilePickerScreen::setMessage(
 }
 
 void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
-	// Check if any disc has been changed and reload all filesystems if
-	// necessary.
+	// Check if any drive has reported a disc change and reload all filesystems
+	// if necessary.
 	for (auto &dev : ide::devices) {
-		if (!(dev.flags & ide::DEVICE_ATAPI))
-			continue;
-		if (!dev.atapiPoll())
+		if (!dev.poll())
 			continue;
 
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 
-		APP->_runWorker(&App::_ideInitWorker, *this, false, true);
+		APP->_runWorker(&App::_fileInitWorker, *this, false, true);
 		return;
 	}
 

@@ -5,6 +5,7 @@
 #include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/rom.hpp"
+#include "common/romdrivers.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/romactions.hpp"

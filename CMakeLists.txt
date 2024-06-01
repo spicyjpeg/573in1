@@ -106,6 +106,7 @@ addExecutable(
 	src/common/io.cpp
 	src/common/pad.cpp
 	src/common/rom.cpp
+	src/common/romdrivers.cpp
 	src/common/spu.cpp
 	src/common/util.cpp
 	src/libc/crt0.c

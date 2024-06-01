@@ -6,8 +6,11 @@
 
 	"App": {
 		"ideInitWorker": {
-			"initDrives":    "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
-			"initFileIO":    "Detecting and mounting filesystems...\nDo not turn off the 573 or unplug drives.",
+			"init": "Initializing IDE devices...\nDo not turn off the 573 or unplug drives."
+		},
+		"fileInitWorker": {
+			"unmount":       "Unmounting all mounted filesystems...\nDo not turn off the 573 or unplug drives.",
+			"mount":         "Detecting and mounting filesystems...\nDo not turn off the 573 or unplug drives.",
 			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives.",
 			"autoboot":      "Searching for boot executables...\nDo not turn off the 573 or unplug drives."
 		},
@@ -113,7 +116,7 @@
 
 	"AudioTestScreen": {
 		"title":      "{RIGHT_ARROW} Audio output test",
-		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by default and will be disabled again once this screen is closed.",
+		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by this tool by default.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"playLeft":    "Play sound on left channel",

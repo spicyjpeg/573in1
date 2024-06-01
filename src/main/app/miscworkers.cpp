@@ -4,6 +4,7 @@
 #include "common/defs.hpp"
 #include "common/file.hpp"
 #include "common/ide.hpp"
+#include "common/idedefs.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
@@ -20,29 +21,37 @@ static const char *const _AUTOBOOT_PATHS[][2]{
 };
 
 bool App::_ideInitWorker(void) {
-	_workerStatus.update(0, 4, WSTR("App.ideInitWorker.initDrives"));
-
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		auto &dev = ide::devices[i];
 
-		// Spin down all drives by default.
 		if (dev.flags & ide::DEVICE_READY)
 			continue;
-		if (dev.enumerate())
-			dev.goIdle();
+
+		_workerStatus.update(
+			i, util::countOf(ide::devices), WSTR("App.ideInitWorker.init")
+		);
+		dev.enumerate();
 	}
 
-	_workerStatus.update(1, 4, WSTR("App.ideInitWorker.initFileIO"));
+	return _fileInitWorker();
+}
+
+bool App::_fileInitWorker(void) {
+	_workerStatus.update(0, 4, WSTR("App.fileInitWorker.unmount"));
+	_fileIO.closeResourceFile();
+	_fileIO.close();
+
+	_workerStatus.update(1, 4, WSTR("App.fileInitWorker.mount"));
 	_fileIO.initIDE();
 
-	_workerStatus.update(2, 4, WSTR("App.ideInitWorker.loadResources"));
+	_workerStatus.update(2, 4, WSTR("App.fileInitWorker.loadResources"));
 	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
 		_loadResources();
 
 #ifdef ENABLE_AUTOBOOT
 	// Only try to autoboot if DIP switch 1 is on.
 	if (io::getDIPSwitch(0)) {
-		_workerStatus.update(3, 4, WSTR("App.ideInitWorker.autoboot"));
+		_workerStatus.update(3, 4, WSTR("App.fileInitWorker.autoboot"));
 
 		for (auto path : _AUTOBOOT_PATHS) {
 			file::FileInfo info;
@@ -193,10 +202,8 @@ bool App::_atapiEjectWorker(void) {
 		if (!(dev.flags & ide::DEVICE_ATAPI))
 			continue;
 
-		ide::Packet packet;
-
-		packet.setStartStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
-		auto error = ide::devices[0].atapiPacket(packet);
+		auto error =
+			ide::devices[0].startStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
 
 		if (error) {
 			_messageScreen.setMessage(
