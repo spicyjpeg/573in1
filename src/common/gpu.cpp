@@ -409,8 +409,6 @@ static void _loadQRCode(Image &output, int x, int y, const uint32_t *qrCode) {
 	output.texpage =
 		gp0_page(x / 64, y / 256, GP0_BLEND_SEMITRANS, GP0_COLOR_4BPP);
 	output.palette = gp0_clut(x / 16, y + size);
-
-	LOG("loaded at (%d,%d), size=%d", x, y, size);
 }
 
 bool generateQRCode(
@@ -422,10 +420,9 @@ bool generateQRCode(
 	auto segment = qrcodegen_makeAlphanumeric(
 		str, reinterpret_cast<uint8_t *>(tempBuffer)
 	);
-	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode)) {
-		LOG("QR encoding failed");
+
+	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode))
 		return false;
-	}
 
 	_loadQRCode(output, x, y, qrCode);
 	return true;
@@ -441,10 +438,9 @@ bool generateQRCode(
 	auto segment = qrcodegen_makeBytes(
 		data, length, reinterpret_cast<uint8_t *>(tempBuffer)
 	);
-	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode)) {
-		LOG("QR encoding failed");
+
+	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode))
 		return false;
-	}
 
 	_loadQRCode(output, x, y, qrCode);
 	return true;

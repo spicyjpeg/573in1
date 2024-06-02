@@ -228,14 +228,15 @@ uint32_t FlashRegion::getJEDECID(void) const {
 
 Driver *FlashRegion::newDriver(void) const {
 	if (!isPresent()) {
-		LOG("card not present");
+		LOG_ROM("card not present");
 		return new Driver(*this);
 	}
 
 	uint32_t id   = getJEDECID();
 	uint16_t low  = ((id >> 0) & 0xff) | ((id >>  8) & 0xff00);
 	uint16_t high = ((id >> 8) & 0xff) | ((id >> 16) & 0xff00);
-	LOG("low=0x%04x, high=0x%04x", low, high);
+
+	LOG_ROM("low=0x%04x, high=0x%04x", low, high);
 
 	if (low == high) {
 		// Two 8-bit chips for each bank

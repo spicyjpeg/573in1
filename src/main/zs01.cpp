@@ -108,7 +108,7 @@ bool Packet::validateCRC(void) const {
 	uint16_t value = util::zsCRC16(&command, sizeof(Packet) - sizeof(crc));
 
 	if (value != _crc) {
-		LOG("mismatch, exp=0x%04x, got=0x%04x", value, _crc);
+		LOG_CART_IO("mismatch, exp=0x%04x, got=0x%04x", value, _crc);
 		return false;
 	}
 
@@ -116,7 +116,7 @@ bool Packet::validateCRC(void) const {
 }
 
 void Packet::encodeReadRequest(void) {
-	LOG("addr=0x%02x, public", address);
+	LOG_CART_IO("addr=0x%02x, public", address);
 
 	command = REQ_READ;
 	_RESPONSE_KEY.packInto(data);
@@ -126,7 +126,7 @@ void Packet::encodeReadRequest(void) {
 }
 
 void Packet::encodeReadRequest(Key &dataKey, uint8_t state) {
-	LOG("addr=0x%02x, private", address);
+	LOG_CART_IO("addr=0x%02x, private", address);
 
 	command = REQ_READ | REQ_USE_DATA_KEY;
 	_RESPONSE_KEY.packInto(data);
@@ -137,7 +137,7 @@ void Packet::encodeReadRequest(Key &dataKey, uint8_t state) {
 }
 
 void Packet::encodeWriteRequest(Key &dataKey, uint8_t state) {
-	LOG("addr=0x%02x", address);
+	LOG_CART_IO("addr=0x%02x", address);
 
 	command = REQ_WRITE | REQ_USE_DATA_KEY;
 	updateCRC();

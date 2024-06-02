@@ -28,7 +28,7 @@ int main(int argc, const char **argv) {
 	// A pointer to the resource archive is always provided on the command line
 	// by the boot stub.
 	if (!args.resourcePtr || !args.resourceLength) {
-		LOG("required arguments missing");
+		LOG_APP("required arguments missing");
 		return 1;
 	}
 

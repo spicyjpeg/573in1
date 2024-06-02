@@ -117,7 +117,7 @@ bool App::_executableWorker(void) {
 	auto executableEnd = header.textOffset + header.textLength;
 	auto stackTop      = uintptr_t(header.getStackPtr());
 
-	LOG("load=0x%08x, length=0x%x", header.textOffset, header.textLength);
+	LOG_APP("load=0x%08x, length=0x%x", header.textOffset, header.textLength);
 
 	// Find a launcher that does not overlap the new executable and can thus be
 	// used to load it. Note that this implicitly assumes that none of the

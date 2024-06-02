@@ -412,15 +412,64 @@ size_t encodeBase41(char *output, const uint8_t *input, size_t length);
 
 }
 
-#ifdef ENABLE_LOGGING
-#define LOG(fmt, ...) \
-	util::logger.log("%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
-#else
-#define LOG(fmt, ...)
-#endif
-
 static constexpr inline util::Hash operator""_h(
 	const char *const literal, size_t length
 ) {
 	return util::hash(literal, length);
 }
+
+/* Logging macros */
+
+#ifdef ENABLE_APP_LOGGING
+#define LOG_APP(fmt, ...) \
+	util::logger.log( \
+		"app,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+	)
+#else
+#define LOG_APP(fmt, ...)
+#endif
+
+#ifdef ENABLE_CART_IO_LOGGING
+#define LOG_CART_IO(fmt, ...) \
+	util::logger.log( \
+		"cart,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+	)
+#else
+#define LOG_CART_IO(fmt, ...)
+#endif
+
+#ifdef ENABLE_CART_DATA_LOGGING
+#define LOG_CART_DATA(fmt, ...) \
+	util::logger.log( \
+		"data,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+	)
+#else
+#define LOG_CART_DATA(fmt, ...)
+#endif
+
+#ifdef ENABLE_ROM_LOGGING
+#define LOG_ROM(fmt, ...) \
+	util::logger.log( \
+		"rom,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+	)
+#else
+#define LOG_ROM(fmt, ...)
+#endif
+
+#ifdef ENABLE_IDE_LOGGING
+#define LOG_IDE(fmt, ...) \
+	util::logger.log( \
+		"ide,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+	)
+#else
+#define LOG_IDE(fmt, ...)
+#endif
+
+#ifdef ENABLE_FS_LOGGING
+#define LOG_FS(fmt, ...) \
+	util::logger.log( \
+		"fs,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+	)
+#else
+#define LOG_FS(fmt, ...)
+#endif

@@ -259,7 +259,7 @@ bool ISO9660Provider::_getRecord(
 	}
 
 	records.destroy();
-	LOG("not found: %s", path);
+	LOG_FS("not found: %s", path);
 	return false;
 }
 
@@ -275,7 +275,7 @@ bool ISO9660Provider::init(int drive) {
 		if (_device->readData(&pvd, lba, 1))
 			return false;
 		if (!pvd.validateMagic()) {
-			LOG("invalid ISO descriptor, lba=0x%x", lba);
+			LOG_FS("invalid ISO descriptor, lba=0x%x", lba);
 			return false;
 		}
 
@@ -285,11 +285,11 @@ bool ISO9660Provider::init(int drive) {
 			continue;
 
 		if (pvd.isoVersion != 1) {
-			LOG("unsupported ISO version 0x%02x", pvd.isoVersion);
+			LOG_FS("unsupported ISO version 0x%02x", pvd.isoVersion);
 			return false;
 		}
 		if (pvd.sectorLength.le != ide::ATAPI_SECTOR_SIZE) {
-			LOG("unsupported ISO sector size %d", pvd.sectorLength.le);
+			LOG_FS("unsupported ISO sector size %d", pvd.sectorLength.le);
 			return false;
 		}
 
@@ -299,11 +299,11 @@ bool ISO9660Provider::init(int drive) {
 		type     = ISO9660;
 		capacity = uint64_t(pvd.volumeLength.le) * ide::ATAPI_SECTOR_SIZE;
 
-		LOG("mounted ISO: %d", drive);
+		LOG_FS("mounted ISO: %d", drive);
 		return true;
 	}
 
-	LOG("no ISO PVD found");
+	LOG_FS("no ISO PVD found");
 	return false;
 }
 
@@ -355,7 +355,7 @@ Directory *ISO9660Provider::openDirectory(const char *path) {
 		(record.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
 
 	if (!_readData(dir->_records, record.lba.le, dirLength)) {
-		LOG("read failed: %s", path);
+		LOG_FS("read failed: %s", path);
 		delete dir;
 		return nullptr;
 	}

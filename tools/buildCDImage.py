@@ -231,7 +231,7 @@ def main():
 					length   = int(entry.get("size", 0)),
 					iso_path = name
 				)
-				iso.set_hidden(iso_path = name)
+				#iso.set_hidden(iso_path = name)
 				isoEntries.append(iso.inodes[-1])
 
 			case "file":

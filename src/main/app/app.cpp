@@ -278,7 +278,7 @@ bool App::_takeScreenshot(void) {
 	if (!_fileIO.vfs.saveVRAMBMP(clip, path))
 		return false;
 
-	LOG("%s saved", path);
+	LOG_APP("%s saved", path);
 	return true;
 }
 
@@ -330,8 +330,8 @@ void App::_interruptHandler(void) {
 	util::logger.setLogBuffer(&_logBuffer);
 #endif
 
-	LOG("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
-	LOG("(C) 2022-2024 spicyjpeg");
+	LOG_APP("build " VERSION_STRING " (" __DATE__ " " __TIME__ ")");
+	LOG_APP("(C) 2022-2024 spicyjpeg");
 
 	_ctx.screenData        = this;
 	_fileIO.resourcePtr    = resourcePtr;

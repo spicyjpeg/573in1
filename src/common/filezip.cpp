@@ -116,14 +116,14 @@ bool ZIPProvider::init(File *file) {
 	if (!mz_zip_reader_init(&_zip, file->size, _ZIP_FLAGS)) {
 		auto error = mz_zip_get_last_error(&_zip);
 
-		LOG("%s", _MINIZ_ZIP_ERROR_NAMES[error]);
+		LOG_FS("%s", _MINIZ_ZIP_ERROR_NAMES[error]);
 		return false;
 	}
 
 	type     = ZIP_FILE;
 	capacity = _zip.m_archive_size;
 
-	LOG("mounted ZIP file");
+	LOG_FS("mounted ZIP file");
 	return true;
 }
 
@@ -134,14 +134,14 @@ bool ZIPProvider::init(const void *zipData, size_t length) {
 	if (!mz_zip_reader_init_mem(&_zip, zipData, length, _ZIP_FLAGS)) {
 		auto error = mz_zip_get_last_error(&_zip);
 
-		LOG("%s: 0x%08x", _MINIZ_ZIP_ERROR_NAMES[error], zipData);
+		LOG_FS("%s: 0x%08x", _MINIZ_ZIP_ERROR_NAMES[error], zipData);
 		return false;
 	}
 
 	type     = ZIP_MEMORY;
 	capacity = _zip.m_archive_size;
 
-	LOG("mounted ZIP: 0x%08x", zipData);
+	LOG_FS("mounted ZIP: 0x%08x", zipData);
 	return true;
 }
 
@@ -200,7 +200,7 @@ size_t ZIPProvider::loadData(util::Data &output, const char *path) {
 	if (!output.ptr) {
 		auto error = mz_zip_get_last_error(&_zip);
 
-		LOG("%s: %s", _MINIZ_ZIP_ERROR_NAMES[error], path);
+		LOG_FS("%s: %s", _MINIZ_ZIP_ERROR_NAMES[error], path);
 		return 0;
 	}
 
@@ -214,7 +214,7 @@ size_t ZIPProvider::loadData(void *output, size_t length, const char *path) {
 	if (!mz_zip_reader_extract_file_to_mem(&_zip, path, output, length, 0)) {
 		auto error = mz_zip_get_last_error(&_zip);
 
-		LOG("%s: %s", _MINIZ_ZIP_ERROR_NAMES[error], path);
+		LOG_FS("%s: %s", _MINIZ_ZIP_ERROR_NAMES[error], path);
 		return 0;
 	}
 

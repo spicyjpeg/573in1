@@ -30,7 +30,7 @@ bool App::_cartDetectWorker(void) {
 		_fileIO.resource.loadStruct(cart::dummyDriverDump, "data/test.573");
 
 	if (cart::dummyDriverDump.chipType) {
-		LOG("using dummy cart driver");
+		LOG_APP("using dummy cart driver");
 		_cartDriver = new cart::DummyDriver(_cartDump);
 		_cartDriver->readSystemID();
 	} else {
@@ -41,29 +41,25 @@ bool App::_cartDetectWorker(void) {
 #endif
 
 	if (_cartDump.chipType) {
-		LOG("cart dump @ 0x%08x", &_cartDump);
-		LOG("cart driver @ 0x%08x", _cartDriver);
-
 		auto error = _cartDriver->readCartID();
 
 		if (error)
-			LOG("SID error [%s]", cart::getErrorString(error));
+			LOG_APP("SID error [%s]", cart::getErrorString(error));
 
 		error = _cartDriver->readPublicData();
 
 		if (error)
-			LOG("read error [%s]", cart::getErrorString(error));
+			LOG_APP("read error [%s]", cart::getErrorString(error));
 		else if (!_cartDump.isReadableDataEmpty())
 			_cartParser = cart::newCartParser(_cartDump);
 
-		LOG("cart parser @ 0x%08x", _cartParser);
 		_workerStatus.update(1, 3, WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!_cartDB.ptr) {
 			if (!_fileIO.resource.loadData(
 				_cartDB, _CARTDB_PATHS[_cartDump.chipType])
 			) {
-				LOG("%s not found", _CARTDB_PATHS[_cartDump.chipType]);
+				LOG_APP("%s not found", _CARTDB_PATHS[_cartDump.chipType]);
 				goto _cartInitDone;
 			}
 		}
@@ -83,8 +79,6 @@ bool App::_cartDetectWorker(void) {
 		_cartParser = cart::newCartParser(
 			_cartDump, _identified->formatType, _identified->flags
 		);
-
-		LOG("new cart parser @ 0x%08x", _cartParser);
 	}
 
 _cartInitDone:
@@ -100,7 +94,7 @@ _cartInitDone:
 		bool       ready;
 
 		if (!_fileIO.resource.loadData(bitstream, "data/fpga.bit")) {
-			LOG("bitstream unavailable");
+			LOG_APP("no bitstream found");
 			return true;
 		}
 
@@ -108,7 +102,7 @@ _cartInitDone:
 		bitstream.destroy();
 
 		if (!ready) {
-			LOG("bitstream upload failed");
+			LOG_APP("bitstream upload failed");
 			return true;
 		}
 
@@ -118,7 +112,7 @@ _cartInitDone:
 		auto error = _cartDriver->readSystemID();
 
 		if (error)
-			LOG("XID error [%s]", cart::getErrorString(error));
+			LOG_APP("XID error [%s]", cart::getErrorString(error));
 	}
 
 	return true;
@@ -156,7 +150,6 @@ bool App::_cartUnlockWorker(void) {
 	if (!_cartParser)
 		return true;
 
-	LOG("cart parser @ 0x%08x", _cartParser);
 	_workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identifyGame"));
 
 	char code[8], region[8];
@@ -168,7 +161,7 @@ bool App::_cartUnlockWorker(void) {
 	// use the game whose unlocking key was selected as a hint.
 	if (!_identified) {
 		if (_selectedEntry) {
-			LOG("identify failed, using key as hint");
+			LOG_APP("identify failed, using key as hint");
 			_identified = _selectedEntry;
 		} else {
 			return true;
@@ -179,8 +172,6 @@ bool App::_cartUnlockWorker(void) {
 	_cartParser = cart::newCartParser(
 		_cartDump, _identified->formatType, _identified->flags
 	);
-
-	LOG("new cart parser @ 0x%08x", _cartParser);
 	return true;
 }
 
@@ -219,7 +210,7 @@ bool App::_cartDumpWorker(void) {
 			goto _error;
 	}
 
-	LOG("saving %s, length=%d", path, length);
+	LOG_APP("saving %s, length=%d", path, length);
 
 	if (_fileIO.vfs.saveData(&_cartDump, length, path) != length)
 		goto _error;
@@ -298,7 +289,7 @@ bool App::_cartRestoreWorker(void) {
 	error = _cartDriver->setDataKey(newDump.dataKey);
 
 	if (error) {
-		LOG("key error [%s]", cart::getErrorString(error));
+		LOG_APP("key error [%s]", cart::getErrorString(error));
 	} else {
 		if (newDump.flags & (
 			cart::DUMP_PUBLIC_DATA_OK | cart::DUMP_PRIVATE_DATA_OK
@@ -398,7 +389,7 @@ bool App::_cartReflashWorker(void) {
 	auto error = _cartDriver->setDataKey(_selectedEntry->dataKey);
 
 	if (error) {
-		LOG("key error [%s]", cart::getErrorString(error));
+		LOG_APP("key error [%s]", cart::getErrorString(error));
 	} else {
 		_workerStatus.update(2, 3, WSTR("App.cartReflashWorker.write"));
 		error = _cartDriver->writeData();

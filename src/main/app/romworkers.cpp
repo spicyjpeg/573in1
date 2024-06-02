@@ -111,7 +111,7 @@ bool App::_romDumpWorker(void) {
 	if (!_fileIO.vfs.createDirectory(dirPath))
 		goto _initError;
 
-	LOG("saving dumps to %s", dirPath);
+	LOG_APP("saving dumps to %s", dirPath);
 
 	for (auto &entry : _REGION_INFO) {
 		if (!entry.region.isPresent())
@@ -154,7 +154,7 @@ bool App::_romDumpWorker(void) {
 		_file->close();
 		delete _file;
 
-		LOG("%s saved", filePath);
+		LOG_APP("%s saved", filePath);
 	}
 
 	_messageScreen.setMessage(
@@ -201,7 +201,7 @@ bool App::_romRestoreWorker(void) {
 	numChips       = (regionLength + chipLength - 1) / chipLength;
 	maxChunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH / numChips);
 
-	LOG("%d chips, buf=%d", numChips, maxChunkLength);
+	LOG_APP("%d chips, buf=%d", numChips, maxChunkLength);
 
 	rom::DriverError error;
 

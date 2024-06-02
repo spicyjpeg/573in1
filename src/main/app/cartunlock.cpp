@@ -196,7 +196,7 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 _done:
 	//*(--ptr) = 0;
-	LOG("remaining=%d", end - ptr);
+	LOG_APP("remaining=%d", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }

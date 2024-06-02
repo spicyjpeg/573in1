@@ -70,7 +70,9 @@ DriverError RTCDriver::flushWrite(uint32_t offset, uint16_t value) {
 	uint16_t actualValue = (ptr[0] & 0xff) | ((ptr[1] & 0xff) << 8);
 
 	if (value != actualValue) {
-		LOG("ptr=0x%06x, exp=0x%02x, got=0x%04x", offset, value, actualValue);
+		LOG_ROM(
+			"ptr=0x%06x, exp=0x%02x, got=0x%04x", offset, value, actualValue
+		);
 		return VERIFY_MISMATCH;
 	}
 
@@ -117,10 +119,10 @@ DriverError AM29F016Driver::_flush(
 	*ptr = JEDEC_RESET;
 
 	if (status & JEDEC_STATUS_ERROR) {
-		LOG("JEDEC error, ptr=0x%06x, st=0x%02x", offset, status);
+		LOG_ROM("JEDEC error, ptr=0x%06x, st=0x%02x", offset, status);
 		return CHIP_ERROR;
 	} else {
-		LOG("JEDEC timeout, ptr=0x%06x, st=0x%02x", offset, status);
+		LOG_ROM("JEDEC timeout, ptr=0x%06x, st=0x%02x", offset, status);
 		return CHIP_TIMEOUT;
 	}
 }
@@ -252,13 +254,13 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 		if (status & (INTEL_STATUS_DPS | INTEL_STATUS_VPPS)) {
 			*ptr = INTEL_CLEAR_STATUS;
 
-			LOG("Intel WP, ptr=0x%06x, st=0x%02x", offset, status);
+			LOG_ROM("Intel WP, ptr=0x%06x, st=0x%02x", offset, status);
 			return WRITE_PROTECTED;
 		}
 		if (status & (INTEL_STATUS_BWSLBS | INTEL_STATUS_ECLBS)) {
 			*ptr = INTEL_CLEAR_STATUS;
 
-			LOG("Intel error, ptr=0x%06x, st=0x%02x", offset, status);
+			LOG_ROM("Intel error, ptr=0x%06x, st=0x%02x", offset, status);
 			return CHIP_ERROR;
 		}
 
@@ -267,7 +269,7 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 
 	*ptr = INTEL_RESET;
 
-	LOG("Intel timeout, ptr=0x%06x, st=0x%02x", offset, status);
+	LOG_ROM("Intel timeout, ptr=0x%06x, st=0x%02x", offset, status);
 	return CHIP_TIMEOUT;
 }
 

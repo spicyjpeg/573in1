@@ -106,7 +106,7 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 	*(--ptr) = 0;
-	LOG("remaining=%d", end - ptr);
+	LOG_APP("remaining=%d", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }
@@ -407,7 +407,7 @@ void ChecksumScreen::show(ui::Context &ctx, bool goBack) {
 	_PRINT(STR("ChecksumScreen.description"));
 
 	//*(--ptr) = 0;
-	LOG("remaining=%d", end - ptr);
+	LOG_APP("remaining=%d", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }

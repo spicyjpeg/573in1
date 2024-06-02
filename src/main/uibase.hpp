@@ -54,6 +54,8 @@ enum AnimationSpeed {
 
 static constexpr int SCREEN_MARGIN_X          = 16;
 static constexpr int SCREEN_MARGIN_Y          = 20;
+static constexpr int SCREEN_MIN_MARGIN_X      = 8;
+static constexpr int SCREEN_MIN_MARGIN_Y      = 10;
 static constexpr int SCREEN_BLOCK_MARGIN      = 6;
 static constexpr int SCREEN_PROMPT_HEIGHT     = 30;
 static constexpr int SCREEN_PROMPT_HEIGHT_MIN = 10;

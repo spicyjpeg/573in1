@@ -278,15 +278,15 @@ void LogOverlay::draw(Context &ctx, bool active) const {
 	);
 	ctx.gpuCtx.drawBackdrop(ctx.colors[COLOR_BACKDROP], GP0_BLEND_SUBTRACT);
 
-	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
+	int screenHeight = ctx.gpuCtx.height - SCREEN_MIN_MARGIN_Y * 2;
 	int linesShown   = screenHeight / ctx.font.metrics.lineHeight;
 
 	gpu::Rect rect;
 
-	rect.x1 = SCREEN_MARGIN_X;
-	rect.y1 = SCREEN_MARGIN_Y;
-	rect.x2 = ctx.gpuCtx.width  - SCREEN_MARGIN_X;
-	rect.y2 = SCREEN_MARGIN_Y + ctx.font.metrics.lineHeight;
+	rect.x1 = SCREEN_MIN_MARGIN_X;
+	rect.y1 = SCREEN_MIN_MARGIN_Y;
+	rect.x2 = ctx.gpuCtx.width  - SCREEN_MIN_MARGIN_X;
+	rect.y2 = SCREEN_MIN_MARGIN_Y + ctx.font.metrics.lineHeight;
 
 	for (int i = linesShown - 1; i >= 0; i--) {
 		ctx.font.draw(

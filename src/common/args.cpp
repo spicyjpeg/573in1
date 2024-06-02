@@ -15,11 +15,11 @@ bool CommonArgs::parseArgument(const char *arg) {
 	switch (util::hash(arg, VALUE_SEPARATOR)) {
 #if 0
 		case "boot.rom"_h:
-			LOG("boot.rom=%s", &arg[9]);
+			LOG_APP("boot.rom=%s", &arg[9]);
 			return true;
 
 		case "boot.from"_h:
-			LOG("boot.from=%s", &arg[10]);
+			LOG_APP("boot.from=%s", &arg[10]);
 			return true;
 #endif
 

@@ -91,12 +91,12 @@ static DeviceError _senseDataToError(const SenseData &data) {
 	auto asc = data.getPackedASC();
 	auto lba = data.getErrorLBA();
 
-	LOG("%s", _SENSE_KEY_NAMES[key]);
-	LOG("err=0x%02x, key=0x%02x", data.errorCode, data.senseKey);
-	LOG("asc=0x%02x, ascq=0x%02x", data.asc, data.ascQualifier);
+	LOG_IDE("%s", _SENSE_KEY_NAMES[key]);
+	LOG_IDE("err=0x%02x, key=0x%02x", data.errorCode, data.senseKey);
+	LOG_IDE("asc=0x%02x, ascq=0x%02x", data.asc, data.ascQualifier);
 
 	if (lba) {
-		LOG("lba=0x%08x", lba);
+		LOG_IDE("lba=0x%08x", lba);
 	}
 
 	switch (key) {
@@ -140,7 +140,7 @@ bool IdentifyBlock::validateChecksum(void) const {
 	))) & 0xff;
 
 	if (value != (checksum >> 8)) {
-		LOG("mismatch, exp=0x%02x, got=0x%02x", value, checksum >> 8);
+		LOG_IDE("mismatch, exp=0x%02x, got=0x%02x", value, checksum >> 8);
 		return false;
 	}
 
@@ -261,7 +261,7 @@ DeviceError Device::_waitForIdle(bool drdy, int timeout, bool ignoreError) {
 #endif
 	}
 
-	LOG("timeout, ignore=%d", ignoreError);
+	LOG_IDE("timeout, ignore=%d", ignoreError);
 	_handleTimeout();
 	return STATUS_TIMEOUT;
 }
@@ -291,7 +291,7 @@ DeviceError Device::_waitForDRQ(int timeout, bool ignoreError) {
 #endif
 	}
 
-	LOG("timeout, ignore=%d", ignoreError);
+	LOG_IDE("timeout, ignore=%d", ignoreError);
 	_handleTimeout();
 	return STATUS_TIMEOUT;
 }
@@ -300,7 +300,7 @@ void Device::_handleError(void) {
 	lastStatusReg = _read(CS0_STATUS);
 	lastErrorReg  = _read(CS0_ERROR);
 
-	LOG(
+	LOG_IDE(
 		"drive=%d, st=0x%02x, err=0x%02x", (flags / DEVICE_SECONDARY) & 1,
 		lastStatusReg, lastErrorReg
 	);
@@ -315,7 +315,7 @@ void Device::_handleTimeout(void) {
 	lastStatusReg = _read(CS0_STATUS);
 	lastErrorReg  = _read(CS0_ERROR);
 
-	LOG(
+	LOG_IDE(
 		"drive=%d, st=0x%02x, err=0x%02x", (flags / DEVICE_SECONDARY) & 1,
 		lastStatusReg, lastErrorReg
 	);
@@ -333,7 +333,7 @@ DeviceError Device::_resetDrive(void) {
 	_select(0);
 
 	if (_waitForIdle(false, _DETECT_TIMEOUT, true)) {
-		LOG("drive %d select timeout", (flags / DEVICE_SECONDARY) & 1);
+		LOG_IDE("drive %d select timeout", (flags / DEVICE_SECONDARY) & 1);
 		return NO_DRIVE;
 	}
 
@@ -361,7 +361,7 @@ DeviceError Device::_resetDrive(void) {
 #endif
 	}
 
-	LOG("drive %d not responding", (flags / DEVICE_SECONDARY) & 1);
+	LOG_IDE("drive %d not responding", (flags / DEVICE_SECONDARY) & 1);
 	return NO_DRIVE;
 }
 
@@ -448,6 +448,7 @@ DeviceError Device::_ataTransfer(
 /* ATAPI-specific functions */
 
 static constexpr int _ATAPI_READY_TIMEOUT = 30000000;
+static constexpr int _ATAPI_POLL_DELAY    = 500000;
 static constexpr int _REQ_SENSE_TIMEOUT   = 500000;
 
 // ATAPI devices will set the CHK (ERR) status flag whenever new sense data is
@@ -472,16 +473,19 @@ DeviceError Device::_atapiRequestSense(void) {
 
 		error = _waitForDRQ(_REQ_SENSE_TIMEOUT, true);
 	}
+
+	util::clear(lastSenseData);
+
 	if (!error) {
-		_readPIO(&lastSenseData, sizeof(SenseData));
-		LOG("sense data ok");
+		size_t length = _getCylinder();
+
+		_readPIO(&lastSenseData, length);
+		LOG_IDE("data ok, length=0x%x", length);
 	} else {
 		// If the request sense command fails, fall back to reading the sense
 		// key from the error register.
-		util::clear(lastSenseData);
-
 		lastSenseData.senseKey = lastErrorReg >> 4;
-		LOG("%s", DEVICE_ERROR_NAMES[error]);
+		LOG_IDE("%s", DEVICE_ERROR_NAMES[error]);
 	}
 
 	return _senseDataToError(lastSenseData);
@@ -493,11 +497,14 @@ DeviceError Device::_atapiPacket(const Packet &packet, size_t dataLength) {
 	if (!(flags & DEVICE_ATAPI))
 		return UNSUPPORTED_OP;
 
-	LOG("cmd=0x%02x, length=0x%x", packet.command, dataLength);
+	LOG_IDE("cmd=0x%02x, length=0x%x", packet.command, dataLength);
 
 	// Keep resending the command as long as the drive reports it is in progress
 	// of becoming ready (i.e. spinning up).
-	for (int timeout = _ATAPI_READY_TIMEOUT; timeout > 0; timeout -= 10000) {
+	for (
+		int timeout = _ATAPI_READY_TIMEOUT; timeout > 0;
+		timeout -= _ATAPI_POLL_DELAY
+	) {
 		_select(0);
 
 		auto error = _waitForIdle();
@@ -520,22 +527,22 @@ DeviceError Device::_atapiPacket(const Packet &packet, size_t dataLength) {
 
 		// If an error occurred, fetch sense data to determine whether to resend
 		// the command.
-		LOG("%s, cmd=0x%02x", DEVICE_ERROR_NAMES[error], packet.command);
+		LOG_IDE("%s, cmd=0x%02x", DEVICE_ERROR_NAMES[error], packet.command);
 
 		error = _atapiRequestSense();
 
 		if (error && (error != NOT_YET_READY)) {
-			LOG("%s (from sense)", DEVICE_ERROR_NAMES[error]);
+			LOG_IDE("%s (from sense)", DEVICE_ERROR_NAMES[error]);
 			return error;
 		}
 
-		delayMicroseconds(10000);
+		delayMicroseconds(_ATAPI_POLL_DELAY);
 #ifndef ENABLE_FULL_IDE_DRIVER
 		io::clearWatchdog();
 #endif
 	}
 
-	LOG("retry timeout, cmd=0x%02x", packet.command);
+	LOG_IDE("retry timeout, cmd=0x%02x", packet.command);
 	return STATUS_TIMEOUT;
 }
 
@@ -604,7 +611,7 @@ DeviceError Device::enumerate(void) {
 
 	// Parse the identification block.
 	if (flags & DEVICE_ATAPI) {
-		LOG("ATAPI drive found");
+		LOG_IDE("ATAPI drive found");
 
 		if (
 			(block.deviceFlags & IDENTIFY_DEV_ATAPI_TYPE_BITMASK)
@@ -617,7 +624,7 @@ DeviceError Device::enumerate(void) {
 		)
 			flags |= DEVICE_HAS_PACKET16;
 	} else {
-		LOG("ATA drive found");
+		LOG_IDE("ATA drive found");
 
 		if (block.commandSetFlags[1] & (1 << 10)) {
 			flags   |= DEVICE_HAS_LBA48;
@@ -647,7 +654,7 @@ DeviceError Device::enumerate(void) {
 	if (error)
 		return error;
 
-	LOG("drive %d ready, mode=PIO%d", (flags / DEVICE_SECONDARY) & 1, mode);
+	LOG_IDE("drive %d ready, mode=PIO%d", (flags / DEVICE_SECONDARY) & 1, mode);
 	flags |= DEVICE_READY;
 
 	// Make sure any pending ATAPI sense data is cleared.

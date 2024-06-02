@@ -354,7 +354,7 @@ int FileBrowserScreen::loadDirectory(
 	if (!_isRoot)
 		_listLength++;
 
-	LOG("files=%d, dirs=%d", _numFiles, _numDirectories);
+	LOG_APP("files=%d, dirs=%d", _numFiles, _numDirectories);
 
 	file::FileInfo *files       = nullptr;
 	file::FileInfo *directories = nullptr;
