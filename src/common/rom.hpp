@@ -78,7 +78,7 @@ extern const FlashRegion flash, pcmcia[2];
 
 /* BIOS ROM headers */
 
-struct [[gnu::packed]] SonyKernelHeader {
+struct SonyKernelHeader {
 public:
 	uint8_t  day, month;
 	uint16_t year;
@@ -88,7 +88,7 @@ public:
 	bool validateMagic(void) const;
 };
 
-struct [[gnu::packed]] OpenBIOSHeader {
+struct OpenBIOSHeader {
 public:
 	uint8_t  magic[8];
 	uint32_t idNameLength, idDescLength, idType;

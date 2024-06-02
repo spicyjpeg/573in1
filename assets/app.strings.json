@@ -106,8 +106,8 @@
 		},
 		"atapiEjectWorker": {
 			"eject":      "Sending eject command...",
-			"noDrive":    "No ATAPI CD-ROM drive has been found on the IDE bus or could be successfully initialized. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
-			"ejectError": "Failed to open the drive's tray. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nError code: %s\nPress the Test button to view debug logs."
+			"noDrive":    "No ATAPI CD-ROM drive has been found on the IDE bus or could be successfully initialized. Your drive may be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
+			"ejectError": "Failed to open the drive's tray. Make sure the drive's front panel is not blocked off by the 573's case. Your drive may also be incompatible with the ATAPI driver used by this tool.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
@@ -308,9 +308,10 @@
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"host": "{HOST_ICON} Host filesystem (PCDRV)",
+		"noFS": "no disc or unsupported FS",
 
 		"noDeviceError": "No drives have been found and successfully initialized on the IDE bus. Make sure the drives are appropriately configured as primary or secondary and are receiving power.\n\nPress the Test button to view debug logs.",
-		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Your drive might be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
+		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Your drive may also be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
 		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem."
 	},

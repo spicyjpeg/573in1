@@ -40,7 +40,7 @@ size_t upload(uint32_t ramOffset, const void *data, size_t length, bool wait);
 
 /* Sound class */
 
-struct [[gnu::packed]] VAGHeader {
+struct VAGHeader {
 public:
 	uint32_t magic, version, interleave, length, sampleRate;
 	uint16_t _reserved[5], channels;

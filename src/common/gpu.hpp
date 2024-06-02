@@ -159,12 +159,12 @@ public:
 
 /* Image class */
 
-struct [[gnu::packed]] TIMHeader {
+struct TIMHeader {
 public:
 	uint32_t magic, flags;
 };
 
-struct [[gnu::packed]] TIMSectionHeader {
+struct TIMSectionHeader {
 public:
 	uint32_t length;
 	RectWH   vram;

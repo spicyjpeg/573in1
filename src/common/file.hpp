@@ -144,7 +144,7 @@ public:
 
 static constexpr int TABLE_BUCKET_COUNT = 256;
 
-struct [[gnu::packed]] StringTableEntry {
+struct StringTableEntry {
 public:
 	uint32_t hash;
 	uint16_t offset, chained;

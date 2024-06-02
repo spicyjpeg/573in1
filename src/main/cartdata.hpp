@@ -53,7 +53,7 @@ static constexpr size_t REGION_MAX_LENGTH  = 5;
 
 /* Common data structures */
 
-class [[gnu::packed]] IdentifierSet {
+class IdentifierSet {
 public:
 	Identifier traceID, cartID, installID, systemID; // aka TID, SID, MID, XID
 
@@ -64,7 +64,7 @@ public:
 	);
 };
 
-class [[gnu::packed]] PublicIdentifierSet {
+class PublicIdentifierSet {
 public:
 	Identifier installID, systemID; // aka MID, XID
 
@@ -72,12 +72,12 @@ public:
 	void setInstallID(uint8_t prefix);
 };
 
-class [[gnu::packed]] SimpleHeader {
+class SimpleHeader {
 public:
 	char region[4];
 };
 
-class [[gnu::packed]] BasicHeader {
+class BasicHeader {
 public:
 	char    region[2], codePrefix[2];
 	uint8_t checksum, _pad[3];
@@ -86,7 +86,7 @@ public:
 	bool validateChecksum(bool invert = false) const;
 };
 
-class [[gnu::packed]] ExtendedHeader {
+class ExtendedHeader {
 public:
 	char     code[8];
 	uint16_t year;      // BCD, can be little endian, big endian or zero
@@ -245,7 +245,7 @@ ROMHeaderParser *newROMHeaderParser(ROMHeaderDump &dump);
 
 /* Cartridge and flash header database */
 
-class [[gnu::packed]] CartDBEntry {
+class CartDBEntry {
 public:
 	ChipType    chipType;
 	FormatType  formatType;
@@ -287,7 +287,7 @@ public:
 	}
 };
 
-class [[gnu::packed]] ROMHeaderDBEntry {
+class ROMHeaderDBEntry {
 public:
 	FormatType formatType;
 	uint8_t    flags;

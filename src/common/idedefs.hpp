@@ -48,6 +48,17 @@ enum CS1DeviceControlFlag : uint8_t {
 	CS1_DEVICE_CTRL_HOB  = 1 << 7  // High-order bit (LBA48)
 };
 
+enum CS0FeaturesFlag : uint8_t {
+	CS0_FEATURES_DMA = 1 << 0, // Use DMA for data (ATAPI)
+	CS0_FEATURES_OVL = 1 << 1  // Overlap (ATAPI)
+};
+
+enum CS0CountFlag : uint8_t {
+	CS0_COUNT_CD  = 1 << 0, // Command or data (ATAPI)
+	CS0_COUNT_IO  = 1 << 1, // Input or output (ATAPI)
+	CS0_COUNT_REL = 1 << 2  // Bus release (ATAPI)
+};
+
 /* ATA command definitions */
 
 enum ATACommand : uint8_t {

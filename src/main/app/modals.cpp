@@ -135,20 +135,14 @@ const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
 	auto &dev  = ide::devices[drive];
 	auto fs    = APP->_fileIO.ide[drive];
 
-	if (dev.flags & ide::DEVICE_ATAPI)
-		name[0] = CH_CDROM_ICON;
-	else
-		name[0] = CH_HDD_ICON;
+	auto icon  = (dev.flags & ide::DEVICE_ATAPI)
+		? CH_CDROM_ICON
+		: CH_HDD_ICON;
+	auto label = fs
+		? fs->volumeLabel
+		: STR("FilePickerScreen.noFS");
 
-	name[1] = ' ';
-
-	if (fs)
-		snprintf(
-			&name[2], sizeof(name) - 2, "%s: %s", dev.model, fs->volumeLabel
-		);
-	else
-		__builtin_strncpy(&name[2], dev.model, sizeof(name) - 2);
-
+	snprintf(name, sizeof(name), "%c %s: %s", icon, dev.model, label);
 	return name;
 }
 

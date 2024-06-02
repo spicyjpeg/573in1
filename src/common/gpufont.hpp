@@ -10,7 +10,7 @@ namespace gpu {
 
 static constexpr char FONT_INVALID_CHAR = 0x7f;
 
-class [[gnu::packed]] FontMetrics {
+class FontMetrics {
 public:
 	uint8_t  spaceWidth, tabWidth, lineHeight, _reserved;
 	uint32_t characterSizes[256];

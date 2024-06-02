@@ -288,7 +288,7 @@ extern Logger logger;
 static constexpr size_t EXECUTABLE_BODY_OFFSET = 2048;
 static constexpr size_t MAX_EXECUTABLE_ARGS    = 32;
 
-class [[gnu::packed]] ExecutableHeader {
+class ExecutableHeader {
 public:
 	uint8_t magic[8], _pad[8];
 

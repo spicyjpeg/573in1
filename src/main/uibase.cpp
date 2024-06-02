@@ -13,40 +13,57 @@ namespace ui {
 /* Button state manager */
 
 static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
-	{ // MAP_JOYSTICK
-		io::JAMMA_P1_LEFT  | io::JAMMA_P1_UP | io::JAMMA_P2_LEFT  | io::JAMMA_P2_UP,
-		io::JAMMA_P1_RIGHT | io::JAMMA_P1_DOWN | io::JAMMA_P2_RIGHT | io::JAMMA_P2_DOWN,
-		io::JAMMA_P1_START | io::JAMMA_P1_BUTTON1 | io::JAMMA_P2_START | io::JAMMA_P2_BUTTON1,
+	{
+		// MAP_JOYSTICK
+		0
+			| io::JAMMA_P1_LEFT
+			| io::JAMMA_P2_LEFT
+			| io::JAMMA_P1_UP
+			| io::JAMMA_P2_UP,
+		0
+			| io::JAMMA_P1_RIGHT
+			| io::JAMMA_P2_RIGHT
+			| io::JAMMA_P1_DOWN
+			| io::JAMMA_P2_DOWN,
+		0
+			| io::JAMMA_P1_START
+			| io::JAMMA_P2_START
+			| io::JAMMA_P1_BUTTON1
+			| io::JAMMA_P2_BUTTON1,
 		io::JAMMA_TEST | io::JAMMA_SERVICE
-	},
-	{ // MAP_DDR_CAB
+	}, {
+		// MAP_DDR_CAB
 		io::JAMMA_P1_BUTTON2 | io::JAMMA_P2_BUTTON2,
 		io::JAMMA_P1_BUTTON3 | io::JAMMA_P2_BUTTON3,
-		io::JAMMA_P1_START | io::JAMMA_P2_START,
-		io::JAMMA_TEST | io::JAMMA_SERVICE
-	},
-	{ // MAP_DDR_SOLO_CAB
+		io::JAMMA_P1_START   | io::JAMMA_P2_START,
+		io::JAMMA_TEST       | io::JAMMA_SERVICE
+	}, {
+		// MAP_DDR_SOLO_CAB
 		io::JAMMA_P1_BUTTON5,
 		io::JAMMA_P2_BUTTON5,
 		io::JAMMA_P1_START,
 		io::JAMMA_TEST | io::JAMMA_SERVICE
-	},
-	{ // MAP_DM_CAB
+	}, {
+		// MAP_DM_CAB
 		io::JAMMA_P2_LEFT,
 		io::JAMMA_P2_RIGHT,
 		io::JAMMA_P1_START,
 		io::JAMMA_TEST | io::JAMMA_SERVICE
-	},
-	{ // MAP_DMX_CAB (more or less redundant with MAP_JOYSTICK)
-		io::JAMMA_P1_UP | io::JAMMA_P2_UP,
-		io::JAMMA_P1_DOWN | io::JAMMA_P2_DOWN,
+	}, {
+		// MAP_DMX_CAB (more or less redundant with MAP_JOYSTICK)
+		io::JAMMA_P1_UP    | io::JAMMA_P2_UP,
+		io::JAMMA_P1_DOWN  | io::JAMMA_P2_DOWN,
 		io::JAMMA_P1_START | io::JAMMA_P2_START,
-		io::JAMMA_TEST | io::JAMMA_SERVICE
-	},
-	{ // MAP_SINGLE_BUTTON
+		io::JAMMA_TEST     | io::JAMMA_SERVICE
+	}, {
+		// MAP_SINGLE_BUTTON
 		0,
 		0,
-		io::JAMMA_P1_START | io::JAMMA_P2_START | io::JAMMA_TEST | io::JAMMA_SERVICE,
+		0
+			| io::JAMMA_P1_START
+			| io::JAMMA_P2_START
+			| io::JAMMA_TEST
+			| io::JAMMA_SERVICE,
 		0
 	}
 };

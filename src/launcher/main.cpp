@@ -15,19 +15,28 @@ int main(int argc, const char **argv) {
 	for (; argc > 0; argc--)
 		args.parseArgument(*(argv++));
 
-#ifdef ENABLE_LOGGING
+#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_IDE_LOGGING)
 	util::logger.setupSyslog(args.baudRate);
 #endif
 
-	if (!args.entryPoint || !args.loadAddress || !args.numFragments)
+	if (!args.entryPoint || !args.loadAddress || !args.numFragments) {
+		LOG_APP("required arguments missing");
 		return 1;
+	}
+
 	if (!args.stackTop)
 		args.stackTop = _textStart - 16;
 
-	auto &dev = ide::devices[args.drive];
+	auto &dev  = ide::devices[args.drive];
+	auto error = dev.enumerate();
 
-	if (dev.enumerate())
+	while ((error == ide::NOT_YET_READY) || (error == ide::DISC_CHANGED))
+		error = dev.poll();
+
+	if (error) {
+		LOG_APP("drive %d initialization failed", args.drive);
 		return 2;
+	}
 
 	io::clearWatchdog();
 
@@ -52,8 +61,10 @@ int main(int argc, const char **argv) {
 			length -= skipSectors;
 		}
 
-		if (dev.readData(reinterpret_cast<void *>(ptr), lba, length))
+		if (dev.readData(reinterpret_cast<void *>(ptr), lba, length)) {
+			LOG_APP("read failed, lba=0x%08x", lba);
 			return 3;
+		}
 
 		io::clearWatchdog();
 		ptr += length * sectorSize;

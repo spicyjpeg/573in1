@@ -30,23 +30,16 @@ bool App::_ideInitWorker(void) {
 		_workerStatus.update(
 			i, util::countOf(ide::devices), WSTR("App.ideInitWorker.init")
 		);
-		dev.enumerate();
+
+		auto error = dev.enumerate();
+
+		while ((error == ide::NOT_YET_READY) || (error == ide::DISC_CHANGED))
+			error = dev.poll();
+
+		LOG_APP("drive %d: %s", i, ide::getErrorString(error));
 	}
 
-	return _fileInitWorker();
-}
-
-bool App::_fileInitWorker(void) {
-	_workerStatus.update(0, 4, WSTR("App.fileInitWorker.unmount"));
-	_fileIO.closeResourceFile();
-	_fileIO.close();
-
-	_workerStatus.update(1, 4, WSTR("App.fileInitWorker.mount"));
-	_fileIO.initIDE();
-
-	_workerStatus.update(2, 4, WSTR("App.fileInitWorker.loadResources"));
-	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
-		_loadResources();
+	_fileInitWorker();
 
 #ifdef ENABLE_AUTOBOOT
 	// Only try to autoboot if DIP switch 1 is on.
@@ -67,6 +60,21 @@ bool App::_fileInitWorker(void) {
 		}
 	}
 #endif
+
+	return true;
+}
+
+bool App::_fileInitWorker(void) {
+	_workerStatus.update(0, 4, WSTR("App.fileInitWorker.unmount"));
+	_fileIO.closeResourceFile();
+	_fileIO.close();
+
+	_workerStatus.update(1, 4, WSTR("App.fileInitWorker.mount"));
+	_fileIO.initIDE();
+
+	_workerStatus.update(2, 4, WSTR("App.fileInitWorker.loadResources"));
+	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
+		_loadResources();
 
 	return true;
 }

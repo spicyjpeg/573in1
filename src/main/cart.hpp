@@ -33,7 +33,7 @@ static constexpr size_t MAX_QR_STRING_LENGTH = 0x600;
 
 /* Identifier structure */
 
-class [[gnu::packed]] Identifier {
+class Identifier {
 public:
 	uint8_t data[8];
 
@@ -72,7 +72,7 @@ public:
 
 extern const ChipSize CHIP_SIZES[NUM_CHIP_TYPES];
 
-class [[gnu::packed]] CartDump {
+class CartDump {
 public:
 	uint16_t magic;
 	ChipType chipType;
@@ -131,7 +131,7 @@ public:
 
 /* Flash and RTC header dump structure */
 
-class [[gnu::packed]] ROMHeaderDump {
+class ROMHeaderDump {
 public:
 	uint16_t magic;
 	uint8_t  _reserved, flags;

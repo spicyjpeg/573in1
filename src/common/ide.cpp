@@ -165,7 +165,8 @@ static constexpr int _DMA_TIMEOUT = 10000;
 Device devices[2]{ (DEVICE_PRIMARY), (DEVICE_SECONDARY) };
 
 Device::Device(uint32_t flags)
-: flags(flags), capacity(0), lastStatusReg(0), lastErrorReg(0) {
+: flags(flags), capacity(0), lastStatusReg(0), lastErrorReg(0), lastCountReg(0)
+{
 	util::clear(lastSenseData);
 }
 
@@ -299,10 +300,11 @@ DeviceError Device::_waitForDRQ(int timeout, bool ignoreError) {
 void Device::_handleError(void) {
 	lastStatusReg = _read(CS0_STATUS);
 	lastErrorReg  = _read(CS0_ERROR);
+	lastCountReg  = _read(CS0_COUNT);
 
 	LOG_IDE(
-		"drive=%d, st=0x%02x, err=0x%02x", (flags / DEVICE_SECONDARY) & 1,
-		lastStatusReg, lastErrorReg
+		"%d, st=0x%02x, err=0x%02x, cnt=0x%02x", getDriveIndex(), lastStatusReg,
+		lastErrorReg, lastCountReg
 	);
 
 	// Issuing a device reset command to an ATAPI drive would result in the
@@ -314,10 +316,11 @@ void Device::_handleError(void) {
 void Device::_handleTimeout(void) {
 	lastStatusReg = _read(CS0_STATUS);
 	lastErrorReg  = _read(CS0_ERROR);
+	lastCountReg  = _read(CS0_COUNT);
 
 	LOG_IDE(
-		"drive=%d, st=0x%02x, err=0x%02x", (flags / DEVICE_SECONDARY) & 1,
-		lastStatusReg, lastErrorReg
+		"%d, st=0x%02x, err=0x%02x, cnt=0x%02x", getDriveIndex(), lastStatusReg,
+		lastErrorReg, lastCountReg
 	);
 
 	_write(CS0_COMMAND, ATA_DEVICE_RESET);
@@ -333,7 +336,7 @@ DeviceError Device::_resetDrive(void) {
 	_select(0);
 
 	if (_waitForIdle(false, _DETECT_TIMEOUT, true)) {
-		LOG_IDE("drive %d select timeout", (flags / DEVICE_SECONDARY) & 1);
+		LOG_IDE("drive %d select timeout", getDriveIndex());
 		return NO_DRIVE;
 	}
 
@@ -361,7 +364,7 @@ DeviceError Device::_resetDrive(void) {
 #endif
 	}
 
-	LOG_IDE("drive %d not responding", (flags / DEVICE_SECONDARY) & 1);
+	LOG_IDE("drive %d not responding", getDriveIndex());
 	return NO_DRIVE;
 }
 
@@ -463,7 +466,12 @@ DeviceError Device::_atapiRequestSense(void) {
 	auto error = _waitForIdle(false, _REQ_SENSE_TIMEOUT, true);
 
 	if (!error) {
+		_write(CS0_FEATURES, 0);
+#if 0
 		_setCylinder(sizeof(SenseData));
+#else
+		_setCylinder(ATAPI_SECTOR_SIZE);
+#endif
 		_write(CS0_COMMAND, ATA_PACKET);
 
 		error = _waitForDRQ(_REQ_SENSE_TIMEOUT, true);
@@ -485,7 +493,9 @@ DeviceError Device::_atapiRequestSense(void) {
 		// If the request sense command fails, fall back to reading the sense
 		// key from the error register.
 		lastSenseData.senseKey = lastErrorReg >> 4;
-		LOG_IDE("%s", DEVICE_ERROR_NAMES[error]);
+
+		LOG_IDE("%s", getErrorString(error));
+		_write(CS0_COMMAND, ATA_DEVICE_RESET);
 	}
 
 	return _senseDataToError(lastSenseData);
@@ -510,7 +520,12 @@ DeviceError Device::_atapiPacket(const Packet &packet, size_t dataLength) {
 		auto error = _waitForIdle();
 
 		if (!error) {
+			_write(CS0_FEATURES, 0);
+#if 0
 			_setCylinder(dataLength);
+#else
+			_setCylinder(ATAPI_SECTOR_SIZE);
+#endif
 			_write(CS0_COMMAND, ATA_PACKET);
 
 			error = _waitForDRQ();
@@ -527,12 +542,12 @@ DeviceError Device::_atapiPacket(const Packet &packet, size_t dataLength) {
 
 		// If an error occurred, fetch sense data to determine whether to resend
 		// the command.
-		LOG_IDE("%s, cmd=0x%02x", DEVICE_ERROR_NAMES[error], packet.command);
+		LOG_IDE("%s, cmd=0x%02x", getErrorString(error), packet.command);
 
 		error = _atapiRequestSense();
 
 		if (error && (error != NOT_YET_READY)) {
-			LOG_IDE("%s (from sense)", DEVICE_ERROR_NAMES[error]);
+			LOG_IDE("%s (from sense)", getErrorString(error));
 			return error;
 		}
 
@@ -654,7 +669,7 @@ DeviceError Device::enumerate(void) {
 	if (error)
 		return error;
 
-	LOG_IDE("drive %d ready, mode=PIO%d", (flags / DEVICE_SECONDARY) & 1, mode);
+	LOG_IDE("drive %d ready, mode=PIO%d", getDriveIndex(), mode);
 	flags |= DEVICE_READY;
 
 	// Make sure any pending ATAPI sense data is cleared.

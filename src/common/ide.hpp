@@ -38,7 +38,7 @@ enum IdentifyCapabilitiesFlag : uint16_t {
 	IDENTIFY_CAP_FLAG_DMA_INTERLEAVE = 1 << 15
 };
 
-class IdentifyBlock {
+class alignas(uint32_t) IdentifyBlock {
 public:
 	uint16_t deviceFlags;           // 0
 	uint16_t _reserved[9];
@@ -100,7 +100,7 @@ public:
 
 /* ATAPI data structures */
 
-class SenseData {
+class alignas(uint32_t) SenseData {
 public:
 	uint8_t errorCode;              // 0
 	uint8_t _reserved;              // 1
@@ -126,7 +126,7 @@ public:
 	}
 };
 
-class Packet {
+class alignas(uint32_t) Packet {
 public:
 	uint8_t command;
 	uint8_t param[11];
@@ -268,9 +268,12 @@ public:
 #endif
 	uint64_t capacity;
 
-	uint8_t   lastStatusReg, lastErrorReg;
+	uint8_t   lastStatusReg, lastErrorReg, lastCountReg;
 	SenseData lastSenseData;
 
+	inline int getDriveIndex(void) const {
+		return (flags / DEVICE_SECONDARY) & 1;
+	}
 	inline size_t getSectorSize(void) const {
 		return (flags & DEVICE_ATAPI) ? ATAPI_SECTOR_SIZE : ATA_SECTOR_SIZE;
 	}

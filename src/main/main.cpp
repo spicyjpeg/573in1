@@ -21,9 +21,7 @@ int main(int argc, const char **argv) {
 	for (; argc > 0; argc--)
 		args.parseArgument(*(argv++));
 
-#ifdef ENABLE_LOGGING
 	util::logger.setupSyslog(args.baudRate);
-#endif
 
 	// A pointer to the resource archive is always provided on the command line
 	// by the boot stub.
@@ -42,7 +40,7 @@ int main(int argc, const char **argv) {
 	io::resetIDEDevices();
 
 	gpu::enableDisplay(true);
-	spu::setMasterVolume(spu::MAX_VOLUME);
+	spu::setMasterVolume(spu::MAX_VOLUME / 2);
 	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
 
 	app->run(args.resourcePtr, args.resourceLength);

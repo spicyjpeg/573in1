@@ -141,6 +141,10 @@ bool FileIOManager::loadResourceFile(const char *path) {
 	if (_resourceFile) {
 		if (resource.init(_resourceFile))
 			return true;
+
+		_resourceFile->close();
+		delete _resourceFile;
+		_resourceFile = nullptr;
 	}
 
 	resource.init(resourcePtr, resourceLength);
