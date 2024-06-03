@@ -1,0 +1,150 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/cdrom.json",
+
+	"title": "Root",
+	"type":  "object",
+
+	"required": [ "entries" ],
+
+	"properties": {
+		"identifiers": {
+			"title": "ISO9660 identifier strings",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"system": {
+					"title": "System identifier",
+					"type":  "string"
+				},
+				"volume": {
+					"title": "Volume identifier",
+					"type":  "string"
+				},
+				"volumeSet": {
+					"title": "Volume set identifier",
+					"type":  "string"
+				},
+				"publisher": {
+					"title": "Publisher identifier",
+					"type":  "string"
+				},
+				"dataPreparer": {
+					"title": "Data preparer identifier",
+					"type":  "string"
+				},
+				"application": {
+					"title": "Application identifier",
+					"type":  "string"
+				},
+				"copyright": {
+					"title": "Copyright file identifier",
+					"type":  "string"
+				},
+				"abstract": {
+					"title": "Abstract file identifier",
+					"type":  "string"
+				},
+				"bibliographic": {
+					"title": "Bibliographic file identifier",
+					"type":  "string"
+				}
+			}
+		},
+
+		"entries": {
+			"title": "File and directory entries",
+			"type":  "array",
+
+			"uniqueItems": true,
+			"items": {
+				"title": "Entry object",
+				"type":  "object",
+
+				"required": [ "type", "name" ],
+
+				"properties": {
+					"type": {
+						"title":       "Entry type",
+						"description": "Must be 'empty' (empty or zerofilled file), 'file', 'directory', 'fileAlias' or 'directoryAlias' (hard link to another entry).",
+						"type":        "string",
+
+						"enum": [
+							"empty",
+							"file",
+							"directory",
+							"fileAlias",
+							"directoryAlias"
+						]
+					},
+					"name": {
+						"title":       "Entry path",
+						"description": "Full path of the entry within the CD-ROM image. Should follow ISO9660 file name restrictions (upper case alphanumeric characters and underscores only, with an optional period-separated extension for files).",
+						"type":        "string"
+					}
+				},
+
+				"oneOf": [
+					{
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "empty" },
+							"name": { "type":  "string" },
+
+							"size": {
+								"title":       "File size",
+								"description": "Number of dummy null bytes to fill the file with. If zero or omitted, the file will be empty.",
+								"type":        "integer",
+
+								"minimum": 0
+							}
+						}
+					},
+					{
+						"required":             [ "source" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "file" },
+							"name": { "type":  "string" },
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the source file to add to the image, relative to the configuration file's directory by default.",
+								"type":        "string",
+
+								"format": "uri-reference"
+							}
+						}
+					},
+					{
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "directory" },
+							"name": { "type":  "string" }
+						}
+					},
+					{
+						"required":             [ "source" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "pattern": "^fileAlias|directoryAlias$" },
+							"name": { "type":    "string" },
+
+							"source": {
+								"title":       "Path to linked entry",
+								"description": "Full path to the entry in the CD-ROM image this entry shall be a hard link to.",
+								"type":        "string"
+							}
+						}
+					}
+				]
+			}
+		}
+	}
+}

@@ -1,4 +1,6 @@
 {
+	"$schema": "../../schema/metrics.json",
+
 	"spaceWidth":  4,
 	"tabWidth":   32,
 	"lineHeight": 10,

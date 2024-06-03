@@ -1,4 +1,6 @@
 {
+	"$schema": "schema/cdrom.json",
+
 	"identifiers": {
 		"system":       "PLAYSTATION",
 		"volume":       "${CD_VOLUME_NAME}",

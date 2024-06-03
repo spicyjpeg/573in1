@@ -1,0 +1,85 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/metrics.json",
+
+	"title": "Root",
+	"type":  "object",
+
+	"required": [ "spaceWidth", "tabWidth", "lineHeight", "characterSizes" ],
+
+	"properties":  {
+		"spaceWidth": {
+			"title":       "Space width",
+			"description": "Width of the space character in pixels.",
+			"type":        "integer"
+		},
+		"tabWidth": {
+			"title":       "Tab width",
+			"description": "Width of the tab character in pixels.",
+			"type":        "integer"
+		},
+		"lineHeight": {
+			"title":       "Line height",
+			"description": "Height of each line in pixels, including any padding. Note that characters whose height is lower than this value will be aligned to the top of the line, rather than the bottom.",
+			"type":        "integer"
+		},
+
+		"characterSizes": {
+			"title":       "Character list",
+			"description": "List of all glyphs in the texture. Each entry's key must be a single-character string containing a printable ASCII or extended (\\u0080-\\u00ff) character.",
+			"type":        "object",
+
+			"additionalProperties": false,
+
+			"patternProperties": {
+				"^[ -\\u00ff]$": {
+					"title": "Character metrics",
+					"type":  "object",
+
+					"required":             [ "x", "y", "width", "height" ],
+					"additionalProperties": false,
+
+					"properties": {
+						"x": {
+							"title":       "X offset",
+							"description": "X coordinate of the glyph's top left corner within the texture.",
+							"type":        "integer",
+
+							"minimum":   0,
+							"maximum": 255
+						},
+						"y": {
+							"title":       "Y offset",
+							"description": "Y coordinate of the glyph's top left corner within the texture.",
+							"type":        "integer",
+
+							"minimum":   0,
+							"maximum": 255
+						},
+						"width": {
+							"title":       "Character width",
+							"description": "Width of the glyph in pixels.",
+							"type":        "integer",
+
+							"minimum":   0,
+							"maximum": 127
+						},
+						"height": {
+							"title":       "Character height",
+							"description": "Height of the glyph in pixels.",
+							"type":        "integer",
+
+							"minimum":   0,
+							"maximum": 127
+						},
+						"icon": {
+							"title":       "Colored icon flag",
+							"description": "If true, the glyph will not be colorized when drawing colored text. Useful for glyphs that are not monochrome such as icons.",
+							"type":        "boolean"
+						}
+					}
+				}
+			}
+		}
+	}
+}

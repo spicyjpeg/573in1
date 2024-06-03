@@ -57,9 +57,9 @@ def createParser() -> ArgumentParser:
 		metavar = "dir"
 	)
 	group.add_argument(
-		"resourceList",
+		"configFile",
 		type = FileType("rt"),
-		help = "Path to JSON resource list",
+		help = "Path to JSON configuration file",
 	)
 	group.add_argument(
 		"output",
@@ -73,16 +73,18 @@ def main():
 	parser: ArgumentParser = createParser()
 	args:   Namespace      = parser.parse_args()
 
-	with args.resourceList as _file:
-		assetList: list[dict[str, Any]] = json.load(_file)
-		sourceDir: Path                 = \
+	with args.configFile as _file:
+		configFile: dict[str, Any] = json.load(_file)
+		sourceDir:  Path           = \
 			args.source_dir or Path(_file.name).parent
+
+	assetList: list[dict[str, Any]] = configFile["resources"]
 
 	with ZipFile(args.output, "w", allowZip64 = False) as _zip:
 		for asset in assetList:
 			match asset.get("type", "file").strip():
 				case "empty":
-					data: ByteString = b""
+					data: ByteString = bytes(int(asset.get("size", 0)))
 
 				case "text":
 					with open(sourceDir / asset["source"], "rt") as _file:

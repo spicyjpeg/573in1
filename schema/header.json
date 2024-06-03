@@ -1,0 +1,49 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/header.json",
+
+	"title": "Flash/RTC game header description",
+	"type":  "object",
+
+	"required":             [ "dataFormat" ],
+	"additionalProperties": false,
+
+	"properties": {
+		"dataFormat": {
+			"title":       "Data format type",
+			"description": "Format of the header. Currently only the 'extended' format is supported.",
+			"type":        "string",
+
+			"enum": [ "extended" ]
+		},
+
+		"ioBoardIDType": {
+			"title":       "I/O board ID type",
+			"description": "Format of the I/O board ID stored as part of the header. Omit if no I/O board ID is stored.",
+			"type":        "string",
+
+			"enum": [ "checksum", "md5" ]
+		},
+
+		"required": {
+			"title":       "Header required by game",
+			"description": "Whether or not the game requires the header to be present and will refuse to run if missing, rather than initializing it. Only valid for RTC RAM headers.",
+			"type":        "boolean"
+		},
+		"specificationWildcard": {
+			"title":       "Use specification wildcard",
+			"description": "Whether to set the specification code in the header to 'G*' instead of the game's actual specification.",
+			"type":        "boolean"
+		},
+		"invertChecksum": {
+			"title":       "Invert header checksum",
+			"description": "Whether to negate all bits of the header's checksum.",
+			"type":        "boolean"
+		},
+		"gx706Workaround": {
+			"title":       "GX706 checksum workaround",
+			"description": "If true, the specification code will be temporarily set to 'GX' when the checksum is calculated. Required by GX706, which sets the specification to 'GE' due to a bug.",
+			"type":        "boolean"
+		}
+	}
+}

@@ -1,0 +1,144 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/games.json",
+
+	"title": "Root",
+	"type":  "object",
+
+	"required": [ "games" ],
+
+	"properties": {
+		"games": {
+			"title": "Game list",
+			"type":  "array",
+
+			"minItems":    1,
+			"uniqueItems": true,
+
+			"items": {
+				"title": "Game entry object",
+				"type":  "object",
+
+				"required": [
+					"specifications",
+					"code",
+					"regions",
+					"name",
+					"year"
+				],
+				"additionalProperties": false,
+
+				"properties": {
+					"specifications": {
+						"title":       "Game specification list",
+						"description": "List of known specification codes used by this game (GX, GE, GN and so on).",
+						"type":        "array",
+
+						"items": {
+							"title": "Game specification",
+							"type":  "string",
+
+							"pattern": "^G[BCEKLNQUX]$",
+							"default": "GX"
+						}
+					},
+					"code": {
+						"title":       "Game code",
+						"description": "The 3-digit code that uniquely identifies this game (700-999 or A00-A99 ~ D00-D99).",
+						"type":        "string",
+
+						"pattern": "^[0-9A-D][0-9][0-9]$",
+						"default": "700"
+					},
+					"regions": {
+						"title":       "Game region and version list",
+						"description": "List of known region and version codes used by this game. If different versions of the game have different names, specifications or hardware, each variant should be a separate entry in the game list with the same code.",
+						"type":        "array",
+
+						"items": {
+							"title": "Game region and version",
+							"type":  "string",
+
+							"pattern": "^[AEJKSU][A-FR-WX-Z]([A-D]|Z[0-9][0-9])?$",
+							"default": "JAA"
+						}
+					},
+					"name": {
+						"title":       "Game name",
+						"description": "The full name of this game. Must contain ASCII characters only.",
+						"type":        "string",
+
+						"pattern": "^[ -~]+$"
+					},
+					"series": {
+						"title":       "Series name",
+						"description": "The full name of the series this game belongs to, if any. Must contain ASCII characters only. Games that belong to the same series will be grouped together.",
+						"type":        "string",
+
+						"pattern": "^[ -~]+$"
+					},
+					"year": {
+						"title":       "Year",
+						"description": "The year this game came out in.",
+						"type":        "integer",
+
+						"minimum": 1998,
+						"maximum": 2004,
+						"default": 2000
+					},
+					"identifier": {
+						"title":       "MAME game identifier",
+						"description": "The name used by MAME to identify this game. Omit if the game is not currently emulated by MAME.",
+						"type":        "string",
+
+						"pattern": "^[0-9a-z_]*$"
+					},
+
+					"ioBoard": {
+						"title":       "I/O board PCB type",
+						"description": "The I/O expansion board required by this game. Omit if the game does not need any.",
+						"type":        "string",
+
+						"enum": [
+							"GX700-PWB(F)",
+							"GX700-PWB(K)",
+							"GE765-PWB(B)A",
+							"GX894-PWB(B)A",
+							"GX921-PWB(B)",
+							"PWB0000073070"
+						]
+					},
+					"bootloaderVersion": {
+						"title":       "Bemani bootloader version",
+						"description": "Version number of the Bemani bootloader used by this game. Omit if the game has no bootloader.",
+						"type":        "string",
+
+						"pattern": "^1\\.[0-9]+$",
+						"default": "1.0"
+					},
+
+					"rtcHeader": {
+						"title":       "RTC RAM header",
+						"description": "Object describing the header written by the game to the first 32 bytes of RTC RAM. Omit if the game does not write a header to RTC RAM.",
+						"$ref":        "header.json"
+					},
+					"flashHeader": {
+						"title":       "Internal flash header",
+						"description": "Object describing the header written by the game to the first 32 bytes of the internal flash memory. Omit if the game does not write a header to the flash.",
+						"$ref":        "header.json"
+					},
+					"installCartridge": {
+						"title":       "Installation cartridge",
+						"description": "Object describing the game's installation security cartridge. Omit if the game needs no such cartridge.",
+						"$ref":        "cart.json"
+					},
+					"gameCartridge": {
+						"title":       "Game cartridge",
+						"description": "Object describing the game's main security cartridge. Omit if the game needs no such cartridge.",
+						"$ref":        "cart.json"
+					}
+				}
+			}
+		}
+	}
+}

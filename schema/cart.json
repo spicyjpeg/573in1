@@ -1,0 +1,95 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/cart.json",
+
+	"title": "Security cartridge description",
+	"type":  "object",
+
+	"required":             [ "pcb", "dataFormat" ],
+	"additionalProperties": false,
+
+	"properties": {
+		"pcb": {
+			"title":       "Security cartridge PCB type",
+			"description": "Name of the PCB used by this security cartridge. The cartridge's EEPROM type and presence of a DS2401 are inferred from this field.",
+			"type":        "string",
+
+			"enum": [
+				"GX700-PWB(D)",
+				"GX700-PWB(E)",
+				"GX700-PWB(J)",
+				"GX883-PWB(D)",
+				"GX894-PWB(D)",
+				"GX896-PWB(A)A",
+				"GE949-PWB(D)A",
+				"GE949-PWB(D)B",
+				"PWB0000068819",
+				"PWB0000088954"
+			]
+		},
+		"dataFormat": {
+			"title":       "Data format type",
+			"description": "Format of the data stored in the cartridge's EEPROM. The 'simple' format is just the region string, the 'basic' format includes some additional information and the 'extended' format is the full 16-byte game header plus any IDs.",
+			"type":        "string",
+
+			"enum": [ "simple", "basic", "extended" ]
+		},
+
+		"traceIDType": {
+			"title":       "Trace ID type",
+			"description": "Format of the trace ID (TID) stored in the cartridge's EEPROM. 'v1' is an arbitrary identifier assigned at manufacture time, while 'v2big' and 'v2little' are checksums derived from the SID. Omit if no trace ID is present.",
+			"type":        "string",
+
+			"enum": [ "none", "v1", "v2big", "v2little" ]
+		},
+		"traceIDWidth": {
+			"title":       "Trace ID bit width",
+			"description": "Number of bits used to calculate the checksum in the trace ID. Only valid for 'v2big' and 'v2little' trace ID types.",
+			"type":        "integer",
+
+			"minimum":  0,
+			"maximum": 16,
+			"default": 16
+		},
+		"mediumIDValue": {
+			"title":       "Medium ID value",
+			"description": "Value of the first byte of the medium ID (MID) stored in the EEPROM, if any (0, 1 or 2). Omit if no medium ID is present. Note that an empty (zerofilled) medium ID is different from one set to 0 due to the presence of a checksum.",
+			"type":        "integer",
+
+			"minimum": 0,
+			"maximum": 2,
+			"default": 2
+		},
+		"hasSiliconID": {
+			"title":       "Silicon ID present",
+			"description": "Whether or not the silicon ID (SID), i.e. the ID of the cartridge's DS2401, is stored in the EEPROM. Only valid if the cartridge PCB has a DS2401.",
+			"type":        "boolean"
+		},
+		"hasExternalID": {
+			"title":       "External ID present",
+			"description": "Whether or not the external ID (XID), i.e. the ID of the 573's I/O board, is stored in the EEPROM. Only valid if the game uses an I/O board with a DS2401.",
+			"type":        "boolean"
+		},
+
+		"lowercaseRegion": {
+			"title":       "Lower case region code",
+			"description": "Whether to convert the region and version code to lower case when storing it in the EEPROM. Some installation cartridges use lower case region codes.",
+			"type":        "boolean"
+		},
+		"hasSpecification": {
+			"title":       "Store specification code",
+			"description": "Whether or not to store the game's specification code in the EEPROM. Only valid for the 'basic' format, as the 'extended' format always includes it.",
+			"type":        "boolean"
+		},
+		"invertChecksum": {
+			"title":       "Invert header checksum",
+			"description": "Whether to negate all bits of the header's checksum. Only valid for the 'basic' and 'extended' formats.",
+			"type":        "boolean"
+		},
+		"gx706Workaround": {
+			"title":       "GX706 checksum workaround",
+			"description": "If true, the specification code will be temporarily set to 'GX' when the checksum is calculated. Required by GX706, which sets the specification to 'GE' due to a bug. Only valid for the 'basic' and 'extended' formats.",
+			"type":        "boolean"
+		}
+	}
+}

@@ -1,0 +1,237 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/resources.json",
+
+	"title": "Root",
+	"type":  "object",
+
+	"required": [ "resources" ],
+
+	"properties": {
+		"resources": {
+			"title": "Resource archive entries",
+			"type":  "array",
+
+			"uniqueItems": true,
+
+			"items": {
+				"title": "Entry object",
+				"type":  "object",
+
+				"required": [ "type", "name" ],
+
+				"properties": {
+					"type": {
+						"title":       "Entry type",
+						"description": "Must be 'empty', 'text', 'binary', 'tim', 'metrics', 'palette' or 'strings'.",
+						"type":        "string",
+
+						"enum": [
+							"empty",
+							"text",
+							"binary",
+							"tim",
+							"metrics",
+							"palette",
+							"strings"
+						]
+					},
+					"name": {
+						"title":       "Entry path",
+						"description": "Full path of the entry within the resource archive.",
+						"type":        "string"
+					},
+					"compression": {
+						"title":       "Compression type",
+						"description": "Must be 'none', 'deflate' or 'lz4'. If unspecified, defaults to 'deflate' unless manually overridden on the command line.",
+						"type":        "string",
+
+						"enum": [ "none", "deflate", "lz4" ]
+					},
+					"compressLevel": {
+						"title":       "Compression level",
+						"description": "DEFLATE or LZ4 compression level in 0-9 range, ignored for uncompressed files. If unspecified, defaults to 9 unless manually overridden on the command line.",
+						"type":        "integer",
+
+						"minimum": 0,
+						"maximum": 9,
+						"default": 9
+					}
+				},
+
+				"oneOf": [
+					{
+						"properties": {
+							"type": { "const": "empty" },
+
+							"size": {
+								"title":       "File size",
+								"description": "Number of dummy null bytes to fill the file with. If zero or omitted, the file will be empty.",
+								"type":        "integer",
+
+								"minimum": 0
+							}
+						}
+					},
+					{
+						"required": [ "source" ],
+
+						"properties": {
+							"type": { "pattern": "^text|binary$" },
+							"name": { "type":    "string" },
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the source text or binary file, relative to the configuration file's directory by default.",
+								"type":        "string",
+
+								"format": "uri-reference"
+							}
+						}
+					},
+					{
+						"required":             [ "source", "imagePos", "clutPos" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "tim" },
+							"name": { "type":  "string" },
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the source image file, relative to the configuration file's directory by default.",
+								"type":        "string",
+
+								"format": "uri-reference"
+							},
+							"quantize": {
+								"title":       "Maximum color depth",
+								"description": "Maximum number of colors to use when converting the image to indexed color. The converted file will have 8bpp color depth if this value is greater than 16 and 4bpp otherwise. Ignored if the source image is already in indexed color format.",
+								"type":        "integer",
+
+								"minimum":   2,
+								"maximum": 256,
+								"default":  16
+							},
+							"imagePos": {
+								"title": "VRAM coordinates of image data",
+								"type":  "object",
+
+								"required":             [ "x", "y" ],
+								"additionalProperties": false,
+
+								"properties": {
+									"x": {
+										"name":        "Image X offset",
+										"description": "X coordinate of the VRAM area the image will be loaded into.",
+										"type":        "integer",
+
+										"minimum":    0,
+										"maximum": 1023
+									},
+									"y": {
+										"name":        "Image Y offset",
+										"description": "Y coordinate of the VRAM area the image will be loaded into.",
+										"type":        "integer",
+
+										"minimum":    0,
+										"maximum": 1023
+									}
+								}
+							},
+							"clutPos": {
+								"title": "VRAM coordinates of palette data",
+								"type":  "object",
+
+								"required":             [ "x", "y" ],
+								"additionalProperties": false,
+
+								"properties": {
+									"x": {
+										"name":        "Palette X offset",
+										"description": "X coordinate of the VRAM area the image's palette will be loaded into. Must be a multiple of 16 due to hardware limitations.",
+										"type":        "integer",
+
+										"minimum":       0,
+										"maximum":    1023,
+										"multipleOf":   16
+									},
+									"y": {
+										"name":        "Palette Y offset",
+										"description": "Y coordinate of the VRAM area the image's palette will be loaded into.",
+										"type":        "integer",
+
+										"minimum":    0,
+										"maximum": 1023
+									}
+								}
+							}
+						}
+					},
+					{
+						"required":             [ "source" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "pattern": "^metrics|palette|strings$" },
+							"name": { "type":    "string" },
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the JSON file containing font metrics, palette entries or strings (if such data is not part of the entry object), relative to the configuration file's directory by default.",
+								"type":        "string",
+
+								"format": "uri-reference"
+							}
+						}
+					},
+					{
+						"required":             [ "metrics" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "metrics" },
+							"name": { "type":  "string" },
+
+							"metrics": {
+								"title":       "Font metrics",
+								"description": "Font metrics root object. If not specified, the source attribute must be a path to a JSON file containing this object.",
+								"$ref":        "metrics.json"
+							}
+						}
+					},
+					{
+						"required":             [ "palette" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "palette" },
+							"name": { "type":  "string" },
+
+							"palette": {
+								"title":       "Color entries",
+								"description": "Object containing a list of color names and their respective RGB values. If not specified, the source attribute must be a path to a JSON file containing this object.",
+								"type":        "object"
+							}
+						}
+					},
+					{
+						"required":             [ "strings" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "strings" },
+							"name": { "type":  "string" },
+
+							"strings": {
+								"title":       "String table",
+								"description": "Object representing the string table's keys and values. If not specified, the source attribute must be a path to a JSON file containing this object.",
+								"type":        "object"
+							}
+						}
+					}
+				]
+			}
+		}
+	}
+}

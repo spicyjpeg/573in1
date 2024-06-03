@@ -241,6 +241,12 @@ def main():
 				)
 				isoEntries.append(iso.inodes[-1])
 
+			case "directory":
+				name: str = normalizePath(entry["name"], True)
+
+				iso.add_directory(iso_path = name)
+				isoEntries.append(iso.get_record(iso_path = name))
+
 			case "fileAlias":
 				iso.add_hard_link(
 					iso_old_path = normalizePath(entry["source"]),
@@ -252,12 +258,6 @@ def main():
 					iso_old_path = normalizePath(entry["source"], True),
 					iso_new_path = normalizePath(entry["name"],   True)
 				)
-
-			case "directory":
-				name: str = normalizePath(entry["name"], True)
-
-				iso.add_directory(iso_path = name)
-				isoEntries.append(iso.get_record(iso_path = name))
 
 			case _type:
 				raise KeyError(f"unsupported entry type '{_type}'")
