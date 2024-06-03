@@ -4,46 +4,46 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace zs01 {
+namespace cart {
 
 /* Command definitions */
 
-enum Address : uint8_t {
-	ADDR_PUBLIC      = 0x00,
-	ADDR_PUBLIC_END  = 0x04,
-	ADDR_PRIVATE     = 0x04,
-	ADDR_PRIVATE_END = 0x0e,
-	ADDR_ZS01_ID     = 0xfc, // Read-only (?)
-	ADDR_DS2401_ID   = 0xfd, // Read-only
-	ADDR_ERASE       = 0xfd, // Write-only
-	ADDR_CONFIG      = 0xfe,
-	ADDR_DATA_KEY    = 0xff  // Write-only
+enum ZS01Address : uint8_t {
+	ZS01_ADDR_PUBLIC      = 0x00,
+	ZS01_ADDR_PUBLIC_END  = 0x04,
+	ZS01_ADDR_PRIVATE     = 0x04,
+	ZS01_ADDR_PRIVATE_END = 0x0e,
+	ZS01_ADDR_ZS01_ID     = 0xfc, // Read-only (?)
+	ZS01_ADDR_DS2401_ID   = 0xfd, // Read-only
+	ZS01_ADDR_ERASE       = 0xfd, // Write-only
+	ZS01_ADDR_CONFIG      = 0xfe,
+	ZS01_ADDR_DATA_KEY    = 0xff  // Write-only
 };
 
-enum RequestFlag : uint8_t {
-	REQ_WRITE        = 0 << 0,
-	REQ_READ         = 1 << 0,
-	REQ_BANK_SWITCH  = 1 << 1, // Unused (should be bit 8 of block address)
-	REQ_USE_DATA_KEY = 1 << 2
+enum ZS01RequestFlag : uint8_t {
+	ZS01_REQ_WRITE      = 0 << 0,
+	ZS01_REQ_READ       = 1 << 0,
+	ZS01_REQ_ADDR_BIT8  = 1 << 1, // Unused (should be bit 8 of block address)
+	ZS01_REQ_PRIVILEGED = 1 << 2
 };
 
-enum ResponseCode : uint8_t {
+enum ZS01ResponseCode : uint8_t {
 	// The meaning of these codes is currently unknown. Presumably:
 	// - one of the "security errors" is a CRC validation failure, the other
 	//   could be data key related, the third one could be DS2401 related
 	// - one of the unknown errors is for invalid commands or addresses
 	// - one of the unknown errors is for actual read/write failures
-	RESP_NO_ERROR        = 0x00,
-	RESP_UNKNOWN_ERROR1  = 0x01,
-	RESP_SECURITY_ERROR1 = 0x02,
-	RESP_SECURITY_ERROR2 = 0x03,
-	RESP_UNKNOWN_ERROR2  = 0x04,
-	RESP_SECURITY_ERROR3 = 0x05
+	ZS01_RESP_NO_ERROR        = 0x00,
+	ZS01_RESP_UNKNOWN_ERROR1  = 0x01,
+	ZS01_RESP_SECURITY_ERROR1 = 0x02,
+	ZS01_RESP_SECURITY_ERROR2 = 0x03,
+	ZS01_RESP_UNKNOWN_ERROR2  = 0x04,
+	ZS01_RESP_SECURITY_ERROR3 = 0x05
 };
 
 /* Packet encoding/decoding */
 
-class Key {
+class ZS01Key {
 public:
 	uint8_t add[8], shift[8];
 
@@ -54,7 +54,7 @@ public:
 	void encodePayload(uint8_t *data, size_t length, uint8_t state = 0xff) const;
 };
 
-class Packet {
+class ZS01Packet {
 public:
 	uint8_t command, address, data[8], crc[2];
 
@@ -69,8 +69,8 @@ public:
 	bool validateCRC(void) const;
 
 	void encodeReadRequest(void);
-	void encodeReadRequest(Key &dataKey, uint8_t state = 0xff);
-	void encodeWriteRequest(Key &dataKey, uint8_t state = 0xff);
+	void encodeReadRequest(ZS01Key &dataKey, uint8_t state = 0xff);
+	void encodeWriteRequest(ZS01Key &dataKey, uint8_t state = 0xff);
 	bool decodeResponse(void);
 };
 

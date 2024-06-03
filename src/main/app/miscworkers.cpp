@@ -1,8 +1,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/file/file.hpp"
 #include "common/defs.hpp"
-#include "common/file.hpp"
 #include "common/ide.hpp"
 #include "common/idedefs.hpp"
 #include "common/io.hpp"
@@ -32,9 +32,6 @@ bool App::_ideInitWorker(void) {
 		);
 
 		auto error = dev.enumerate();
-
-		while ((error == ide::NOT_YET_READY) || (error == ide::DISC_CHANGED))
-			error = dev.poll();
 
 		LOG_APP("drive %d: %s", i, ide::getErrorString(error));
 	}

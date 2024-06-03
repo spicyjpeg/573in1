@@ -3,7 +3,7 @@
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/cartunlock.hpp"
-#include "main/cartdata.hpp"
+#include "main/cart/cartdata.hpp"
 #include "main/uibase.hpp"
 
 /* Pre-unlock cartridge screens */

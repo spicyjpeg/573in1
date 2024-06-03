@@ -2,14 +2,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "common/file/file.hpp"
 #include "common/defs.hpp"
-#include "common/file.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
-#include "main/cart.hpp"
-#include "main/cartdata.hpp"
-#include "main/cartio.hpp"
+#include "main/cart/cart.hpp"
+#include "main/cart/cartdata.hpp"
+#include "main/cart/cartio.hpp"
 
 static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 	nullptr,

@@ -2,9 +2,9 @@
 #pragma once
 
 #include <stddef.h>
-#include "common/file.hpp"
-#include "common/filemisc.hpp"
-#include "common/filezip.hpp"
+#include "common/file/file.hpp"
+#include "common/file/misc.hpp"
+#include "common/file/zip.hpp"
 #include "common/ide.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
@@ -13,9 +13,9 @@
 #include "main/app/modals.hpp"
 #include "main/app/romactions.hpp"
 #include "main/app/tests.hpp"
-#include "main/cart.hpp"
-#include "main/cartdata.hpp"
-#include "main/cartio.hpp"
+#include "main/cart/cart.hpp"
+#include "main/cart/cartdata.hpp"
+#include "main/cart/cartio.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
 

@@ -27,13 +27,9 @@ int main(int argc, const char **argv) {
 	if (!args.stackTop)
 		args.stackTop = _textStart - 16;
 
-	auto &dev  = ide::devices[args.drive];
-	auto error = dev.enumerate();
+	auto &dev = ide::devices[args.drive];
 
-	while ((error == ide::NOT_YET_READY) || (error == ide::DISC_CHANGED))
-		error = dev.poll();
-
-	if (error) {
+	if (dev.enumerate()) {
 		LOG_APP("drive %d initialization failed", args.drive);
 		return 2;
 	}

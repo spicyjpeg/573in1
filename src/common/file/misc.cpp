@@ -1,8 +1,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file.hpp"
-#include "common/filemisc.hpp"
+#include "common/file/file.hpp"
+#include "common/file/misc.hpp"
 #include "common/util.hpp"
 #include "ps1/pcdrv.h"
 

@@ -1,8 +1,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file.hpp"
-#include "common/filefat.hpp"
+#include "common/file/fat.hpp"
+#include "common/file/file.hpp"
 #include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"

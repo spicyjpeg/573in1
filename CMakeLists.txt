@@ -94,12 +94,12 @@ endfunction()
 # (0x90000 bytes).
 addExecutable(
 	main 800a0000 801dfff0
+	src/common/file/fat.cpp
+	src/common/file/file.cpp
+	src/common/file/iso9660.cpp
+	src/common/file/misc.cpp
+	src/common/file/zip.cpp
 	src/common/args.cpp
-	src/common/file.cpp
-	src/common/file9660.cpp
-	src/common/filefat.cpp
-	src/common/filemisc.cpp
-	src/common/filezip.cpp
 	src/common/gpu.cpp
 	src/common/gpufont.cpp
 	src/common/ide.cpp
@@ -110,14 +110,6 @@ addExecutable(
 	src/common/spu.cpp
 	src/common/util.cpp
 	src/libc/crt0.c
-	src/main/cart.cpp
-	src/main/cartdata.cpp
-	src/main/cartio.cpp
-	src/main/main.cpp
-	src/main/uibase.cpp
-	src/main/uicommon.cpp
-	src/main/uimodals.cpp
-	src/main/zs01.cpp
 	src/main/app/app.cpp
 	src/main/app/cartactions.cpp
 	src/main/app/cartunlock.cpp
@@ -129,6 +121,14 @@ addExecutable(
 	src/main/app/romactions.cpp
 	src/main/app/romworkers.cpp
 	src/main/app/tests.cpp
+	src/main/cart/cart.cpp
+	src/main/cart/cartdata.cpp
+	src/main/cart/cartio.cpp
+	src/main/cart/zs01.cpp
+	src/main/main.cpp
+	src/main/uibase.cpp
+	src/main/uicommon.cpp
+	src/main/uimodals.cpp
 	src/vendor/ff.c
 	src/vendor/ffunicode.c
 	src/vendor/miniz.c

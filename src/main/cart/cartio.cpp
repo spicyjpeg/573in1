@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include "common/io.hpp"
 #include "common/util.hpp"
-#include "main/cart.hpp"
-#include "main/cartio.hpp"
-#include "main/zs01.hpp"
+#include "main/cart/cart.hpp"
+#include "main/cart/cartio.hpp"
+#include "main/cart/zs01.hpp"
 #include "ps1/system.h"
 
 namespace cart {
@@ -448,39 +448,37 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 
 /* ZS01 driver */
 
-DriverError ZS01Driver::_transact(
-	zs01::Packet &request, zs01::Packet &response
-) {
+DriverError ZS01Driver::_transact(ZS01Packet &request, ZS01Packet &response) {
 	delayMicroseconds(_ZS01_PACKET_DELAY);
 	io::i2cStart();
 
 #if 0
 	char buffer[48];
 
-	util::hexToString(buffer, &request.command, sizeof(zs01::Packet), ' ');
+	util::hexToString(buffer, &request.command, sizeof(ZS01Packet), ' ');
 	LOG_CART_IO("S: %s", buffer);
 #endif
 
 	if (!io::i2cWriteBytes(
-		&request.command, sizeof(zs01::Packet), _ZS01_SEND_DELAY
+		&request.command, sizeof(ZS01Packet), _ZS01_SEND_DELAY
 	)) {
 		io::i2cStop();
 		LOG_CART_IO("NACK while sending request packet");
 		return ZS01_NACK;
 	}
 
-	io::i2cReadBytes(&response.command, sizeof(zs01::Packet));
+	io::i2cReadBytes(&response.command, sizeof(ZS01Packet));
 	io::i2cStop();
 
 #if 0
-	util::hexToString(buffer, &response.command, sizeof(zs01::Packet), ' ');
+	util::hexToString(buffer, &response.command, sizeof(ZS01Packet), ' ');
 	LOG_CART_IO("R: %s", buffer);
 #endif
 
 	bool ok = response.decodeResponse();
 
 #if 0
-	util::hexToString(buffer, &response.command, sizeof(zs01::Packet), ' ');
+	util::hexToString(buffer, &response.command, sizeof(ZS01Packet), ' ');
 	LOG_CART_IO("D: %s", buffer);
 #endif
 
@@ -489,7 +487,7 @@ DriverError ZS01Driver::_transact(
 
 	_encoderState = response.address;
 
-	if (response.command != zs01::RESP_NO_ERROR) {
+	if (response.command != ZS01_RESP_NO_ERROR) {
 		LOG_CART_IO("ZS01 error, code=0x%02x", response.command);
 		return ZS01_ERROR;
 	}
@@ -498,10 +496,10 @@ DriverError ZS01Driver::_transact(
 }
 
 DriverError ZS01Driver::readCartID(void) {
-	zs01::Packet request, response;
-	DriverError  error;
+	ZS01Packet  request, response;
+	DriverError error;
 
-	request.address = zs01::ADDR_ZS01_ID;
+	request.address = ZS01_ADDR_ZS01_ID;
 	request.encodeReadRequest();
 
 	error = _transact(request, response);
@@ -514,7 +512,7 @@ DriverError ZS01Driver::readCartID(void) {
 
 	_dump.flags |= DUMP_ZS_ID_OK;
 
-	request.address = zs01::ADDR_DS2401_ID;
+	request.address = ZS01_ADDR_DS2401_ID;
 	request.encodeReadRequest();
 
 	error = _transact(request, response);
@@ -530,9 +528,9 @@ DriverError ZS01Driver::readCartID(void) {
 }
 
 DriverError ZS01Driver::readPublicData(void) {
-	zs01::Packet request, response;
+	ZS01Packet request, response;
 
-	for (int i = zs01::ADDR_PUBLIC; i < zs01::ADDR_PUBLIC_END; i++) {
+	for (int i = ZS01_ADDR_PUBLIC; i < ZS01_ADDR_PUBLIC_END; i++) {
 		request.address = i;
 		request.encodeReadRequest();
 
@@ -548,12 +546,12 @@ DriverError ZS01Driver::readPublicData(void) {
 }
 
 DriverError ZS01Driver::readPrivateData(void) {
-	zs01::Packet request, response;
-	zs01::Key    key;
+	ZS01Packet request, response;
+	ZS01Key    key;
 
 	key.unpackFrom(_dump.dataKey);
 
-	for (int i = zs01::ADDR_PRIVATE; i < zs01::ADDR_PRIVATE_END; i++) {
+	for (int i = ZS01_ADDR_PRIVATE; i < ZS01_ADDR_PRIVATE_END; i++) {
 		request.address = i;
 		request.encodeReadRequest(key, _encoderState);
 
@@ -566,7 +564,7 @@ DriverError ZS01Driver::readPrivateData(void) {
 
 	_dump.flags |= DUMP_PRIVATE_DATA_OK;
 
-	request.address = zs01::ADDR_CONFIG;
+	request.address = ZS01_ADDR_CONFIG;
 	request.encodeReadRequest(key, _encoderState);
 
 	DriverError error = _transact(request, response);
@@ -580,12 +578,12 @@ DriverError ZS01Driver::readPrivateData(void) {
 }
 
 DriverError ZS01Driver::writeData(void) {
-	zs01::Packet request, response;
-	zs01::Key    key;
+	ZS01Packet request, response;
+	ZS01Key    key;
 
 	key.unpackFrom(_dump.dataKey);
 
-	for (int i = zs01::ADDR_PUBLIC; i < zs01::ADDR_PRIVATE_END; i++) {
+	for (int i = ZS01_ADDR_PUBLIC; i < ZS01_ADDR_PRIVATE_END; i++) {
 		request.address = i;
 		request.copyFrom(&_dump.data[i * sizeof(request.data)]);
 		request.encodeWriteRequest(key, _encoderState);
@@ -595,7 +593,7 @@ DriverError ZS01Driver::writeData(void) {
 			return error;
 	}
 
-	request.address = zs01::ADDR_CONFIG;
+	request.address = ZS01_ADDR_CONFIG;
 	request.copyFrom(_dump.config);
 	request.encodeWriteRequest(key, _encoderState);
 
@@ -603,13 +601,13 @@ DriverError ZS01Driver::writeData(void) {
 }
 
 DriverError ZS01Driver::erase(void) {
-	zs01::Packet request, response;
-	zs01::Key    key;
+	ZS01Packet request, response;
+	ZS01Key    key;
 
 	key.unpackFrom(_dump.dataKey);
 
 	util::clear(request.data);
-	request.address = zs01::ADDR_ERASE;
+	request.address = ZS01_ADDR_ERASE;
 	request.encodeWriteRequest(key, _encoderState);
 
 	DriverError error = _transact(request, response);
@@ -621,12 +619,12 @@ DriverError ZS01Driver::erase(void) {
 }
 
 DriverError ZS01Driver::setDataKey(const uint8_t *key) {
-	zs01::Packet request, response;
-	zs01::Key    oldKey;
+	ZS01Packet request, response;
+	ZS01Key    oldKey;
 
 	oldKey.unpackFrom(_dump.dataKey);
 
-	request.address = zs01::ADDR_DATA_KEY;
+	request.address = ZS01_ADDR_DATA_KEY;
 	request.copyFrom(key);
 	request.encodeWriteRequest(oldKey, _encoderState);
 

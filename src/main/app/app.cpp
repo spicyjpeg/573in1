@@ -1,19 +1,19 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include "common/file/fat.hpp"
+#include "common/file/file.hpp"
+#include "common/file/iso9660.hpp"
+#include "common/file/misc.hpp"
+#include "common/file/zip.hpp"
 #include "common/defs.hpp"
-#include "common/file.hpp"
-#include "common/file9660.hpp"
-#include "common/filefat.hpp"
-#include "common/filemisc.hpp"
-#include "common/filezip.hpp"
 #include "common/gpu.hpp"
 #include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
-#include "main/cart.hpp"
+#include "main/cart/cart.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
 

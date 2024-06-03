@@ -2,9 +2,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "common/util.hpp"
-#include "main/cart.hpp"
-#include "main/zs01.hpp"
+#include "main/cart/cart.hpp"
+#include "main/cart/zs01.hpp"
 
 namespace cart {
 
@@ -127,7 +126,7 @@ class ZS01Driver : public CartDriver {
 private:
 	uint8_t _encoderState;
 
-	DriverError _transact(zs01::Packet &request, zs01::Packet &response);
+	DriverError _transact(ZS01Packet &request, ZS01Packet &response);
 
 public:
 	inline ZS01Driver(CartDump &dump)

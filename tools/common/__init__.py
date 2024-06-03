@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = "0.4.1"
+__version__ = "0.4.4"
 __author__  = "spicyjpeg"
 
 __all__ = (
@@ -8,5 +8,6 @@ __all__ = (
 	"cart",
 	"cartdata",
 	"games",
+	"mips",
 	"util"
 )

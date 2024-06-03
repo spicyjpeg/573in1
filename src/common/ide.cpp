@@ -119,7 +119,7 @@ static DeviceError _senseDataToError(const SenseData &data) {
 
 		case SENSE_KEY_UNIT_ATTENTION:
 			return (asc == ASC_RESET_OCCURRED)
-				? NO_ERROR
+				? NOT_YET_READY
 				: DISC_CHANGED;
 
 		case SENSE_KEY_ABORTED_COMMAND:
@@ -673,7 +673,11 @@ DeviceError Device::enumerate(void) {
 	flags |= DEVICE_READY;
 
 	// Make sure any pending ATAPI sense data is cleared.
-	return poll();
+	do {
+		error = poll();
+	} while ((error == ide::NOT_YET_READY) || (error == ide::DISC_CHANGED));
+
+	return error;
 }
 
 DeviceError Device::poll(void) {

@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file.hpp"
+#include "common/file/file.hpp"
 #include "vendor/miniz.h"
 
 namespace file {
