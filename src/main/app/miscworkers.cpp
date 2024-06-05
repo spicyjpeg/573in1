@@ -41,7 +41,7 @@ bool App::_ideInitWorker(void) {
 #ifdef ENABLE_AUTOBOOT
 	// Only try to autoboot if DIP switch 1 is on.
 	if (io::getDIPSwitch(0)) {
-		_workerStatus.update(3, 4, WSTR("App.fileInitWorker.autoboot"));
+		_workerStatus.update(3, 4, WSTR("App.ideInitWorker.autoboot"));
 
 		for (auto path : _AUTOBOOT_PATHS) {
 			file::FileInfo info;
@@ -62,14 +62,14 @@ bool App::_ideInitWorker(void) {
 }
 
 bool App::_fileInitWorker(void) {
-	_workerStatus.update(0, 4, WSTR("App.fileInitWorker.unmount"));
+	_workerStatus.update(0, 3, WSTR("App.fileInitWorker.unmount"));
 	_fileIO.closeResourceFile();
 	_fileIO.close();
 
-	_workerStatus.update(1, 4, WSTR("App.fileInitWorker.mount"));
+	_workerStatus.update(1, 3, WSTR("App.fileInitWorker.mount"));
 	_fileIO.initIDE();
 
-	_workerStatus.update(2, 4, WSTR("App.fileInitWorker.loadResources"));
+	_workerStatus.update(2, 3, WSTR("App.fileInitWorker.loadResources"));
 	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
 		_loadResources();
 

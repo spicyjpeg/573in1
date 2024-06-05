@@ -97,6 +97,9 @@ static constexpr uint32_t _ZIP_FLAGS = 0
 	| MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY;
 
 bool ZIPProvider::init(File *file) {
+	if (type)
+		return false;
+
 	mz_zip_zero_struct(&_zip);
 	_file = file;
 
@@ -128,6 +131,9 @@ bool ZIPProvider::init(File *file) {
 }
 
 bool ZIPProvider::init(const void *zipData, size_t length) {
+	if (type)
+		return false;
+
 	mz_zip_zero_struct(&_zip);
 	_file = nullptr;
 
@@ -146,6 +152,9 @@ bool ZIPProvider::init(const void *zipData, size_t length) {
 }
 
 void ZIPProvider::close(void) {
+	if (!type)
+		return;
+
 	mz_zip_reader_end(&_zip);
 
 #if 0

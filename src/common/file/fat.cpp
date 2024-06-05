@@ -104,6 +104,9 @@ void FATDirectory::close(void) {
 /* FAT filesystem provider */
 
 bool FATProvider::init(int drive) {
+	if (type)
+		return false;
+
 	_drive[0] = drive + '0';
 
 	auto error = f_mount(&_fs, _drive, 1);
@@ -123,6 +126,9 @@ bool FATProvider::init(int drive) {
 }
 
 void FATProvider::close(void) {
+	if (!type)
+		return;
+
 	auto error = f_unmount(_drive);
 
 	if (error) {

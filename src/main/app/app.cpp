@@ -78,7 +78,7 @@ FileIOManager::FileIOManager(void)
 void FileIOManager::initIDE(void) {
 	closeIDE();
 
-	char name[6]{ "ide#:" };
+	char name[8]{ "ide#:\0" };
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		auto &dev = ide::devices[i];
@@ -117,7 +117,7 @@ void FileIOManager::initIDE(void) {
 }
 
 void FileIOManager::closeIDE(void) {
-	char name[6]{ "ide#:" };
+	char name[8]{ "ide#:\0" };
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		if (ide[i]) {

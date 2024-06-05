@@ -72,7 +72,7 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 		(id >> 24) & 0xff
 	);
 
-	if (rom::flash.hasBootExecutable())
+	if (rom::flash.getBootExecutableHeader())
 		_PRINT(STR("StorageInfoScreen.flash.bootable"));
 
 	// TODO: show information about currently installed game
@@ -96,7 +96,7 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 				(id >> 24) & 0xff
 			);
 
-			if (card.hasBootExecutable())
+			if (card.getBootExecutableHeader())
 				_PRINT(STR("StorageInfoScreen.pcmcia.bootable"));
 		} else {
 			_PRINT(STR("StorageInfoScreen.pcmcia.noCard"));

@@ -36,12 +36,12 @@ void init(void) {
 		| ( 4 << 24) // DMA read/write delay
 		| BIU_CTRL_DMA_DELAY;
 
+#if 0
 	// Revision D of the main board has footprints for either eight 8-bit RAM
 	// chips wired as two 32-bit banks, or two 16-bit chips wired as a single
-	// bank. Normally the kernel takes care of setting up the memory controller
-	// appropriately, but this makes sure the configuration is correct if e.g.
-	// the tool is booted through OpenBIOS instead.
+	// bank.
 	DRAM_CTRL = isDualBankRAM() ? 0x0c80 : 0x4788;
+#endif
 
 	_bankSwitchReg = 0;
 	_cartOutputReg = 0;

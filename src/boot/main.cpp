@@ -7,8 +7,8 @@
 extern "C" const uint8_t _resourceArchive[];
 extern "C" const size_t  _resourceArchiveLength;
 
-static char _ptrArg[]{ "resource.ptr=xxxxxxxx" };
-static char _lengthArg[]{ "resource.length=xxxxxxxx" };
+static char _ptrArg[]{ "resource.ptr=xxxxxxxx\0" };
+static char _lengthArg[]{ "resource.length=xxxxxxxx\0" };
 
 struct [[gnu::packed]] ZIPFileHeader {
 public:

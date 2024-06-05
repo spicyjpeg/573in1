@@ -32,7 +32,9 @@ public:
 		uint32_t offset, size_t length, uint32_t crc = 0
 	) const;
 
-	virtual bool hasBootExecutable(void) const { return false; }
+	virtual const util::ExecutableHeader *getBootExecutableHeader(void) const {
+		return nullptr;
+	}
 	virtual uint32_t getJEDECID(void) const { return 0; }
 	virtual Driver *newDriver(void) const { return nullptr; }
 };
@@ -67,7 +69,7 @@ public:
 	void read(void *data, uint32_t offset, size_t length) const;
 	uint32_t zipCRC32(uint32_t offset, size_t length, uint32_t crc = 0) const;
 
-	bool hasBootExecutable(void) const;
+	const util::ExecutableHeader *getBootExecutableHeader(void) const;
 	uint32_t getJEDECID(void) const;
 	Driver *newDriver(void) const;
 };

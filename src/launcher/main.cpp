@@ -7,30 +7,42 @@
 
 extern "C" uint8_t _textStart[];
 
-int main(int argc, const char **argv) {
-	io::init();
+static constexpr size_t _LOAD_CHUNK_LENGTH = 0x8000;
 
-	args::ExecutableLauncherArgs args;
+static int _loadFromFlash(args::ExecutableLauncherArgs &args) {
+	io::setFlashBank(args.device);
 
-	for (; argc > 0; argc--)
-		args.parseArgument(*(argv++));
+	// The executable's offset and length are always passed as a single
+	// fragment.
+	auto ptr    = reinterpret_cast<uintptr_t>(args.loadAddress);
+	auto source = uintptr_t(args.fragments[0].lba);
+	auto length = size_t(args.fragments[0].length);
 
-#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_IDE_LOGGING)
-	util::logger.setupSyslog(args.baudRate);
-#endif
+	while (length) {
+		size_t chunkLength = util::min(length, _LOAD_CHUNK_LENGTH);
 
-	if (!args.entryPoint || !args.loadAddress || !args.numFragments) {
-		LOG_APP("required arguments missing");
-		return 1;
+		__builtin_memcpy(
+			reinterpret_cast<void *>(ptr),
+			reinterpret_cast<const void *>(source), chunkLength
+		);
+		io::clearWatchdog();
+
+		ptr    += chunkLength;
+		source += chunkLength;
+		length -= chunkLength;
 	}
 
-	if (!args.stackTop)
-		args.stackTop = _textStart - 16;
+	return 0;
+}
 
-	auto &dev = ide::devices[args.drive];
+static int _loadFromIDE(args::ExecutableLauncherArgs &args) {
+	int  drive = -(args.device + 1);
+	auto &dev  = ide::devices[drive];
 
-	if (dev.enumerate()) {
-		LOG_APP("drive %d initialization failed", args.drive);
+	auto error = dev.enumerate();
+
+	if (error) {
+		LOG_APP("drive %d: %s", drive, ide::getErrorString(error));
 		return 2;
 	}
 
@@ -57,14 +69,46 @@ int main(int argc, const char **argv) {
 			length -= skipSectors;
 		}
 
-		if (dev.readData(reinterpret_cast<void *>(ptr), lba, length)) {
-			LOG_APP("read failed, lba=0x%08x", lba);
+		error = dev.readData(reinterpret_cast<void *>(ptr), lba, length);
+
+		if (error) {
+			LOG_APP("drive %d: %s", drive, ide::getErrorString(error));
 			return 3;
 		}
 
 		io::clearWatchdog();
 		ptr += length * sectorSize;
 	}
+
+	return 0;
+}
+
+int main(int argc, const char **argv) {
+	io::init();
+
+	args::ExecutableLauncherArgs args;
+
+	for (; argc > 0; argc--)
+		args.parseArgument(*(argv++));
+
+#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_IDE_LOGGING)
+	util::logger.setupSyslog(args.baudRate);
+#endif
+
+	if (!args.entryPoint || !args.loadAddress || !args.numFragments) {
+		LOG_APP("required arguments missing");
+		return 1;
+	}
+
+	if (!args.stackTop)
+		args.stackTop = _textStart - 16;
+
+	int error = (args.device >= 0)
+		? _loadFromFlash(args)
+		: _loadFromIDE(args);
+
+	if (error)
+		return error;
 
 	// Launch the executable.
 	util::ExecutableLoader loader(

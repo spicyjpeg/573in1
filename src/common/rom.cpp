@@ -29,8 +29,20 @@ void Region::read(void *data, uint32_t offset, size_t length) const {
 	auto source = reinterpret_cast<const uint32_t *>(ptr + offset);
 	auto dest   = reinterpret_cast<uint32_t *>(data);
 
+	// TODO: use memcpy() instead once an optimized implementation is added
 	util::assertAligned<uint32_t>(source);
 	util::assertAligned<uint32_t>(dest);
+
+	for (; length >= 32; length -= 32, dest += 8, source += 8) {
+		dest[0] = source[0];
+		dest[1] = source[1];
+		dest[2] = source[2];
+		dest[3] = source[3];
+		dest[4] = source[4];
+		dest[5] = source[5];
+		dest[6] = source[6];
+		dest[7] = source[7];
+	}
 
 	for (; length; length -= 4)
 		*(dest++) = *(source++);
@@ -64,8 +76,19 @@ void RTCRegion::read(void *data, uint32_t offset, size_t length) const {
 
 	// The RTC is an 8-bit device connected to a 16-bit bus, i.e. each byte must
 	// be read as a 16-bit value and then the upper 8 bits must be discarded.
+	for (; length >= 8; length -= 8, dest += 8, source += 8) {
+		dest[0] = uint8_t(source[0]);
+		dest[1] = uint8_t(source[1]);
+		dest[2] = uint8_t(source[2]);
+		dest[3] = uint8_t(source[3]);
+		dest[4] = uint8_t(source[4]);
+		dest[5] = uint8_t(source[5]);
+		dest[6] = uint8_t(source[6]);
+		dest[7] = uint8_t(source[7]);
+	}
+
 	for (; length; length--)
-		*(dest++) = *(source++) & 0xff;
+		*(dest++) = uint8_t(*(source++));
 }
 
 uint32_t RTCRegion::zipCRC32(
@@ -120,18 +143,11 @@ uint16_t *FlashRegion::getRawPtr(uint32_t offset, bool alignToChip) const {
 void FlashRegion::read(void *data, uint32_t offset, size_t length) const {
 	// FIXME: this implementation will not handle unaligned reads and reads that
 	// cross bank boundaries properly
-	int bankOffset = offset / FLASH_BANK_LENGTH;
-	int ptrOffset  = offset % FLASH_BANK_LENGTH;
+	auto bankOffset = offset / FLASH_BANK_LENGTH;
+	auto ptrOffset  = offset % FLASH_BANK_LENGTH;
 
-	auto source = reinterpret_cast<const uint32_t *>(ptr + ptrOffset);
-	auto dest   = reinterpret_cast<uint32_t *>(data);
-
-	util::assertAligned<uint32_t>(source);
-	util::assertAligned<uint32_t>(dest);
 	io::setFlashBank(bank + bankOffset);
-
-	for (; length; length -= 4)
-		*(dest++) = *(source++);
+	Region::read(data, ptrOffset, length);
 }
 
 uint32_t FlashRegion::zipCRC32(
@@ -139,8 +155,8 @@ uint32_t FlashRegion::zipCRC32(
 ) const {
 	// FIXME: this implementation will not handle unaligned reads and reads that
 	// cross bank boundaries properly
-	int bankOffset = offset / FLASH_BANK_LENGTH;
-	int ptrOffset  = offset % FLASH_BANK_LENGTH;
+	auto bankOffset = offset / FLASH_BANK_LENGTH;
+	auto ptrOffset  = offset % FLASH_BANK_LENGTH;
 
 	auto source = reinterpret_cast<const uint32_t *>(ptr + ptrOffset);
 	auto table  = reinterpret_cast<const uint32_t *>(CACHE_BASE);
@@ -176,7 +192,7 @@ enum FlashIdentifier : uint16_t {
 	_ID_28F640J5   = 0x89 | (0x15 << 8)
 };
 
-bool FlashRegion::hasBootExecutable(void) const {
+const util::ExecutableHeader *FlashRegion::getBootExecutableHeader(void) const {
 	// FIXME: this implementation will not detect executables that cross bank
 	// boundaries (but it shouldn't matter as executables must be <4 MB anyway)
 	auto data   = reinterpret_cast<const uint8_t *>(ptr + FLASH_EXECUTABLE_OFFSET);
@@ -185,10 +201,10 @@ bool FlashRegion::hasBootExecutable(void) const {
 
 	io::setFlashBank(bank);
 
-	auto &header = *reinterpret_cast<const util::ExecutableHeader *>(data);
+	auto header = reinterpret_cast<const util::ExecutableHeader *>(data);
 
-	if (!header.validateMagic())
-		return false;
+	if (!header->validateMagic())
+		return nullptr;
 
 	// The integrity of the executable is verified by calculating the CRC32 of
 	// its bytes whose offsets are powers of 2 (i.e. the bytes at indices 0, 1,
@@ -196,7 +212,7 @@ bool FlashRegion::hasBootExecutable(void) const {
 	// header.textLength + util::EXECUTABLE_BODY_OFFSET, as the CRC is also
 	// calculated on the header, but Konami's shell ignores the last 2048 bytes
 	// due to a bug.
-	size_t   length = header.textLength;
+	size_t   length = header->textLength;
 	uint32_t crc    = ~0;
 
 	crc = (crc >> 8) ^ table[(crc ^ *data) & 0xff];
@@ -204,7 +220,10 @@ bool FlashRegion::hasBootExecutable(void) const {
 	for (size_t i = 1; i < length; i <<= 1)
 		crc = (crc >> 8) ^ table[(crc ^ data[i]) & 0xff];
 
-	return (~crc == *crcPtr);
+	if (~crc != *crcPtr)
+		return nullptr;
+
+	return header;
 }
 
 uint32_t FlashRegion::getJEDECID(void) const {

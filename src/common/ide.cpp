@@ -607,8 +607,9 @@ DeviceError Device::enumerate(void) {
 	// actually present. A strict timeout is used in the commands below in order
 	// to prevent blocking for too long.
 	IdentifyBlock block;
+	auto          signature = _getCylinder();
 
-	if (_getCylinder() == _ATAPI_SIGNATURE) {
+	if (signature == _ATAPI_SIGNATURE) {
 		flags |= DEVICE_ATAPI;
 
 		_write(CS0_COMMAND, ATA_IDENTIFY_PACKET);
@@ -659,6 +660,13 @@ DeviceError Device::enumerate(void) {
 
 	// Find out the fastest PIO transfer mode supported and enable it.
 	int mode = block.getHighestPIOMode();
+
+	_select(0);
+
+	error = _waitForIdle();
+
+	if (error)
+		return error;
 
 	_write(CS0_FEATURES, FEATURE_TRANSFER_MODE);
 	_write(CS0_COUNT,    TRANSFER_MODE_PIO | mode);

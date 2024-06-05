@@ -20,11 +20,12 @@ enum FileSystemType {
 	FAT12      = 1,
 	FAT16      = 2,
 	FAT32      = 3,
-	ISO9660    = 4,
-	ZIP_MEMORY = 5,
-	ZIP_FILE   = 6,
-	HOST       = 7,
-	VFS        = 8
+	EXFAT      = 4,
+	ISO9660    = 5,
+	ZIP_MEMORY = 6,
+	ZIP_FILE   = 7,
+	HOST       = 8,
+	VFS        = 9
 };
 
 // These are functionally equivalent to the FA_* flags used by FatFs.

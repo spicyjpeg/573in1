@@ -224,7 +224,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 			}
 #endif
 
-			char name[6]{ "ide#:" };
+			char name[8]{ "ide#:\0" };
 
 			int  drive = _drives[index];
 			auto &dev  = ide::devices[drive];

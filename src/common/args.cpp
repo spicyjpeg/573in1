@@ -87,8 +87,8 @@ bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 			loadAddress = reinterpret_cast<void *>(strtol(&arg[5], nullptr, 16));
 			return true;
 
-		case "drive"_h:
-			drive = int(strtol(&arg[6], nullptr, 0));
+		case "device"_h:
+			device = int(strtol(&arg[6], nullptr, 0));
 			return true;
 
 		case "frag"_h:

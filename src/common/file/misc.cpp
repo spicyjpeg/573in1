@@ -180,24 +180,33 @@ VFSMountPoint *VFSProvider::_getMounted(const char *path) {
 bool VFSProvider::mount(const char *prefix, Provider *provider, bool force) {
 	auto hash = util::hash(prefix, VFS_PREFIX_SEPARATOR);
 
+	VFSMountPoint *freeMP = nullptr;
+
 	for (auto &mp : _mountPoints) {
-		if (force) {
-			if (mp.prefix && (mp.prefix != hash))
-				continue;
-		} else {
-			if (mp.prefix)
-				continue;
+		if (!mp.prefix) {
+			freeMP = &mp;
+		} else if (mp.prefix == hash) {
+			if (force) {
+				freeMP = &mp;
+				break;
+			}
+
+			LOG_FS("%s was already mapped", prefix);
+			return false;
 		}
-
-		mp.prefix     = hash;
-		mp.pathOffset = __builtin_strlen(prefix);
-		mp.provider   = provider;
-
-		LOG_FS("mapped %s", prefix);
-		return true;
 	}
 
-	return false;
+	if (!freeMP) {
+		LOG_FS("no mount points left for %s", prefix);
+		return false;
+	}
+
+	freeMP->prefix     = hash;
+	freeMP->pathOffset = __builtin_strlen(prefix);
+	freeMP->provider   = provider;
+
+	LOG_FS("mapped %s", prefix);
+	return true;
 }
 
 bool VFSProvider::unmount(const char *prefix) {
@@ -215,6 +224,7 @@ bool VFSProvider::unmount(const char *prefix) {
 		return true;
 	}
 
+	LOG_FS("%s was not mapped", prefix);
 	return false;
 }
 

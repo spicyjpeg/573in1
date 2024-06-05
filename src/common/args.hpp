@@ -52,7 +52,7 @@ public:
 	void *entryPoint, *initialGP, *stackTop;
 
 	void *loadAddress;
-	int  drive;
+	int  device; // 0-63 = flash, -1 or -2 = IDE
 
 	size_t             numArgs, numFragments;
 	const char         *executableArgs[util::MAX_EXECUTABLE_ARGS];
@@ -60,7 +60,7 @@ public:
 
 	inline ExecutableLauncherArgs(void)
 	: entryPoint(nullptr), initialGP(nullptr), stackTop(nullptr),
-	loadAddress(nullptr), drive(0), numArgs(0), numFragments(0) {}
+	loadAddress(nullptr), device(0), numArgs(0), numFragments(0) {}
 
 	bool parseArgument(const char *arg);
 };
