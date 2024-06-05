@@ -5,7 +5,7 @@
 	"title": "Security cartridge description",
 	"type":  "object",
 
-	"required":             [ "pcb", "dataFormat" ],
+	"required":             [ "pcb", "dataKey", "dataFormat" ],
 	"additionalProperties": false,
 
 	"properties": {
@@ -26,6 +26,14 @@
 				"PWB0000068819",
 				"PWB0000088954"
 			]
+		},
+		"dataKey": {
+			"title":       "Data key",
+			"description": "The 8-byte key this cartridge's EEPROM is normally locked with. Must be specified as 8 hexadecimal values separated by dashes.",
+			"type":        "string",
+
+			"pattern": "^([0-9a-f]{2}-){7}[0-9a-f]{2}$",
+			"default": "00-00-00-00-00-00-00-00"
 		},
 		"dataFormat": {
 			"title":       "Data format type",

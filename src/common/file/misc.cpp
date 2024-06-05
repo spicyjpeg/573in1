@@ -202,7 +202,8 @@ bool VFSProvider::mount(const char *prefix, Provider *provider, bool force) {
 	}
 
 	freeMP->prefix     = hash;
-	freeMP->pathOffset = __builtin_strlen(prefix);
+	freeMP->pathOffset =
+		(__builtin_strchr(prefix, VFS_PREFIX_SEPARATOR) - prefix) + 1;
 	freeMP->provider   = provider;
 
 	LOG_FS("mapped %s", prefix);

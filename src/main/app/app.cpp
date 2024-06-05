@@ -82,7 +82,6 @@ void FileIOManager::initIDE(void) {
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		auto &dev = ide::devices[i];
-		name[3]   = i + '0';
 
 		if (!(dev.flags & ide::DEVICE_READY))
 			continue;
@@ -112,6 +111,7 @@ void FileIOManager::initIDE(void) {
 			vfs.mount("hdd:", fat);
 		}
 
+		name[3] = i + '0';
 		vfs.mount(name, ide[i], true);
 	}
 }
@@ -120,15 +120,19 @@ void FileIOManager::closeIDE(void) {
 	char name[8]{ "ide#:\0" };
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (ide[i]) {
-			ide[i]->close();
-			delete ide[i];
-			ide[i] = nullptr;
-		}
+		if (!ide[i])
+			continue;
+
+		ide[i]->close();
+		delete ide[i];
+		ide[i] = nullptr;
 
 		name[3] = i + '0';
 		vfs.unmount(name);
 	}
+
+	vfs.unmount("cdrom:");
+	vfs.unmount("hdd:");
 }
 
 bool FileIOManager::loadResourceFile(const char *path) {
@@ -161,17 +165,6 @@ void FileIOManager::closeResourceFile(void) {
 	}
 }
 
-void FileIOManager::close(void) {
-	vfs.close();
-	resource.close();
-#ifdef ENABLE_PCDRV
-	host.close();
-#endif
-
-	closeResourceFile();
-	closeIDE();
-}
-
 /* App class */
 
 static constexpr size_t _WORKER_STACK_SIZE = 0x20000;
@@ -186,7 +179,7 @@ _ctx(ctx), _cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {}
 
 App::~App(void) {
 	_unloadCartData();
-	_fileIO.close();
+	_workerStack.destroy();
 }
 
 void App::_unloadCartData(void) {
@@ -308,10 +301,10 @@ void App::_runWorker(
 }
 
 void App::_worker(void) {
-	if (_workerFunction) {
+	if (_workerFunction)
 		(this->*_workerFunction)();
-		_workerStatus.setStatus(WORKER_DONE);
-	}
+
+	_workerStatus.setStatus(WORKER_DONE);
 
 	// Do nothing while waiting for vblank once the task is done.
 	for (;;)
@@ -359,7 +352,13 @@ void App::_interruptHandler(void) {
 #endif
 	_ctx.overlays[1]    = &_screenshotOverlay;
 
+#ifdef ENABLE_AUTOBOOT
 	_runWorker(&App::_ideInitWorker, _warningScreen);
+#else
+	// If autoboot is disabled, show the warning screen before initializing the
+	// drives in order to give them enough time to spin up.
+	_runWorker(nullptr, _warningScreen);
+#endif
 	_setupInterrupts();
 	_ctx.sounds[ui::SOUND_STARTUP].play();
 

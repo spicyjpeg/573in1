@@ -47,7 +47,13 @@ void WarningScreen::update(ui::Context &ctx) {
 	_buttons[0] = STR("WarningScreen.ok");
 
 	if (ctx.buttons.pressed(ui::BTN_START))
+#ifdef ENABLE_AUTOBOOT
 		ctx.show(APP->_buttonMappingScreen, false, true);
+#else
+		APP->_runWorker(
+			&App::_ideInitWorker, APP->_buttonMappingScreen, false, true
+		);
+#endif
 }
 
 void AutobootScreen::show(ui::Context &ctx, bool goBack) {

@@ -599,7 +599,20 @@ size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 /* PS1 executable loader */
 
 bool ExecutableHeader::validateMagic(void) const {
-	return (hash(magic, sizeof(magic)) == "PS-X EXE"_h);
+#if 0
+	return (
+		hash(magic, sizeof(magic)) ==
+		hash("PS-X EXE\0\0\0\0\0\0\0\0", sizeof(magic), 0)
+	);
+#else
+	return true
+		&& (magic[0] == 0x582d5350)
+		&& (magic[1] == 0x45584520)
+		&& !magic[2]
+		&& !magic[3]
+		&& (entryPoint >= 0x80000000)
+		&& (textOffset >= 0x80000000);
+#endif
 }
 
 ExecutableLoader::ExecutableLoader(
@@ -610,19 +623,30 @@ ExecutableLoader::ExecutableLoader(
 	_currentStackPtr = reinterpret_cast<char *>(_argListPtr);
 }
 
-void ExecutableLoader::copyArgument(const char *arg, size_t length) {
+bool ExecutableLoader::addArgument(const char *arg) {
+	if (_numArgs >= MAX_EXECUTABLE_ARGS)
+		return false;
+
+	_argListPtr[_numArgs++] = arg;
+	return true;
+}
+
+bool ExecutableLoader::copyArgument(const char *arg, size_t length) {
+	if (_numArgs >= MAX_EXECUTABLE_ARGS)
+		return false;
+
 	// Command-line arguments must be copied to the top of the new stack in
 	// order to ensure the executable is going to be able to access them at any
 	// time.
 	length++;
-	_currentStackPtr -= (length + 7) & ~7;
+	_currentStackPtr       -= (length + 7) & ~7;
+	_argListPtr[_numArgs++] = _currentStackPtr;
 
-	addArgument(_currentStackPtr);
 	__builtin_memcpy(_currentStackPtr, arg, length);
-	//assert(_argCount <= MAX_EXECUTABLE_ARGS);
+	return true;
 }
 
-void ExecutableLoader::formatArgument(const char *format, ...) {
+bool ExecutableLoader::formatArgument(const char *format, ...) {
 	char    buffer[64];
 	va_list ap;
 
@@ -630,7 +654,7 @@ void ExecutableLoader::formatArgument(const char *format, ...) {
 	int length = vsnprintf(buffer, sizeof(buffer), format, ap);
 	va_end(ap);
 
-	copyArgument(buffer, length + 1);
+	return copyArgument(buffer, length + 1);
 }
 
 [[noreturn]] void ExecutableLoader::run(

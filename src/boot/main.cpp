@@ -69,8 +69,10 @@ int main(int argc, const char **argv) {
 	loader.addArgument(_lengthArg);
 
 #ifdef ENABLE_ARGV
-	for (; argc > 0; argc--)
-		loader.addArgument(*(argv++));
+	for (; argc > 0; argc--) {
+		if (!loader.copyArgument(*(argv++)))
+			break;
+	}
 #endif
 
 	io::clearWatchdog();

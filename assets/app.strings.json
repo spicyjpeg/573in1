@@ -6,13 +6,13 @@
 
 	"App": {
 		"ideInitWorker": {
-			"init": "Initializing IDE devices...\nDo not turn off the 573 or unplug drives."
+			"init":     "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
+			"autoboot": "Searching for boot executables...\nDo not turn off the 573 or unplug drives."
 		},
 		"fileInitWorker": {
 			"unmount":       "Unmounting all mounted filesystems...\nDo not turn off the 573 or unplug drives.",
 			"mount":         "Detecting and mounting filesystems...\nDo not turn off the 573 or unplug drives.",
-			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives.",
-			"autoboot":      "Searching for boot executables...\nDo not turn off the 573 or unplug drives."
+			"loadResources": "Loading resource pack...\nDo not turn off the 573 or unplug drives."
 		},
 		"cartDetectWorker": {
 			"readDigitalIO": "Retrieving digital I/O board ID...",
@@ -56,10 +56,11 @@
 			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"executableWorker": {
-			"init":         "Validating executable file...\nDo not turn off the 573 or unplug drives.",
-			"load":         "Loading executable file...\nDo not turn off the 573 or unplug drives.",
-			"fileError":    "The selected file could not be accessed or is not a valid System 573 executable. Make sure the file has been copied properly.\n\nFile: %s",
-			"addressError": "The selected file cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nFile:\t\t%s\nRegion:\t%08X-%08X\nStack top:\t%08X"
+			"init":          "Validating executable file...\nDo not turn off the 573 or unplug drives.",
+			"load":          "Loading executable file...\nDo not turn off the 573 or unplug drives.",
+			"fileError":     "The selected file could not be accessed or is not a valid System 573 executable. Make sure the file has been copied properly.\n\nFile: %s",
+			"addressError":  "The selected file cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nFile:\t\t%s\nRegion:\t%08X-%08X\nStack top:\t%08X",
+			"fragmentError": "The selected file cannot be loaded as it is fragmented across too many non-contiguous areas on the filesystem. Try defragging or reformatting the drive.\n\nFile:\t\t\t%s\nTotal fragments:\t%d\nOverflow:\t\t%d"
 		},
 		"flashHeaderWriteWorker": {
 			"erase":       "Erasing existing header...\nDo not turn off the 573.",
@@ -583,11 +584,12 @@
 			"kernelInfo": {
 				"sony":     "  Kernel type:\tSony PlayStation kernel\n  Kernel version:\t%s\n  Kernel date:\t%04X-%02X-%02X\n",
 				"openbios": "  Kernel type:\tOpenBIOS\n  Kernel build ID:\n    %s\n",
-				"unknown":  "  Kernel type:\tUnknown\n"
+				"unknown":  "  Kernel type:\tunknown\n"
 			},
 			"shellInfo": {
 				"konami":  "  Shell type:\t\t%s\n  Boot file name:\t%s\n",
-				"unknown": "  Shell type:\t\tUnknown\n"
+				"custom":  "  Shell type:\t\tcustom executable\n  Shell name:\n    %s\n",
+				"unknown": "  Shell type:\t\tunknown\n"
 			}
 		},
 		"rtc": {

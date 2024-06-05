@@ -62,37 +62,37 @@ enum CS0CountFlag : uint8_t {
 /* ATA command definitions */
 
 enum ATACommand : uint8_t {
-	ATA_NOP                  = 0x00,
-	ATA_DEVICE_RESET         = 0x08,
-	ATA_READ_SECTORS         = 0x20,
-	ATA_READ_SECTORS_EXT     = 0x24,
-	ATA_READ_DMA_EXT         = 0x25,
-	ATA_READ_DMA_QUEUED_EXT  = 0x26,
-	ATA_WRITE_SECTORS        = 0x30,
-	ATA_WRITE_SECTORS_EXT    = 0x34,
-	ATA_WRITE_DMA_EXT        = 0x35,
-	ATA_WRITE_DMA_QUEUED_EXT = 0x36,
-	ATA_SEEK                 = 0x70,
-	ATA_EXECUTE_DIAGNOSTIC   = 0x90,
-	ATA_PACKET               = 0xa0,
-	ATA_IDENTIFY_PACKET      = 0xa1,
-	ATA_SERVICE              = 0xa2,
-	ATA_DEVICE_CONFIG        = 0xb1,
-	ATA_ERASE_SECTORS        = 0xc0,
-	ATA_READ_DMA_QUEUED      = 0xc7,
-	ATA_READ_DMA             = 0xc8,
-	ATA_WRITE_DMA            = 0xca,
-	ATA_WRITE_DMA_QUEUED     = 0xcc,
-	ATA_STANDBY_IMMEDIATE    = 0xe0,
-	ATA_IDLE_IMMEDIATE       = 0xe1,
-	ATA_STANDBY              = 0xe2,
-	ATA_IDLE                 = 0xe3,
-	ATA_CHECK_POWER_MODE     = 0xe5,
-	ATA_SLEEP                = 0xe6,
-	ATA_FLUSH_CACHE          = 0xe7,
-	ATA_FLUSH_CACHE_EXT      = 0xea,
-	ATA_IDENTIFY             = 0xec,
-	ATA_SET_FEATURES         = 0xef
+	ATA_NOP                  = 0x00, // ATAPI
+	ATA_DEVICE_RESET         = 0x08, // ATAPI
+	ATA_READ_SECTORS         = 0x20, // ATA
+	ATA_READ_SECTORS_EXT     = 0x24, // ATA
+	ATA_READ_DMA_EXT         = 0x25, // ATA
+	ATA_READ_DMA_QUEUED_EXT  = 0x26, // ATA
+	ATA_WRITE_SECTORS        = 0x30, // ATA
+	ATA_WRITE_SECTORS_EXT    = 0x34, // ATA
+	ATA_WRITE_DMA_EXT        = 0x35, // ATA
+	ATA_WRITE_DMA_QUEUED_EXT = 0x36, // ATA
+	ATA_SEEK                 = 0x70, // ATA
+	ATA_EXECUTE_DIAGNOSTIC   = 0x90, // ATA/ATAPI
+	ATA_PACKET               = 0xa0, // ATAPI
+	ATA_IDENTIFY_PACKET      = 0xa1, // ATAPI
+	ATA_SERVICE              = 0xa2, // ATA/ATAPI
+	ATA_DEVICE_CONFIG        = 0xb1, // ATA
+	ATA_ERASE_SECTORS        = 0xc0, // ATA
+	ATA_READ_DMA_QUEUED      = 0xc7, // ATA
+	ATA_READ_DMA             = 0xc8, // ATA
+	ATA_WRITE_DMA            = 0xca, // ATA
+	ATA_WRITE_DMA_QUEUED     = 0xcc, // ATA
+	ATA_STANDBY_IMMEDIATE    = 0xe0, // ATA/ATAPI
+	ATA_IDLE_IMMEDIATE       = 0xe1, // ATA/ATAPI
+	ATA_STANDBY              = 0xe2, // ATA
+	ATA_IDLE                 = 0xe3, // ATA
+	ATA_CHECK_POWER_MODE     = 0xe5, // ATA/ATAPI
+	ATA_SLEEP                = 0xe6, // ATA/ATAPI
+	ATA_FLUSH_CACHE          = 0xe7, // ATA
+	ATA_FLUSH_CACHE_EXT      = 0xea, // ATA
+	ATA_IDENTIFY             = 0xec, // ATA
+	ATA_SET_FEATURES         = 0xef  // ATA/ATAPI
 };
 
 enum ATAFeature : uint8_t {

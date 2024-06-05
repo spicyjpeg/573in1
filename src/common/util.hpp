@@ -290,7 +290,7 @@ static constexpr size_t MAX_EXECUTABLE_ARGS    = 32;
 
 class ExecutableHeader {
 public:
-	uint8_t magic[8], _pad[8];
+	uint32_t magic[4];
 
 	uint32_t entryPoint, initialGP;
 	uint32_t textOffset, textLength;
@@ -311,6 +311,9 @@ public:
 	inline void *getStackPtr(void) const {
 		return reinterpret_cast<void *>(stackOffset + stackLength);
 	}
+	inline const char *getRegionString(void) const {
+		return reinterpret_cast<const char *>(&this[1]);
+	}
 	inline void relocateText(const void *source) const {
 		__builtin_memcpy(getTextPtr(), source, textLength);
 	}
@@ -322,24 +325,22 @@ class ExecutableLoader {
 private:
 	void *_entryPoint, *_initialGP;
 
-	int        _numArgs;
+	size_t     _numArgs;
 	const char **_argListPtr;
 	char       *_currentStackPtr;
 
 public:
-	inline void addArgument(const char *arg) {
-		_argListPtr[_numArgs++] = arg;
-	}
-	inline void copyArgument(const char *arg) {
-		copyArgument(arg, __builtin_strlen(arg));
+	inline bool copyArgument(const char *arg) {
+		return copyArgument(arg, __builtin_strlen(arg));
 	}
 	[[noreturn]] inline void run(void) {
 		run(_numArgs, _argListPtr);
 	}
 
 	ExecutableLoader(void *entryPoint, void *initialGP, void *stackTop);
-	void copyArgument(const char *arg, size_t length);
-	void formatArgument(const char *format, ...);
+	bool addArgument(const char *arg);
+	bool copyArgument(const char *arg, size_t length);
+	bool formatArgument(const char *format, ...);
 	[[noreturn]] void run(int rawArgc, const char *const *rawArgv);
 };
 

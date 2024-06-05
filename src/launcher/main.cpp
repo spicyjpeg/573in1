@@ -117,8 +117,10 @@ int main(int argc, const char **argv) {
 
 	auto executableArg = args.executableArgs;
 
-	for (size_t i = args.numArgs; i; i--)
-		loader.copyArgument(*(executableArg++));
+	for (size_t i = args.numArgs; i; i--) {
+		if (!loader.copyArgument(*(executableArg++)))
+			break;
+	}
 
 	loader.run();
 	return 0;

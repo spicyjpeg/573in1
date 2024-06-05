@@ -80,7 +80,7 @@ extern const FlashRegion flash, pcmcia[2];
 
 /* BIOS ROM headers */
 
-struct SonyKernelHeader {
+class SonyKernelHeader {
 public:
 	uint8_t  day, month;
 	uint16_t year;
@@ -90,7 +90,7 @@ public:
 	bool validateMagic(void) const;
 };
 
-struct OpenBIOSHeader {
+class OpenBIOSHeader {
 public:
 	uint8_t  magic[8];
 	uint32_t idNameLength, idDescLength, idType;
@@ -103,11 +103,12 @@ public:
 	bool validateMagic(void) const;
 };
 
-struct ShellInfo {
+class ShellInfo {
 public:
-	const char    *name, *bootFileName;
-	const uint8_t *headerPtr;
-	util::Hash    headerHash;
+	const char *name, *bootFileName;
+	util::Hash headerHash;
+
+	const util::ExecutableHeader *header;
 
 	bool validateHash(void) const;
 };
@@ -117,6 +118,6 @@ static const auto &sonyKernelHeader =
 static const auto &openBIOSHeader =
 	*reinterpret_cast<const OpenBIOSHeader *>(DEV2_BASE | 0x78);
 
-const ShellInfo *getShellInfo(void);
+bool getShellInfo(ShellInfo &output);
 
 }

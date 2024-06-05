@@ -232,8 +232,10 @@ bool Device::_writeDMA(const void *data, size_t length) const {
 
 static constexpr int _COMMAND_TIMEOUT = 30000000;
 static constexpr int _DRQ_TIMEOUT     = 30000000;
-static constexpr int _DETECT_TIMEOUT  = 500000;
-static constexpr int _SRST_DELAY      = 5000;
+static constexpr int _DETECT_TIMEOUT  = 2500000;
+
+static constexpr int _SRST_SET_DELAY   = 5000;
+static constexpr int _SRST_CLEAR_DELAY = 50000;
 
 // Note that ATA drives will always assert DRDY when ready, but ATAPI drives
 // will not. This is an intentional feature meant to prevent ATA-only drivers
@@ -309,8 +311,10 @@ void Device::_handleError(void) {
 
 	// Issuing a device reset command to an ATAPI drive would result in the
 	// error's sense data being lost.
-	if (!(flags & DEVICE_ATAPI))
+#if 0
+	if (flags & DEVICE_ATAPI)
 		_write(CS0_COMMAND, ATA_DEVICE_RESET);
+#endif
 }
 
 void Device::_handleTimeout(void) {
@@ -323,15 +327,16 @@ void Device::_handleTimeout(void) {
 		lastErrorReg, lastCountReg
 	);
 
-	_write(CS0_COMMAND, ATA_DEVICE_RESET);
+	if (flags & DEVICE_ATAPI)
+		_write(CS0_COMMAND, ATA_DEVICE_RESET);
 }
 
 DeviceError Device::_resetDrive(void) {
 	// Issue a software reset, which affects both devices on the bus.
 	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN | CS1_DEVICE_CTRL_SRST);
-	delayMicroseconds(_SRST_DELAY);
+	delayMicroseconds(_SRST_SET_DELAY);
 	_write(CS1_DEVICE_CTRL, CS1_DEVICE_CTRL_IEN);
-	delayMicroseconds(_SRST_DELAY);
+	delayMicroseconds(_SRST_CLEAR_DELAY);
 
 	_select(0);
 
@@ -344,6 +349,7 @@ DeviceError Device::_resetDrive(void) {
 	io::clearWatchdog();
 #endif
 
+#if 0
 	// Issue dummy writes to the sector count register and attempt to read back
 	// the written value. This should not fail even if the drive is busy.
 	uint8_t pattern = 0x55;
@@ -366,6 +372,9 @@ DeviceError Device::_resetDrive(void) {
 
 	LOG_IDE("drive %d not responding", getDriveIndex());
 	return NO_DRIVE;
+#else
+	return NO_ERROR;
+#endif
 }
 
 /* ATA-specific function */

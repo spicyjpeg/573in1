@@ -301,22 +301,28 @@ const FlashRegion pcmcia[2]{
 
 /* BIOS ROM headers */
 
-static const ShellInfo _SHELL_VERSIONS[]{
+static const ShellInfo _KONAMI_SHELLS[]{
 	{
 		.name         = "700A01",
 		.bootFileName = reinterpret_cast<const char *>(DEV2_BASE | 0x40890),
-		.headerPtr    = reinterpret_cast<const uint8_t *>(DEV2_BASE | 0x40000),
-		.headerHash   = 0x9c615f57
+		.headerHash   = 0x9c615f57,
+		.header       = reinterpret_cast<const util::ExecutableHeader *>(
+			DEV2_BASE | 0x40000
+		)
 	}, {
 		.name         = "700A01 (Gachagachamp)",
 		.bootFileName = reinterpret_cast<const char *>(DEV2_BASE | 0x40890),
-		.headerPtr    = reinterpret_cast<const uint8_t *>(DEV2_BASE | 0x40000),
-		.headerHash   = 0x7e31a844
+		.headerHash   = 0x7e31a844,
+		.header       = reinterpret_cast<const util::ExecutableHeader *>(
+			DEV2_BASE | 0x40000
+		)
 	}, {
 		.name         = "700B01",
 		.bootFileName = reinterpret_cast<const char *>(DEV2_BASE | 0x61334),
-		.headerPtr    = reinterpret_cast<const uint8_t *>(DEV2_BASE | 0x28000),
-		.headerHash   = 0xb257d3b5
+		.headerHash   = 0xb257d3b5,
+		.header       = reinterpret_cast<const util::ExecutableHeader *>(
+			DEV2_BASE | 0x28000
+		)
 	}
 };
 
@@ -331,16 +337,43 @@ bool OpenBIOSHeader::validateMagic(void) const {
 }
 
 bool ShellInfo::validateHash(void) const {
-	return (util::hash(headerPtr, sizeof(util::ExecutableHeader)) == headerHash);
+	return (util::hash(
+		reinterpret_cast<const uint8_t *>(header), sizeof(util::ExecutableHeader)
+	) == headerHash);
 }
 
-const ShellInfo *getShellInfo(void) {
-	for (auto &shell : _SHELL_VERSIONS) {
-		if (shell.validateHash())
-			return &shell;
+bool getShellInfo(ShellInfo &output) {
+	for (auto &shell : _KONAMI_SHELLS) {
+		if (!shell.validateHash())
+			continue;
+
+		__builtin_memcpy(&output, &shell, sizeof(ShellInfo));
+		return true;
 	}
 
-	return nullptr;
+	// If no official shell was found, fall back to searching the entire ROM for
+	// a valid PS1 executable. Note that the executable has to be 32-byte
+	// aligned for this to work.
+	// TODO: use a binary search instead of a linear one
+	for (uintptr_t ptr = DEV2_BASE; ptr < (DEV2_BASE + 0x80000); ptr += 32) {
+		auto header = reinterpret_cast<const util::ExecutableHeader *>(ptr);
+
+		if (!header->validateMagic())
+			continue;
+
+		output.name         = header->getRegionString();
+		output.bootFileName = nullptr;
+#if 0
+		output.headerHash   = util::hash(
+			reinterpret_cast<const uint8_t *>(header),
+			sizeof(util::ExecutableHeader)
+		);
+#endif
+		output.header       = header;
+		return true;
+	}
+
+	return false;
 }
 
 }

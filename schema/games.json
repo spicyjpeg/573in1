@@ -86,12 +86,17 @@
 						"maximum": 2004,
 						"default": 2000
 					},
-					"identifier": {
-						"title":       "MAME game identifier",
-						"description": "The name used by MAME to identify this game. Omit if the game is not currently emulated by MAME.",
-						"type":        "string",
+					"identifiers": {
+						"title":       "MAME game identifier list",
+						"description": "The names used by MAME to identify this game, one for each region/version listed in the regions field. Omit if the game is not currently emulated by MAME.",
+						"type":        "array",
 
-						"pattern": "^[0-9a-z_]*$"
+						"items": {
+							"title": "MAME game identifier",
+							"type":  "string",
+
+							"pattern": "^[0-9a-z_]*$"
+						}
 					},
 
 					"ioBoard": {

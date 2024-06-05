@@ -38,15 +38,19 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINT(STR("StorageInfoScreen.bios.kernelInfo.unknown"));
 	}
 
-	auto shell = rom::getShellInfo();
+	rom::ShellInfo shell;
 
-	if (shell)
-		_PRINT(
-			STR("StorageInfoScreen.bios.shellInfo.konami"), shell->name,
-			shell->bootFileName
-		);
-	else
+	if (rom::getShellInfo(shell)) {
+		if (shell.bootFileName)
+			_PRINT(
+				STR("StorageInfoScreen.bios.shellInfo.konami"), shell.name,
+				shell.bootFileName
+			);
+		else
+			_PRINT(STR("StorageInfoScreen.bios.shellInfo.custom"), shell.name);
+	} else {
 		_PRINT(STR("StorageInfoScreen.bios.shellInfo.unknown"));
+	}
 
 	_PRINTLN();
 

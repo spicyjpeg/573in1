@@ -88,7 +88,7 @@ bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 			return true;
 
 		case "device"_h:
-			device = int(strtol(&arg[6], nullptr, 0));
+			device = int(strtol(&arg[7], nullptr, 0));
 			return true;
 
 		case "frag"_h:

@@ -64,7 +64,7 @@ bool App::_ideInitWorker(void) {
 bool App::_fileInitWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.fileInitWorker.unmount"));
 	_fileIO.closeResourceFile();
-	_fileIO.close();
+	_fileIO.closeIDE();
 
 	_workerStatus.update(1, 3, WSTR("App.fileInitWorker.mount"));
 	_fileIO.initIDE();
@@ -99,7 +99,9 @@ bool App::_executableWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
 
 	const char *path = _fileBrowserScreen.selectedPath;
-	auto       _file = _fileIO.vfs.openFile(path, file::READ);
+
+	int  device = -(path[3] - '0' + 1); // ide#: -> -1 or -2
+	auto _file  = _fileIO.vfs.openFile(path, file::READ);
 
 	util::ExecutableHeader header;
 
@@ -168,25 +170,38 @@ bool App::_executableWorker(void) {
 		loader.formatArgument("entry.gp=%08x", header.getInitialGP());
 		loader.formatArgument("entry.sp=%08x", header.getStackPtr());
 		loader.formatArgument("load=%08x",     header.getTextPtr());
-		loader.formatArgument("drive=%c",      path[3]); // ide#:...
+		loader.formatArgument("device=%d",     device);
 
 		file::FileFragmentTable fragments;
 
 		_fileIO.vfs.getFileFragments(fragments, path);
 
 		auto fragment = fragments.as<const file::FileFragment>();
+		auto count    = fragments.getNumFragments();
 
-		for (size_t i = fragments.getNumFragments(); i; i--, fragment++)
-			loader.formatArgument(
+		for (size_t i = count; i; i--, fragment++) {
+			if (loader.formatArgument(
 				"frag=%llx,%llx", fragment->lba, fragment->length
+			))
+				continue;
+
+			fragments.destroy();
+
+			_messageScreen.setMessage(
+				MESSAGE_ERROR, WSTR("App.executableWorker.fragmentError"), path,
+				count, i
 			);
+			_workerStatus.setNextScreen(_messageScreen);
+			return false;
+		}
 
 		fragments.destroy();
 
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
 		_unloadCartData();
-		_fileIO.close();
+		_fileIO.closeResourceFile();
+		_fileIO.closeIDE();
 
 		uninstallExceptionHandler();
 		loader.run();
@@ -233,7 +248,8 @@ bool App::_rebootWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.rebootWorker.reboot"));
 
 	_unloadCartData();
-	_fileIO.close();
+	_fileIO.closeResourceFile();
+	_fileIO.closeIDE();
 	_workerStatus.setStatus(WORKER_REBOOT);
 
 	// Fall back to a soft reboot if the watchdog fails to reset the system.

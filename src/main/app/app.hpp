@@ -65,7 +65,8 @@ public:
 	file::VFSProvider  vfs;
 
 	inline ~FileIOManager(void) {
-		close();
+		closeResourceFile();
+		closeIDE();
 	}
 
 	FileIOManager(void);
@@ -74,7 +75,6 @@ public:
 	void closeIDE(void);
 	bool loadResourceFile(const char *path);
 	void closeResourceFile(void);
-	void close(void);
 };
 
 /* App class */
