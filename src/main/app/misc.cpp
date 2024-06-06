@@ -94,16 +94,20 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 			_PRINT(STRH(header.iso9660));
 
 			_PRINT(
-				STR("IDEInfoScreen.iso9660.info"), fs->volumeLabel,
+				STR("IDEInfoScreen.iso9660.info"),
+				fs->volumeLabel,
 				fs->capacity / 0x100000
 			);
 		} else {
 			_PRINT(STRH(header.fat));
 
 			_PRINT(
-				STR("IDEInfoScreen.fat.info"), _FAT_TYPES[fs->type],
-				fs->volumeLabel, fs->serialNumber >> 16,
-				fs->serialNumber & 0xffff, fs->capacity / 0x100000,
+				STR("IDEInfoScreen.fat.info"),
+				_FAT_TYPES[fs->type],
+				fs->volumeLabel,
+				fs->serialNumber >> 16,
+				fs->serialNumber & 0xffff,
+				fs->capacity       / 0x100000,
 				fs->getFreeSpace() / 0x100000
 			);
 		}
@@ -112,7 +116,7 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 	*(--ptr) = 0;
-	LOG_APP("remaining=%d", end - ptr);
+	LOG_APP("%d buffer bytes free", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }

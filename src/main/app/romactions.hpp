@@ -25,14 +25,15 @@ protected:
 
 public:
 	const rom::Region *selectedRegion;
+	size_t            selectedLength;
 
-	void checksum(ui::Context &ctx);
-	void dump(ui::Context &ctx);
-	void restore(ui::Context &ctx);
-	void erase(ui::Context &ctx);
-	void resetFlashHeader(ui::Context &ctx);
-	void matchFlashHeader(ui::Context &ctx);
-	void editFlashHeader(ui::Context &ctx);
+	void checksum(ui::Context &ctx, size_t length);
+	void dump(ui::Context &ctx, size_t length);
+	void restore(ui::Context &ctx, size_t length);
+	void erase(ui::Context &ctx, size_t length);
+	void resetFlashHeader(ui::Context &ctx, size_t length);
+	void matchFlashHeader(ui::Context &ctx, size_t length);
+	void editFlashHeader(ui::Context &ctx, size_t length);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
@@ -40,8 +41,7 @@ public:
 
 class CardSizeScreen : public ui::MessageBoxScreen {
 public:
-	size_t selectedLength;
-	void   (StorageActionsScreen::*callback)(ui::Context &ctx);
+	void (StorageActionsScreen::*callback)(ui::Context &ctx, size_t length);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);

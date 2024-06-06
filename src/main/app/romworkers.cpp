@@ -117,9 +117,15 @@ bool App::_romDumpWorker(void) {
 		if (!entry.region.isPresent())
 			continue;
 
-		size_t chunkLength =
-			util::min(entry.region.regionLength, _DUMP_CHUNK_LENGTH);
-		size_t numChunks   = entry.region.regionLength / chunkLength;
+		auto regionLength = entry.region.getActualLength();
+
+		// Fall back to dumping the entire address space if the card's size
+		// could not be reliably autodetected.
+		if (!regionLength)
+			regionLength = entry.region.regionLength;
+
+		size_t chunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH);
+		size_t numChunks   = regionLength / chunkLength;
 
 		snprintf(filePath, sizeof(filePath), entry.path, dirPath);
 
@@ -182,7 +188,7 @@ bool App::_romRestoreWorker(void) {
 	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
 	auto region       = _storageActionsScreen.selectedRegion;
-	auto regionLength = _cardSizeScreen.selectedLength;
+	auto regionLength = _storageActionsScreen.selectedLength;
 
 	size_t bytesWritten = 0;
 
@@ -318,7 +324,7 @@ _flashError:
 
 bool App::_romEraseWorker(void) {
 	auto region       = _storageActionsScreen.selectedRegion;
-	auto regionLength = _cardSizeScreen.selectedLength;
+	auto regionLength = _storageActionsScreen.selectedLength;
 
 	auto   driver       = region->newDriver();
 	size_t chipLength   = driver->getChipSize().chipLength;

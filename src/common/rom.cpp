@@ -237,12 +237,75 @@ uint32_t FlashRegion::getJEDECID(void) const {
 	_ptr[0x2aa] = JEDEC_HANDSHAKE2;
 	_ptr[0x555] = JEDEC_GET_ID; // Same as INTEL_GET_ID
 
-	uint32_t id = _ptr[0] | (_ptr[1] << 16);
+	uint32_t id1 = _ptr[0] | (_ptr[1] << 16);
 
 	_ptr[0x000] = JEDEC_RESET;
 	_ptr[0x000] = INTEL_RESET;
 
-	return id;
+	uint32_t id2 = _ptr[0] | (_ptr[1] << 16);
+
+	if (id1 == id2) {
+		LOG_ROM("chip not responding to commands");
+		return 0;
+	}
+
+	return id1;
+}
+
+size_t FlashRegion::getActualLength(void) const {
+	if (!bank)
+		return regionLength;
+
+	// Issue a JEDEC ID command to the first chip, then keep resetting all other
+	// chips until the first one is also reset, indicating that the address has
+	// wrapped around.
+	io::setFlashBank(bank);
+
+	auto _ptr = reinterpret_cast<volatile uint16_t *>(ptr);
+
+	_ptr[0x000] = JEDEC_RESET;
+	_ptr[0x000] = INTEL_RESET;
+	_ptr[0x555] = JEDEC_HANDSHAKE1;
+	_ptr[0x2aa] = JEDEC_HANDSHAKE2;
+	_ptr[0x555] = JEDEC_GET_ID; // Same as INTEL_GET_ID
+
+	uint32_t id1 = _ptr[0] | (_ptr[1] << 16);
+
+	int bankOffset = 1;
+	int numBanks   = regionLength / FLASH_BANK_LENGTH;
+
+	for (; bankOffset < numBanks; bankOffset++) {
+		io::setFlashBank(bank + bankOffset);
+
+		_ptr[0x000] = JEDEC_RESET;
+		_ptr[0x000] = INTEL_RESET;
+
+		io::setFlashBank(bank);
+
+		uint32_t id2 = _ptr[0] | (_ptr[1] << 16);
+
+		if (id1 != id2)
+			break;
+	}
+
+	_ptr[0x000] = JEDEC_RESET;
+	_ptr[0x000] = INTEL_RESET;
+
+	uint32_t id3 = _ptr[0] | (_ptr[1] << 16);
+
+	if (id1 == id3) {
+		LOG_ROM("chip not responding to commands");
+		return 0;
+	}
+	if (bankOffset == numBanks) {
+		// There is at least one game that uses a "64 MB" card (actually two 32
+		// MB cards in an adapter), but it's rare enough that forcing the user
+		// to select the card size manually makes sense.
+		LOG_ROM("no mirroring detected");
+		return 0;
+	}
+
+	return bankOffset * FLASH_BANK_LENGTH;
 }
 
 Driver *FlashRegion::newDriver(void) const {

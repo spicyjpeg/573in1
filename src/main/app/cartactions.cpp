@@ -252,7 +252,7 @@ void HexdumpScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 	*(--ptr) = 0;
-	LOG_APP("remaining=%d", end - ptr);
+	LOG_APP("%d buffer bytes free", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }

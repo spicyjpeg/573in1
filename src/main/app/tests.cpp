@@ -149,7 +149,7 @@ void JAMMATestScreen::update(ui::Context &ctx) {
 	}
 
 	*(--ptr) = 0;
-	//LOG_APP("remaining=%d", end - ptr);
+	//LOG_APP("%d buffer bytes free", end - ptr);
 
 	//TextScreen::update(ctx);
 

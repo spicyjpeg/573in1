@@ -61,8 +61,18 @@ template<typename T> static constexpr inline size_t countOf(T &array) {
 	return sizeof(array) / sizeof(array[0]);
 }
 
-template<typename T, typename X> static constexpr inline T forcedCast(X item) {
+template<typename T, typename X> static inline T forcedCast(X item) {
 	return reinterpret_cast<T>(reinterpret_cast<void *>(item));
+}
+
+static constexpr inline uint16_t concatenate(uint8_t a, uint8_t b) {
+	return a | (b << 8);
+}
+
+static constexpr inline uint32_t concatenate(
+	uint8_t a, uint8_t b, uint8_t c, uint8_t d
+) {
+	return a | (b << 8) | (c << 16) | (d << 24);
 }
 
 /* String hashing (http://www.cse.yorku.ca/~oz/hash.html) */
@@ -312,7 +322,7 @@ public:
 		return reinterpret_cast<void *>(stackOffset + stackLength);
 	}
 	inline const char *getRegionString(void) const {
-		return reinterpret_cast<const char *>(&this[1]);
+		return reinterpret_cast<const char *>(this + 1);
 	}
 	inline void relocateText(const void *source) const {
 		__builtin_memcpy(getTextPtr(), source, textLength);

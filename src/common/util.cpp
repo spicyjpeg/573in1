@@ -606,8 +606,8 @@ bool ExecutableHeader::validateMagic(void) const {
 	);
 #else
 	return true
-		&& (magic[0] == 0x582d5350)
-		&& (magic[1] == 0x45584520)
+		&& (magic[0] == concatenate('P', 'S', '-', 'X'))
+		&& (magic[1] == concatenate(' ', 'E', 'X', 'E'))
 		&& !magic[2]
 		&& !magic[3]
 		&& (entryPoint >= 0x80000000)

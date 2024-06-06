@@ -21,7 +21,7 @@ protected:
 	int  _numButtons, _activeButton, _buttonIndexOffset;
 	bool _locked;
 
-	const char *_buttons[4];
+	const char *_buttons[5];
 
 public:
 	MessageBoxScreen(void);

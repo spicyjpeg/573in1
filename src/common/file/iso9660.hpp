@@ -26,7 +26,53 @@ using ISOCharD  = uint8_t;
 
 /* ISO9660 data structures (see https://wiki.osdev.org/ISO_9660) */
 
-static constexpr size_t ISO9660_MAX_NAME_LENGTH = 32;
+static constexpr size_t ISO9660_MAX_RECORD_DATA_LENGTH = 512;
+
+enum ISOSUSPEntryType : uint16_t {
+	ISO_SUSP_ATTRIBUTES     = util::concatenate('P', 'X'),
+	ISO_SUSP_DEVICE_NUMBER  = util::concatenate('P', 'N'),
+	ISO_SUSP_SYMBOLIC_LINK  = util::concatenate('S', 'L'),
+	ISO_SUSP_ALTERNATE_NAME = util::concatenate('N', 'M'),
+	ISO_SUSP_CHILD_LINK     = util::concatenate('C', 'L'),
+	ISO_SUSP_PARENT_LINK    = util::concatenate('P', 'L'),
+	ISO_SUSP_RELOCATED_DIR  = util::concatenate('R', 'E'),
+	ISO_SUSP_TIMESTAMP      = util::concatenate('T', 'F'),
+	ISO_SUSP_SPARSE_FILE    = util::concatenate('S', 'F')
+};
+
+enum ISOSUSNameEntryFlag : uint8_t {
+	ISO_SUSP_NAME_CONTINUE = 1 << 0,
+	ISO_SUSP_NAME_CURRENT  = 1 << 1,
+	ISO_SUSP_NAME_PARENT   = 1 << 2
+};
+
+class [[gnu::packed]] ISOSUSPEntry {
+public:
+	uint16_t magic;   // 0x0-0x1
+	uint8_t  length;  // 0x2
+	uint8_t  version; // 0x3
+
+	inline size_t getDataLength(void) const {
+		return length - sizeof(ISOSUSPEntry);
+	}
+	inline const uint8_t *getData(void) const {
+		return &version + 1;
+	}
+};
+
+class [[gnu::packed]] ISOXAEntry {
+public:
+	uint16_t groupID;      // 0x0
+	uint16_t userID;       // 0x2
+	uint16_t attributes;   // 0x4
+	uint16_t magic;        // 0x6
+	uint8_t  fileNumber;   // 0x8
+	uint8_t  _reserved[5]; // 0x9-0xd
+
+	inline bool validateMagic(void) const {
+		return !groupID && !userID && (magic == util::concatenate('X', 'A'));
+	}
+};
 
 enum ISORecordFlag : uint8_t {
 	ISO_RECORD_EXISTENCE    = 1 << 0,
@@ -50,20 +96,28 @@ public:
 	ISOUint16 volumeNumber;        // 0x1c-0x1f
 	uint8_t   nameLength;          // 0x20
 
-	inline size_t getRecordLength(void) const {
-		return (recordLength + 1) & ~1;
+	inline size_t getNameLength(void) const {
+		// The name is always padded to an *odd* number of bytes (so that the
+		// record's entire length is even).
+		return nameLength | 1;
+	}
+	inline size_t getSystemUseLength(void) const {
+		return recordLength - (sizeof(ISORecord) + getNameLength());
 	}
 	inline const ISOCharD *getName(void) const {
-		return &(this->nameLength) + 1;
+		return &nameLength + 1;
 	}
 	inline const uint8_t *getSystemUseData(void) const {
-		return getName() + ((nameLength + 1) & ~1);
+		return getName() + getNameLength();
 	}
+
+	size_t parseName(char *output, size_t maxLength) const;
+	size_t comparePath(const char *path) const;
 };
 
 class [[gnu::packed]] ISORecordBuffer : public ISORecord {
 public:
-	ISOCharD name[ISO9660_MAX_NAME_LENGTH];
+	uint8_t recordData[ISO9660_MAX_RECORD_DATA_LENGTH];
 };
 
 enum ISOVolumeDescType : uint8_t {

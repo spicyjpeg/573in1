@@ -155,7 +155,7 @@ size_t upload(uint32_t ramOffset, const void *data, size_t length, bool wait) {
 /* Sound class */
 
 bool Sound::initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset) {
-	if ((header->magic != 0x70474156) || header->interleave)
+	if (header->magic != util::concatenate('V', 'A', 'G', 'p'))
 		return false;
 
 	offset     = ramOffset / 8;

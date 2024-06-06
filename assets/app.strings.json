@@ -150,8 +150,9 @@
 
 	"CardSizeScreen": {
 		"title":  "Select card size",
-		"body":   "Select the size of the PCMCIA flash card currently inserted in the selected slot, as it cannot be detected automatically.",
+		"body":   "The size of the PCMCIA flash card currently inserted in the selected slot could not be detected automatically. Select the size from one of the options below.",
 		"cancel": "Cancel",
+		"8":      "8 MB",
 		"16":     "16 MB",
 		"32":     "32 MB",
 		"64":     "64 MB"
@@ -617,6 +618,7 @@
 		"pcmcia": {
 			"header":   "PCMCIA card in slot %d:\n",
 			"info":     "  Manufacturer ID:\t%02X (lower), %02X (upper)\n  Device ID:\t\t%02X (lower), %02X (upper)\n",
+			"sizeInfo": "  Detected size:\t%d MB\n",
 			"bootable": "  Valid boot executable present\n",
 			"noCard":   "  No card inserted\n"
 		}

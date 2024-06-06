@@ -32,51 +32,9 @@ static void _copyPVDString(char *output, const ISOCharA *input, size_t length) {
 	}
 }
 
-static size_t _comparePath(const ISORecord &record, const char *path) {
-	auto ptr = path;
-
-	while ((*ptr == '/') || (*ptr == '\\'))
-		ptr++;
-
-	auto recordName = record.getName();
-	auto nameLength = record.nameLength;
-
-	for (; nameLength; nameLength--) {
-		// Files with no extension still have a trailing period, which needs to
-		// be stripped.
-		if (*recordName == ';')
-			break;
-		if ((recordName[0] == '.') && (recordName[1] == ';'))
-			break;
-
-		if (__builtin_toupper(*(recordName++)) != __builtin_toupper(*(ptr++)))
-			return 0;
-	}
-
-	return ptr - path;
-}
-
 static bool _recordToFileInfo(FileInfo &output, const ISORecord &record) {
-	auto recordName = record.getName();
-	auto nameLength = record.nameLength;
-
-	// Ignore names "\x00" and "\x01", which represent the current and parent
-	// directories respectively.
-	if ((*recordName == 0x00) || (*recordName == 0x01))
+	if (!record.parseName(output.name, sizeof(output.name)))
 		return false;
-
-	auto outputName = output.name;
-
-	for (; nameLength; nameLength--) {
-		if (*recordName == ';')
-			break;
-		if ((recordName[0] == '.') && (recordName[1] == ';'))
-			break;
-
-		*(outputName++) = *(recordName++);
-	}
-
-	*outputName = 0;
 
 	output.size       = record.length.le;
 	output.attributes = READ_ONLY | ARCHIVE;
@@ -85,8 +43,154 @@ static bool _recordToFileInfo(FileInfo &output, const ISORecord &record) {
 		output.attributes |= HIDDEN;
 	if (record.flags & ISO_RECORD_DIRECTORY)
 		output.attributes |= DIRECTORY;
-
 	return true;
+}
+
+size_t ISORecord::parseName(char *output, size_t maxLength) const {
+	size_t actualLength = 0;
+
+	// Skip any CD-XA attributes and iterate over all SUSP entries to find all
+	// Rock Ridge "NM" entries. Note that the name may be split across multiple
+	// entries.
+	auto xaEntry = reinterpret_cast<const ISOXAEntry *>(getSystemUseData());
+
+	if (xaEntry->validateMagic())
+		xaEntry++;
+
+	auto ptr     = reinterpret_cast<const uint8_t *>(xaEntry);
+	auto dataEnd = reinterpret_cast<const uint8_t *>(this) + recordLength;
+
+	while ((ptr < dataEnd) && maxLength) {
+		if (!(*ptr)) {
+			ptr++;
+			continue;
+		}
+
+		auto entry = reinterpret_cast<const ISOSUSPEntry *>(ptr);
+		ptr       += entry->length;
+
+		if (entry->magic != ISO_SUSP_ALTERNATE_NAME)
+			continue;
+
+		auto chunkData   = entry->getData();
+		auto chunkLength = util::min(entry->getDataLength() - 1, maxLength);
+		auto chunkFlags  = *(chunkData++);
+
+		// Ignore entries representing the current and parent directories.
+		if (chunkFlags & (ISO_SUSP_NAME_CURRENT | ISO_SUSP_NAME_PARENT))
+			return 0;
+
+		__builtin_memcpy(output, chunkData, chunkLength);
+		output       += chunkLength;
+		actualLength += chunkLength;
+		maxLength    -= chunkLength;
+
+		if (!(chunkFlags & ISO_SUSP_NAME_CONTINUE))
+			break;
+	}
+
+	if (actualLength) {
+		*output = 0;
+		return actualLength;
+	}
+
+	// If no Rock Ridge name was found, fall back to the ISO9660 record name.
+	auto isoName    = getName();
+	auto isoNameEnd = isoName + nameLength;
+
+	// Ignore names "\x00" and "\x01", which represent the current and parent
+	// directories respectively.
+	if ((*isoName == 0x00) || (*isoName == 0x01))
+		return 0;
+
+	while ((isoName < isoNameEnd) && maxLength) {
+		// Files with no extension still have a trailing period, which needs to
+		// be stripped.
+		if (*isoName == ';')
+			break;
+		if ((isoName[0] == '.') && (isoName[1] == ';'))
+			break;
+
+		*(output++) = *(isoName++);
+		actualLength++;
+		maxLength--;
+	}
+
+	*output = 0;
+	return actualLength;
+}
+
+size_t ISORecord::comparePath(const char *path) const {
+	size_t prefixLength = 0;
+	size_t actualLength = 0;
+
+	while ((*path == '/') || (*path == '\\')) {
+		prefixLength++;
+		path++;
+	}
+
+	// This is pretty much the same code as parseName().
+	auto xaEntry = reinterpret_cast<const ISOXAEntry *>(getSystemUseData());
+
+	if (xaEntry->validateMagic())
+		xaEntry++;
+
+	auto ptr     = reinterpret_cast<const uint8_t *>(xaEntry);
+	auto dataEnd = reinterpret_cast<const uint8_t *>(this) + recordLength;
+
+	while (ptr < dataEnd) {
+		if (!(*ptr)) {
+			ptr++;
+			continue;
+		}
+
+		auto entry = reinterpret_cast<const ISOSUSPEntry *>(ptr);
+		ptr       += entry->length;
+
+		if (entry->magic != ISO_SUSP_ALTERNATE_NAME)
+			continue;
+
+		auto chunkData   = entry->getData();
+		auto chunkLength = entry->getDataLength() - 1;
+		auto chunkFlags  = *(chunkData++);
+
+		if (chunkFlags & (ISO_SUSP_NAME_CURRENT | ISO_SUSP_NAME_PARENT))
+			return 0;
+
+		for (size_t i = chunkLength; i; i--) {
+			if (
+				__builtin_toupper(*(chunkData++)) !=
+				__builtin_toupper(*(path++))
+			)
+				return 0;
+		}
+
+		actualLength += chunkLength;
+
+		if (!(chunkFlags & ISO_SUSP_NAME_CONTINUE))
+			break;
+	}
+
+	if (actualLength)
+		return prefixLength + actualLength;
+
+	auto isoName = getName();
+	actualLength = nameLength;
+
+	if ((*isoName == 0x00) || (*isoName == 0x01))
+		return 0;
+
+	for (size_t i = actualLength; i; i--) {
+		if (*isoName == ';')
+			break;
+		if ((isoName[0] == '.') && (isoName[1] == ';'))
+			break;
+
+		if (__builtin_toupper(*(isoName++)) != __builtin_toupper(*(path++)))
+			return 0;
+	}
+
+	return prefixLength + actualLength;
 }
 
 bool ISOVolumeDesc::validateMagic(void) const {
@@ -172,18 +276,18 @@ uint64_t ISO9660File::tell(void) const {
 
 bool ISO9660Directory::getEntry(FileInfo &output) {
 	while (_ptr < _dataEnd) {
-		auto &record = *reinterpret_cast<const ISORecord *>(_ptr);
+		auto record = reinterpret_cast<const ISORecord *>(_ptr);
 
 		// Skip any null padding bytes inserted between entries to prevent them
 		// from crossing sector boundaries.
-		if (!(record.recordLength)) {
+		if (!(record->recordLength)) {
 			_ptr += 2;
 			continue;
 		}
 
-		_ptr += record.getRecordLength();
+		_ptr += record->recordLength;
 
-		if (_recordToFileInfo(output, record))
+		if (_recordToFileInfo(output, *record))
 			return true;
 	}
 
@@ -217,7 +321,7 @@ bool ISO9660Provider::_getRecord(
 		return false;
 
 	if (!(*path)) {
-		__builtin_memcpy(&output, &root, root.getRecordLength());
+		__builtin_memcpy(&output, &root, root.recordLength);
 		return true;
 	}
 
@@ -233,26 +337,26 @@ bool ISO9660Provider::_getRecord(
 	auto dataEnd = ptr + root.length.le;
 
 	while (ptr < dataEnd) {
-		auto &record = *reinterpret_cast<const ISORecord *>(ptr);
+		auto record = reinterpret_cast<const ISORecord *>(ptr);
 
 		// Skip any null padding bytes inserted between entries to prevent them
 		// from crossing sector boundaries.
-		if (!(record.recordLength)) {
+		if (!(record->recordLength)) {
 			ptr += 2;
 			continue;
 		}
 
-		auto nameLength = _comparePath(record, path);
+		auto nameLength = record->comparePath(path);
 
 		if (!nameLength) {
-			ptr += record.getRecordLength();
+			ptr += record->recordLength;
 			continue;
 		}
 
 		// If the name matches, move onto the next component of the path and
 		// recursively search the subdirectory.
 		path      += nameLength;
-		auto found = _getRecord(output, record, path);
+		auto found = _getRecord(output, *record, path);
 
 		records.destroy();
 		return found;
@@ -368,6 +472,8 @@ Directory *ISO9660Provider::openDirectory(const char *path) {
 File *ISO9660Provider::openFile(const char *path, uint32_t flags) {
 	ISORecordBuffer record;
 
+	if (flags & (WRITE | FORCE_CREATE))
+		return nullptr;
 	if (!_getRecord(record, _root, path))
 		return nullptr;
 	if (record.flags & ISO_RECORD_DIRECTORY)

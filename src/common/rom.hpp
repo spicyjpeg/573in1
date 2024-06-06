@@ -25,7 +25,10 @@ public:
 	inline Region(uintptr_t ptr, size_t regionLength)
 	: ptr(ptr), regionLength(regionLength) {}
 
-	virtual bool isPresent(void) const { return true; }
+	virtual bool isPresent(void) const {
+		return true;
+	}
+
 	virtual uint16_t *getRawPtr(uint32_t offset, bool alignToChip = false) const;
 	virtual void read(void *data, uint32_t offset, size_t length) const;
 	virtual uint32_t zipCRC32(
@@ -35,8 +38,15 @@ public:
 	virtual const util::ExecutableHeader *getBootExecutableHeader(void) const {
 		return nullptr;
 	}
-	virtual uint32_t getJEDECID(void) const { return 0; }
-	virtual Driver *newDriver(void) const { return nullptr; }
+	virtual uint32_t getJEDECID(void) const {
+		return 0;
+	}
+	virtual size_t getActualLength(void) const {
+		return regionLength;
+	}
+	virtual Driver *newDriver(void) const {
+		return nullptr;
+	}
 };
 
 class BIOSRegion : public Region {
@@ -65,12 +75,14 @@ public:
 	: Region(DEV0_BASE, regionLength), bank(bank), inputs(inputs) {}
 
 	bool isPresent(void) const;
+
 	uint16_t *getRawPtr(uint32_t offset, bool alignToChip = false) const;
 	void read(void *data, uint32_t offset, size_t length) const;
 	uint32_t zipCRC32(uint32_t offset, size_t length, uint32_t crc = 0) const;
 
 	const util::ExecutableHeader *getBootExecutableHeader(void) const;
 	uint32_t getJEDECID(void) const;
+	size_t getActualLength(void) const;
 	Driver *newDriver(void) const;
 };
 

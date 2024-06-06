@@ -90,7 +90,8 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINT(STR("StorageInfoScreen.pcmcia.header"), i + 1);
 
 		if (card.isPresent()) {
-			auto id = card.getJEDECID();
+			auto id     = card.getJEDECID();
+			auto length = card.getActualLength();
 
 			_PRINT(
 				STR("StorageInfoScreen.pcmcia.info"),
@@ -100,6 +101,10 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 				(id >> 24) & 0xff
 			);
 
+			if (length)
+				_PRINT(
+					STR("StorageInfoScreen.pcmcia.sizeInfo"), length / 0x100000
+				);
 			if (card.getBootExecutableHeader())
 				_PRINT(STR("StorageInfoScreen.pcmcia.bootable"));
 		} else {
@@ -110,7 +115,7 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 	*(--ptr) = 0;
-	LOG_APP("remaining=%d", end - ptr);
+	LOG_APP("%d buffer bytes free", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }
@@ -130,7 +135,9 @@ struct Action {
 public:
 	util::Hash        name, prompt;
 	const rom::Region &region;
-	void              (StorageActionsScreen::*target)(ui::Context &ctx);
+	void              (StorageActionsScreen::*target)(
+		ui::Context &ctx, size_t length
+	);
 };
 
 static const Action _ACTIONS[]{
@@ -210,7 +217,7 @@ const char *StorageActionsScreen::_getItemName(
 	return STRH(_ACTIONS[index].name);
 }
 
-void StorageActionsScreen::checksum(ui::Context &ctx) {
+void StorageActionsScreen::checksum(ui::Context &ctx, size_t length) {
 	if (APP->_checksumScreen.valid)
 		ctx.show(APP->_checksumScreen, false, true);
 	else
@@ -219,7 +226,7 @@ void StorageActionsScreen::checksum(ui::Context &ctx) {
 		);
 }
 
-void StorageActionsScreen::dump(ui::Context &ctx) {
+void StorageActionsScreen::dump(ui::Context &ctx, size_t length) {
 	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
@@ -238,7 +245,9 @@ void StorageActionsScreen::dump(ui::Context &ctx) {
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void StorageActionsScreen::restore(ui::Context &ctx) {
+void StorageActionsScreen::restore(ui::Context &ctx, size_t length) {
+	selectedLength = length;
+
 	APP->_filePickerScreen.previousScreen = this;
 	APP->_filePickerScreen.setMessage(
 		[](ui::Context &ctx) {
@@ -265,7 +274,9 @@ void StorageActionsScreen::restore(ui::Context &ctx) {
 	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
-void StorageActionsScreen::erase(ui::Context &ctx) {
+void StorageActionsScreen::erase(ui::Context &ctx, size_t length) {
+	selectedLength = length;
+
 	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
@@ -284,7 +295,7 @@ void StorageActionsScreen::erase(ui::Context &ctx) {
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void StorageActionsScreen::resetFlashHeader(ui::Context &ctx) {
+void StorageActionsScreen::resetFlashHeader(ui::Context &ctx, size_t length) {
 	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
@@ -304,11 +315,11 @@ void StorageActionsScreen::resetFlashHeader(ui::Context &ctx) {
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void StorageActionsScreen::matchFlashHeader(ui::Context &ctx) {
+void StorageActionsScreen::matchFlashHeader(ui::Context &ctx, size_t length) {
 	// TODO: implement
 }
 
-void StorageActionsScreen::editFlashHeader(ui::Context &ctx) {
+void StorageActionsScreen::editFlashHeader(ui::Context &ctx, size_t length) {
 	// TODO: implement
 }
 
@@ -333,15 +344,14 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 			ctx.show(APP->_storageInfoScreen, true, true);
 		} else {
 			if (action.region.isPresent()) {
+				auto length    = action.region.getActualLength();
 				selectedRegion = &(action.region);
 
-				if (action.region.regionLength > 0x1000000) {
+				if (length) {
+					(this->*action.target)(ctx, length);
+				} else {
 					APP->_cardSizeScreen.callback = action.target;
 					ctx.show(APP->_cardSizeScreen, false, true);
-				} else {
-					APP->_cardSizeScreen.selectedLength =
-						action.region.regionLength;
-					(this->*action.target)(ctx);
 				}
 			} else {
 				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
@@ -359,11 +369,12 @@ void CardSizeScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("CardSizeScreen.title");
 	_body       = STR("CardSizeScreen.body");
 	_buttons[0] = STR("CardSizeScreen.cancel");
-	_buttons[1] = STR("CardSizeScreen.16");
-	_buttons[2] = STR("CardSizeScreen.32");
-	_buttons[3] = STR("CardSizeScreen.64");
+	_buttons[1] = STR("CardSizeScreen.8");
+	_buttons[2] = STR("CardSizeScreen.16");
+	_buttons[3] = STR("CardSizeScreen.32");
+	_buttons[4] = STR("CardSizeScreen.64");
 
-	_numButtons = 4;
+	_numButtons = 5;
 
 	MessageBoxScreen::show(ctx, goBack);
 }
@@ -372,12 +383,12 @@ void CardSizeScreen::update(ui::Context &ctx) {
 	MessageBoxScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
-		if (_activeButton) {
-			selectedLength = 0x800000 << _activeButton;
-			(APP->_storageActionsScreen.*callback)(ctx);
-		} else {
+		if (_activeButton)
+			(APP->_storageActionsScreen.*callback)(
+				ctx, 0x400000 << _activeButton // 1 = 8 MB, 2 = 16 MB, ...
+			);
+		else
 			ctx.show(APP->_storageActionsScreen, true, true);
-		}
 	}
 }
 
@@ -411,7 +422,7 @@ void ChecksumScreen::show(ui::Context &ctx, bool goBack) {
 	_PRINT(STR("ChecksumScreen.description"));
 
 	//*(--ptr) = 0;
-	LOG_APP("remaining=%d", end - ptr);
+	LOG_APP("%d buffer bytes free", end - ptr);
 
 	TextScreen::show(ctx, goBack);
 }
