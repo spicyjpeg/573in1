@@ -4,6 +4,7 @@
 #include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"
+#include "ps1/system.h"
 
 extern "C" uint8_t _textStart[];
 
@@ -84,6 +85,7 @@ static int _loadFromIDE(args::ExecutableLauncherArgs &args) {
 }
 
 int main(int argc, const char **argv) {
+	disableInterrupts();
 	io::init();
 
 	args::ExecutableLauncherArgs args;
@@ -121,6 +123,9 @@ int main(int argc, const char **argv) {
 		if (!loader.copyArgument(*(executableArg++)))
 			break;
 	}
+
+	flushCache();
+	io::clearWatchdog();
 
 	loader.run();
 	return 0;

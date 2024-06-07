@@ -6,9 +6,16 @@
 #include "common/ide.hpp"
 #include "common/idedefs.hpp"
 #include "common/io.hpp"
+#include "common/rom.hpp"
 #include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "ps1/system.h"
+
+static const rom::Region *const _AUTOBOOT_REGIONS[]{
+	&rom::pcmcia[1],
+	&rom::pcmcia[0],
+	&rom::flash
+};
 
 static const char *const _AUTOBOOT_PATHS[][2]{
 	{ "cdrom:/noboot.txt", "cdrom:/psx.exe" },
@@ -43,6 +50,18 @@ bool App::_ideInitWorker(void) {
 	if (io::getDIPSwitch(0)) {
 		_workerStatus.update(3, 4, WSTR("App.ideInitWorker.autoboot"));
 
+		if (io::getDIPSwitch(3)) {
+			for (auto region : _AUTOBOOT_REGIONS) {
+				if (!region->getBootExecutableHeader())
+					continue;
+
+				_storageActionsScreen.selectedRegion = region;
+
+				_workerStatus.setNextScreen(_autobootScreen);
+				break;
+			}
+		}
+
 		for (auto path : _AUTOBOOT_PATHS) {
 			file::FileInfo info;
 
@@ -51,7 +70,12 @@ bool App::_ideInitWorker(void) {
 			if (!_fileIO.vfs.getFileInfo(info, path[1]))
 				continue;
 
-			_autobootScreen.path = path[1];
+			_storageActionsScreen.selectedRegion = nullptr;
+
+			__builtin_strncpy(
+				_fileBrowserScreen.selectedPath, path[1],
+				sizeof(_fileBrowserScreen.selectedPath)
+			);
 			_workerStatus.setNextScreen(_autobootScreen);
 			break;
 		}
@@ -83,6 +107,9 @@ public:
 	size_t     length;
 };
 
+// When loading an executable, a launcher that does not overlap the target
+// binary is picked from the list below. Note that this implicitly assumes that
+// none of the launchers overlap the main binary.
 static const Launcher _LAUNCHERS[]{
 	{
 		.path       = "binaries/launcher801fd000.psexe",
@@ -96,39 +123,46 @@ static const Launcher _LAUNCHERS[]{
 };
 
 bool App::_executableWorker(void) {
-	_workerStatus.update(0, 1, WSTR("App.executableWorker.init"));
+	_workerStatus.update(0, 2, WSTR("App.executableWorker.init"));
 
-	const char *path = _fileBrowserScreen.selectedPath;
+	auto       region = _storageActionsScreen.selectedRegion;
+	const char *path  = _fileBrowserScreen.selectedPath;
 
-	int  device = -(path[3] - '0' + 1); // ide#: -> -1 or -2
-	auto _file  = _fileIO.vfs.openFile(path, file::READ);
-
+	int device;
 	util::ExecutableHeader header;
 
-	__builtin_memset(header.magic, 0, sizeof(header.magic));
+	if (region) {
+		device = region->bank;
 
-	if (_file) {
-		_file->read(&header, sizeof(header));
-		_file->close();
-		delete _file;
-	}
+		region->read(&header, rom::FLASH_EXECUTABLE_OFFSET, sizeof(header));
+	} else {
+		__builtin_memset(header.magic, 0, sizeof(header.magic));
 
-	if (!header.validateMagic()) {
-		_messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.executableWorker.fileError"), path
-		);
-		_workerStatus.setNextScreen(_messageScreen);
-		return false;
+		auto _file = _fileIO.vfs.openFile(path, file::READ);
+		device     = -(path[3] - '0' + 1); // ide#: -> -1 or -2
+
+		if (_file) {
+			_file->read(&header, sizeof(header));
+			_file->close();
+			delete _file;
+		}
+
+		if (!header.validateMagic()) {
+			_messageScreen.setMessage(
+				MESSAGE_ERROR, WSTR("App.executableWorker.fileError"), path
+			);
+			_workerStatus.setNextScreen(_messageScreen);
+			return false;
+		}
 	}
 
 	auto executableEnd = header.textOffset + header.textLength;
 	auto stackTop      = uintptr_t(header.getStackPtr());
 
-	LOG_APP("load=0x%08x, length=0x%x", header.textOffset, header.textLength);
+	LOG_APP(".text: 0x%08x-0x%08x", header.textOffset, executableEnd - 1);
 
 	// Find a launcher that does not overlap the new executable and can thus be
-	// used to load it. Note that this implicitly assumes that none of the
-	// launchers overlap the main executable.
+	// used to load it.
 	for (auto &launcher : _LAUNCHERS) {
 		uintptr_t launcherEnd = launcher.loadOffset + launcher.length;
 
@@ -151,7 +185,7 @@ bool App::_executableWorker(void) {
 		if (!_fileIO.resource.loadData(binary, launcher.path))
 			continue;
 
-		_workerStatus.update(0, 1, WSTR("App.executableWorker.load"));
+		_workerStatus.update(1, 2, WSTR("App.executableWorker.load"));
 		auto launcherHeader = binary.as<const util::ExecutableHeader>();
 
 		util::ExecutableLoader loader(
@@ -164,38 +198,47 @@ bool App::_executableWorker(void) {
 		);
 		binary.destroy();
 
-		// Pass the list of LBAs taken up by the executable to the launcher
-		// through the command line.
 		loader.formatArgument("entry.pc=%08x", header.getEntryPoint());
 		loader.formatArgument("entry.gp=%08x", header.getInitialGP());
 		loader.formatArgument("entry.sp=%08x", header.getStackPtr());
 		loader.formatArgument("load=%08x",     header.getTextPtr());
 		loader.formatArgument("device=%d",     device);
 
-		file::FileFragmentTable fragments;
+		if (region) {
+			uintptr_t ptr = 0
+				+ region->ptr
+				+ rom::FLASH_EXECUTABLE_OFFSET
+				+ util::EXECUTABLE_BODY_OFFSET;
 
-		_fileIO.vfs.getFileFragments(fragments, path);
+			loader.formatArgument("frag=%x,%x", ptr, header.textLength);
+		} else {
+			// Pass the list of LBAs taken up by the executable to the launcher
+			// through the command line.
+			file::FileFragmentTable fragments;
 
-		auto fragment = fragments.as<const file::FileFragment>();
-		auto count    = fragments.getNumFragments();
+			_fileIO.vfs.getFileFragments(fragments, path);
 
-		for (size_t i = count; i; i--, fragment++) {
-			if (loader.formatArgument(
-				"frag=%llx,%llx", fragment->lba, fragment->length
-			))
-				continue;
+			auto fragment = fragments.as<const file::FileFragment>();
+			auto count    = fragments.getNumFragments();
+
+			for (size_t i = count; i; i--, fragment++) {
+				if (loader.formatArgument(
+					"frag=%llx,%llx", fragment->lba, fragment->length
+				))
+					continue;
+
+				fragments.destroy();
+
+				_messageScreen.setMessage(
+					MESSAGE_ERROR, WSTR("App.executableWorker.fragmentError"),
+					path, count, i
+				);
+				_workerStatus.setNextScreen(_messageScreen);
+				return false;
+			}
 
 			fragments.destroy();
-
-			_messageScreen.setMessage(
-				MESSAGE_ERROR, WSTR("App.executableWorker.fragmentError"), path,
-				count, i
-			);
-			_workerStatus.setNextScreen(_messageScreen);
-			return false;
 		}
-
-		fragments.destroy();
 
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
@@ -204,11 +247,13 @@ bool App::_executableWorker(void) {
 		_fileIO.closeIDE();
 
 		uninstallExceptionHandler();
+		io::clearWatchdog();
+
 		loader.run();
 	}
 
 	_messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.executableWorker.addressError"), path,
+		MESSAGE_ERROR, WSTR("App.executableWorker.addressError"),
 		header.textOffset, executableEnd - 1, stackTop
 	);
 	_workerStatus.setNextScreen(_messageScreen);

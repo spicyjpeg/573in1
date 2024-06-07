@@ -66,7 +66,13 @@ void AutobootScreen::show(ui::Context &ctx, bool goBack) {
 	_timer         = ctx.time + ctx.gpuCtx.refreshRate * _AUTOBOOT_DELAY;
 	_buttonText[0] = 0;
 
-	snprintf(_bodyText, sizeof(_bodyText), STR("AutobootScreen.body"), path);
+	if (APP->_storageActionsScreen.selectedRegion)
+		snprintf(_bodyText, sizeof(_bodyText), STR("AutobootScreen.rom"));
+	else
+		snprintf(
+			_bodyText, sizeof(_bodyText), STR("AutobootScreen.ide"),
+			APP->_fileBrowserScreen.selectedPath
+		);
 
 	MessageBoxScreen::show(ctx, goBack);
 }
@@ -77,11 +83,6 @@ void AutobootScreen::update(ui::Context &ctx) {
 	int time = _timer - ctx.time;
 
 	if (time < 0) {
-		__builtin_strncpy(
-			APP->_fileBrowserScreen.selectedPath, path,
-			sizeof(APP->_fileBrowserScreen.selectedPath)
-		);
-
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 			&(APP->_warningScreen);
 
@@ -208,6 +209,7 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 	APP->_filePickerScreen.previousScreen = this;
 	APP->_filePickerScreen.setMessage(
 		[](ui::Context &ctx) {
+			APP->_storageActionsScreen.selectedRegion          = nullptr;
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 				&(APP->_fileBrowserScreen);
 

@@ -21,9 +21,10 @@ class Region {
 public:
 	uintptr_t ptr;
 	size_t    regionLength;
+	int       bank;
 
-	inline Region(uintptr_t ptr, size_t regionLength)
-	: ptr(ptr), regionLength(regionLength) {}
+	inline Region(uintptr_t ptr, size_t regionLength, int bank = -1)
+	: ptr(ptr), regionLength(regionLength), bank(bank) {}
 
 	virtual bool isPresent(void) const {
 		return true;
@@ -67,12 +68,12 @@ public:
 };
 
 class FlashRegion : public Region {
-public:
-	int      bank;
-	uint32_t inputs;
+private:
+	uint32_t _inputs;
 
-	inline FlashRegion(int bank, size_t regionLength, uint32_t inputs = 0)
-	: Region(DEV0_BASE, regionLength), bank(bank), inputs(inputs) {}
+public:
+	inline FlashRegion(size_t regionLength, int bank, uint32_t inputs = 0)
+	: Region(DEV0_BASE, regionLength, bank), _inputs(inputs) {}
 
 	bool isPresent(void) const;
 

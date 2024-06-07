@@ -142,6 +142,21 @@ public:
 
 static const Action _ACTIONS[]{
 	{
+		.name   = "StorageActionsScreen.runExecutable.flash.name"_h,
+		.prompt = "StorageActionsScreen.runExecutable.flash.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageActionsScreen::runExecutable
+	}, {
+		.name   = "StorageActionsScreen.runExecutable.pcmcia1.name"_h,
+		.prompt = "StorageActionsScreen.runExecutable.pcmcia1.prompt"_h,
+		.region = rom::pcmcia[0],
+		.target = &StorageActionsScreen::runExecutable
+	}, {
+		.name   = "StorageActionsScreen.runExecutable.pcmcia2.name"_h,
+		.prompt = "StorageActionsScreen.runExecutable.pcmcia2.prompt"_h,
+		.region = rom::pcmcia[1],
+		.target = &StorageActionsScreen::runExecutable
+	}, {
 		.name   = "StorageActionsScreen.checksum.name"_h,
 		.prompt = "StorageActionsScreen.checksum.prompt"_h,
 		.region = rom::bios, // Dummy
@@ -215,6 +230,19 @@ const char *StorageActionsScreen::_getItemName(
 	ui::Context &ctx, int index
 ) const {
 	return STRH(_ACTIONS[index].name);
+}
+
+void StorageActionsScreen::runExecutable(ui::Context &ctx, size_t length) {
+	if (selectedRegion->getBootExecutableHeader()) {
+		APP->_runWorker(&App::_executableWorker, *this, true, true);
+	} else {
+		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
+		APP->_messageScreen.setMessage(
+			MESSAGE_ERROR, STR("StorageActionsScreen.runExecutable.error")
+		);
+
+		ctx.show(APP->_messageScreen, false, true);
+	}
 }
 
 void StorageActionsScreen::checksum(ui::Context &ctx, size_t length) {

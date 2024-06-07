@@ -27,6 +27,7 @@ public:
 	const rom::Region *selectedRegion;
 	size_t            selectedLength;
 
+	void runExecutable(ui::Context &ctx, size_t length);
 	void checksum(ui::Context &ctx, size_t length);
 	void dump(ui::Context &ctx, size_t length);
 	void restore(ui::Context &ctx, size_t length);

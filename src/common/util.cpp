@@ -638,11 +638,11 @@ bool ExecutableLoader::copyArgument(const char *arg, size_t length) {
 	// Command-line arguments must be copied to the top of the new stack in
 	// order to ensure the executable is going to be able to access them at any
 	// time.
-	length++;
-	_currentStackPtr       -= (length + 7) & ~7;
-	_argListPtr[_numArgs++] = _currentStackPtr;
-
+	*(--_currentStackPtr) = 0;
+	_currentStackPtr     -= length;
 	__builtin_memcpy(_currentStackPtr, arg, length);
+
+	_argListPtr[_numArgs++] = _currentStackPtr;
 	return true;
 }
 
@@ -660,12 +660,16 @@ bool ExecutableLoader::formatArgument(const char *format, ...) {
 [[noreturn]] void ExecutableLoader::run(
 	int rawArgc, const char *const *rawArgv
 ) {
+#if 0
 	disableInterrupts();
 	flushCache();
+#endif
 
 	register int               a0  __asm__("a0") = rawArgc;
 	register const char *const *a1 __asm__("a1") = rawArgv;
 	register void              *gp __asm__("gp") = _initialGP;
+
+	auto stackTop = uintptr_t(_currentStackPtr) & ~7;
 
 	// Changing the stack pointer and return address is not something that
 	// should be done in a C++ function, but hopefully it's fine here since
@@ -677,7 +681,7 @@ bool ExecutableLoader::formatArgument(const char *format, ...) {
 		"jr    %1\n"
 		"addiu $sp, %2, -8\n"
 		".set pop\n"
-		:: "i"(DEV2_BASE), "r"(_entryPoint), "r"(_currentStackPtr),
+		:: "i"(DEV2_BASE), "r"(_entryPoint), "r"(stackTop),
 		"r"(a0), "r"(a1), "r"(gp)
 	);
 	__builtin_unreachable();

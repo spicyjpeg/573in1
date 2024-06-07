@@ -59,8 +59,8 @@
 			"init":          "Validating executable file...\nDo not turn off the 573 or unplug drives.",
 			"load":          "Loading executable file...\nDo not turn off the 573 or unplug drives.",
 			"fileError":     "The selected file could not be accessed or is not a valid System 573 executable. Make sure the file has been copied properly.\n\nFile: %s",
-			"addressError":  "The selected file cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nFile:\t\t%s\nRegion:\t%08X-%08X\nStack top:\t%08X",
-			"fragmentError": "The selected file cannot be loaded as it is fragmented across too many non-contiguous areas on the filesystem. Try defragging or reformatting the drive.\n\nFile:\t\t\t%s\nTotal fragments:\t%d\nOverflow:\t\t%d"
+			"addressError":  "The executable cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nRegion:\t%08X-%08X\nStack top:\t%08X",
+			"fragmentError": "The executable cannot be loaded as it is fragmented across too many non-contiguous areas on the filesystem. Try defragging or reformatting the drive.\n\nFile:\t\t\t%s\nTotal fragments:\t%d\nOverflow:\t\t%d"
 		},
 		"flashHeaderWriteWorker": {
 			"erase":       "Erasing existing header...\nDo not turn off the 573.",
@@ -131,7 +131,8 @@
 
 	"AutobootScreen": {
 		"title": "Note",
-		"body":  "A valid boot executable has been found and will be launched shortly. You may disable automatic booting by turning off DIP switch 1 or creating a file named noboot.txt in the root of the filesystem.\n\nFile: %s",
+		"rom":   "A valid boot executable has been found on the internal flash memory or a PCMCIA card and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or for flash devices only by using DIP switch 4.",
+		"ide":   "A valid boot executable has been found on an IDE drive and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or per-drive by creating a file named noboot.txt in the root of the filesystem.\n\nFile: %s",
 
 		"cancel": "{START_BUTTON} Cancel (%ds)"
 	},
@@ -507,6 +508,22 @@
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
 
+		"runExecutable": {
+			"error": "The selected device does not contain a System 573 boot executable or a valid CRC32 to verify its integrity. Ensure the device has not been erased before and does not contain corrupted data.",
+
+			"flash": {
+				"name":   "Launch executable on internal flash",
+				"prompt": "Load and launch the boot executable currently stored in the first few sectors of the internal flash memory (if any)."
+			},
+			"pcmcia1": {
+				"name":   "Launch executable on PCMCIA card in slot 1",
+				"prompt": "Load and launch the boot executable currently stored in the first few sectors of the flash card (if any)."
+			},
+			"pcmcia2": {
+				"name":   "Launch executable on PCMCIA card in slot 2",
+				"prompt": "Load and launch the boot executable currently stored in the first few sectors of the flash card (if any)."
+			}
+		},
 		"checksum": {
 			"name":   "Calculate flash, card, RTC and BIOS ROM checksums",
 			"prompt": "Compute and display the CRC32 of the contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted flash cards."

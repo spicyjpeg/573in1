@@ -97,8 +97,8 @@ static inline void initThread(
 
 /**
  * @brief Sets up the exception handler, disables the one provided by the BIOS
- * kernel and flushes the instruction cache. Must be called only once, before
- * *any* other function in this header is used.
+ * kernel and flushes the instruction cache (but does not enable interrupts).
+ * Must be called only once, before *any* other function in this header is used.
  */
 void installExceptionHandler(void);
 

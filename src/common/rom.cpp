@@ -15,6 +15,10 @@ namespace rom {
 // TODO: implement bounds checks in these
 
 uint16_t *Region::getRawPtr(uint32_t offset, bool alignToChip) const {
+#if 0
+	if (bank >= 0)
+		io::setFlashBank(bank);
+#endif
 	if (alignToChip)
 		offset = 0;
 
@@ -116,9 +120,9 @@ Driver *RTCRegion::newDriver(void) const {
 }
 
 bool FlashRegion::isPresent(void) const {
-	if (!inputs)
+	if (!_inputs)
 		return true;
-	if (io::getJAMMAInputs() & inputs)
+	if (io::getJAMMAInputs() & _inputs)
 		return true;
 
 	return false;
@@ -340,8 +344,11 @@ Driver *FlashRegion::newDriver(void) const {
 				// which uses the same ID and command set as the Intel 28F016S5.
 				return new Intel28F016S5Driver(*this);
 		}
-	//} else if (!high || (high == 0xff)) {
+#if 0
+	} else if (!high || (high == 0xff)) {
+#else
 	} else {
+#endif
 		// Single 16-bit chip for each bank
 		switch (low) {
 			case _ID_28F640J5:
@@ -356,10 +363,10 @@ Driver *FlashRegion::newDriver(void) const {
 
 const BIOSRegion  bios;
 const RTCRegion   rtc;
-const FlashRegion flash(SYS573_BANK_FLASH, 0x1000000);
+const FlashRegion flash(0x1000000, SYS573_BANK_FLASH);
 const FlashRegion pcmcia[2]{
-	{ SYS573_BANK_PCMCIA1, 0x4000000, io::JAMMA_PCMCIA_CD1 },
-	{ SYS573_BANK_PCMCIA2, 0x4000000, io::JAMMA_PCMCIA_CD2 }
+	{ 0x4000000, SYS573_BANK_PCMCIA1, io::JAMMA_PCMCIA_CD1 },
+	{ 0x4000000, SYS573_BANK_PCMCIA2, io::JAMMA_PCMCIA_CD2 }
 };
 
 /* BIOS ROM headers */

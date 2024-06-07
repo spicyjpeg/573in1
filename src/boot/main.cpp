@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "common/io.hpp"
 #include "common/util.hpp"
+#include "ps1/system.h"
 
 extern "C" const uint8_t _resourceArchive[];
 extern "C" const size_t  _resourceArchiveLength;
@@ -27,6 +28,7 @@ public:
 };
 
 int main(int argc, const char **argv) {
+	disableInterrupts();
 	io::init();
 
 	// Parse the header of the archive's first entry manually. This avoids
@@ -55,6 +57,7 @@ int main(int argc, const char **argv) {
 	util::decompressLZ4(
 		reinterpret_cast<uint8_t *>(offset), ptr, length, compLength
 	);
+	io::clearWatchdog();
 
 	util::ExecutableLoader loader(
 		exeHeader.getEntryPoint(), exeHeader.getInitialGP(),
@@ -75,7 +78,9 @@ int main(int argc, const char **argv) {
 	}
 #endif
 
+	flushCache();
 	io::clearWatchdog();
+
 	loader.run();
 	return 0;
 }

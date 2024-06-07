@@ -23,8 +23,6 @@ private:
 	char _bodyText[512], _buttonText[16];
 
 public:
-	const char *path;
-
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);
 };
