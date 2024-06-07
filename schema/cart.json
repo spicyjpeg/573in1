@@ -10,11 +10,14 @@
 
 	"properties": {
 		"pcb": {
-			"title":       "Security cartridge PCB type",
-			"description": "Name of the PCB used by this security cartridge. The cartridge's EEPROM type and presence of a DS2401 are inferred from this field.",
+			"title":       "Cartridge PCB type",
+			"description": "Name of the PCB used by this security cartridge. The cartridge's EEPROM type and presence of a DS2401 are inferred from this field. If the exact PCB type is not known, specify 'unknown-x76f041', 'unknown-x76f041-ds2401' or 'unknown-zs01'.",
 			"type":        "string",
 
 			"enum": [
+				"unknown-x76f041",
+				"unknown-x76f041-ds2401",
+				"unknown-zs01",
 				"GX700-PWB(D)",
 				"GX700-PWB(E)",
 				"GX700-PWB(J)",
@@ -28,7 +31,7 @@
 			]
 		},
 		"dataKey": {
-			"title":       "Data key",
+			"title":       "EEPROM data key",
 			"description": "The 8-byte key this cartridge's EEPROM is normally locked with. Must be specified as 8 hexadecimal values separated by dashes.",
 			"type":        "string",
 
@@ -42,13 +45,21 @@
 
 			"enum": [ "simple", "basic", "extended" ]
 		},
+		"yearField": {
+			"title":       "Year field",
+			"description": "The value of the 2-byte year field stored in the EEPROM, usually zero or the year the game came out encoded as BCD (either big or little endian). Only valid for the 'extended' format.",
+			"type":        "string",
+
+			"pattern": "^[0-9a-f]{2}-[0-9a-f]{2}$",
+			"default": "20-00"
+		},
 
 		"traceIDType": {
 			"title":       "Trace ID type",
 			"description": "Format of the trace ID (TID) stored in the cartridge's EEPROM. 'v1' is an arbitrary identifier assigned at manufacture time, while 'v2big' and 'v2little' are checksums derived from the SID. Omit if no trace ID is present.",
 			"type":        "string",
 
-			"enum": [ "none", "v1", "v2big", "v2little" ]
+			"enum": [ "v1", "v2big", "v2little" ]
 		},
 		"traceIDWidth": {
 			"title":       "Trace ID bit width",
@@ -79,6 +90,11 @@
 			"type":        "boolean"
 		},
 
+		"hasUnprivilegedArea": {
+			"title":       "EEPROM has unprivileged data area",
+			"description": "Whether or not the cartridge's EEPROM is partitioned into an unprivileged section accessible without a data key and a locked section. The offset and size of the unprivileged area are chip-specific.",
+			"type":        "boolean"
+		},
 		"lowercaseRegion": {
 			"title":       "Lower case region code",
 			"description": "Whether to convert the region and version code to lower case when storing it in the EEPROM. Some installation cartridges use lower case region codes.",
@@ -87,6 +103,11 @@
 		"hasSpecification": {
 			"title":       "Store specification code",
 			"description": "Whether or not to store the game's specification code in the EEPROM. Only valid for the 'basic' format, as the 'extended' format always includes it.",
+			"type":        "boolean"
+		},
+		"specificationWildcard": {
+			"title":       "Use specification wildcard",
+			"description": "Whether to set the specification code in the header to 'G*' instead of the game's actual specification. Only valid for the 'basic' and 'extended' formats.",
 			"type":        "boolean"
 		},
 		"invertChecksum": {

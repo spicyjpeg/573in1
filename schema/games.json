@@ -24,7 +24,8 @@
 					"code",
 					"regions",
 					"name",
-					"year"
+					"year",
+					"identifiers"
 				],
 				"additionalProperties": false,
 
@@ -82,13 +83,13 @@
 						"description": "The year this game came out in.",
 						"type":        "integer",
 
-						"minimum": 1998,
+						"minimum": 1997,
 						"maximum": 2004,
 						"default": 2000
 					},
 					"identifiers": {
 						"title":       "MAME game identifier list",
-						"description": "The names used by MAME to identify this game, one for each region/version listed in the regions field. Omit if the game is not currently emulated by MAME.",
+						"description": "The names used by MAME to identify this game, one for each region/version listed in the regions field. Use an empty string for versions not currently emulated by MAME.",
 						"type":        "array",
 
 						"items": {

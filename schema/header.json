@@ -5,7 +5,7 @@
 	"title": "Flash/RTC game header description",
 	"type":  "object",
 
-	"required":             [ "dataFormat" ],
+	"required":             [ "dataFormat", "yearField" ],
 	"additionalProperties": false,
 
 	"properties": {
@@ -15,6 +15,14 @@
 			"type":        "string",
 
 			"enum": [ "extended" ]
+		},
+		"yearField": {
+			"title":       "Year field",
+			"description": "The value of the 2-byte year field stored in the EEPROM, usually zero or the year the game came out encoded as BCD (either big or little endian).",
+			"type":        "string",
+
+			"pattern": "^[0-9a-f]{2}-[0-9a-f]{2}$",
+			"default": "20-00"
 		},
 
 		"ioBoardIDType": {
