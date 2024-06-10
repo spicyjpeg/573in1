@@ -58,7 +58,7 @@ bool App::_ideInitWorker(void) {
 				_storageActionsScreen.selectedRegion = region;
 
 				_workerStatus.setNextScreen(_autobootScreen);
-				break;
+				return true;
 			}
 		}
 
@@ -71,18 +71,18 @@ bool App::_ideInitWorker(void) {
 				continue;
 
 			_storageActionsScreen.selectedRegion = nullptr;
-
 			__builtin_strncpy(
 				_fileBrowserScreen.selectedPath, path[1],
 				sizeof(_fileBrowserScreen.selectedPath)
 			);
+
 			_workerStatus.setNextScreen(_autobootScreen);
-			break;
+			return true;
 		}
 	}
 #endif
 
-	return true;
+	return false;
 }
 
 bool App::_fileInitWorker(void) {
@@ -139,7 +139,7 @@ bool App::_executableWorker(void) {
 		__builtin_memset(header.magic, 0, sizeof(header.magic));
 
 		auto _file = _fileIO.vfs.openFile(path, file::READ);
-		device     = -(path[3] - '0' + 1); // ide#: -> -1 or -2
+		device     = -(path[3] - '0' + 1); // ide0: or ide1: -> -1 or -2
 
 		if (_file) {
 			_file->read(&header, sizeof(header));
@@ -246,6 +246,7 @@ bool App::_executableWorker(void) {
 		_fileIO.closeResourceFile();
 		_fileIO.closeIDE();
 
+		LOG_APP("jumping to launcher");
 		uninstallExceptionHandler();
 		io::clearWatchdog();
 
@@ -299,6 +300,8 @@ bool App::_rebootWorker(void) {
 
 	// Fall back to a soft reboot if the watchdog fails to reset the system.
 	delayMicroseconds(2000000);
+	LOG_APP("WD reset failed, soft rebooting");
+	uninstallExceptionHandler();
 	softReset();
 
 	return true;

@@ -1,0 +1,64 @@
+# This script is roughly similar to the built-in synth_xilinx command, with the
+# appropriate modifications made in order to output gate netlists rather than
+# precompiled LUTs. Note that more advanced features such as fast carry or
+# distributed LUT RAM are not yet supported.
+
+## Input and preliminary optimization
+
+read_verilog src/main.v
+hierarchy -check -top FPGA
+
+proc
+flatten -noscopeinfo
+tribuf -logic
+deminout
+opt_expr
+opt_clean
+check
+opt -nodffe -nosdff
+fsm
+opt
+wreduce
+peepopt
+opt_clean
+
+## Conversion to gate-level representation
+
+alumacc
+share
+opt
+memory -nomap
+opt_clean
+
+opt -full
+simplemap
+techmap -D NOLUT -D LUT_SIZE=4 -map +/techmap.v -map +/xilinx/arith_map.v
+opt -fast
+clean
+
+## FPGA-specific mapping
+
+dfflegalize -cell $_DFFE_PP?P_ r -cell $_DLATCH_PP?_ r
+
+opt_expr -mux_undef -noclkinv
+abc -g gates
+techmap -map src/techmap.v
+clean
+
+xilinx_dffopt -lut4
+clkbufmap -buf BUFGLS O:I
+iopadmap -bits -inpad IBUF O:I -outpad OBUF I:O -toutpad OBUFT ~T:I:O -tinoutpad IOBUFT ~T:O:I:IO -ignore IFD D -ignore IFDX D -ignore OFD Q -ignore OFDX Q -ignore OFDTX O
+extractinv -inv INV O:I
+techmap -map src/techmap.v
+clean
+
+## Output
+
+autoname
+hierarchy -check
+stat -tech xilinx
+check -noinit
+blackbox =A:whitebox
+
+write_verilog -noattr build/synth.v
+write_edif -top FPGA -pvector bra -lsbidx build/synth.edf

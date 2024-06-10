@@ -65,6 +65,8 @@ WorkerStatusType WorkerStatus::setStatus(WorkerStatusType value) {
 
 /* Filesystem manager class */
 
+const char *const IDE_MOUNT_POINTS[]{ "ide0:", "ide1:" };
+
 FileIOManager::FileIOManager(void)
 : _resourceFile(nullptr), resourcePtr(nullptr), resourceLength(0) {
 	__builtin_memset(ide, 0, sizeof(ide));
@@ -77,8 +79,6 @@ FileIOManager::FileIOManager(void)
 
 void FileIOManager::initIDE(void) {
 	closeIDE();
-
-	char name[8]{ "ide#:\0" };
 
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		auto &dev = ide::devices[i];
@@ -111,14 +111,11 @@ void FileIOManager::initIDE(void) {
 			vfs.mount("hdd:", fat);
 		}
 
-		name[3] = i + '0';
-		vfs.mount(name, ide[i], true);
+		vfs.mount(IDE_MOUNT_POINTS[i], ide[i], true);
 	}
 }
 
 void FileIOManager::closeIDE(void) {
-	char name[8]{ "ide#:\0" };
-
 	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
 		if (!ide[i])
 			continue;
@@ -127,8 +124,7 @@ void FileIOManager::closeIDE(void) {
 		delete ide[i];
 		ide[i] = nullptr;
 
-		name[3] = i + '0';
-		vfs.unmount(name);
+		vfs.unmount(IDE_MOUNT_POINTS[i]);
 	}
 
 	vfs.unmount("cdrom:");

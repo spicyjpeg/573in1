@@ -49,6 +49,8 @@ public:
 
 /* Filesystem manager class */
 
+extern const char *const IDE_MOUNT_POINTS[];
+
 class FileIOManager {
 private:
 	file::File *_resourceFile;

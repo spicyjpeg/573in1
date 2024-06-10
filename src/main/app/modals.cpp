@@ -224,13 +224,12 @@ void FilePickerScreen::update(ui::Context &ctx) {
 			}
 #endif
 
-			char name[8]{ "ide#:\0" };
-
 			int  drive = _drives[index];
 			auto &dev  = ide::devices[drive];
 
-			name[3]   = drive + '0';
-			int count = APP->_fileBrowserScreen.loadDirectory(ctx, name);
+			int count = APP->_fileBrowserScreen.loadDirectory(
+				ctx, IDE_MOUNT_POINTS[drive]
+			);
 
 			if (count > 0) {
 				ctx.show(APP->_fileBrowserScreen, false, true);

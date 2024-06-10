@@ -610,8 +610,11 @@ bool ExecutableHeader::validateMagic(void) const {
 		&& (magic[1] == concatenate(' ', 'E', 'X', 'E'))
 		&& !magic[2]
 		&& !magic[3]
-		&& (entryPoint >= 0x80000000)
-		&& (textOffset >= 0x80000000);
+		&& !(entryPoint % 4)
+		&& !(textOffset % 4)
+		&& !(textLength % 2048)
+		&& !dataLength
+		&& !bssLength;
 #endif
 }
 
