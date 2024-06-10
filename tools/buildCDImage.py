@@ -189,10 +189,10 @@ def main():
 	parser: ArgumentParser = createParser()
 	args:   Namespace      = parser.parse_args()
 
-	with args.configFile as _file:
-		configFile: dict[str, Any] = json.load(_file)
+	with args.configFile as file:
+		configFile: dict[str, Any] = json.load(file)
 		sourceDir:  Path           = \
-			args.source_dir or Path(_file.name).parent
+			args.source_dir or Path(file.name).parent
 
 	iso:         PyCdlib     = PyCdlib()
 	paddingFile: PaddingFile = PaddingFile()
@@ -264,17 +264,17 @@ def main():
 
 	restoreISOFileOrder(iso, isoEntries, not args.quiet)
 
-	with args.output as _file:
+	with args.output as file:
 		iso.write_fp(
-			outfp       = _file,
+			outfp       = file,
 			progress_cb = None if args.quiet else showProgress
 		)
 		iso.close()
 
 		if args.system_area:
 			with args.system_area as inputFile:
-				_file.seek(0)
-				_file.write(inputFile.read(iso.logical_block_size * 16))
+				file.seek(0)
+				file.write(inputFile.read(iso.logical_block_size * 16))
 
 if __name__ == "__main__":
 	main()

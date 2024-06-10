@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "0.4.2"
+__version__ = "0.4.6"
 __author__  = "spicyjpeg"
 
 import json
@@ -73,10 +73,10 @@ def main():
 	parser: ArgumentParser = createParser()
 	args:   Namespace      = parser.parse_args()
 
-	with args.configFile as _file:
-		configFile: dict[str, Any] = json.load(_file)
+	with args.configFile as file:
+		configFile: dict[str, Any] = json.load(file)
 		sourceDir:  Path           = \
-			args.source_dir or Path(_file.name).parent
+			args.source_dir or Path(file.name).parent
 
 	assetList: list[dict[str, Any]] = configFile["resources"]
 
@@ -87,12 +87,12 @@ def main():
 					data: ByteString = bytes(int(asset.get("size", 0)))
 
 				case "text":
-					with open(sourceDir / asset["source"], "rt") as _file:
-						data: ByteString = _file.read().encode("ascii")
+					with open(sourceDir / asset["source"], "rt") as file:
+						data: ByteString = file.read().encode("ascii")
 
 				case "binary":
-					with open(sourceDir / asset["source"], "rb") as _file:
-						data: ByteString = _file.read()
+					with open(sourceDir / asset["source"], "rb") as file:
+						data: ByteString = file.read()
 
 				case "tim":
 					ix: int = int(asset["imagePos"]["x"])
@@ -105,7 +105,7 @@ def main():
 
 					if image.mode != "P":
 						image = image.quantize(
-							int(asset["quantize"]), dither = Image.NONE
+							int(asset.get("quantize", 16)), dither = Image.NONE
 						)
 
 					data: ByteString = generateIndexedTIM(image, ix, iy, cx, cy)
@@ -114,8 +114,8 @@ def main():
 					if "metrics" in asset:
 						metrics: dict = asset["metrics"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as _file:
-							metrics: dict = json.load(_file)
+						with open(sourceDir / asset["source"], "rt") as file:
+							metrics: dict = json.load(file)
 
 					data: ByteString = generateFontMetrics(metrics)
 
@@ -123,8 +123,8 @@ def main():
 					if "palette" in asset:
 						palette: dict = asset["palette"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as _file:
-							palette: dict = json.load(_file)
+						with open(sourceDir / asset["source"], "rt") as file:
+							palette: dict = json.load(file)
 
 					data: ByteString = generateColorPalette(palette)
 
@@ -132,8 +132,8 @@ def main():
 					if "strings" in asset:
 						strings: dict = asset["strings"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as _file:
-							strings: dict = json.load(_file)
+						with open(sourceDir / asset["source"], "rt") as file:
+							strings: dict = json.load(file)
 
 					data: ByteString = generateStringTable(strings)
 

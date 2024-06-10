@@ -6,8 +6,6 @@ set COVER_MODE=area
 set OPTIMIZATION_MODE=speed
 set OPTIMIZATION_LEVEL=high
 
-set PATH="%XILINX%\bin\nt";%PATH%
-
 cd /d "%~dp0\build"
 
 ngdbuild synth.edf synth.ngd ^

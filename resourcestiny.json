@@ -97,6 +97,11 @@
 			"name":   "assets/about.txt",
 			"source": "${PROJECT_BINARY_DIR}/about.txt"
 		},
+		{
+			"type":   "db",
+			"name":   "data/games.db",
+			"source": "${PROJECT_SOURCE_DIR}/data/games.json"
+		},
 
 		{
 			"type":   "binary",
@@ -112,11 +117,6 @@
 			"type":   "binary",
 			"name":   "data/zs01.db",
 			"source": "${PROJECT_SOURCE_DIR}/data/zs01.db"
-		},
-		{
-			"type":   "binary",
-			"name":   "data/flash.db",
-			"source": "${PROJECT_SOURCE_DIR}/data/flash.db"
 		}
 	]
 }

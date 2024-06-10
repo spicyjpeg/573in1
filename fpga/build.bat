@@ -9,12 +9,15 @@ if errorlevel 1 (
 added to PATH in order to run this script.
 	exit /b 1
 )
+
 if not exist "%XILINX%\bin\nt\" (
 	echo The XILINX environment variable must be set to the root of a valid ^
 Xilinx ISE 3.3 ^(Windows^) installation in order to run this script. Note that ^
 the path cannot contain spaces due to ISE limitations.
 	exit /b 1
 )
+
+set PATH="%XILINX%\bin\nt";%PATH%
 
 cd /d "%~dp0"
 

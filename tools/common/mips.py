@@ -544,8 +544,8 @@ def parseInstruction(address: int, inst: int) -> Instruction:
 
 ## Executable analyzer
 
-def parseStructFromFile(_file: BinaryIO, _struct: Struct) -> tuple:
-	return _struct.unpack(_file.read(_struct.size))
+def parseStructFromFile(file: BinaryIO, _struct: Struct) -> tuple:
+	return _struct.unpack(file.read(_struct.size))
 
 _EXE_HEADER_STRUCT: Struct = Struct("< 8s 8x 4I 16x 2I 20x 1972s")
 _EXE_HEADER_MAGIC:  bytes  = b"PS-X EXE"
@@ -553,7 +553,7 @@ _EXE_HEADER_MAGIC:  bytes  = b"PS-X EXE"
 _FUNCTION_RETURN: bytes = bytes.fromhex("08 00 e0 03") # jr $ra
 
 class PSEXEAnalyzer:
-	def __init__(self, _file: BinaryIO):
+	def __init__(self, file: BinaryIO):
 		(
 			magic,
 			entryPoint,
@@ -564,7 +564,7 @@ class PSEXEAnalyzer:
 			stackLength,
 			_
 		) = \
-			parseStructFromFile(_file, _EXE_HEADER_STRUCT)
+			parseStructFromFile(file, _EXE_HEADER_STRUCT)
 
 		if magic != _EXE_HEADER_MAGIC:
 			raise RuntimeError("file is not a valid PS1 executable")
@@ -572,9 +572,9 @@ class PSEXEAnalyzer:
 		self.entryPoint:   int   = entryPoint
 		self.startAddress: int   = startAddress
 		self.endAddress:   int   = startAddress + length
-		self.body:         bytes = _file.read(length)
+		self.body:         bytes = file.read(length)
 
-		#_file.close()
+		#file.close()
 
 	def __getitem__(self, key: int | slice) -> Any:
 		if isinstance(key, slice):

@@ -23,7 +23,7 @@
 				"properties": {
 					"type": {
 						"title":       "Entry type",
-						"description": "Must be 'empty', 'text', 'binary', 'tim', 'metrics', 'palette' or 'strings'.",
+						"description": "Must be 'empty', 'text', 'binary', 'tim', 'metrics', 'palette', 'strings' or 'db'.",
 						"type":        "string",
 
 						"enum": [
@@ -33,7 +33,8 @@
 							"tim",
 							"metrics",
 							"palette",
-							"strings"
+							"strings",
+							"db"
 						]
 					},
 					"name": {
@@ -173,12 +174,12 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "pattern": "^metrics|palette|strings$" },
+							"type": { "pattern": "^metrics|palette|strings|db$" },
 							"name": { "type":    "string" },
 
 							"source": {
 								"title":       "Path to source file",
-								"description": "Path to the JSON file containing font metrics, palette entries or strings (if such data is not part of the entry object), relative to the configuration file's directory by default.",
+								"description": "Path to the JSON file containing font metrics, palette entries, strings or the game list (if such data is not part of the entry object), relative to the configuration file's directory by default.",
 								"type":        "string",
 
 								"format": "uri-reference"
@@ -226,6 +227,21 @@
 							"strings": {
 								"title":       "String table",
 								"description": "Object representing the string table's keys and values. If not specified, the source attribute must be a path to a JSON file containing this object.",
+								"type":        "object"
+							}
+						}
+					},
+					{
+						"required":             [ "db" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type": { "const": "db" },
+							"name": { "type":  "string" },
+
+							"strings": {
+								"title":       "Game database",
+								"description": "Game database root object. If not specified, the source attribute must be a path to a JSON file containing this object.",
 								"type":        "object"
 							}
 						}

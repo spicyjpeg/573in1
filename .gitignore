@@ -13,7 +13,3 @@ __pycache__/
 # Do not include user-specific workspace and configuration files.
 *.code-workspace
 CMakeUserPresets.json
-
-# Do not include the dumps used to generate the cartdb files.
-#data/dumps/
-#data/tests/

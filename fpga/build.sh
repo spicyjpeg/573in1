@@ -2,8 +2,24 @@
 
 BUILD_DIR="build"
 
+if ! which yosys >/dev/null 2>&1; then
+	echo \
+		"Yosys (https://github.com/YosysHQ/yosys) must be installed and added" \
+		"to PATH in order to run this script."
+	exit 1
+fi
+
+if [ ! -d "$XILINX/bin/nt" ]; then
+	echo \
+		"The XILINX environment variable must be set to the root of a valid" \
+		"Xilinx ISE 3.3 (Windows) installation in order to run this script." \
+		"Note that the path cannot contain spaces due to ISE limitations."
+	exit 1
+fi
+
 case "$(uname -s)" in
 	CYGWIN*|MINGW*|MSYS*)
+		export PATH="$XILINX/bin/nt:$WINEPATH"
 		ISE_RUNNER=""
 		;;
 	*)
@@ -14,23 +30,10 @@ case "$(uname -s)" in
 			exit 1
 		fi
 
+		export WINEPATH="$(winepath -w "$XILINX");$WINEPATH"
 		ISE_RUNNER="wine"
 		;;
 esac
-
-if ! which yosys >/dev/null 2>&1; then
-	echo \
-		"Yosys (https://github.com/YosysHQ/yosys) must be installed and added" \
-		" to PATH in order to run this script."
-	exit 1
-fi
-if [ ! -d "$XILINX/bin/nt" ]; then
-	echo \
-		"The XILINX environment variable must be set to the root of a valid" \
-		"Xilinx ISE 3.3 (Windows) installation in order to run this script." \
-		"Note that the path cannot contain spaces due to ISE limitations."
-	exit 1
-fi
 
 cd "$(dirname "$0")"
 mkdir -p "$BUILD_DIR"

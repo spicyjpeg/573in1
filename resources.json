@@ -110,6 +110,12 @@
 			"source": "${PROJECT_SOURCE_DIR}/data/fpga.bit"
 		},
 		{
+			"type":   "db",
+			"name":   "data/games.db",
+			"source": "${PROJECT_SOURCE_DIR}/data/games.json"
+		},
+
+		{
 			"type":   "binary",
 			"name":   "data/x76f041.db",
 			"source": "${PROJECT_SOURCE_DIR}/data/x76f041.db"
@@ -118,11 +124,6 @@
 			"type":   "binary",
 			"name":   "data/zs01.db",
 			"source": "${PROJECT_SOURCE_DIR}/data/zs01.db"
-		},
-		{
-			"type":   "binary",
-			"name":   "data/flash.db",
-			"source": "${PROJECT_SOURCE_DIR}/data/flash.db"
 		}
 	]
 }

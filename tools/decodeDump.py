@@ -95,8 +95,8 @@ def main():
 	args:   Namespace      = parser.parse_args()
 
 	if args.input:
-		with args.input as _file:
-			data: bytes = _file.read()
+		with args.input as file:
+			data: bytes = file.read()
 
 		try:
 			dump: CartDump = parseCartDump(data)
@@ -110,8 +110,8 @@ def main():
 	if args.log:
 		printDumpInfo(dump, args.log)
 	if args.export:
-		with args.export as _file:
-			_file.write(dump.serialize())
+		with args.export as file:
+			file.write(dump.serialize())
 
 if __name__ == "__main__":
 	main()

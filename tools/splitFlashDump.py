@@ -17,12 +17,12 @@ _FLASH_BANK_SIZE:  int           = 0x400000
 _PCMCIA_BANK_SIZE: int           = 0x400000
 
 def splitFlash(inputPath: Path, outputPath: Path):
-	with open(inputPath, "rb") as _file:
+	with open(inputPath, "rb") as file:
 		for bank in _FLASH_BANKS:
 			with \
 				open(outputPath / f"29f016a.31{bank}", "wb") as even, \
 				open(outputPath / f"29f016a.27{bank}", "wb") as odd:
-				data: ByteString = _file.read(_FLASH_BANK_SIZE)
+				data: ByteString = file.read(_FLASH_BANK_SIZE)
 
 				even.write(data[0::2])
 				odd.write(data[1::2])
@@ -30,12 +30,12 @@ def splitFlash(inputPath: Path, outputPath: Path):
 def splitPCMCIACard(inputPath: Path, outputPath: Path, card: int, size: int):
 	name: str = f"pccard{card}_{size // 0x100000}mb"
 
-	with open(inputPath, "rb") as _file:
+	with open(inputPath, "rb") as file:
 		for bank in range(1, (size // _PCMCIA_BANK_SIZE) + 1):
 			with \
 				open(outputPath / f"{name}_{bank}l", "wb") as even, \
 				open(outputPath / f"{name}_{bank}u", "wb") as odd:
-				data: ByteString = _file.read(_PCMCIA_BANK_SIZE)
+				data: ByteString = file.read(_PCMCIA_BANK_SIZE)
 
 				even.write(data[0::2])
 				odd.write(data[1::2])
