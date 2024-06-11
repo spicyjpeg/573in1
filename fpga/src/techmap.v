@@ -68,20 +68,20 @@ endmodule
 
 (* techmap_celltype = "$_DFFE_PP0P_" *)
 module _ISE_FDCE (input D, input C, input R, input E, output Q);
-	FDCE _TECHMAP_REPLACE_ ( .D(D), .CE(E), .C(C), .CLR(R), .Q(Q) );
+	FDCE _TECHMAP_REPLACE_ ( .D(D), .C(C), .CLR(R), .CE(E), .Q(Q) );
 endmodule
 
 (* techmap_celltype = "$_DFFE_PP1P_" *)
 module _ISE_FDPE (input D, input C, input R, input E, output Q);
-	FDPE _TECHMAP_REPLACE_ ( .D(D), .CE(E), .C(C), .PRE(R), .Q(Q) );
+	FDPE _TECHMAP_REPLACE_ ( .D(D), .C(C), .PRE(R), .CE(E), .Q(Q) );
 endmodule
 
 (* techmap_celltype = "$_DLATCH_PP0_" *)
 module _ISE_LDCE_1 (input E, input R, input D, output Q);
-	LDCE_1 _TECHMAP_REPLACE_ ( .D(D), .GE(1), .G(E), .CLR(R), .Q(Q) );
+	LDCE_1 _TECHMAP_REPLACE_ ( .D(D), .G(E), .CLR(R), .GE(1'b1), .Q(Q) );
 endmodule
 
 (* techmap_celltype = "$_DLATCH_PP1_" *)
 module _ISE_LDPE_1 (input E, input R, input D, output Q);
-	LDPE_1 _TECHMAP_REPLACE_ ( .D(D), .GE(1), .G(E), .PRE(R), .Q(Q) );
+	LDPE_1 _TECHMAP_REPLACE_ ( .D(D), .G(E), .PRE(R), .GE(1'b1), .Q(Q) );
 endmodule

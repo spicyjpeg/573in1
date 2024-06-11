@@ -1,8 +1,40 @@
 
-module FPGA (
-	input clock29M,
-	input clock19M,
+/* Spartan-XL primitive library */
 
+module BUF    (input I, output O);                               endmodule
+module INV    (input I, output O);                               endmodule
+module AND2   (input I0, input I1, output O);                    endmodule
+module NAND2  (input I0, input I1, output O);                    endmodule
+module AND2B1 (input I0, input I1, output O);                    endmodule
+module OR2    (input I0, input I1, output O);                    endmodule
+module NOR2   (input I0, input I1, output O);                    endmodule
+module OR2B1  (input I0, input I1, output O);                    endmodule
+module XOR2   (input I0, input I1, output O);                    endmodule
+module XNOR2  (input I0, input I1, output O);                    endmodule
+module BUFT   (input I, input T, output O);                      endmodule
+module FDCE   (input D, input C, input CLR, input CE, output Q); endmodule
+module FDPE   (input D, input C, input PRE, input CE, output Q); endmodule
+module LDCE_1 (input D, input G, input CLR, input GE, output Q); endmodule
+module LDPE_1 (input D, input G, input PRE, input GE, output Q); endmodule
+
+module IPAD   (output IPAD);                                   endmodule
+module OPAD   (input OPAD);                                    endmodule
+module IOPAD  (inout IOPAD);                                   endmodule
+module IBUF   (input I, output O);                             endmodule
+module OBUF   (input I, output O);                             endmodule
+module OBUFT  (input I, input T, output O);                    endmodule
+module IOBUFT (input I, input T, output O, inout IO);          endmodule
+module BUFGLS (input I, output O);                             endmodule
+module IFDX   (input D, input C, input CE, output Q);          endmodule
+module IFDXI  (input D, input C, input CE, output Q);          endmodule
+module OFDX   (input D, input C, input CE, output Q);          endmodule
+module OFDXI  (input D, input C, input CE, output Q);          endmodule
+module OFDTX  (input D, input C, input CE, input T, output O); endmodule
+module OFDTXI (input D, input C, input CE, input T, output O); endmodule
+
+/* Top-level module */
+
+module FPGA (
 	input        nHostRead,
 	input        nHostWrite,
 	input        nHostEnable,
@@ -26,10 +58,13 @@ module FPGA (
 
 	/* System clocks */
 
-	wire _clock29M, _clock19M;
+	wire clockIn29M, _clock29M;
+	wire clockIn19M, _clock19M;
 
-	BUFGLS _clockBuf29M ( .I(clock29M), .O(_clock29M) );
-	BUFGLS _clockBuf19M ( .I(clock19M), .O(_clock19M) );
+	IPAD   _clockPad29M ( .IPAD(clockIn29M) );
+	IPAD   _clockPad19M ( .IPAD(clockIn19M) );
+	BUFGLS _clockBuf29M ( .I(clockIn29M), .O(_clock29M) );
+	BUFGLS _clockBuf19M ( .I(clockIn19M), .O(_clock19M) );
 
 	/* Host interface */
 
@@ -41,21 +76,21 @@ module FPGA (
 	wire _nHostReadFPGA  = _nHostRead  || _nHostEnable;
 	wire _nHostWriteFPGA = _nHostWrite || _nHostEnable;
 
-	// IOB flip-flop primitives (IFD*, OFD*) are explicitly used whenever
+	// IOB flip-flop primitives (IFDX, OFDX) are explicitly used whenever
 	// possible in order to minimize propagation delays and CLB usage.
-	IFD _nHostReadBuf   ( .C(_clock29M), .D(nHostRead),   .Q(_nHostRead) );
-	IFD _nHostWriteBuf  ( .C(_clock29M), .D(nHostWrite),  .Q(_nHostWrite) );
-	IFD _nHostEnableBuf ( .C(_clock29M), .D(nHostEnable), .Q(_nHostEnable) );
+	IFDX _nHostReadBuf   ( .C(_clock29M), .D(nHostRead),   .Q(_nHostRead),   .CE(1'b1) );
+	IFDX _nHostWriteBuf  ( .C(_clock29M), .D(nHostWrite),  .Q(_nHostWrite),  .CE(1'b1) );
+	IFDX _nHostEnableBuf ( .C(_clock29M), .D(nHostEnable), .Q(_nHostEnable), .CE(1'b1) );
 
 	generate
 		for (i = 0; i < 7; i++)
-			IFD _hostAddressBuf (
+			IFDX _hostAddressBuf (
 				.C(_clock29M), .D(hostAddress[i]), .Q(_hostAddress[i])
 			);
 
 		for (i = 0; i < 16; i++) begin
-			IFD   _hostDataInBuf  (
-				.C(_clock29M), .D(hostData[i]), .Q(_hostDataIn[i])
+			IFDX  _hostDataInBuf  (
+				.C(_clock29M), .D(hostData[i]), .Q(_hostDataIn[i]), .CE(1'b1)
 			);
 			OFDTX _hostDataOutBuf (
 				.C(_clock29M), .O(hostData[i]), .D(_hostDataOut[i]),
@@ -83,19 +118,21 @@ module FPGA (
 
 	generate
 		for (i = 0; i < 4; i++) begin
-			OFDX _lightBankA0Buf (
+			// Use "inverted" flip-flops so that all lights are turned off on
+			// startup.
+			OFDXI _lightBankA0Buf (
 				.C(_clock29M), .Q(lightBankA[i + 4]), .D(_lightBankData[i]),
 				.CE(_lightBankA0Write)
 			);
-			OFDX _lightBankA1Buf (
+			OFDXI _lightBankA1Buf (
 				.C(_clock29M), .Q(lightBankA[i]), .D(_lightBankData[i]),
 				.CE(_lightBankA1Write)
 			);
-			OFDX _lightBankBBuf  (
+			OFDXI _lightBankBBuf  (
 				.C(_clock29M), .Q(lightBankB[i]), .D(_lightBankData[i]),
 				.CE(_lightBankBWrite)
 			);
-			OFDX _lightBankDBuf  (
+			OFDXI _lightBankDBuf  (
 				.C(_clock29M), .Q(lightBankD[i]), .D(_lightBankData[i]),
 				.CE(_lightBankDWrite)
 			);
@@ -110,8 +147,8 @@ module FPGA (
 	// Note that the 1-wire pins are open drain and pulled low by writing 1
 	// (rather than 0) to the respective register bits, but not inverted when
 	// read.
-	IFD   _ds2401InBuf  ( .C(_clock29M), .D(ds2401), .Q(_ds2401In) );
-	IFD   _ds2433InBuf  ( .C(_clock29M), .D(ds2433), .Q(_ds2433In) );
+	IFDX  _ds2401InBuf  ( .C(_clock29M), .D(ds2401), .Q(_ds2401In), .CE(1'b1) );
+	IFDX  _ds2433InBuf  ( .C(_clock29M), .D(ds2433), .Q(_ds2433In), .CE(1'b1) );
 	OBUFT _ds2401OutBuf ( .O(ds2401), .I(1'b0), .T(~_ds2401Out) );
 	OBUFT _ds2433OutBuf ( .O(ds2433), .I(1'b0), .T(~_ds2433Out) );
 

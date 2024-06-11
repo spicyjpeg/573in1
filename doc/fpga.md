@@ -109,9 +109,8 @@ project as a prebuilt copy is provided in the `data` directory. This section is
 only relevant if you wish to modify the source files in the `fpga/src`
 directory, for instance to add new functionality.
 
-You will have to obtain and install a copy of Xilinx Foundation ISE 3.3. Later
-ISE releases such as 4.2 (the last one to support Spartan-XL devices) may also
-work but have not been tested. The toolchain is Windows only but seems to work
+You will have to obtain and install a copy of Xilinx ISE 4.2 (the last release
+to support Spartan-XL devices). The toolchain is Windows only but seems to work
 under Wine; the installer does not, however it is possible to sidestep it by
 manually invoking the Java-based extractor included in the installer as follows:
 
@@ -130,20 +129,27 @@ any spaces. You will additionally need a recent version of
 the [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build#installation)
 and should be added to the `PATH` environment variable.
 
-Once both are installed, you may compile the bitstream by running the following
-commands from the project's `fpga` directory (replace the ISE path
+Once both are installed, you may synthesize the bitstream by running the
+following commands from the project's `fpga` directory (replace the ISE path
 appropriately):
 
 ```bash
 # Windows
 set XILINX=C:\Xilinx
-.\build.bat
+mkdir build
+yosys fpga.ys
+.\runISE.bat
 
-# Linux (requires Wine)
+# Linux (using Wine)
 export XILINX=/opt/xilinx
-chmod +x build.sh
-./build.sh
+mkdir -p build
+yosys fpga.ys
+wine runISE.bat
 ```
 
-The bitstream can then be inspected by loading the generated `build/fpga.ncd`
-file into the ISE FPGA editor (`bin/nt/fpga_editor.exe`).
+The bitstream can then be visually inspected using the ISE FPGA editor:
+
+```bash
+"%XILINX%\bin\nt\fpga_editor.exe" build\fpga.ncd       # Windows
+wine "$XILINX/bit/nt/fpga_editor.exe" build/fpga.ncd   # Linux (using Wine)
+```

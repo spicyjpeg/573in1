@@ -1,8 +1,12 @@
 
+CONFIG PROHIBIT = "P77";  # /INIT
+CONFIG PROHIBIT = "P153"; # DIN
+CONFIG PROHIBIT = "P154"; # DOUT
+
 ## System clocks
 
-NET "clock29M" LOC = "P160";
-NET "clock19M" LOC = "P207";
+NET "clockIn29M" LOC = "P160";
+#NET "clockIn19M" LOC = "P207";
 
 ## Host interface
 

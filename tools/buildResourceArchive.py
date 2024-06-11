@@ -137,6 +137,16 @@ def main():
 
 					data: ByteString = generateStringTable(strings)
 
+				case "db":
+					if "db" in asset:
+						db: dict = asset["db"]
+					else:
+						with open(sourceDir / asset["source"], "rt") as file:
+							db: dict = json.load(file)
+
+					# TODO: implement
+					data: ByteString = b""
+
 				case _type:
 					raise KeyError(f"unsupported asset type '{_type}'")
 
