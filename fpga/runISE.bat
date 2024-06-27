@@ -20,7 +20,7 @@ ngdbuild synth.edf synth.ngd ^
 	-uc ..\fpga.ucf ^
 	-p %TARGET% ^
 	|| exit /b 2
-map -o mapped.ncd synth.ngd ^
+map -o mapped.ncd synth.ngd mapped.pcf ^
 	-p %TARGET% ^
 	-cm %COVER_MODE% ^
 	-os %OPTIMIZATION_MODE% ^
@@ -29,7 +29,7 @@ map -o mapped.ncd synth.ngd ^
 	-detail ^
 	|| exit /b 2
 
-par mapped.ncd fpga.ncd ^
+par mapped.ncd fpga.ncd mapped.pcf ^
 	-w ^
 	-detail ^
 	|| exit /b 3

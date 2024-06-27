@@ -13,8 +13,12 @@ uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
 
 /* System initialization */
 
-static constexpr int _RESET_DELAY     = 5000;
-static constexpr int _FPGA_INIT_DELAY = 1000;
+static constexpr int _IDE_RESET_ASSERT_DELAY = 5000;
+static constexpr int _IDE_RESET_CLEAR_DELAY  = 50000;
+
+static constexpr int _FPGA_RESET_DELAY    = 5000;
+static constexpr int _FPGA_STARTUP_DELAY  = 50000;
+static constexpr int _FPGA_INIT_REG_DELAY = 5000;
 
 void init(void) {
 	// Remapping the base address is required in order for IDE DMA to work
@@ -62,9 +66,9 @@ void initIOBoard(void) {
 	// Some of the digital I/O board's light outputs are controlled by the FPGA
 	// and cannot be turned off until the FPGA is initialized.
 	if (isDigitalIOPresent()) {
-		//SYS573D_CPLD_LIGHTS_B0 = 0xf000;
-		SYS573D_CPLD_LIGHTS_C0 = 0xf000;
-		SYS573D_CPLD_LIGHTS_C1 = 0xf000;
+		SYS573D_CPLD_LIGHTS_BL = 0xf000;
+		SYS573D_CPLD_LIGHTS_CL = 0xf000;
+		SYS573D_CPLD_LIGHTS_CH = 0xf000;
 	} else {
 		SYS573A_LIGHTS_A = 0x00ff;
 		SYS573A_LIGHTS_B = 0x00ff;
@@ -75,10 +79,10 @@ void initIOBoard(void) {
 
 void resetIDEDevices(void) {
 	SYS573_IDE_RESET = 0;
-	delayMicroseconds(_RESET_DELAY);
+	delayMicroseconds(_IDE_RESET_ASSERT_DELAY);
 
 	SYS573_IDE_RESET = 1;
-	delayMicroseconds(_RESET_DELAY);
+	delayMicroseconds(_IDE_RESET_CLEAR_DELAY);
 }
 
 /* JAMMA and RTC functions */
@@ -231,6 +235,8 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 	else
 		return false;
 
+	const uint16_t mask = SYS573D_CPLD_STAT_INIT | SYS573D_CPLD_STAT_DONE;
+
 	for (int i = 3; i; i--) {
 		SYS573D_CPLD_UNK_RESET = 0;
 
@@ -243,22 +249,18 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 			| SYS573D_CPLD_CTRL_DONE
 			| SYS573D_CPLD_CTRL_PROGRAM
 			| SYS573D_CPLD_CTRL_UNKNOWN;
+		delayMicroseconds(_FPGA_RESET_DELAY);
 
-		delayMicroseconds(_RESET_DELAY);
-
-		if (!(SYS573D_CPLD_STAT & SYS573D_CPLD_STAT_INIT))
+		if ((SYS573D_CPLD_STAT & mask) != SYS573D_CPLD_STAT_INIT)
 			continue;
 
 		writeFunc(data, length);
+		delayMicroseconds(_FPGA_STARTUP_DELAY);
 
-		const uint16_t mask = SYS573D_CPLD_STAT_INIT | SYS573D_CPLD_STAT_DONE;
+		if ((SYS573D_CPLD_STAT & mask) != mask)
+			continue;
 
-		for (int j = 15; j; j--) {
-			if ((SYS573D_CPLD_STAT & mask) == mask)
-				return true;
-
-			delayMicroseconds(_FPGA_INIT_DELAY);
-		}
+		return true;
 	}
 
 	return false;
@@ -267,19 +269,19 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 void initKonamiBitstream(void) {
 	SYS573D_FPGA_INIT = 0xf000;
 	SYS573D_FPGA_INIT = 0x0000;
-	delayMicroseconds(_FPGA_INIT_DELAY);
+	delayMicroseconds(_FPGA_INIT_REG_DELAY);
 
 	SYS573D_FPGA_INIT = 0xf000;
-	delayMicroseconds(_FPGA_INIT_DELAY);
+	delayMicroseconds(_FPGA_INIT_REG_DELAY);
 
 	// Turn off all lights including the ones that were left on by init().
-	SYS573D_FPGA_LIGHTS_A0 = 0xf000;
-	SYS573D_FPGA_LIGHTS_A1 = 0xf000;
-	SYS573D_CPLD_LIGHTS_B0 = 0xf000;
-	SYS573D_FPGA_LIGHTS_B1 = 0xf000;
-	SYS573D_CPLD_LIGHTS_C0 = 0xf000;
-	SYS573D_CPLD_LIGHTS_C1 = 0xf000;
-	SYS573D_FPGA_LIGHTS_D0 = 0xf000;
+	SYS573D_FPGA_LIGHTS_AL = 0xf000;
+	SYS573D_FPGA_LIGHTS_AH = 0xf000;
+	SYS573D_CPLD_LIGHTS_BL = 0xf000;
+	SYS573D_FPGA_LIGHTS_BH = 0xf000;
+	SYS573D_CPLD_LIGHTS_CL = 0xf000;
+	SYS573D_CPLD_LIGHTS_CH = 0xf000;
+	SYS573D_FPGA_LIGHTS_D  = 0xf000;
 }
 
 /* I2C driver */

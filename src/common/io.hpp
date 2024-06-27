@@ -153,11 +153,11 @@ static inline bool isDigitalIOPresent(void) {
 }
 
 static inline bool getDIO1Wire(void) {
-	return (SYS573D_FPGA_DS2401 >> 12) & 1;
+	return (SYS573D_FPGA_DS_BUS / SYS573D_FPGA_DS_BUS_DS2401) & 1;
 }
 
 static inline void setDIO1Wire(bool value) {
-	SYS573D_FPGA_DS2401 = (value ^ 1) << 12;
+	SYS573D_FPGA_DS_BUS = (value ^ 1) * SYS573D_FPGA_DS_BUS_DS2401;
 }
 
 /* Other APIs */

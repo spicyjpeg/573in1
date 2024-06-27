@@ -79,28 +79,27 @@ Note that the number is different from the one used by Konami (`0x1234`).
 |   14 | W  | Output D2 (0 = grounded, 1 = high-z) |
 |   15 | W  | Output D3 (0 = grounded, 1 = high-z) |
 
-### `0x1f6400ee` (FPGA, DDR/Mambo bitstream): **1-wire bus**
+### `0x1f6400ee`: **1-wire bus**
 
 When read:
 
 | Bits  | RW | Description               |
 | ----: | :- | :------------------------ |
-|  0-11 |    | _Unused_                  |
+|   0-7 |    | _Unused_                  |
+|     8 | R  | DS2433 1-wire bus readout |
+|  9-11 |    | _Unused_                  |
 |    12 | R  | DS2401 1-wire bus readout |
-|    13 | R  | DS2433 1-wire bus readout |
-| 14-15 |    | _Unused_                  |
+| 13-15 |    | _Unused_                  |
 
 When written:
 
 | Bits  | RW | Description                                                  |
 | ----: | :- | :----------------------------------------------------------- |
-|  0-11 |    | _Unused_                                                     |
+|   0-7 |    | _Unused_                                                     |
+|     8 | W  | Drive DS2433 1-wire bus low (1 = pull to ground, 0 = high-z) |
+|  9-11 |    | _Unused_                                                     |
 |    12 | W  | Drive DS2401 1-wire bus low (1 = pull to ground, 0 = high-z) |
-|    13 | W  | Drive DS2433 1-wire bus low (1 = pull to ground, 0 = high-z) |
-| 14-15 |    | _Unused_                                                     |
-
-Bit 13 is mapped to the bus of the (normally unpopulated) DS2433 footprint. It
-is currently unclear whether and how Konami's bitstreams expose this bus.
+| 13-15 |    | _Unused_                                                     |
 
 ## Building the bitstream
 

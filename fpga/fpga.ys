@@ -6,6 +6,7 @@
 ## Input and preliminary optimization
 
 read_verilog src/main.v
+read_verilog src/spartanxl.v
 hierarchy -check -top FPGA
 
 proc
@@ -39,23 +40,23 @@ clean
 ## FPGA-specific mapping
 
 dfflegalize -cell $_DFFE_PP?P_ r -cell $_DLATCH_PP?_ r
-
 opt_expr -mux_undef -noclkinv
 abc -g gates
-techmap -map src/techmap.v
-clean
-
 xilinx_dffopt -lut4
-clkbufmap -buf BUFGLS O:I
-iopadmap -bits -inpad IBUF O:I -outpad OBUF I:O -toutpad OBUFT ~T:I:O -tinoutpad IOBUFT ~T:O:I:IO -ignore IFDX D -ignore IFDXI D -ignore OFDX Q -ignore OFDXI Q -ignore OFDTX O -ignore OFDTXI O
+
+#clkbufmap -buf BUFGLS O:I
+iopadmap -bits -inpad IBUF O:I -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore IFDX D -ignore IFDXI D -ignore BUFGLS I
+iopadmap -bits -outpad OBUF I:O -toutpad OBUFT ~T:I:O -tinoutpad IOBUFT ~T:O:I:IO -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore OFDX Q -ignore OFDXI Q -ignore OFDTX O -ignore OFDTXI O
 extractinv -inv INV O:I
 techmap -map src/techmap.v
 clean
 
 ## Output
 
+# FIXME: for some reason invoking hierarchy here results in $or/$reduce_or
+# primitives being added back when using wired-or
+#hierarchy -check
 autoname
-hierarchy -check
 stat -tech xilinx
 check -noinit
 blackbox =A:whitebox

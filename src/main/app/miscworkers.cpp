@@ -268,8 +268,11 @@ bool App::_atapiEjectWorker(void) {
 		if (!(dev.flags & ide::DEVICE_ATAPI))
 			continue;
 
-		auto error =
-			ide::devices[0].startStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
+		auto error = ide::DISC_CHANGED;
+
+		while (error == ide::DISC_CHANGED)
+			error =
+				ide::devices[0].startStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
 
 		if (error) {
 			_messageScreen.setMessage(

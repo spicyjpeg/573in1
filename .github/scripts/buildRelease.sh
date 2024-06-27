@@ -35,7 +35,9 @@ make \
 	BUILD=Release \
 	PREFIX="$TOOLCHAIN_DIR/bin/mipsel-none-elf" \
 	FORMAT=elf32-littlemips \
-	FASTBOOT=true \
+	BOARD=system573 \
+	BOOT_MODE=psexe \
+	SPLASH_SCREEN=true \
 	EMBED_PSEXE="$PROJECT_DIR/build/${RELEASE_NAME}-tiny.psexe" \
 	|| exit 2
 

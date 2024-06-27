@@ -1,40 +1,11 @@
 
-/* Spartan-XL primitive library */
-
-module BUF    (input I, output O);                               endmodule
-module INV    (input I, output O);                               endmodule
-module AND2   (input I0, input I1, output O);                    endmodule
-module NAND2  (input I0, input I1, output O);                    endmodule
-module AND2B1 (input I0, input I1, output O);                    endmodule
-module OR2    (input I0, input I1, output O);                    endmodule
-module NOR2   (input I0, input I1, output O);                    endmodule
-module OR2B1  (input I0, input I1, output O);                    endmodule
-module XOR2   (input I0, input I1, output O);                    endmodule
-module XNOR2  (input I0, input I1, output O);                    endmodule
-module BUFT   (input I, input T, output O);                      endmodule
-module FDCE   (input D, input C, input CLR, input CE, output Q); endmodule
-module FDPE   (input D, input C, input PRE, input CE, output Q); endmodule
-module LDCE_1 (input D, input G, input CLR, input GE, output Q); endmodule
-module LDPE_1 (input D, input G, input PRE, input GE, output Q); endmodule
-
-module IPAD   (output IPAD);                                   endmodule
-module OPAD   (input OPAD);                                    endmodule
-module IOPAD  (inout IOPAD);                                   endmodule
-module IBUF   (input I, output O);                             endmodule
-module OBUF   (input I, output O);                             endmodule
-module OBUFT  (input I, input T, output O);                    endmodule
-module IOBUFT (input I, input T, output O, inout IO);          endmodule
-module BUFGLS (input I, output O);                             endmodule
-module IFDX   (input D, input C, input CE, output Q);          endmodule
-module IFDXI  (input D, input C, input CE, output Q);          endmodule
-module OFDX   (input D, input C, input CE, output Q);          endmodule
-module OFDXI  (input D, input C, input CE, output Q);          endmodule
-module OFDTX  (input D, input C, input CE, input T, output O); endmodule
-module OFDTXI (input D, input C, input CE, input T, output O); endmodule
-
-/* Top-level module */
-
 module FPGA (
+	// These are technically inputs, however they are already wired up to pad
+	// primitives within the module. They are only exposed here in order to
+	// allow for a testbench to inject the clocks during simulation.
+	inout clockIn29M,
+	inout clockIn19M,
+
 	input        nHostRead,
 	input        nHostWrite,
 	input        nHostEnable,
@@ -47,54 +18,161 @@ module FPGA (
 	output [16:0] sramAddress,
 	inout  [7:0]  sramData,
 
-	output [7:0] lightBankA,
-	output [3:0] lightBankB,
+	output [11:0] dramControl,
+	output [11:0] dramAddress,
+	inout  [15:0] dramData,
+
+	output mp3Reset,
+	input  mp3Ready,
+	output mp3ClockIn,
+	input  mp3ClockOut,
+	inout  mp3SDA,
+	inout  mp3SCL,
+
+	output mp3StatusCS,
+	input  mp3StatusError,
+	input  mp3StatusFrameSync,
+	input  mp3StatusDataReq,
+
+	output mp3InSDIN,
+	output mp3InBCLK,
+	output mp3InLRCK,
+	input  mp3OutSDOUT,
+	input  mp3OutBCLK,
+	input  mp3OutLRCK,
+
+	output dacSDIN,
+	output dacBCLK,
+	output dacLRCK,
+	output dacMCLK,
+
+	output [3:0] lightBankAH,
+	output [3:0] lightBankAL,
+	output [3:0] lightBankBH,
 	output [3:0] lightBankD,
 
-	inout ds2401,
-	inout ds2433
+	output networkTXEnable,
+	output networkTX,
+	input  networkRX,
+
+	output serialTX,
+	input  serialRX,
+	output serialRTS,
+	input  serialCTS,
+	output serialDTR,
+	input  serialDSR,
+
+	inout ds2433,
+	inout ds2401
 );
 	genvar i;
 
+	/* Register definitions */
+
+	localparam SYS573D_FPGA_MAGIC = 8'h80;
+
+	localparam SYS573D_FPGA_MP3_PTR_H     = 8'ha0;
+	localparam SYS573D_FPGA_MP3_PTR_L     = 8'ha2;
+	localparam SYS573D_FPGA_MP3_ENDPTR_H  = 8'ha4;
+	localparam SYS573D_FPGA_MP3_ENDPTR_L  = 8'ha6;
+	localparam SYS573D_FPGA_MP3_COUNTER   = 8'ha8;
+	localparam SYS573D_FPGA_MP3_KEY1      = 8'ha8;
+	localparam SYS573D_FPGA_MP3_FEED_STAT = 8'haa;
+	localparam SYS573D_FPGA_MP3_I2C       = 8'hac;
+	localparam SYS573D_FPGA_MP3_FEED_CTRL = 8'hae;
+
+	localparam SYS573D_FPGA_DRAM_WRPTR_H = 8'hb0;
+	localparam SYS573D_FPGA_DRAM_WRPTR_L = 8'hb2;
+	localparam SYS573D_FPGA_DRAM_DATA    = 8'hb4;
+	localparam SYS573D_FPGA_DRAM_RDPTR_H = 8'hb6;
+	localparam SYS573D_FPGA_DRAM_RDPTR_L = 8'hb8;
+
+	localparam SYS573D_FPGA_NET_DATA      = 8'hc0;
+	localparam SYS573D_FPGA_DAC_COUNTER_H = 8'hca;
+	localparam SYS573D_FPGA_DAC_COUNTER_L = 8'hcc;
+	localparam SYS573D_FPGA_DAC_COUNTER_D = 8'hce;
+
+	localparam SYS573D_FPGA_LIGHTS_AH = 8'he0;
+	localparam SYS573D_FPGA_LIGHTS_AL = 8'he2;
+	localparam SYS573D_FPGA_LIGHTS_BH = 8'he4;
+	localparam SYS573D_FPGA_LIGHTS_D  = 8'he6;
+	localparam SYS573D_FPGA_INIT      = 8'he8;
+	localparam SYS573D_FPGA_MP3_KEY2  = 8'hea;
+	localparam SYS573D_FPGA_MP3_KEY3  = 8'hec;
+	localparam SYS573D_FPGA_DS_BUS    = 8'hee;
+
 	/* System clocks */
 
-	wire clockIn29M, _clock29M;
-	wire clockIn19M, _clock19M;
+	wire clock29M, clock19M;
 
-	IPAD   _clockPad29M ( .IPAD(clockIn29M) );
-	IPAD   _clockPad19M ( .IPAD(clockIn19M) );
-	BUFGLS _clockBuf29M ( .I(clockIn29M), .O(_clock29M) );
-	BUFGLS _clockBuf19M ( .I(clockIn19M), .O(_clock19M) );
+	// ISE rejects global buffer primitives unless they are wired either to an
+	// IBUF (which results in suboptimal routing, as the dedicated IOB clock
+	// output is left unused) or directly to a pad primitive.
+	IPAD   clockPad29M (.IPAD(clockIn29M));
+	IPAD   clockPad19M (.IPAD(clockIn19M));
+	BUFGLS clockBuf29M (.I(clockIn29M), .O(clock29M));
+	BUFGLS clockBuf19M (.I(clockIn19M), .O(clock19M));
+
+	/* Host address decoding */
+
+	// The FPGA shall only respond to addresses in 0x80-0xef range, as 0xf0-0xff
+	// is used by the CPLD and 0x00-0x7f seems to be reserved for debugging
+	// hardware. Bit 0 of the 573's address bus is not wired to the FPGA as all
+	// registers are 16 bits wide.
+	wire hostAddrValid = hostAddress[6] & (hostAddress[5:3] != 3'b111);
+	wire hostRegRead   = ~nHostEnable & ~nHostRead & nHostWrite;
+	wire hostRegWrite  = ~nHostEnable & nHostRead  & ~nHostWrite;
+
+	wire [7:0] hostRegister = { 1'b1, hostAddress[5:0], 1'b0 };
 
 	/* Host interface */
 
-	wire        _nHostRead, _nHostWrite, _nHostEnable;
-	wire [6:0]  _hostAddress;
-	wire [15:0] _hostDataIn;
-	wire [15:0] _hostDataOut;
+	reg [2:0] _delayedHostRegRead = 3'b000;
+	wire      _hostDataInClock;
 
-	wire _nHostReadFPGA  = _nHostRead  || _nHostEnable;
-	wire _nHostWriteFPGA = _nHostWrite || _nHostEnable;
+	wire [15:0] hostDataIn;
+	wor  [15:0] hostDataOut;
 
-	// IOB flip-flop primitives (IFDX, OFDX) are explicitly used whenever
-	// possible in order to minimize propagation delays and CLB usage.
-	IFDX _nHostReadBuf   ( .C(_clock29M), .D(nHostRead),   .Q(_nHostRead),   .CE(1'b1) );
-	IFDX _nHostWriteBuf  ( .C(_clock29M), .D(nHostWrite),  .Q(_nHostWrite),  .CE(1'b1) );
-	IFDX _nHostEnableBuf ( .C(_clock29M), .D(nHostEnable), .Q(_nHostEnable), .CE(1'b1) );
+	reg hostDataInValid  = 1'b0;
+	reg hostDataOutValid = 1'b0;
+
+	// Data is latched in the input flip flops once the 573 *deasserts* either
+	// the chip select or the write strobe. Konami's bitstream routes this
+	// signal through a global net (_hostDataInClock), possibly since it is
+	// asynchronous and not tied to the main clock.
+	BUFGLS hostDataInUpdateBuf(.I(hostRegWrite), .O(_hostDataInClock));
+
+	wire hostDataInPending = ~hostRegWrite & hostDataInValid;
+
+	always @(posedge clock29M) begin
+		// Konami's bitstream pulls the output flip flops' clock enable low
+		// after 3 cycles if the register being read is in 0xa0-0xaf range (i.e.
+		// MP3 status and counters), in order to prevent any further updates
+		// while the counters are running. A 3-bit shift register is used to
+		// implement the delay.
+		_delayedHostRegRead <= { _delayedHostRegRead[1:0], hostRegRead };
+
+		// The direction of the bus is only changed on clock edges in order to
+		// prevent any data from being output before the output flip flops are
+		// updated.
+		hostDataInValid  <= hostRegWrite;
+		hostDataOutValid <= hostAddrValid & hostRegRead;
+	end
 
 	generate
-		for (i = 0; i < 7; i++)
-			IFDX _hostAddressBuf (
-				.C(_clock29M), .D(hostAddress[i]), .Q(_hostAddress[i])
+		for (i = 0; i < 16; i = i + 1) begin
+			IFDX hostDataInReg (
+				.D(hostData[i]),
+				.C(~_hostDataInClock),
+				.CE(1'b1),
+				.Q(hostDataIn[i])
 			);
-
-		for (i = 0; i < 16; i++) begin
-			IFDX  _hostDataInBuf  (
-				.C(_clock29M), .D(hostData[i]), .Q(_hostDataIn[i]), .CE(1'b1)
-			);
-			OFDTX _hostDataOutBuf (
-				.C(_clock29M), .O(hostData[i]), .D(_hostDataOut[i]),
-				.CE(~_nHostReadFPGA), .T(_nHostReadFPGA)
+			OFDTX hostDataOutReg (
+				.D(hostDataOut[i]),
+				.C(clock29M),
+				.CE(~_delayedHostRegRead[2]),
+				.T(~hostDataOutValid),
+				.O(hostData[i])
 			);
 		end
 	endgenerate
@@ -105,71 +183,107 @@ module FPGA (
 	assign nSRAMWrite  = 1'b1;
 	assign nSRAMEnable = 1'b1;
 	assign sramAddress = 17'h1ffff;
-	assign sramData    = 8'hff;
+
+	/* DRAM interface (currently unused) */
+
+	assign dramControl = 12'hfff;
+	assign dramAddress = 12'hfff;
+
+	/* MP3 decoder interface (currently unused) */
+
+	assign mp3Reset    = 1'b1;
+	assign mp3ClockIn  = 1'b1;
+	assign mp3StatusCS = 1'b1;
+
+	assign mp3InSDIN = 1'b1;
+	assign mp3InBCLK = 1'b1;
+	assign mp3InLRCK = 1'b1;
+
+	assign hostDataOut = (hostRegister == SYS573D_FPGA_MP3_I2C)
+		? { 2'h0, mp3SCL, mp3SDA, 12'h000 }
+		: 16'h0000;
+
+	reg mp3SDAState = 1'b0;
+	reg mp3SCLState = 1'b0;
+
+	always @(posedge clock29M)
+		if (hostDataInPending & (hostRegister == SYS573D_FPGA_MP3_I2C)) begin
+			mp3SDAState <= hostDataIn[12];
+			mp3SCLState <= hostDataIn[13];
+		end
+
+	assign mp3SDA = mp3SDAState ? 1'bz : 1'b0;
+	assign mp3SCL = mp3SCLState ? 1'bz : 1'b0;
+
+	/* I2S audio output */
+
+	assign dacSDIN = mp3OutSDOUT;
+	assign dacBCLK = mp3OutBCLK;
+	assign dacLRCK = mp3OutLRCK;
+	assign dacMCLK = mp3ClockOut;
+
+	/* Magic number */
+
+	assign hostDataOut = (hostRegister == SYS573D_FPGA_MAGIC)
+		? 16'h573f
+		: 16'h0000;
 
 	/* Light outputs */
 
-	wire [3:0] _lightBankData = _hostDataIn[15:12];
-
-	wire _lightBankA0Write = ~_nHostWriteFPGA & (_hostAddress == 7'h70);
-	wire _lightBankA1Write = ~_nHostWriteFPGA & (_hostAddress == 7'h71);
-	wire _lightBankBWrite  = ~_nHostWriteFPGA & (_hostAddress == 7'h72);
-	wire _lightBankDWrite  = ~_nHostWriteFPGA & (_hostAddress == 7'h73);
-
 	generate
-		for (i = 0; i < 4; i++) begin
-			// Use "inverted" flip-flops so that all lights are turned off on
-			// startup.
-			OFDXI _lightBankA0Buf (
-				.C(_clock29M), .Q(lightBankA[i + 4]), .D(_lightBankData[i]),
-				.CE(_lightBankA0Write)
-			);
-			OFDXI _lightBankA1Buf (
-				.C(_clock29M), .Q(lightBankA[i]), .D(_lightBankData[i]),
-				.CE(_lightBankA1Write)
-			);
-			OFDXI _lightBankBBuf  (
-				.C(_clock29M), .Q(lightBankB[i]), .D(_lightBankData[i]),
-				.CE(_lightBankBWrite)
-			);
-			OFDXI _lightBankDBuf  (
-				.C(_clock29M), .Q(lightBankD[i]), .D(_lightBankData[i]),
-				.CE(_lightBankDWrite)
-			);
+		for (i = 0; i < 4; i = i + 1) begin
+			reg [3:0] lightBankState = 4'b1111;
+
+			wire dataIn = hostDataIn[i + 12];
+
+			always @(posedge clock29M)
+				if (hostDataInPending)
+					case (hostRegister)
+						SYS573D_FPGA_LIGHTS_AH:
+							lightBankState[0] <= dataIn;
+						SYS573D_FPGA_LIGHTS_AL:
+							lightBankState[1] <= dataIn;
+						SYS573D_FPGA_LIGHTS_BH:
+							lightBankState[2] <= dataIn;
+						SYS573D_FPGA_LIGHTS_D:
+							lightBankState[3] <= dataIn;
+					endcase
+
+			// Note that XCS40XL IOBs actually have a tristate flip flop, but
+			// there seems to be no primitive exposed by ISE to force its usage.
+			assign lightBankAH[i] = lightBankState[0] ? 1'bz : 1'b0;
+			assign lightBankAL[i] = lightBankState[1] ? 1'bz : 1'b0;
+			assign lightBankBH[i] = lightBankState[2] ? 1'bz : 1'b0;
+			assign lightBankD[i]  = lightBankState[3] ? 1'bz : 1'b0;
 		end
 	endgenerate
 
+	/* Serial interfaces (currently unused) */
+
+	assign networkTXEnable = 1'b1;
+	assign networkTX       = 1'b1;
+
+	assign serialTX  = 1'b1;
+	assign serialRTS = 1'b1;
+	assign serialDTR = 1'b1;
+
 	/* 1-wire bus */
 
-	wire _ds2401In,  _ds2433In;
-	reg  _ds2401Out, _ds2433Out;
+	assign hostDataOut = (hostRegister == SYS573D_FPGA_DS_BUS)
+		? { 3'h0, ds2401, 3'h0, ds2433, 8'h00 }
+		: 16'h0000;
 
-	// Note that the 1-wire pins are open drain and pulled low by writing 1
-	// (rather than 0) to the respective register bits, but not inverted when
-	// read.
-	IFDX  _ds2401InBuf  ( .C(_clock29M), .D(ds2401), .Q(_ds2401In), .CE(1'b1) );
-	IFDX  _ds2433InBuf  ( .C(_clock29M), .D(ds2433), .Q(_ds2433In), .CE(1'b1) );
-	OBUFT _ds2401OutBuf ( .O(ds2401), .I(1'b0), .T(~_ds2401Out) );
-	OBUFT _ds2433OutBuf ( .O(ds2433), .I(1'b0), .T(~_ds2433Out) );
+	reg ds2433State = 1'b0;
+	reg ds2401State = 1'b0;
 
-	wire _dsBusWrite = ~_nHostWriteFPGA & (_hostAddress == 7'h77);
-
-	always @(posedge _clock29M)
-		if (_dsBusWrite) begin
-			_ds2401Out <= _hostDataIn[12];
-			_ds2433Out <= _hostDataIn[13];
+	always @(posedge clock29M)
+		if (hostDataInPending & (hostRegister == SYS573D_FPGA_DS_BUS)) begin
+			ds2433State <= hostDataIn[8];
+			ds2401State <= hostDataIn[12];
 		end
 
-	/* Readable registers */
-
-	wire [15:0] _magicNumberData = 16'h573f;
-	wire [15:0] _dsBusData       = { 2'h0, _ds2433In, _ds2401In, 12'h000 };
-
-	wire _magicNumberRead = ~_nHostReadFPGA & (_hostAddress == 7'h40);
-	wire _dsBusRead       = ~_nHostReadFPGA & (_hostAddress == 7'h77);
-
-	assign _hostDataOut =
-		_magicNumberRead ? _magicNumberData :
-		_dsBusRead       ? _dsBusData :
-		16'h0000;
+	// The 1-wire pins are pulled low by writing 1 (rather than 0) to the
+	// respective register bits, but not inverted when read.
+	assign ds2433 = ds2433State ? 1'b0 : 1'bz;
+	assign ds2401 = ds2401State ? 1'b0 : 1'bz;
 endmodule
