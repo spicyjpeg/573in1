@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.25)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 
 project(
-	cart-tool
+	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      0.4.6
-	DESCRIPTION  "Konami System 573 security cartridge tool"
+	VERSION      0.4.7
+	DESCRIPTION  "Konami System 573 maintenance tool"
 )
 
 set(

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ROOT_DIR="$(pwd)"
-PROJECT_DIR="$ROOT_DIR/cart-tool"
+PROJECT_DIR="$ROOT_DIR/573in1"
 OPENBIOS_DIR="$ROOT_DIR/nugget/openbios"
 TOOLCHAIN_DIR="$ROOT_DIR/gcc-mipsel-none-elf"
 
@@ -14,7 +14,7 @@ cmake --build "$PROJECT_DIR/build" \
 
 RELEASE_NAME="$(
 	ls "$PROJECT_DIR/build" |
-	grep -E -o '^cart-tool-[0-9]+\.[0-9]+\.[0-9]+' |
+	grep -E -o '^573in1-[0-9]+\.[0-9]+\.[0-9]+' |
 	head -n 1
 )"
 

@@ -1,4 +1,4 @@
-- Konami System 573 tool -
+- 573in1: Konami System 573 maintenance tool -
 
 Version ${PROJECT_VERSION} 
 (C) 2022-2024 spicyjpeg 
@@ -25,6 +25,7 @@ Testing:
 Special thanks: 
     987123879113 
     Gabrimax 
+    Hyphen/4434 
     Martin Korth (nocash) 
     Nicolas Noble 
     Everyone on the Rhythm Game Cabs and PSX.Dev Discord servers 
@@ -182,7 +183,5 @@ Software.
 
 
 
-
-
-Several security cartridges were killed during the development of this tool. May
-they rest in peace.
+A System 573, a flash chip and several security cartridges were killed during
+the development of this tool. May they all rest in peace.

@@ -1,6 +1,6 @@
 
-Konami System 573 tool
-======================
+573in1: Konami System 573 maintenance tool
+==========================================
 
 Version ${PROJECT_VERSION}
 (C) 2022-2024 spicyjpeg

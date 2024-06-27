@@ -21,7 +21,7 @@ jobs:
     - name: Fetch repo contents
       uses: actions/checkout@v4
       with:
-        path: cart-tool
+        path: 573in1
 
     - name: Fetch OpenBIOS repo contents
       uses: actions/checkout@v4
@@ -34,27 +34,27 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get install -y --no-install-recommends ninja-build mame-tools
-        sudo pip3 install -r cart-tool/tools/requirements.txt
+        sudo pip3 install -r 573in1/tools/requirements.txt
 
     - name: Build GCC toolchain
       if:   ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
-        cart-tool/.github/scripts/buildToolchain.sh gcc-mipsel-none-elf mipsel-none-elf
+        573in1/.github/scripts/buildToolchain.sh gcc-mipsel-none-elf mipsel-none-elf
 
     - name: Build project
       run: |
-        cart-tool/.github/scripts/buildRelease.sh
+        573in1/.github/scripts/buildRelease.sh
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name:              build
         if-no-files-found: error
-        path:              cart-tool-*.zip
+        path:              573in1-*.zip
 
     - name: Publish release
       if:   ${{ github.ref_type == 'tag' }}
       uses: softprops/action-gh-release@v1
       with:
         fail_on_unmatched_files: true
-        files:                   cart-tool-*.zip
+        files:                   573in1-*.zip

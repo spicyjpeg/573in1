@@ -431,56 +431,43 @@ static constexpr inline util::Hash operator""_h(
 
 /* Logging macros */
 
-#ifdef ENABLE_APP_LOGGING
-#define LOG_APP(fmt, ...) \
+#define LOG(type, fmt, ...) \
 	util::logger.log( \
-		"app,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
+		type ",%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
 	)
+
+#ifdef ENABLE_APP_LOGGING
+#define LOG_APP(fmt, ...) LOG("app", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_APP(fmt, ...)
 #endif
 
 #ifdef ENABLE_CART_IO_LOGGING
-#define LOG_CART_IO(fmt, ...) \
-	util::logger.log( \
-		"cart,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
-	)
+#define LOG_CART_IO(fmt, ...) LOG("cart", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_CART_IO(fmt, ...)
 #endif
 
 #ifdef ENABLE_CART_DATA_LOGGING
-#define LOG_CART_DATA(fmt, ...) \
-	util::logger.log( \
-		"data,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
-	)
+#define LOG_CART_DATA(fmt, ...) LOG("data", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_CART_DATA(fmt, ...)
 #endif
 
 #ifdef ENABLE_ROM_LOGGING
-#define LOG_ROM(fmt, ...) \
-	util::logger.log( \
-		"rom,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
-	)
+#define LOG_ROM(fmt, ...) LOG("rom", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_ROM(fmt, ...)
 #endif
 
 #ifdef ENABLE_IDE_LOGGING
-#define LOG_IDE(fmt, ...) \
-	util::logger.log( \
-		"ide,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
-	)
+#define LOG_IDE(fmt, ...) LOG("ide", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_IDE(fmt, ...)
 #endif
 
 #ifdef ENABLE_FS_LOGGING
-#define LOG_FS(fmt, ...) \
-	util::logger.log( \
-		"fs,%s(%d): " fmt, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__ \
-	)
+#define LOG_FS(fmt, ...) LOG("fs", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_FS(fmt, ...)
 #endif
