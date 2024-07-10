@@ -9,7 +9,8 @@
 
 namespace io {
 
-uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
+uint16_t        _bankSwitchReg, _cartOutputReg, _miscOutputReg;
+static uint16_t _digitalIOI2CReg, _digitalIODSBusReg;
 
 /* System initialization */
 
@@ -50,9 +51,9 @@ void init(void) {
 	_bankSwitchReg = 0;
 	_cartOutputReg = 0;
 	_miscOutputReg = 0
-		| SYS573_MISC_OUT_ADC_MOSI
+		| SYS573_MISC_OUT_ADC_DI
 		| SYS573_MISC_OUT_ADC_CS
-		| SYS573_MISC_OUT_ADC_SCK
+		| SYS573_MISC_OUT_ADC_CLK
 		| SYS573_MISC_OUT_JVS_RESET;
 
 	SYS573_BANK_CTRL = _bankSwitchReg;
@@ -181,7 +182,13 @@ static void _writeBitstreamMSB(const uint8_t *data, size_t length) {
 	}
 }
 
-bool loadBitstream(const uint8_t *data, size_t length) {
+bool isDigitalIOPresent(void) {
+	const uint16_t mask = SYS573D_CPLD_STAT_ID1 | SYS573D_CPLD_STAT_ID2;
+
+	return ((SYS573D_CPLD_STAT & mask) == SYS573D_CPLD_STAT_ID2);
+}
+
+bool loadDigitalIOBitstream(const uint8_t *data, size_t length) {
 	// Konami's bitstreams are always stored LSB-first and with no headers,
 	// however Xilinx tools export .bit files which contain MSB-first bitstreams
 	// wrapped in a TLV container. In order to upload the bitstream properly,
@@ -189,7 +196,7 @@ bool loadBitstream(const uint8_t *data, size_t length) {
 	// https://www.fpga-faq.com/FAQ_Pages/0026_Tell_me_about_bit_files.htm and
 	// the "Data Stream Format" section in the XCS40XL datasheet for details.
 	if (data[0] == 0xff)
-		return loadRawBitstream(data, length);
+		return loadDigitalIORawBitstream(data, length);
 
 	auto     dataEnd      = &data[length];
 	uint16_t headerLength = (data[0] << 8) | data[1];
@@ -208,7 +215,7 @@ bool loadBitstream(const uint8_t *data, size_t length) {
 					| data[4];
 				data     += 5;
 
-				return loadRawBitstream(data, tagLength);
+				return loadDigitalIORawBitstream(data, tagLength);
 
 			default:
 				tagLength = (data[1] << 8) | data[2];
@@ -221,7 +228,7 @@ bool loadBitstream(const uint8_t *data, size_t length) {
 	return false;
 }
 
-bool loadRawBitstream(const uint8_t *data, size_t length) {
+bool loadDigitalIORawBitstream(const uint8_t *data, size_t length) {
 	if (data[0] != 0xff)
 		return false;
 
@@ -266,7 +273,7 @@ bool loadRawBitstream(const uint8_t *data, size_t length) {
 	return false;
 }
 
-void initKonamiBitstream(void) {
+void initDigitalIOFPGA(void) {
 	SYS573D_FPGA_INIT = 0xf000;
 	SYS573D_FPGA_INIT = 0x0000;
 	delayMicroseconds(_FPGA_INIT_REG_DELAY);
@@ -282,6 +289,16 @@ void initKonamiBitstream(void) {
 	SYS573D_CPLD_LIGHTS_CL = 0xf000;
 	SYS573D_CPLD_LIGHTS_CH = 0xf000;
 	SYS573D_FPGA_LIGHTS_D  = 0xf000;
+
+	_digitalIOI2CReg   = 0
+		| SYS573D_FPGA_MP3_I2C_SDA
+		| SYS573D_FPGA_MP3_I2C_SCL;
+	_digitalIODSBusReg = 0
+		| SYS573D_FPGA_DS_BUS_DS2401
+		| SYS573D_FPGA_DS_BUS_DS2433;
+
+	SYS573D_FPGA_MP3_I2C = _digitalIOI2CReg;
+	SYS573D_FPGA_DS_BUS  = _digitalIODSBusReg;
 }
 
 /* I2C driver */
@@ -289,172 +306,203 @@ void initKonamiBitstream(void) {
 static constexpr int _I2C_BUS_DELAY   = 50;
 static constexpr int _I2C_RESET_DELAY = 500;
 
-// SDA is open-drain so it is toggled by changing pin direction.
-#define _SDA(value)   setCartSDADir(!(value))
-#define SDA(value)    _SDA(value), delayMicroseconds(_I2C_BUS_DELAY)
-#define _SCL(value)   setCartOutput(OUT_SCL, value)
-#define SCL(value)    _SCL(value), delayMicroseconds(_I2C_BUS_DELAY)
-#define _CS(value)    setCartOutput(OUT_CS, value)
-#define CS(value)     _CS(value), delayMicroseconds(_I2C_BUS_DELAY)
-#define _RESET(value) setCartOutput(OUT_RESET, value)
-#define RESET(value)  _RESET(value), delayMicroseconds(_I2C_BUS_DELAY)
+void I2CDriver::start(void) const {
+	_setSDA(true);
+	_setSCL(true, _I2C_BUS_DELAY);
 
-void i2cStart(void) {
-	_SDA(true);
-	SCL(true);
-
-	SDA(false); // START: SDA falling, SCL high
-	SCL(false);
+	_setSDA(false, _I2C_BUS_DELAY); // START: SDA falling, SCL high
+	_setSCL(false, _I2C_BUS_DELAY);
 }
 
-void i2cStartWithCS(int csDelay) {
-	_SDA(true);
-	_SCL(false);
-	CS(true);
+void I2CDriver::startWithCS(int csDelay) const {
+	_setSDA(true);
+	_setSCL(false);
+	_setCS(true, _I2C_BUS_DELAY);
 
-	CS(false);
-	delayMicroseconds(csDelay);
-	SCL(true);
+	_setCS(false, _I2C_BUS_DELAY + csDelay);
+	_setSCL(true, _I2C_BUS_DELAY);
 
-	SDA(false); // START: SDA falling, SCL high
-	SCL(false);
+	_setSDA(false, _I2C_BUS_DELAY); // START: SDA falling, SCL high
+	_setSCL(false, _I2C_BUS_DELAY);
 }
 
-void i2cStop(void) {
-	_SDA(false);
-	SCL(true);
+void I2CDriver::stop(void) const {
+	_setSDA(false);
 
-	SDA(true); // STOP: SDA rising, SCL high
+	_setSCL(true, _I2C_BUS_DELAY);
+	_setSDA(true, _I2C_BUS_DELAY); // STOP: SDA rising, SCL high
 }
 
-void i2cStopWithCS(int csDelay) {
-	_SDA(false);
-	SCL(true);
+void I2CDriver::stopWithCS(int csDelay) const {
+	_setSDA(false);
 
-	SDA(true); // STOP: SDA rising, SCL high
+	_setSCL(true, _I2C_BUS_DELAY);
+	_setSDA(true, _I2C_BUS_DELAY); // STOP: SDA rising, SCL high
 
-	SCL(false);
-	delayMicroseconds(csDelay);
-	CS(true);
+	_setSCL(false, _I2C_BUS_DELAY + csDelay);
+	_setCS(true, _I2C_BUS_DELAY);
 }
 
-uint8_t i2cReadByte(void) {
+bool I2CDriver::getACK(void) const {
+	delayMicroseconds(_I2C_BUS_DELAY); // Required for ZS01
+
+	_setSCL(true, _I2C_BUS_DELAY);
+	bool ack = _getSDA();
+	_setSCL(false, _I2C_BUS_DELAY * 2);
+
+	return ack ^ 1;
+}
+
+void I2CDriver::sendACK(bool ack) const {
+	_setSDA(ack ^ 1);
+	_setSCL(true, _I2C_BUS_DELAY);
+	_setSCL(false, _I2C_BUS_DELAY);
+	_setSDA(true, _I2C_BUS_DELAY);
+}
+
+uint8_t I2CDriver::readByte(void) const {
 	uint8_t value = 0;
 
-	for (int bit = 7; bit >= 0; bit--) { // MSB first
-		SCL(true);
-		if (getCartSDA())
-			value |= (1 << bit);
-		SCL(false);
+	for (int i = 7; i >= 0; i--) { // MSB first
+		_setSCL(true, _I2C_BUS_DELAY);
+		value |= _getSDA() << i;
+		_setSCL(false, _I2C_BUS_DELAY);
 	}
 
 	delayMicroseconds(_I2C_BUS_DELAY);
 	return value;
 }
 
-void i2cWriteByte(uint8_t value) {
-	for (int bit = 7; bit >= 0; bit--) { // MSB first
-		_SDA(value & (1 << bit));
-		SCL(true);
-		SCL(false);
+void I2CDriver::writeByte(uint8_t value) const {
+	for (int i = 7; i >= 0; i--) { // MSB first
+		_setSDA((value >> i) & 1);
+		_setSCL(true,  _I2C_BUS_DELAY);
+		_setSCL(false, _I2C_BUS_DELAY);
 	}
 
-	SDA(true);
+	_setSDA(true, _I2C_BUS_DELAY);
 }
 
-void i2cSendACK(bool ack) {
-	_SDA(!ack);
-	SCL(true);
-	SCL(false);
-	SDA(true);
-}
-
-bool i2cGetACK(void) {
-	delayMicroseconds(_I2C_BUS_DELAY); // Required for ZS01
-	SCL(true);
-	bool ack = !getCartSDA();
-	SCL(false);
-
-	delayMicroseconds(_I2C_BUS_DELAY);
-	return ack;
-}
-
-void i2cReadBytes(uint8_t *data, size_t length) {
+void I2CDriver::readBytes(uint8_t *data, size_t length) const {
 	for (; length; length--) {
-		*(data++) = i2cReadByte();
+		*(data++) = readByte();
 
 		if (length > 1)
-			i2cSendACK(true);
+			sendACK(true);
 	}
 }
 
-bool i2cWriteBytes(const uint8_t *data, size_t length, int lastACKDelay) {
+bool I2CDriver::writeBytes(
+	const uint8_t *data, size_t length, int lastACKDelay
+) const {
 	for (; length; length--) {
-		i2cWriteByte(*(data++));
+		writeByte(*(data++));
 
 		if (length == 1)
 			delayMicroseconds(lastACKDelay);
-		if (!i2cGetACK())
+		if (!getACK())
 			return false;
 	}
 
 	return true;
 }
 
-uint32_t i2cResetX76(void) {
+uint32_t I2CDriver::resetX76(void) const {
 	uint32_t value = 0;
 
-	_SDA(true);
-	_SCL(false);
-	_CS(false);
-	_RESET(false);
+	_setSDA(true);
+	_setSCL(false);
+	_setCS(false);
+	_setReset(false);
 
-	RESET(true);
-	SCL(true);
-	SCL(false);
-	RESET(false);
-	delayMicroseconds(_I2C_RESET_DELAY);
+	_setReset(true, _I2C_RESET_DELAY);
+	_setSCL(true, _I2C_BUS_DELAY);
+	_setSCL(false, _I2C_BUS_DELAY);
+	_setReset(false, _I2C_RESET_DELAY);
 
-	for (int bit = 0; bit < 32; bit++) { // LSB first
-		SCL(true);
-		if (getCartSDA())
-			value |= (1 << bit);
-		SCL(false);
+	for (int i = 0; i < 32; i++) { // LSB first
+		_setSCL(true, _I2C_BUS_DELAY);
+		value |= _getSDA() << i;
+		_setSCL(false, _I2C_BUS_DELAY);
 	}
 
-	CS(true);
-	SCL(true);
+	_setCS(true, _I2C_BUS_DELAY);
+	_setSCL(true, _I2C_BUS_DELAY);
 	return value;
 }
 
 // For whatever reason the ZS01 does not implement the exact same response to
 // reset protocol as the X76 chips. The reset pin is also active-low rather
 // than active-high, and CS is ignored.
-uint32_t i2cResetZS01(void) {
+uint32_t I2CDriver::resetZS01(void) const {
 	uint32_t value = 0;
 
-	_SDA(true);
-	_SCL(false);
-	_CS(false);
-	_RESET(true);
+	_setSDA(true);
+	_setSCL(false);
+	_setCS(false);
+	_setReset(true);
 
-	RESET(false);
-	RESET(true);
-	delayMicroseconds(_I2C_RESET_DELAY);
+	_setReset(false, _I2C_RESET_DELAY);
+	_setReset(true, _I2C_RESET_DELAY);
+	_setSCL(true, _I2C_BUS_DELAY);
+	_setSCL(false, _I2C_BUS_DELAY);
 
-	SCL(true);
-	SCL(false);
-
-	for (int bit = 31; bit >= 0; bit--) { // MSB first
-		if (getCartSDA())
-			value |= (1 << bit);
-		SCL(true);
-		SCL(false);
+	for (int i = 31; i >= 0; i--) { // MSB first
+		value |= _getSDA() << i;
+		_setSCL(true, _I2C_BUS_DELAY);
+		_setSCL(false, _I2C_BUS_DELAY);
 	}
 
-	SCL(true);
+	_setSCL(true, _I2C_BUS_DELAY);
 	return value;
 }
+
+bool CartI2CDriver::_getSDA(void) const {
+	return (SYS573_MISC_IN / SYS573_MISC_IN_CART_SDA) & 1;
+}
+
+void CartI2CDriver::_setSDA(bool value) const {
+	// SDA is open-drain so it is toggled by tristating the pin.
+	setCartOutput(CART_OUTPUT_SDA, false);
+	setCartSDADirection(value ^ 1);
+}
+
+void CartI2CDriver::_setSCL(bool value) const {
+	setCartOutput(CART_OUTPUT_SCL, value);
+}
+
+void CartI2CDriver::_setCS(bool value) const {
+	setCartOutput(CART_OUTPUT_CS, value);
+}
+
+void CartI2CDriver::_setReset(bool value) const {
+	setCartOutput(CART_OUTPUT_RESET, value);
+}
+
+bool DigitalIOI2CDriver::_getSDA(void) const {
+	return (SYS573D_FPGA_MP3_I2C / SYS573D_FPGA_MP3_I2C_SDA) & 1;
+}
+
+void DigitalIOI2CDriver::_setSDA(bool value) const {
+	if (value)
+		_digitalIOI2CReg |= SYS573D_FPGA_MP3_I2C_SDA;
+	else
+		_digitalIOI2CReg &= ~SYS573D_FPGA_MP3_I2C_SCL;
+
+	SYS573D_FPGA_MP3_I2C = _digitalIOI2CReg;
+}
+
+void DigitalIOI2CDriver::_setSCL(bool value) const {
+	if (value)
+		_digitalIOI2CReg |= SYS573D_FPGA_MP3_I2C_SDA;
+	else
+		_digitalIOI2CReg &= ~SYS573D_FPGA_MP3_I2C_SCL;
+
+	SYS573D_FPGA_MP3_I2C = _digitalIOI2CReg;
+}
+
+const CartI2CDriver      cartI2C;
+const DigitalIOI2CDriver digitalIOI2C;
 
 /* 1-wire driver */
 
@@ -471,95 +519,76 @@ static constexpr int _DS_ZERO_HIGH_TIME = 5;
 static constexpr int _DS_ONE_LOW_TIME   = 10;
 static constexpr int _DS_ONE_HIGH_TIME  = 55;
 
-#define _CART1WIRE(value) setCartOutput(OUT_1WIRE, !(value))
-#define _DIO1WIRE(value)  setDIO1Wire(value)
+bool OneWireDriver::reset(void) const {
+	_set(false, _DS_RESET_LOW_TIME);
+	_set(true, _DS_RESET_SAMPLE_DELAY);
+	bool present = _get();
 
-bool dsCartReset(void) {
-	_CART1WIRE(false);
-	delayMicroseconds(_DS_RESET_LOW_TIME);
-	_CART1WIRE(true);
-
-	delayMicroseconds(_DS_RESET_SAMPLE_DELAY);
-	bool present = !getCartInput(IN_1WIRE);
 	delayMicroseconds(_DS_RESET_DELAY);
-
-	return present;
+	return present ^ 1;
 }
 
-bool dsDIOReset(void) {
-	_DIO1WIRE(false);
-	delayMicroseconds(_DS_RESET_LOW_TIME);
-	_DIO1WIRE(true);
-
-	delayMicroseconds(_DS_RESET_SAMPLE_DELAY);
-	bool present = !getDIO1Wire();
-	delayMicroseconds(_DS_RESET_DELAY);
-
-	return present;
-}
-
-uint8_t dsCartReadByte(void) {
+uint8_t OneWireDriver::readByte(void) const {
 	uint8_t value = 0;
 
-	for (int bit = 0; bit < 8; bit++) { // LSB first
-		_CART1WIRE(false);
-		delayMicroseconds(_DS_READ_LOW_TIME);
-		_CART1WIRE(true);
-		delayMicroseconds(_DS_READ_SAMPLE_DELAY);
-		if (getCartInput(IN_1WIRE))
-			value |= (1 << bit);
+	for (int i = 0; i < 8; i++) { // LSB first
+		_set(false, _DS_READ_LOW_TIME);
+		_set(true, _DS_READ_SAMPLE_DELAY);
+		value |= _get() << i;
 		delayMicroseconds(_DS_READ_DELAY);
 	}
 
 	return value;
 }
 
-uint8_t dsDIOReadByte(void) {
-	uint8_t value = 0;
-
-	for (int bit = 0; bit < 8; bit++) { // LSB first
-		_DIO1WIRE(false);
-		delayMicroseconds(_DS_READ_LOW_TIME);
-		_DIO1WIRE(true);
-		delayMicroseconds(_DS_READ_SAMPLE_DELAY);
-		if (getDIO1Wire())
-			value |= (1 << bit);
-		delayMicroseconds(_DS_READ_DELAY);
-	}
-
-	return value;
-}
-
-void dsCartWriteByte(uint8_t value) {
-	for (int bit = 0; bit < 8; bit++) { // LSB first
-		if (value & (1 << bit)) {
-			_CART1WIRE(false);
-			delayMicroseconds(_DS_ONE_LOW_TIME);
-			_CART1WIRE(true);
-			delayMicroseconds(_DS_ONE_HIGH_TIME);
+void OneWireDriver::writeByte(uint8_t value) const {
+	for (int i = 8; i; i--, value >>= 1) { // LSB first
+		if (value & 1) {
+			_set(false, _DS_ONE_LOW_TIME);
+			_set(true, _DS_ONE_HIGH_TIME);
 		} else {
-			_CART1WIRE(false);
-			delayMicroseconds(_DS_ZERO_LOW_TIME);
-			_CART1WIRE(true);
-			delayMicroseconds(_DS_ZERO_HIGH_TIME);
+			_set(false, _DS_ZERO_LOW_TIME);
+			_set(true, _DS_ZERO_HIGH_TIME);
 		}
 	}
 }
 
-void dsDIOWriteByte(uint8_t value) {
-	for (int bit = 0; bit < 8; bit++) { // LSB first
-		if (value & (1 << bit)) {
-			_DIO1WIRE(false);
-			delayMicroseconds(_DS_ONE_LOW_TIME);
-			_DIO1WIRE(true);
-			delayMicroseconds(_DS_ONE_HIGH_TIME);
-		} else {
-			_DIO1WIRE(false);
-			delayMicroseconds(_DS_ZERO_LOW_TIME);
-			_DIO1WIRE(true);
-			delayMicroseconds(_DS_ZERO_HIGH_TIME);
-		}
-	}
+bool CartDS2401Driver::_get(void) const {
+	return getCartInput(CART_INPUT_DS2401);
 }
+
+void CartDS2401Driver::_set(bool value) const {
+	setCartOutput(CART_OUTPUT_DS2401, value ^ 1);
+}
+
+bool DigitalIODS2401Driver::_get(void) const {
+	return (SYS573D_FPGA_DS_BUS / SYS573D_FPGA_DS_BUS_DS2401) & 1;
+}
+
+void DigitalIODS2401Driver::_set(bool value) const {
+	if (value)
+		_digitalIODSBusReg &= ~SYS573D_FPGA_DS_BUS_DS2401;
+	else
+		_digitalIODSBusReg |= SYS573D_FPGA_DS_BUS_DS2401;
+
+	SYS573D_FPGA_DS_BUS = _digitalIODSBusReg;
+}
+
+bool DigitalIODS2433Driver::_get(void) const {
+	return (SYS573D_FPGA_DS_BUS / SYS573D_FPGA_DS_BUS_DS2433) & 1;
+}
+
+void DigitalIODS2433Driver::_set(bool value) const {
+	if (value)
+		_digitalIODSBusReg &= ~SYS573D_FPGA_DS_BUS_DS2433;
+	else
+		_digitalIODSBusReg |= SYS573D_FPGA_DS_BUS_DS2433;
+
+	SYS573D_FPGA_DS_BUS = _digitalIODSBusReg;
+}
+
+const CartDS2401Driver      cartDS2401;
+const DigitalIODS2401Driver digitalIODS2401;
+const DigitalIODS2433Driver digitalIODS2433;
 
 }

@@ -224,8 +224,12 @@ const util::ExecutableHeader *FlashRegion::getBootExecutableHeader(void) const {
 	for (size_t i = 1; i < length; i <<= 1)
 		crc = (crc >> 8) ^ table[(crc ^ data[i]) & 0xff];
 
-	if (~crc != *crcPtr)
+	if (~crc != *crcPtr) {
+		LOG_ROM("CRC32 mismatch");
+		LOG_ROM("exp=0x%08x", ~crc);
+		LOG_ROM("got=0x%08x", *crcPtr);
 		return nullptr;
+	}
 
 	return header;
 }

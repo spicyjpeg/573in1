@@ -98,7 +98,9 @@ _cartInitDone:
 			return true;
 		}
 
-		ready = io::loadBitstream(bitstream.as<uint8_t>(), bitstream.length);
+		ready = io::loadDigitalIOBitstream(
+			bitstream.as<uint8_t>(), bitstream.length
+		);
 		bitstream.destroy();
 
 		if (!ready) {
@@ -107,7 +109,7 @@ _cartInitDone:
 		}
 
 		delayMicroseconds(5000); // Probably not necessary
-		io::initKonamiBitstream();
+		io::initDigitalIOFPGA();
 
 		auto error = _cartDriver->readSystemID();
 

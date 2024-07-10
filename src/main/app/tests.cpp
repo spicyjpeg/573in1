@@ -205,19 +205,19 @@ void AudioTestScreen::playBoth(ui::Context &ctx) {
 }
 
 void AudioTestScreen::enableAmp(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_AMP_ENABLE, true);
+	io::setMiscOutput(io::MISC_OUT_AMP_ENABLE, true);
 }
 
 void AudioTestScreen::disableAmp(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_AMP_ENABLE, false);
+	io::setMiscOutput(io::MISC_OUT_AMP_ENABLE, false);
 }
 
 void AudioTestScreen::enableCDDA(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_CDDA_ENABLE, true);
+	io::setMiscOutput(io::MISC_OUT_CDDA_ENABLE, true);
 }
 
 void AudioTestScreen::disableCDDA(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_CDDA_ENABLE, false);
+	io::setMiscOutput(io::MISC_OUT_CDDA_ENABLE, false);
 }
 
 void AudioTestScreen::show(ui::Context &ctx, bool goBack) {
@@ -236,8 +236,8 @@ void AudioTestScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 #if 0
-			io::setMiscOutput(io::MISC_AMP_ENABLE,  false);
-			io::setMiscOutput(io::MISC_CDDA_ENABLE, false);
+			io::setMiscOutput(io::MISC_OUT_AMP_ENABLE,  false);
+			io::setMiscOutput(io::MISC_OUT_CDDA_ENABLE, false);
 #endif
 
 			ctx.show(APP->_testMenuScreen, true, true);

@@ -21,9 +21,9 @@
 /* System 573 base hardware */
 
 typedef enum {
-	SYS573_MISC_OUT_ADC_MOSI    = 1 << 0,
+	SYS573_MISC_OUT_ADC_DI      = 1 << 0,
 	SYS573_MISC_OUT_ADC_CS      = 1 << 1,
-	SYS573_MISC_OUT_ADC_SCK     = 1 << 2,
+	SYS573_MISC_OUT_ADC_CLK     = 1 << 2,
 	SYS573_MISC_OUT_COIN_COUNT1 = 1 << 3,
 	SYS573_MISC_OUT_COIN_COUNT2 = 1 << 4,
 	SYS573_MISC_OUT_AMP_ENABLE  = 1 << 5,
@@ -33,7 +33,7 @@ typedef enum {
 } Sys573MiscOutputFlag;
 
 typedef enum {
-	SYS573_MISC_IN_ADC_MISO   = 1 <<  0,
+	SYS573_MISC_IN_ADC_DO     = 1 <<  0,
 	SYS573_MISC_IN_ADC_SARS   = 1 <<  1,
 	SYS573_MISC_IN_CART_SDA   = 1 <<  2,
 	SYS573_MISC_IN_JVS_SENSE  = 1 <<  3,
@@ -138,11 +138,18 @@ typedef enum {
 } Sys573DCPLDControlFlag;
 
 typedef enum {
+	SYS573D_FPGA_MP3_I2C_SDA = 1 << 12,
+	SYS573D_FPGA_MP3_I2C_SCL = 1 << 13
+} Sys573DFPGAMP3I2CFlag;
+
+typedef enum {
 	SYS573D_FPGA_DS_BUS_DS2433 = 1 <<  8,
 	SYS573D_FPGA_DS_BUS_DS2401 = 1 << 12
 } Sys573DFPGADSBusFlag;
 
 #define SYS573D_FPGA_MAGIC _MMIO16(DEV0_BASE | 0x640080)
+
+#define SYS573D_FPGA_NET_ID _MMIO16(DEV0_BASE | 0x640090)
 
 #define SYS573D_FPGA_MP3_PTR_H     _MMIO16(DEV0_BASE | 0x6400a0)
 #define SYS573D_FPGA_MP3_PTR_L     _MMIO16(DEV0_BASE | 0x6400a2)

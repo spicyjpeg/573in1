@@ -117,6 +117,13 @@ DriverError DummyDriver::setDataKey(const uint8_t *key) {
 
 /* Functions common to all cartridge drivers */
 
+enum DS2401Command : uint8_t {
+	_DS2401_READ_ROM   = 0x33,
+	_DS2401_MATCH_ROM  = 0x55,
+	_DS2401_SKIP_ROM   = 0xcc,
+	_DS2401_SEARCH_ROM = 0xf0
+};
+
 // TODO: _ZS01_SEND_DELAY and _ZS01_PACKET_DELAY could be tweaked to make the
 // tool faster, however setting both to 30000 results in bricked carts when
 // attempting to reflash.
@@ -129,7 +136,7 @@ static constexpr int _ZS01_PACKET_DELAY = 300000;
 DriverError CartDriver::readSystemID(void) {
 	auto enable = disableInterrupts();
 
-	if (!io::dsDIOReset()) {
+	if (!io::digitalIODS2401.reset()) {
 		if (enable)
 			enableInterrupts();
 
@@ -139,9 +146,9 @@ DriverError CartDriver::readSystemID(void) {
 
 	_dump.flags |= DUMP_HAS_SYSTEM_ID;
 
-	io::dsDIOWriteByte(0x33);
+	io::digitalIODS2401.writeByte(_DS2401_READ_ROM);
 	for (int i = 0; i < 8; i++)
-		_dump.systemID.data[i] = io::dsDIOReadByte();
+		_dump.systemID.data[i] = io::digitalIODS2401.readByte();
 
 	if (enable)
 		enableInterrupts();
@@ -155,7 +162,7 @@ DriverError CartDriver::readSystemID(void) {
 DriverError X76Driver::readCartID(void) {
 	auto enable = disableInterrupts();
 
-	if (!io::dsCartReset()) {
+	if (!io::cartDS2401.reset()) {
 		if (enable)
 			enableInterrupts();
 
@@ -165,9 +172,9 @@ DriverError X76Driver::readCartID(void) {
 
 	_dump.flags |= DUMP_HAS_CART_ID;
 
-	io::dsCartWriteByte(0x33);
+	io::cartDS2401.writeByte(_DS2401_READ_ROM);
 	for (int i = 0; i < 8; i++)
-		_dump.cartID.data[i] = io::dsCartReadByte();
+		_dump.cartID.data[i] = io::cartDS2401.readByte();
 
 	if (enable)
 		enableInterrupts();
@@ -182,26 +189,26 @@ DriverError X76Driver::_x76Command(
 	uint8_t pollByte, uint8_t cmd, int param
 ) const {
 	delayMicroseconds(_X76_PACKET_DELAY);
-	io::i2cStartWithCS();
+	io::cartI2C.startWithCS();
 
-	io::i2cWriteByte(cmd);
-	if (!io::i2cGetACK()) {
-		io::i2cStopWithCS();
+	io::cartI2C.writeByte(cmd);
+	if (!io::cartI2C.getACK()) {
+		io::cartI2C.stopWithCS();
 		LOG_CART_IO("NACK while sending cmd=0x%02x", cmd);
 		return X76_NACK;
 	}
 
 	if (param >= 0) {
-		io::i2cWriteByte(param);
-		if (!io::i2cGetACK()) {
-			io::i2cStopWithCS();
+		io::cartI2C.writeByte(param);
+		if (!io::cartI2C.getACK()) {
+			io::cartI2C.stopWithCS();
 			LOG_CART_IO("NACK while sending param=0x%02x", param);
 			return X76_NACK;
 		}
 	}
 
-	if (!io::i2cWriteBytes(_dump.dataKey, sizeof(_dump.dataKey))) {
-		io::i2cStopWithCS();
+	if (!io::cartI2C.writeBytes(_dump.dataKey, sizeof(_dump.dataKey))) {
+		io::cartI2C.stopWithCS();
 		LOG_CART_IO("NACK while sending data key");
 		return X76_NACK;
 	}
@@ -218,13 +225,13 @@ DriverError X76Driver::_x76Command(
 
 	for (int i = _X76_MAX_ACK_POLLS; i; i--) {
 		delayMicroseconds(_X76_WRITE_DELAY);
-		io::i2cStart();
-		io::i2cWriteByte(pollByte);
-		if (io::i2cGetACK())
+		io::cartI2C.start();
+		io::cartI2C.writeByte(pollByte);
+		if (io::cartI2C.getACK())
 			return NO_ERROR;
 	}
 
-	io::i2cStopWithCS();
+	io::cartI2C.stopWithCS();
 	LOG_CART_IO("ACK polling timeout (wrong key?)");
 	return X76_POLL_FAIL;
 }
@@ -255,18 +262,18 @@ DriverError X76F041Driver::readPrivateData(void) {
 		if (error)
 			return error;
 
-		io::i2cReadByte(); // Ignore "secure read setup" byte
-		io::i2cStart();
+		io::cartI2C.readByte(); // Ignore "secure read setup" byte
+		io::cartI2C.start();
 
-		io::i2cWriteByte(i & 0xff);
-		if (!io::i2cGetACK()) {
-			io::i2cStopWithCS();
+		io::cartI2C.writeByte(i & 0xff);
+		if (!io::cartI2C.getACK()) {
+			io::cartI2C.stopWithCS();
 			LOG_CART_IO("NACK after resending addr=0x%02x", i & 0xff);
 			return X76_NACK;
 		}
 
-		io::i2cReadBytes(&_dump.data[i], 128);
-		io::i2cStopWithCS();
+		io::cartI2C.readBytes(&_dump.data[i], 128);
+		io::cartI2C.stopWithCS();
 	}
 
 	_dump.flags |= DUMP_PRIVATE_DATA_OK;
@@ -278,8 +285,8 @@ DriverError X76F041Driver::readPrivateData(void) {
 		return error;
 
 	util::clear(_dump.config);
-	io::i2cReadBytes(_dump.config, 5);
-	io::i2cStopWithCS();
+	io::cartI2C.readBytes(_dump.config, 5);
+	io::cartI2C.stopWithCS();
 
 	_dump.flags |= DUMP_CONFIG_OK;
 	return NO_ERROR;
@@ -294,8 +301,8 @@ DriverError X76F041Driver::writeData(void) {
 		if (error)
 			return error;
 
-		auto ok = io::i2cWriteBytes(&_dump.data[i], 8);
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::cartI2C.writeBytes(&_dump.data[i], 8);
+		io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
 			LOG_CART_IO("NACK while sending data bytes");
@@ -309,8 +316,8 @@ DriverError X76F041Driver::writeData(void) {
 	if (error)
 		return error;
 
-	auto ok = io::i2cWriteBytes(_dump.config, 5);
-	io::i2cStopWithCS(_X76_WRITE_DELAY);
+	auto ok = io::cartI2C.writeBytes(_dump.config, 5);
+	io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 	if (!ok) {
 		LOG_CART_IO("NACK while sending config registers");
@@ -327,7 +334,7 @@ DriverError X76F041Driver::erase(void) {
 	if (error)
 		return error;
 
-	io::i2cStopWithCS(_X76_WRITE_DELAY);
+	io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 	util::clear(_dump.dataKey);
 	return NO_ERROR;
@@ -343,14 +350,14 @@ DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 	// The X76F041 requires the key to be sent twice as a way of ensuring it
 	// gets received correctly.
 	for (int i = 2; i; i--) {
-		if (!io::i2cWriteBytes(key, sizeof(_dump.dataKey))) {
-			io::i2cStopWithCS(_X76_WRITE_DELAY);
+		if (!io::cartI2C.writeBytes(key, sizeof(_dump.dataKey))) {
+			io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 			LOG_CART_IO("NACK while setting new data key");
 			return X76_NACK;
 		}
 	}
 
-	io::i2cStopWithCS(_X76_WRITE_DELAY);
+	io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 	_dump.copyKeyFrom(key);
 	return NO_ERROR;
@@ -370,9 +377,9 @@ DriverError X76F100Driver::readPrivateData(void) {
 	if (error)
 		return error;
 
-	//io::i2cStart();
-	io::i2cReadBytes(_dump.data, 112);
-	io::i2cStopWithCS();
+	//io::cartI2C.Start();
+	io::cartI2C.readBytes(_dump.data, 112);
+	io::cartI2C.stopWithCS();
 
 	_dump.flags |= DUMP_PRIVATE_DATA_OK;
 	return NO_ERROR;
@@ -387,8 +394,8 @@ DriverError X76F100Driver::writeData(void) {
 		if (error)
 			return error;
 
-		auto ok = io::i2cWriteBytes(&_dump.data[i], 8);
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::cartI2C.writeBytes(&_dump.data[i], 8);
+		io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
 			LOG_CART_IO("NACK while sending data bytes");
@@ -411,8 +418,8 @@ DriverError X76F100Driver::erase(void) {
 		if (error)
 			return error;
 
-		auto ok = io::i2cWriteBytes(dummy, 8);
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::cartI2C.writeBytes(dummy, 8);
+		io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
 			LOG_CART_IO("NACK while sending data bytes");
@@ -433,8 +440,8 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 		if (error)
 			return error;
 
-		auto ok = io::i2cWriteBytes(key, sizeof(_dump.dataKey));
-		io::i2cStopWithCS(_X76_WRITE_DELAY);
+		auto ok = io::cartI2C.writeBytes(key, sizeof(_dump.dataKey));
+		io::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
 			LOG_CART_IO("NACK while setting new data key");
@@ -450,7 +457,7 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 
 DriverError ZS01Driver::_transact(ZS01Packet &request, ZS01Packet &response) {
 	delayMicroseconds(_ZS01_PACKET_DELAY);
-	io::i2cStart();
+	io::cartI2C.start();
 
 #if 0
 	char buffer[48];
@@ -459,16 +466,16 @@ DriverError ZS01Driver::_transact(ZS01Packet &request, ZS01Packet &response) {
 	LOG_CART_IO("S: %s", buffer);
 #endif
 
-	if (!io::i2cWriteBytes(
+	if (!io::cartI2C.writeBytes(
 		&request.command, sizeof(ZS01Packet), _ZS01_SEND_DELAY
 	)) {
-		io::i2cStop();
+		io::cartI2C.stop();
 		LOG_CART_IO("NACK while sending request packet");
 		return ZS01_NACK;
 	}
 
-	io::i2cReadBytes(&response.command, sizeof(ZS01Packet));
-	io::i2cStop();
+	io::cartI2C.readBytes(&response.command, sizeof(ZS01Packet));
+	io::cartI2C.stop();
 
 #if 0
 	util::hexToString(buffer, &response.command, sizeof(ZS01Packet), ' ');
@@ -651,14 +658,14 @@ CartDriver *newCartDriver(CartDump &dump) {
 	}
 
 #ifdef ENABLE_ZS01_CART_DRIVER
-	uint32_t id1 = io::i2cResetZS01();
+	auto id1 = io::cartI2C.resetZS01();
 	LOG_CART_IO("detecting ZS01: 0x%08x", id1);
 
 	if (id1 == _ID_ZS01)
 		return new ZS01Driver(dump);
 #endif
 
-	uint32_t id2 = io::i2cResetX76();
+	auto id2 = io::cartI2C.resetX76();
 	LOG_CART_IO("detecting X76: 0x%08x", id2);
 
 	switch (id2) {

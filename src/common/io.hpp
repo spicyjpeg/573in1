@@ -7,6 +7,7 @@
 #include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
+#include "ps1/system.h"
 
 namespace io {
 
@@ -52,27 +53,27 @@ enum JAMMAInput : uint32_t {
 };
 
 enum CartInputPin {
-	IN_1WIRE = 6
+	CART_INPUT_DS2401 = 6
 };
 
 enum CartOutputPin {
-	OUT_SDA   = 0,
-	OUT_SCL   = 1,
-	OUT_CS    = 2,
-	OUT_RESET = 3,
-	OUT_1WIRE = 4
+	CART_OUTPUT_SDA    = 0,
+	CART_OUTPUT_SCL    = 1,
+	CART_OUTPUT_CS     = 2,
+	CART_OUTPUT_RESET  = 3,
+	CART_OUTPUT_DS2401 = 4
 };
 
 enum MiscOutputPin {
-	MISC_ADC_MOSI    = 0,
-	MISC_ADC_CS      = 1,
-	MISC_ADC_SCK     = 2,
-	MISC_COIN_COUNT1 = 3,
-	MISC_COIN_COUNT2 = 4,
-	MISC_AMP_ENABLE  = 5,
-	MISC_CDDA_ENABLE = 6,
-	MISC_SPU_ENABLE  = 7,
-	MISC_JVS_RESET   = 8
+	MISC_OUT_ADC_DI      = 0,
+	MISC_OUT_ADC_CS      = 1,
+	MISC_OUT_ADC_CLK     = 2,
+	MISC_OUT_COIN_COUNT1 = 3,
+	MISC_OUT_COIN_COUNT2 = 4,
+	MISC_OUT_AMP_ENABLE  = 5,
+	MISC_OUT_CDDA_ENABLE = 6,
+	MISC_OUT_SPU_ENABLE  = 7,
+	MISC_OUT_JVS_RESET   = 8
 };
 
 /* Inputs */
@@ -106,10 +107,6 @@ static inline bool getCartInput(CartInputPin pin) {
 	return (SYS573_DIP_CART >> (8 + pin)) & 1;
 }
 
-static inline bool getCartSDA(void) {
-	return (SYS573_MISC_IN / SYS573_MISC_IN_CART_SDA) & 1;
-}
-
 static inline void setCartOutput(CartOutputPin pin, bool value) {
 	if (value)
 		_cartOutputReg |= 1 << pin;
@@ -125,7 +122,7 @@ static inline void setFlashBank(int bank) {
 	SYS573_BANK_CTRL = _bankSwitchReg;
 }
 
-static inline void setCartSDADir(bool dir) {
+static inline void setCartSDADirection(bool dir) {
 	if (dir)
 		_bankSwitchReg |= 1 << 6;
 	else
@@ -143,22 +140,112 @@ static inline void setMiscOutput(MiscOutputPin pin, bool value) {
 	SYS573_MISC_OUT = _miscOutputReg;
 }
 
-/* Digital I/O board driver */
+/* I2C driver */
 
-static inline bool isDigitalIOPresent(void) {
-	return (
-		(SYS573D_CPLD_STAT & (SYS573D_CPLD_STAT_ID1 | SYS573D_CPLD_STAT_ID2)) ==
-		SYS573D_CPLD_STAT_ID2
-	);
-}
+class I2CDriver {
+private:
+	inline void _setSDA(bool value, int delay) const {
+		_setSDA(value);
+		delayMicroseconds(delay);
+	}
+	inline void _setSCL(bool value, int delay) const {
+		_setSCL(value);
+		delayMicroseconds(delay);
+	}
+	inline void _setCS(bool value, int delay) const {
+		_setCS(value);
+		delayMicroseconds(delay);
+	}
+	inline void _setReset(bool value, int delay) const {
+		_setReset(value);
+		delayMicroseconds(delay);
+	}
 
-static inline bool getDIO1Wire(void) {
-	return (SYS573D_FPGA_DS_BUS / SYS573D_FPGA_DS_BUS_DS2401) & 1;
-}
+	virtual bool _getSDA(void) const { return true; }
+	virtual void _setSDA(bool value) const {}
+	virtual void _setSCL(bool value) const {}
+	virtual void _setCS(bool value) const {}
+	virtual void _setReset(bool value) const {}
 
-static inline void setDIO1Wire(bool value) {
-	SYS573D_FPGA_DS_BUS = (value ^ 1) * SYS573D_FPGA_DS_BUS_DS2401;
-}
+public:
+	void start(void) const;
+	void startWithCS(int csDelay = 0) const;
+	void stop(void) const;
+	void stopWithCS(int csDelay = 0) const;
+
+	bool getACK(void) const;
+	void sendACK(bool value) const;
+	uint8_t readByte(void) const;
+	void writeByte(uint8_t value) const;
+
+	void readBytes(uint8_t *data, size_t length) const;
+	bool writeBytes(
+		const uint8_t *data, size_t length, int lastACKDelay = 0
+	) const;
+
+	uint32_t resetX76(void) const;
+	uint32_t resetZS01(void) const;
+};
+
+class CartI2CDriver : public I2CDriver {
+private:
+	bool _getSDA(void) const;
+	void _setSDA(bool value) const;
+	void _setSCL(bool value) const;
+	void _setCS(bool value) const;
+	void _setReset(bool value) const;
+};
+
+class DigitalIOI2CDriver : public I2CDriver {
+private:
+	bool _getSDA(void) const;
+	void _setSDA(bool value) const;
+	void _setSCL(bool value) const;
+};
+
+extern const CartI2CDriver      cartI2C;
+extern const DigitalIOI2CDriver digitalIOI2C;
+
+/* 1-wire driver */
+
+class OneWireDriver {
+private:
+	inline void _set(bool value, int delay) const {
+		_set(value);
+		delayMicroseconds(delay);
+	}
+
+	virtual bool _get(void) const { return true; }
+	virtual void _set(bool value) const {}
+
+public:
+	bool reset(void) const;
+
+	uint8_t readByte(void) const;
+	void writeByte(uint8_t value) const;
+};
+
+class CartDS2401Driver : public OneWireDriver {
+private:
+	bool _get(void) const;
+	void _set(bool value) const;
+};
+
+class DigitalIODS2401Driver : public OneWireDriver {
+private:
+	bool _get(void) const;
+	void _set(bool value) const;
+};
+
+class DigitalIODS2433Driver : public OneWireDriver {
+private:
+	bool _get(void) const;
+	void _set(bool value) const;
+};
+
+extern const CartDS2401Driver      cartDS2401;
+extern const DigitalIODS2401Driver digitalIODS2401;
+extern const DigitalIODS2433Driver digitalIODS2433;
 
 /* Other APIs */
 
@@ -171,30 +258,9 @@ void getRTCTime(util::Date &output);
 void setRTCTime(const util::Date &value, bool stop = false);
 bool isRTCBatteryLow(void);
 
-bool loadBitstream(const uint8_t *data, size_t length);
-bool loadRawBitstream(const uint8_t *data, size_t length);
-void initKonamiBitstream(void);
-
-void i2cStart(void);
-void i2cStartWithCS(int csDelay = 0);
-void i2cStop(void);
-void i2cStopWithCS(int csDelay = 0);
-
-uint8_t i2cReadByte(void);
-void i2cWriteByte(uint8_t value);
-void i2cSendACK(bool ack);
-bool i2cGetACK(void);
-void i2cReadBytes(uint8_t *data, size_t length);
-bool i2cWriteBytes(const uint8_t *data, size_t length, int lastACKDelay = 0);
-
-uint32_t i2cResetX76(void);
-uint32_t i2cResetZS01(void);
-
-bool dsCartReset(void);
-bool dsDIOReset(void);
-uint8_t dsCartReadByte(void);
-uint8_t dsDIOReadByte(void);
-void dsCartWriteByte(uint8_t value);
-void dsDIOWriteByte(uint8_t value);
+bool isDigitalIOPresent(void);
+bool loadDigitalIOBitstream(const uint8_t *data, size_t length);
+bool loadDigitalIORawBitstream(const uint8_t *data, size_t length);
+void initDigitalIOFPGA(void);
 
 }

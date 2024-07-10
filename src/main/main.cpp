@@ -41,7 +41,7 @@ int main(int argc, const char **argv) {
 
 	gpu::enableDisplay(true);
 	spu::setMasterVolume(spu::MAX_VOLUME / 2);
-	io::setMiscOutput(io::MISC_SPU_ENABLE, true);
+	io::setMiscOutput(io::MISC_OUT_SPU_ENABLE, true);
 
 	app->run(args.resourcePtr, args.resourceLength);
 

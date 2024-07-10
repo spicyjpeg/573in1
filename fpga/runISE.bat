@@ -2,9 +2,9 @@
 setlocal
 
 set TARGET=xcs40xl-pq208-4
-set COVER_MODE=area
+set COVER_MODE=speed
 set OPTIMIZATION_MODE=speed
-set OPTIMIZATION_LEVEL=high
+set OPTIMIZATION_LEVEL=normal
 
 if not exist "%XILINX%\bin\nt\" (
 	echo The XILINX environment variable must be set to the root of a valid ^

@@ -1,16 +1,17 @@
 # This script is roughly similar to the built-in synth_xilinx command, with the
 # appropriate modifications made in order to output gate netlists rather than
-# precompiled LUTs. Note that more advanced features such as fast carry or
-# distributed LUT RAM are not yet supported.
+# precompiled LUTs (which are not supported by the ISE mapper for Spartan-XL
+# devices). Note that more advanced features such as fast carry or distributed
+# LUT RAMs are not yet supported.
 
 ## Input and preliminary optimization
 
 read_verilog src/main.v
-read_verilog src/spartanxl.v
+read_verilog src/spartanxl/primitives.v
 hierarchy -check -top FPGA
 
 proc
-flatten -noscopeinfo
+flatten
 tribuf -logic
 deminout
 opt_expr
@@ -25,15 +26,16 @@ opt_clean
 
 ## Conversion to gate-level representation
 
+techmap -D LUT_WIDTH=4 -map +/cmp2lut.v -map +/cmp2lcu.v
 alumacc
 share
 opt
 memory -nomap
 opt_clean
-
+memory_map
 opt -full
-simplemap
-techmap -D NOLUT -D LUT_SIZE=4 -map +/techmap.v -map +/xilinx/arith_map.v
+
+techmap -map +/techmap.v
 opt -fast
 clean
 
@@ -41,25 +43,26 @@ clean
 
 dfflegalize -cell $_DFFE_PP?P_ r -cell $_DLATCH_PP?_ r
 opt_expr -mux_undef -noclkinv
-abc -g gates
-xilinx_dffopt -lut4
+abc -liberty src/spartanxl/primitives.lib
+clean
 
-#clkbufmap -buf BUFGLS O:I
+#hilomap -hicell VCC P -locell GND G
 iopadmap -bits -inpad IBUF O:I -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore IFDX D -ignore IFDXI D -ignore BUFGLS I
-iopadmap -bits -outpad OBUF I:O -toutpad OBUFT ~T:I:O -tinoutpad IOBUFT ~T:O:I:IO -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore OFDX Q -ignore OFDXI Q -ignore OFDTX O -ignore OFDTXI O
-extractinv -inv INV O:I
-techmap -map src/techmap.v
+iopadmap -bits -outpad OBUF I:O -toutpad OBUFE E:I:O -tinoutpad IOBUFE E:O:I:IO -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore OFDX Q -ignore OFDXI Q -ignore OFDTX O -ignore OFDTXI O
+clkbufmap -buf BUFGLS O:I
+#extractinv -inv INV O:I
+
+techmap -map src/spartanxl/map.v
 clean
 
 ## Output
 
-# FIXME: for some reason invoking hierarchy here results in $or/$reduce_or
-# primitives being added back when using wired-or
-#hierarchy -check
+hierarchy -check
 autoname
 stat -tech xilinx
 check -noinit
 blackbox =A:whitebox
 
+show -notitle -colors 1 -format dot -viewer none -prefix build/synth
 write_verilog -noattr build/synth.v
 write_edif -top FPGA -pvector bra -lsbidx build/synth.edf

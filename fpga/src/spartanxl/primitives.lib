@@ -1,0 +1,551 @@
+
+library(spartanxl) {
+	/* Buffers */
+
+	cell(BUF) {
+		area: 1;
+		pin(I) { direction: input; }
+		pin(O) { direction: output; function: "I"; }
+	}
+	cell(INV) {
+		area: 1;
+		pin(I) { direction: input; }
+		pin(O) { direction: output; function: "!I"; }
+	}
+
+	/* AND gates */
+
+	cell(AND2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "I0*I1"; }
+	}
+	cell(AND2B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*I1"; }
+	}
+
+	cell(AND3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "I0*I1*I2"; }
+	}
+	cell(AND3B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*I1*I2"; }
+	}
+	cell(AND3B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*!I1*I2"; }
+	}
+
+	cell(AND4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "I0*I1*I2*I3"; }
+	}
+	cell(AND4B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*I1*I2*I3"; }
+	}
+	cell(AND4B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*!I1*I2*I3"; }
+	}
+	cell(AND4B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*!I1*!I2*I3"; }
+	}
+
+	cell(AND5) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "I0*I1*I2*I3*I4"; }
+	}
+	cell(AND5B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*I1*I2*I3*I4"; }
+	}
+	cell(AND5B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*!I1*I2*I3*I4"; }
+	}
+	cell(AND5B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*!I1*!I2*I3*I4"; }
+	}
+	cell(AND5B4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0*!I1*!I2*!I3*I4"; }
+	}
+
+	/* NAND gates */
+
+	cell(NAND2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0*I1)"; }
+	}
+	cell(NAND2B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*I1)"; }
+	}
+
+	cell(NAND3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0*I1*I2)"; }
+	}
+	cell(NAND3B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*I1*I2)"; }
+	}
+	cell(NAND3B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*!I1*I2)"; }
+	}
+
+	cell(NAND4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0*I1*I2*I3)"; }
+	}
+	cell(NAND4B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*I1*I2*I3)"; }
+	}
+	cell(NAND4B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*!I1*I2*I3)"; }
+	}
+	cell(NAND4B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*!I1*!I2*I3)"; }
+	}
+
+	cell(NAND5) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0*I1*I2*I3*I4)"; }
+	}
+	cell(NAND5B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*I1*I2*I3*I4)"; }
+	}
+	cell(NAND5B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*!I1*I2*I3*I4)"; }
+	}
+	cell(NAND5B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*!I1*!I2*I3*I4)"; }
+	}
+	cell(NAND5B4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0*!I1*!I2*!I3*I4)"; }
+	}
+
+	/* OR gates */
+
+	cell(OR2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "I0+I1"; }
+	}
+	cell(OR2B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+I1"; }
+	}
+
+	cell(OR3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "I0+I1+I2"; }
+	}
+	cell(OR3B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+I1+I2"; }
+	}
+	cell(OR3B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+!I1+I2"; }
+	}
+
+	cell(OR4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "I0+I1+I2+I3"; }
+	}
+	cell(OR4B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+I1+I2+I3"; }
+	}
+	cell(OR4B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+!I1+I2+I3"; }
+	}
+	cell(OR4B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+!I1+!I2+I3"; }
+	}
+
+	cell(OR5) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "I0+I1+I2+I3+I4"; }
+	}
+	cell(OR5B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+I1+I2+I3+I4"; }
+	}
+	cell(OR5B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+!I1+I2+I3+I4"; }
+	}
+	cell(OR5B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+!I1+!I2+I3+I4"; }
+	}
+	cell(OR5B4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!I0+!I1+!I2+!I3+I4"; }
+	}
+
+	/* NOR gates */
+
+	cell(NOR2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0+I1)"; }
+	}
+	cell(NOR2B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+I1)"; }
+	}
+
+	cell(NOR3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0+I1+I2)"; }
+	}
+	cell(NOR3B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+I1+I2)"; }
+	}
+	cell(NOR3B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+!I1+I2)"; }
+	}
+
+	cell(NOR4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0+I1+I2+I3)"; }
+	}
+	cell(NOR4B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+I1+I2+I3)"; }
+	}
+	cell(NOR4B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+!I1+I2+I3)"; }
+	}
+	cell(NOR4B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+!I1+!I2+I3)"; }
+	}
+
+	cell(NOR5) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0+I1+I2+I3+I4)"; }
+	}
+	cell(NOR5B1) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+I1+I2+I3+I4)"; }
+	}
+	cell(NOR5B2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+!I1+I2+I3+I4)"; }
+	}
+	cell(NOR5B3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+!I1+!I2+I3+I4)"; }
+	}
+	cell(NOR5B4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(!I0+!I1+!I2+!I3+I4)"; }
+	}
+
+	/* XOR gates */
+
+	cell(XOR2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "I0^I1"; }
+	}
+
+	cell(XOR3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "I0^I1^I2"; }
+	}
+
+	cell(XOR4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "I0^I1^I2^I3"; }
+	}
+
+	cell(XOR5) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "I0^I1^I2^I3^I4"; }
+	}
+
+	/* XNOR gates */
+
+	cell(XNOR2) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0^I1)"; }
+	}
+
+	cell(XNOR3) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0^I1^I2)"; }
+	}
+
+	cell(XNOR4) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0^I1^I2^I3)"; }
+	}
+
+	cell(XNOR5) {
+		area: 1;
+		pin(I0) { direction: input; }
+		pin(I1) { direction: input; }
+		pin(I2) { direction: input; }
+		pin(I3) { direction: input; }
+		pin(I4) { direction: input; }
+		pin(O)  { direction: output; function: "!(I0^I1^I2^I3^I4)"; }
+	}
+}
