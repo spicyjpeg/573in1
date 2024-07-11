@@ -1,3 +1,18 @@
+/*
+ * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ *
+ * 573in1 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * 573in1 is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * 573in1. If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
@@ -25,13 +40,15 @@ enum TraceIDType : uint8_t {
 	TID_82_LITTLE_ENDIAN = 3
 };
 
-// |                         | Simple (cart) | Basic (cart) | Extended (cart) | Extended (ROM) |
-// | :---------------------- | :------------ | :----------- | :-------------- | :------------- |
-// | DATA_HAS_CODE_PREFIX    |               | Optional     | Mandatory       | Mandatory      |
-// | DATA_HAS_*_ID           |               | Optional     | Optional        |                |
-// | DATA_HAS_SYSTEM_ID      |               | Optional     | Optional        | Optional       |
-// | DATA_HAS_PUBLIC_SECTION | Mandatory     |              | Optional        |                |
-// | DATA_GX706_WORKAROUND   |               |              | Optional        | Optional       |
+/*
+ * |                         | Simple (cart) | Basic (cart) | Extended (cart) | Extended (ROM) |
+ * | :---------------------- | :------------ | :----------- | :-------------- | :------------- |
+ * | DATA_HAS_CODE_PREFIX    |               | Optional     | Mandatory       | Mandatory      |
+ * | DATA_HAS_*_ID           |               | Optional     | Optional        |                |
+ * | DATA_HAS_SYSTEM_ID      |               | Optional     | Optional        | Optional       |
+ * | DATA_HAS_PUBLIC_SECTION | Mandatory     |              | Optional        |                |
+ * | DATA_GX706_WORKAROUND   |               |              | Optional        | Optional       |
+ */
 
 // Note that DATA_HAS_SYSTEM_ID is used to indicate the presence of a signature
 // (rather than a "raw" system ID) in an extended ROM header.

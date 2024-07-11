@@ -1,7 +1,7 @@
 /*
  * This library has been modified to add a function for building file fragment
  * tables (similar to the existing "fastseek" functionality). Additionally, all
- * patches available on http://elm-chan.org/fsw/ff/patches.html have been
+ * patches available on <http://elm-chan.org/fsw/ff/patches.html> have been
  * applied. The original license and copyright notice is below.
  */
 

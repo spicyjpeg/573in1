@@ -3,8 +3,9 @@
  * for use as a texture without any additional conversion, and to leave a margin
  * on all sides as a workaround for GPU polygon scaling artifacts. The original
  * license and copyright notice is below.
- * ----------------------------------------------------------------------------
- *
+ */
+
+/*
  * QR Code generator library (C)
  *
  * Copyright (c) Project Nayuki. (MIT License)
