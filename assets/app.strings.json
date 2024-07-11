@@ -1,6 +1,6 @@
 {
 	"AboutScreen": {
-		"title":  "{RIGHT_ARROW} About this tool",
+		"title":  "{RIGHT_ARROW} About 573in1",
 		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
 	},
 
@@ -52,7 +52,7 @@
 		},
 		"cartDumpWorker": {
 			"save":    "Saving cartridge dump...\nDo not turn off the 573 or unplug drives.",
-			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with this tool.",
+			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with 573in1.",
 			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"executableWorker": {
@@ -62,11 +62,18 @@
 			"addressError":  "The executable cannot be loaded as it overlaps the memory region reserved for use by the executable launcher.\n\nRegion:\t%08X-%08X\nStack top:\t%08X",
 			"fragmentError": "The executable cannot be loaded as it is fragmented across too many non-contiguous areas on the filesystem. Try defragging or reformatting the drive.\n\nFile:\t\t\t%s\nTotal fragments:\t%d\nOverflow:\t\t%d"
 		},
+		"flashExecutableWriteWorker": {
+			"init":       "Validating executable file...\nDo not turn off the 573 or unplug drives.",
+			"write":      "Writing new executable file...\nDo not turn off the 573 or unplug drives.",
+			"success":    "The executable has been successfully installed. The system will skip CD-ROM drive initialization and launch it automatically on startup if DIP switch 4 is turned on.\n\nBytes written: %d",
+			"fileError":  "The selected file could not be accessed or is not a valid System 573 executable. Make sure the file has been copied properly.\n\nFile: %s",
+			"flashError": "An error occurred while writing data to one of the chips.\n\nError code:\t%s\nBytes written:\t%d\nPress the Test button to view debug logs."
+		},
 		"flashHeaderWriteWorker": {
 			"erase":       "Erasing existing header...\nDo not turn off the 573.",
 			"write":       "Writing new header...\nDo not turn off the 573.",
 			"flashError":  "An error occurred while erasing and rewriting the first sector of the internal flash memory.\n\nError code: %s\nPress the Test button to view debug logs.",
-			"unsupported": "This system's onboard flash memory chips are not currently supported.\n\nSee the documentation for more information on supported flash chips."
+			"unsupported": "The flash memory chips on this device are unresponsive to commands or are currently unsupported. If you are trying to erase a PCMCIA card with a write protect switch, make sure the switch is off.\n\nSee the documentation for more information on supported flash chips."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
@@ -102,13 +109,12 @@
 			"success":     "All data has been successfully restored.\n\nBytes written: %d",
 			"overflow":    "The selected file was larger than the target device's capacity, so all data past the limit was ignored. All other data has been successfully restored.\n\nBytes written: %d",
 			"fileError":   "An error occurred while reading data from the file. Ensure the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs.",
-			"flashError":  "An error occurred while erasing sectors on or writing data to one of the chips.\n\nError code:\t%s\nBytes written:\t%d\nPress the Test button to view debug logs.",
-			"unsupported": "The flash memory chips on this device are unresponsive to commands or are currently unsupported. If you are trying to write to a PCMCIA card with a write protect switch, make sure the switch is off.\n\nSee the documentation for more information on supported flash chips."
+			"flashError":  "An error occurred while writing data to one of the chips.\n\nError code:\t%s\nBytes written:\t%d\nPress the Test button to view debug logs."
 		},
 		"atapiEjectWorker": {
 			"eject":      "Sending eject command...",
-			"noDrive":    "No ATAPI CD-ROM drive has been found on the IDE bus or could be successfully initialized. Your drive may be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
-			"ejectError": "Failed to open the drive's tray. Make sure the drive's front panel is not blocked off by the 573's case. Your drive may also be incompatible with the ATAPI driver used by this tool.\n\nError code: %s\nPress the Test button to view debug logs."
+			"noDrive":    "No ATAPI CD-ROM drive has been found on the IDE bus or could be successfully initialized. Your drive may be incompatible with the ATAPI driver used by 573in1.\n\nPress the Test button to view debug logs.",
+			"ejectError": "Failed to open the drive's tray. Make sure the drive's front panel is not blocked off by the 573's case. Your drive may also be incompatible with the ATAPI driver used by 573in1.\n\nError code: %s\nPress the Test button to view debug logs."
 		},
 		"rebootWorker": {
 			"reboot": "Rebooting system..."
@@ -117,7 +123,7 @@
 
 	"AudioTestScreen": {
 		"title":      "{RIGHT_ARROW} Audio output test",
-		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by this tool by default.",
+		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by default.",
 		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
 
 		"playLeft":    "Play sound on left channel",
@@ -188,7 +194,7 @@
 		},
 		"erase": {
 			"name":    "Erase cartridge",
-			"prompt":  "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by this tool using a master calendar.",
+			"prompt":  "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by 573in1 using a master calendar.",
 			"confirm": "The contents of the cartridge's EEPROM will be erased, making it unusable until reflashed and resetting the unlocking key to 00-00-00-00-00-00-00-00. The cartridge ID will not be altered.\n\nDo you wish to proceed?"
 		},
 		"resetSystemID": {
@@ -314,7 +320,7 @@
 		"noFS": "no disc or unsupported FS",
 
 		"noDeviceError": "No drives have been found and successfully initialized on the IDE bus. Make sure the drives are appropriately configured as primary or secondary and are receiving power.\n\nPress the Test button to view debug logs.",
-		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Your drive may also be incompatible with the ATAPI driver used by this tool.\n\nPress the Test button to view debug logs.",
+		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Your drive may also be incompatible with the ATAPI driver used by 573in1.\n\nPress the Test button to view debug logs.",
 		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem."
 	},
@@ -413,7 +419,7 @@
 	},
 
 	"MainMenuScreen": {
-		"title":      "{RIGHT_ARROW} Main menu",
+		"title":      "{RIGHT_ARROW} 573in1",
 		"itemPrompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to move, select by pressing {START_BUTTON}",
 
 		"cartInfo": {
@@ -446,7 +452,7 @@
 			"prompt": "Switch to a different screen resolution and aspect ratio. Some monitors and upscalers may not support all resolutions."
 		},
 		"about": {
-			"name":   "About this tool",
+			"name":   "About 573in1",
 			"prompt": "View information about this tool, including open source licenses."
 		},
 		"ejectCD": {
@@ -455,7 +461,7 @@
 		},
 		"reboot": {
 			"name":   "Reboot system",
-			"prompt": "Restart the system. Swap out the CD-ROM and toggle DIP switch 4 before selecting this option to boot the game installed on this system."
+			"prompt": "Restart the system. Turn on DIP switch 4 before selecting this option to reboot into the game installed on the internal flash memory (if any)."
 		}
 	},
 
@@ -471,7 +477,7 @@
 
 	"QRCodeScreen": {
 		"title":  "{RIGHT_ARROW} Cartridge dump",
-		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside this tool to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
+		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
 	},
 
 	"ReflashGameScreen": {
@@ -574,6 +580,23 @@
 				"prompt": "Wipe all data stored in the PCMCIA flash card, including any currently installed game and its assets."
 			}
 		},
+		"installExecutable": {
+			"filePrompt": "Note that PlayStation executables built without proper System 573 support will not run unless the watchdog is manually disabled.",
+			"confirm":    "The selected boot executable will be copied to the target device, permanently overwriting any other data currently stored on it. The device will be fully erased prior to writing the executable.\n\nDo you wish to proceed?",
+
+			"flash": {
+				"name":   "Install executable on internal flash",
+				"prompt": "Replace the contents of the system's flash memory with a custom boot executable from the CD-ROM, IDE hard drive or CF card (if connected)."
+			},
+			"pcmcia1": {
+				"name":   "Install executable on PCMCIA card in slot 1",
+				"prompt": "Replace the contents of the flash card with a custom boot executable from the CD-ROM, IDE hard drive or CF card (if connected)."
+			},
+			"pcmcia2": {
+				"name":   "Install executable on PCMCIA card in slot 2",
+				"prompt": "Replace the contents of the flash card with a custom boot executable from the CD-ROM, IDE hard drive or CF card (if connected)."
+			}
+		},
 		"resetFlashHeader": {
 			"name":    "Clear internal flash header",
 			"prompt":  "Erase any metadata about the currently installed game from the system's flash memory. All other data will be left as-is.",
@@ -643,7 +666,7 @@
 
 	"SystemIDEntryScreen": {
 		"title":  "Edit system identifier",
-		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run this tool on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run 573in1 on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
 	},
@@ -683,7 +706,7 @@
 
 	"WarningScreen": {
 		"title": "Warning",
-		"body":  "This tool is experimental and provided with no warranty whatsoever. It is not guaranteed to work and improper usage may PERMANENTLY BRICK your System 573 security cartridges.\n\nUse this tool at your own risk. Do not proceed if you do not know what you are doing.",
+		"body":  "573in1 is an experimental tool provided with no warranty whatsoever. It is not guaranteed to work and improper usage may PERMANENTLY BRICK your System 573 security cartridges.\n\nUse this tool at your own risk. Do not proceed if you do not know what you are doing.",
 
 		"cooldown": "Wait... (%ds)",
 		"ok":       "{START_BUTTON} Continue"

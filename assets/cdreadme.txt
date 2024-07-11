@@ -1,6 +1,11 @@
 
-573in1: Konami System 573 maintenance tool
-==========================================
+                      ###### ###### #####.           .##
+                      ##         ##     ##          .###
+                      '####.    ##'   ###'            ##
+                          ##   ##'      ##  | |\ |    ##
+                      #####'   ##   #####.  | | \|  ######
+
+                     - Konami System 573 maintenance tool -
 
 Version ${PROJECT_VERSION}
 (C) 2022-2024 spicyjpeg
@@ -17,7 +22,7 @@ drive on the same IDE bus as the CD-ROM drive, prior to turning on the system.
 For more information, full documentation and source code, see:
     <${PROJECT_HOMEPAGE_URL}>
 
-WARNING: this tool is experimental and provided with no warranty whatsoever. It
+WARNING: 573in1 is an experimental tool provided with no warranty whatsoever. It
 is not guaranteed to work and improper usage can PERMANENTLY BRICK your System
 573 security cartridges. Use this tool at your own risk.
 
@@ -39,5 +44,5 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 [ Credits and third-party licenses ]
 
-See the "About this tool" page, accessible from the main menu, for more
+See the "About 573in1" page, accessible from the main menu, for more
 information.

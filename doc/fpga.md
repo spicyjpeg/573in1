@@ -115,7 +115,7 @@ manually invoking the Java-based extractor included in the installer as follows:
 
 ```bash
 # Replace /opt/xilinx with a suitable target location and run from the
-# installation package's root
+# installation package's root (with sudo/elevated permissions if necessary)
 find car -iname '*.car' -exec \
     java -cp ce/CarExpand.jar:ce/marimba.zip:ce/tuner.zip \
     com.xilinx.carexp.CarExp '{}' /opt/xilinx \;
@@ -146,9 +146,24 @@ yosys fpga.ys
 wine runISE.bat
 ```
 
-The bitstream can then be visually inspected using the ISE FPGA editor:
+The netlist synthesized by Yosys and passed to ISE can be visually inspected by
+rendering the generated `build/synth.dot` file using
+[Graphviz](https://graphviz.org/), for instance with the `dot` command:
+
+```bash
+dot -T svg -o build/synth.svg build/synth.dot
+```
+
+Note that generating the graph may take several minutes for large designs. The
+netlist is also exported to a Verilog file (`build/synth.v`) which can be
+simulated in a testbench. You may additionally inspect the FPGA's internal
+layout by launching the ISE FPGA editor:
 
 ```bash
 "%XILINX%\bin\nt\fpga_editor.exe" build\fpga.ncd       # Windows
 wine "$XILINX/bit/nt/fpga_editor.exe" build/fpga.ncd   # Linux (using Wine)
 ```
+
+Remember to copy `build/fpga.bit` to the `data` directory (and check it into
+the repository if submitting a pull request) in order to embed the newly built
+bitstream into 573in1.
