@@ -6,8 +6,9 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      0.4.7
+	VERSION      1.0.0
 	DESCRIPTION  "Konami System 573 maintenance tool"
+	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
 
 set(
@@ -66,7 +67,11 @@ target_compile_options(
 		-Wno-pmf-conversions
 	>
 )
-target_compile_definitions(common PUBLIC VERSION="${PROJECT_VERSION}")
+target_compile_definitions(
+	common PUBLIC
+	VERSION="${PROJECT_VERSION}"
+	EXTERNAL_DATA_DIR="hdd:/${PROJECT_NAME}"
+)
 link_libraries(common)
 
 function(addExecutable name address stackTop)

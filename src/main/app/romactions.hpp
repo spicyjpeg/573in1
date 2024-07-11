@@ -32,6 +32,7 @@ public:
 	void dump(ui::Context &ctx, size_t length);
 	void restore(ui::Context &ctx, size_t length);
 	void erase(ui::Context &ctx, size_t length);
+	void installExecutable(ui::Context &ctx, size_t length);
 	void resetFlashHeader(ui::Context &ctx, size_t length);
 	void matchFlashHeader(ui::Context &ctx, size_t length);
 	void editFlashHeader(ui::Context &ctx, size_t length);

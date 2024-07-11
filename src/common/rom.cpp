@@ -428,7 +428,6 @@ bool getShellInfo(ShellInfo &output) {
 	// If no official shell was found, fall back to searching the entire ROM for
 	// a valid PS1 executable. Note that the executable has to be 32-byte
 	// aligned for this to work.
-	// TODO: use a binary search instead of a linear one
 	for (uintptr_t ptr = DEV2_BASE; ptr < (DEV2_BASE + 0x80000); ptr += 32) {
 		auto header = reinterpret_cast<const util::ExecutableHeader *>(ptr);
 

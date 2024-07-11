@@ -381,6 +381,11 @@ _unsupported:
 	return false;
 }
 
+bool App::_flashExecutableWriteWorker(void) {
+	// TODO: implement
+	return false;
+}
+
 bool App::_flashHeaderWriteWorker(void) {
 	auto   driver       = rom::flash.newDriver();
 	size_t sectorLength = driver->getChipSize().eraseSectorLength;

@@ -206,6 +206,23 @@ static const Action _ACTIONS[]{
 		.prompt = "StorageActionsScreen.erase.pcmcia2.prompt"_h,
 		.region = rom::pcmcia[1],
 		.target = &StorageActionsScreen::erase
+#if 0
+	}, {
+		.name   = "StorageActionsScreen.installExecutable.flash.name"_h,
+		.prompt = "StorageActionsScreen.installExecutable.flash.prompt"_h,
+		.region = rom::flash,
+		.target = &StorageActionsScreen::installExecutable
+	}, {
+		.name   = "StorageActionsScreen.installExecutable.pcmcia1.name"_h,
+		.prompt = "StorageActionsScreen.installExecutable.pcmcia1.prompt"_h,
+		.region = rom::pcmcia[0],
+		.target = &StorageActionsScreen::installExecutable
+	}, {
+		.name   = "StorageActionsScreen.installExecutable.pcmcia2.name"_h,
+		.prompt = "StorageActionsScreen.installExecutable.pcmcia2.prompt"_h,
+		.region = rom::pcmcia[1],
+		.target = &StorageActionsScreen::installExecutable
+#endif
 	}, {
 		.name   = "StorageActionsScreen.resetFlashHeader.name"_h,
 		.prompt = "StorageActionsScreen.resetFlashHeader.prompt"_h,
@@ -321,6 +338,36 @@ void StorageActionsScreen::erase(ui::Context &ctx, size_t length) {
 	);
 
 	ctx.show(APP->_confirmScreen, false, true);
+}
+
+void StorageActionsScreen::installExecutable(ui::Context &ctx, size_t length) {
+	selectedLength = length;
+
+	APP->_filePickerScreen.previousScreen = this;
+	APP->_filePickerScreen.setMessage(
+		[](ui::Context &ctx) {
+			ctx.show(APP->_confirmScreen, false, true);
+		},
+		STR("StorageActionsScreen.installExecutable.filePrompt")
+	);
+
+	APP->_confirmScreen.previousScreen = &(APP->_fileBrowserScreen);
+	APP->_confirmScreen.setMessage(
+		[](ui::Context &ctx) {
+			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
+				&(APP->_storageInfoScreen);
+			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
+				&(APP->_fileBrowserScreen);
+
+			APP->_runWorker(
+				&App::_flashExecutableWriteWorker, APP->_messageScreen, false,
+				true
+			);
+		},
+		STR("StorageActionsScreen.installExecutable.confirm")
+	);
+
+	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
 void StorageActionsScreen::resetFlashHeader(ui::Context &ctx, size_t length) {

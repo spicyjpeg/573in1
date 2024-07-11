@@ -195,7 +195,9 @@ private:
 	void _setupInterrupts(void);
 	void _loadResources(void);
 	bool _createDataDirectory(void);
-	bool _getNumberedPath(char *output, size_t length, const char *path);
+	bool _getNumberedPath(
+		char *output, size_t length, const char *path, int maxIndex = 9999
+	);
 	bool _takeScreenshot(void);
 	void _runWorker(
 		bool (App::*func)(void), ui::Screen &next, bool goBack = false,
@@ -220,6 +222,7 @@ private:
 	bool _romDumpWorker(void);
 	bool _romRestoreWorker(void);
 	bool _romEraseWorker(void);
+	bool _flashExecutableWriteWorker(void);
 	bool _flashHeaderWriteWorker(void);
 
 	// miscworkers.cpp

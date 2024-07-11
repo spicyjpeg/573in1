@@ -175,7 +175,7 @@ bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 	auto    error = f_stat(path, &info);
 
 	if (error) {
-		LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+		//LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 		return false;
 	}
 

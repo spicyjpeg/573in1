@@ -243,17 +243,30 @@ bool App::_createDataDirectory(void) {
 	return false;
 }
 
-bool App::_getNumberedPath(char *output, size_t length, const char *path) {
+bool App::_getNumberedPath(
+	char *output, size_t length, const char *path, int maxIndex
+) {
 	file::FileInfo info;
-	int            index = 0;
 
-	do {
-		if (++index > 9999)
-			return false;
+	// Perform a binary search in order to quickly find the first unused path.
+	int low  = 0;
+	int high = maxIndex;
+
+	while (low <= high) {
+		int index = low + (high - low) / 2;
 
 		snprintf(output, length, path, index);
-	} while (_fileIO.vfs.getFileInfo(info, output));
 
+		if (_fileIO.vfs.getFileInfo(info, output))
+			low = index + 1;
+		else
+			high = index - 1;
+	}
+
+	if (low > maxIndex)
+		return false;
+
+	snprintf(output, length, path, low);
 	return true;
 }
 
