@@ -45,6 +45,9 @@ public:
 };
 
 class QRCodeScreen : public ui::ImageScreen {
+private:
+	gpu::Image _code;
+
 public:
 	bool valid;
 
@@ -52,14 +55,14 @@ public:
 	: valid(false) {}
 
 	inline bool generateCode(const char *textInput) {
-		if (!gpu::generateQRCode(_image, 960, 256, textInput))
+		if (!gpu::generateQRCode(_code, 960, 256, textInput))
 			return false;
 
 		valid = true;
 		return true;
 	}
 	inline bool generateCode(const uint8_t *binaryInput, size_t length) {
-		if (!gpu::generateQRCode(_image, 960, 256, binaryInput, length))
+		if (!gpu::generateQRCode(_code, 960, 256, binaryInput, length))
 			return false;
 
 		valid = true;

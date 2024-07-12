@@ -64,7 +64,8 @@ enum Sound {
 enum AnimationSpeed {
 	SPEED_FASTEST = 10,
 	SPEED_FAST    = 15,
-	SPEED_SLOW    = 20
+	SPEED_SLOW    = 20,
+	SPEED_SLOWEST = 30
 };
 
 static constexpr int SCREEN_MARGIN_X          = 16;
@@ -214,7 +215,6 @@ protected:
 
 public:
 	virtual void draw(Context &ctx, bool active = true) const {}
-	virtual void update(Context &ctx) {}
 };
 
 class TiledBackground : public Layer {
@@ -234,15 +234,29 @@ public:
 	void draw(Context &ctx, bool active = true) const;
 };
 
+class SplashOverlay : public Layer {
+private:
+	util::Tween<int, util::QuadOutEasing> _fadeAnim;
+
+public:
+	gpu::Image image;
+
+	void draw(Context &ctx, bool active = true) const;
+	void show(Context &ctx);
+	void hide(Context &ctx);
+};
+
 class LogOverlay : public Layer {
 private:
 	util::LogBuffer &_buffer;
 	util::Tween<int, util::QuadOutEasing> _slideAnim;
 
 public:
-	LogOverlay(util::LogBuffer &buffer);
+	inline LogOverlay(util::LogBuffer &buffer)
+	: _buffer(buffer) {}
+
 	void draw(Context &ctx, bool active = true) const;
-	void update(Context &ctx);
+	void toggle(Context &ctx);
 };
 
 class ScreenshotOverlay : public Layer {
@@ -250,13 +264,8 @@ private:
 	util::Tween<int, util::QuadOutEasing> _flashAnim;
 
 public:
-	bool (*callback)(ui::Context &ctx);
-
-	inline ScreenshotOverlay(void)
-	: callback(nullptr) {}
-
 	void draw(Context &ctx, bool active = true) const;
-	void update(Context &ctx);
+	void animate(Context &ctx);
 };
 
 /* Base screen classes */
@@ -286,7 +295,7 @@ public:
 
 class BackdropScreen : public Screen {
 private:
-	util::Tween<int, util::LinearEasing> _backdropAnim;
+	util::Tween<int, util::LinearEasing> _fadeAnim;
 
 public:
 	virtual void show(Context &ctx, bool goBack = false);

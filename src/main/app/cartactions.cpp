@@ -239,6 +239,7 @@ void QRCodeScreen::show(ui::Context &ctx, bool goBack) {
 	_title  = STR("QRCodeScreen.title");
 	_prompt = STR("QRCodeScreen.prompt");
 
+	_image         = &_code;
 	_imageScale    = _QR_CODE_SCALE;
 	_imagePadding  = _QR_CODE_SCALE * _QR_CODE_PADDING;
 	_backdropColor = 0xffffff;

@@ -143,6 +143,14 @@ public:
 		);
 	}
 
+	inline void drawBackdrop(Color color) {
+		drawRect(0, 0, width, height, color);
+	}
+	inline void drawBackdrop(Color color, BlendMode blendMode) {
+		setBlendMode(blendMode, true);
+		drawRect(0, 0, width, height, color, true);
+	}
+
 	void setResolution(
 		VideoMode mode, int width, int height, bool forceInterlace = false,
 		bool sideBySide = false
@@ -169,7 +177,6 @@ public:
 		int x, int y, int width, int height, Color top, Color middle,
 		Color bottom, bool blend = false
 	);
-	void drawBackdrop(Color color, BlendMode blendMode);
 };
 
 /* Image class */

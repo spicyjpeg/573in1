@@ -180,6 +180,8 @@ void FileIOManager::closeResourceFile(void) {
 
 static constexpr size_t _WORKER_STACK_SIZE = 0x20000;
 
+static constexpr int _SPLASH_SCREEN_TIMEOUT = 5;
+
 App::App(ui::Context &ctx)
 #ifdef ENABLE_LOG_BUFFER
 : _logOverlay(_logBuffer),
@@ -238,6 +240,7 @@ void App::_loadResources(void) {
 	res.loadTIM(_background.tile,     "assets/textures/background.tim");
 	res.loadTIM(_ctx.font.image,      "assets/textures/font.tim");
 	res.loadStruct(_ctx.font.metrics, "assets/textures/font.metrics");
+	res.loadTIM(_splashOverlay.image, "assets/textures/splash.tim");
 	res.loadStruct(_ctx.colors,       "assets/app.palette");
 	res.loadData(_stringTable,        "assets/app.strings");
 
@@ -303,6 +306,36 @@ bool App::_takeScreenshot(void) {
 	return true;
 }
 
+void App::_updateOverlays(void) {
+	// Date and time overlay
+	static char dateString[24];
+	util::Date  date;
+
+	io::getRTCTime(date);
+	date.toString(dateString);
+
+	_textOverlay.leftText = dateString;
+
+	// Splash screen overlay
+	int timeout = _ctx.gpuCtx.refreshRate * _SPLASH_SCREEN_TIMEOUT;
+
+	if ((_workerStatus.status == WORKER_DONE) || (_ctx.time > timeout))
+		_splashOverlay.hide(_ctx);
+
+	// Log overlay
+	if (
+		_ctx.buttons.released(ui::BTN_DEBUG) &&
+		!_ctx.buttons.longReleased(ui::BTN_DEBUG)
+	)
+		_logOverlay.toggle(_ctx);
+
+	// Screenshot overlay
+	if (_ctx.buttons.longPressed(ui::BTN_DEBUG)) {
+		if (_takeScreenshot())
+			_screenshotOverlay.animate(_ctx);
+	}
+}
+
 void App::_runWorker(
 	bool (App::*func)(void), ui::Screen &next, bool goBack, bool playSound
 ) {
@@ -361,40 +394,27 @@ void App::_interruptHandler(void) {
 	_fileIO.loadResourceFile(nullptr);
 	_loadResources();
 
-	char dateString[24];
-
-	_textOverlay.leftText       = dateString;
-	_textOverlay.rightText      = "v" VERSION_STRING;
-	_screenshotOverlay.callback = [](ui::Context &ctx) -> bool {
-		return APP->_takeScreenshot();
-	};
+	_textOverlay.rightText = "v" VERSION_STRING;
 
 	_ctx.backgrounds[0] = &_background;
 	_ctx.backgrounds[1] = &_textOverlay;
+	_ctx.overlays[0]    = &_splashOverlay;
 #ifdef ENABLE_LOG_BUFFER
-	_ctx.overlays[0]    = &_logOverlay;
+	_ctx.overlays[1]    = &_logOverlay;
 #endif
-	_ctx.overlays[1]    = &_screenshotOverlay;
+	_ctx.overlays[2]    = &_screenshotOverlay;
 
-#ifdef ENABLE_AUTOBOOT
 	_runWorker(&App::_ideInitWorker, _warningScreen);
-#else
-	// If autoboot is disabled, show the warning screen before initializing the
-	// drives in order to give them enough time to spin up.
-	_runWorker(nullptr, _warningScreen);
-#endif
 	_setupInterrupts();
+
+	_splashOverlay.show(_ctx);
 	_ctx.sounds[ui::SOUND_STARTUP].play();
 
 	for (;;) {
-		util::Date date;
-
-		io::getRTCTime(date);
-		date.toString(dateString);
-
 		_ctx.update();
-		_ctx.draw();
+		_updateOverlays();
 
+		_ctx.draw();
 		switchThreadImmediate(&_workerThread);
 		_ctx.gpuCtx.flip();
 	}

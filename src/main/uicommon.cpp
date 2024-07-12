@@ -24,13 +24,6 @@ namespace ui {
 
 /* Common screens */
 
-void PlaceholderScreen::draw(Context &ctx, bool active) const {
-	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
-	ctx.gpuCtx.drawRect(
-		0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height, ctx.colors[COLOR_WINDOW2]
-	);
-}
-
 TextScreen::TextScreen(void)
 : _title(nullptr), _body(nullptr), _prompt(nullptr) {}
 
@@ -128,16 +121,17 @@ void TextScreen::update(Context &ctx) {
 }
 
 ImageScreen::ImageScreen(void)
-: _imageScale(1), _imagePadding(0), _title(nullptr), _prompt(nullptr) {}
+: _image(nullptr), _imageScale(1), _imagePadding(0), _title(nullptr),
+_prompt(nullptr) {}
 
 void ImageScreen::draw(Context &ctx, bool active) const {
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 
-	if (_image.width && _image.height) {
+	if (_image) {
 		int x      = ctx.gpuCtx.width  / 2;
 		int y      = ctx.gpuCtx.height / 2;
-		int width  = _image.width  * _imageScale / 2;
-		int height = _image.height * _imageScale / 2;
+		int width  = _image->width  * _imageScale / 2;
+		int height = _image->height * _imageScale / 2;
 
 		if (_prompt)
 			y -= (SCREEN_PROMPT_HEIGHT - ctx.font.metrics.lineHeight) / 2;
@@ -153,9 +147,12 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 		}
 
 		// Image
-		_image.drawScaled(
-			ctx.gpuCtx, x - width - 1, y - height - 1, width * 2, height * 2
-		);
+		if (_imageScale > 1)
+			_image->drawScaled(
+				ctx.gpuCtx, x - width - 1, y - height - 1, width * 2, height * 2
+			);
+		else
+			_image->draw(ctx.gpuCtx, x - width, y - height);
 	}
 
 	// Text

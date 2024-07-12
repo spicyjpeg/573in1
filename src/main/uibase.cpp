@@ -234,11 +234,6 @@ void Context::draw(void) {
 void Context::update(void) {
 	buttons.update();
 
-	for (auto layer : overlays) {
-		if (layer)
-			layer->update(*this);
-	}
-
 	auto screen = getCurrentScreen();
 
 	if (screen)
@@ -294,22 +289,56 @@ void TextOverlay::draw(Context &ctx, bool active) const {
 	}
 }
 
-LogOverlay::LogOverlay(util::LogBuffer &buffer)
-: _buffer(buffer) {
-	_slideAnim.setValue(0);
+void SplashOverlay::draw(Context &ctx, bool active) const {
+	int brightness = _fadeAnim.getValue(ctx.time);
+
+	if (!brightness)
+		return;
+
+	// Backdrop
+	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
+	ctx.gpuCtx.drawBackdrop(
+		gp0_rgb(brightness, brightness, brightness), GP0_BLEND_SUBTRACT
+	);
+
+	if (brightness < 0xff)
+		return;
+
+	// Image
+	int x = (ctx.gpuCtx.width  - image.width)  / 2;
+	int y = (ctx.gpuCtx.height - image.height) / 2;
+
+	image.draw(ctx.gpuCtx, x, y);
+}
+
+void SplashOverlay::show(Context &ctx) {
+	if (!_fadeAnim.getTargetValue())
+#if 0
+		_fadeAnim.setValue(ctx.time, 0, 0xff, SPEED_SLOWEST);
+#else
+		_fadeAnim.setValue(0xff);
+#endif
+}
+
+void SplashOverlay::hide(Context &ctx) {
+	if (_fadeAnim.getTargetValue())
+		_fadeAnim.setValue(ctx.time, 0xff, 0, SPEED_SLOWEST);
 }
 
 void LogOverlay::draw(Context &ctx, bool active) const {
 	int offset = _slideAnim.getValue(ctx.time);
+
 	if (!offset)
 		return;
 
+	// Backdrop
 	_newLayer(
 		ctx, 0, offset - ctx.gpuCtx.height, ctx.gpuCtx.width,
 		ctx.gpuCtx.height
 	);
 	ctx.gpuCtx.drawBackdrop(ctx.colors[COLOR_BACKDROP], GP0_BLEND_SUBTRACT);
 
+	// Text
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MIN_MARGIN_Y * 2;
 	int linesShown   = screenHeight / ctx.font.metrics.lineHeight;
 
@@ -330,15 +359,11 @@ void LogOverlay::draw(Context &ctx, bool active) const {
 	}
 }
 
-void LogOverlay::update(Context &ctx) {
-	if (
-		ctx.buttons.released(BTN_DEBUG) && !ctx.buttons.longReleased(BTN_DEBUG)
-	) {
-		bool shown = !_slideAnim.getTargetValue();
+void LogOverlay::toggle(Context &ctx) {
+	bool shown = !_slideAnim.getTargetValue();
 
-		_slideAnim.setValue(ctx.time, shown ? ctx.gpuCtx.height : 0, SPEED_SLOW);
-		ctx.sounds[shown ? SOUND_ENTER : SOUND_EXIT].play();
-	}
+	_slideAnim.setValue(ctx.time, shown ? ctx.gpuCtx.height : 0, SPEED_SLOW);
+	ctx.sounds[shown ? SOUND_ENTER : SOUND_EXIT].play();
 }
 
 void ScreenshotOverlay::draw(Context &ctx, bool active) const {
@@ -353,13 +378,9 @@ void ScreenshotOverlay::draw(Context &ctx, bool active) const {
 	);
 }
 
-void ScreenshotOverlay::update(Context &ctx) {
-	if (ctx.buttons.longPressed(BTN_DEBUG)) {
-		if (callback(ctx)) {
-			_flashAnim.setValue(ctx.time, 0xff, 0, SPEED_SLOW);
-			ctx.sounds[ui::SOUND_SCREENSHOT].play();
-		}
-	}
+void ScreenshotOverlay::animate(Context &ctx) {
+	_flashAnim.setValue(ctx.time, 0xff, 0, SPEED_SLOW);
+	ctx.sounds[ui::SOUND_SCREENSHOT].play();
 }
 
 /* Base screen classes */
@@ -381,15 +402,17 @@ void AnimatedScreen::hide(Context &ctx, bool goBack) {
 }
 
 void BackdropScreen::show(Context &ctx, bool goBack) {
-	_backdropAnim.setValue(ctx.time, 0, 0x50, SPEED_FAST);
+	if (!_fadeAnim.getTargetValue())
+		_fadeAnim.setValue(ctx.time, 0, 0x50, SPEED_FAST);
 }
 
 void BackdropScreen::hide(Context &ctx, bool goBack) {
-	_backdropAnim.setValue(ctx.time, 0x50, 0, SPEED_FAST);
+	if (_fadeAnim.getTargetValue())
+		_fadeAnim.setValue(ctx.time, 0x50, 0, SPEED_FAST);
 }
 
 void BackdropScreen::draw(Context &ctx, bool active) const {
-	int brightness = _backdropAnim.getValue(ctx.time);
+	int brightness = _fadeAnim.getValue(ctx.time);
 
 	if (!brightness)
 		return;

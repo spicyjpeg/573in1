@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img alt="573in1 logo" src="doc/assets/logo.png" width="512" height="336" />
+  <img alt="573in1 logo" src="doc/assets/logo.png" width="512" />
 </p>
 
 573in1 is a full-featured homebrew maintenance and troubleshooting tool, game
@@ -43,17 +43,17 @@ instructions. **Reading the documentation before proceeding is highly**
 ## Screenshots
 
 <p align="center">
-  <img alt="Main menu" src="doc/assets/mainMenu.png" width="320" height="240" />
+  <img alt="Main menu" src="doc/assets/mainMenu.png" width="320" />
   <img alt="Cartridge information screen" src="doc/assets/cartInfo.png"
-    width="320" height="240" />
+    width="320" />
   <img alt="Cartridge system ID editor" src="doc/assets/editSystemID.png"
-    width="320" height="240" />
+    width="320" />
   <img alt="Storage device information screen" src="doc/assets/storageInfo.png"
-    width="320" height="240" />
+    width="320" />
   <img alt="IDE drive file picker" src="doc/assets/ideDrivePicker.png"
-    width="320" height="240" />
+    width="320" />
   <img alt="Monitor test pattern" src="doc/assets/monitorTestPattern.png"
-    width="320" height="240" />
+    width="320" />
 </p>
 
 ## Project status
@@ -78,6 +78,8 @@ to lowest priority:
   flash or a PCMCIA card, allowing the 573 BIOS to boot them automatically even
   with no CD-ROM drive present.
 - Cleaning up the codebase, which currently contains *many* bad practices.
+- Adding support for JVS bus scanning and using JVS I/O boards in place of the
+  JAMMA button inputs.
 - Adding UTF-8 support to the font and text rendering code. This is a rather low
   priority feature, but it would allow 573in1 to be translated to other
   languages.

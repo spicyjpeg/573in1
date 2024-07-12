@@ -303,9 +303,7 @@ void TestPatternScreen::_drawTextOverlay(
 
 void TestPatternScreen::draw(ui::Context &ctx, bool active) const {
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
-	ctx.gpuCtx.drawRect(
-		0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height, _BACKGROUND_COLOR
-	);
+	ctx.gpuCtx.drawBackdrop(_BACKGROUND_COLOR);
 }
 
 void TestPatternScreen::update(ui::Context &ctx) {

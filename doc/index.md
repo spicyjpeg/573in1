@@ -8,7 +8,7 @@
 - TODO: ~~[Installing games and working with flash memory devices](flash.md)~~
 - TODO: ~~[Connecting an IDE hard drive](hdd.md)~~
 - TODO: ~~[Installing 573in1 as a BIOS ROM](bios.md)~~
-- TODO: ~~[FAQ and troubleshooting](faq.md)~~
+- [FAQ and troubleshooting](faq.md)
 
 ## Development resources
 

@@ -326,11 +326,6 @@ void Context::drawGradientRectD(
 	cmd[7] = gp0_xy(x + width, y + height);
 }
 
-void Context::drawBackdrop(Color color, BlendMode blendMode) {
-	setBlendMode(blendMode, true);
-	drawRect(0, 0, width, height, color, true);
-}
-
 /* Image class */
 
 void Image::initFromVRAMRect(

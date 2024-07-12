@@ -180,12 +180,13 @@ private:
 	ResolutionScreen _resolutionScreen;
 	AboutScreen      _aboutScreen;
 
+	ui::TiledBackground   _background;
+	ui::TextOverlay       _textOverlay;
+	ui::SplashOverlay     _splashOverlay;
 #ifdef ENABLE_LOG_BUFFER
 	util::LogBuffer       _logBuffer;
 	ui::LogOverlay        _logOverlay;
 #endif
-	ui::TiledBackground   _background;
-	ui::TextOverlay       _textOverlay;
 	ui::ScreenshotOverlay _screenshotOverlay;
 
 	ui::Context       &_ctx;
@@ -214,6 +215,7 @@ private:
 		char *output, size_t length, const char *path, int maxIndex = 9999
 	);
 	bool _takeScreenshot(void);
+	void _updateOverlays(void);
 	void _runWorker(
 		bool (App::*func)(void), ui::Screen &next, bool goBack = false,
 		bool playSound = false

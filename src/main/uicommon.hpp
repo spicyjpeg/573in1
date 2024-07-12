@@ -25,11 +25,6 @@ namespace ui {
 
 /* Common screens */
 
-class PlaceholderScreen : public AnimatedScreen {
-public:
-	void draw(Context &ctx, bool active) const;
-};
-
 class TextScreen : public AnimatedScreen {
 private:
 	util::Tween<int, util::QuadOutEasing> _scrollAnim;
@@ -54,7 +49,7 @@ public:
 
 class ImageScreen : public AnimatedScreen {
 protected:
-	gpu::Image _image;
+	gpu::Image *_image;
 	int        _imageScale, _imagePadding;
 	gpu::Color _backdropColor;
 
