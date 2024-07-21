@@ -208,31 +208,28 @@ bool FATProvider::getFileFragments(
 	if (!_selectDrive())
 		return false;
 
-	FIL    fd;
-	size_t length = 0;
-	auto   error  = f_open(&fd, path, READ);
+	FIL  fd;
+	auto error = f_open(&fd, path, READ);
 
-	if (error)
-		goto _openError;
+	if (!error) {
+		size_t length;
 
-	// Note that this function is not normally part of FatFs.
-	error = f_getlbas(&fd, nullptr, 0, &length);
+		// Note that this function is not normally part of FatFs.
+		error = f_getlbas(&fd, nullptr, 0, &length);
 
-	if (error)
-		goto _fileError;
+		if (!error) {
+			bool allocated = output.allocate<uint64_t>(length);
 
-	if (!output.allocate<uint64_t>(length)) {
+			if (allocated)
+				f_getlbas(&fd, output.as<uint64_t>(), 0, &length);
+
+			f_close(&fd);
+			return allocated;
+		}
+
 		f_close(&fd);
-		return false;
 	}
 
-	f_getlbas(&fd, output.as<uint64_t>(), 0, &length);
-	f_close(&fd);
-	return true;
-
-_fileError:
-	f_close(&fd);
-_openError:
 	LOG_FS("%s, %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
 	return false;
 }

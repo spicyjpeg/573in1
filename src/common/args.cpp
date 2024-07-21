@@ -23,11 +23,26 @@ namespace args {
 
 /* Command line argument parsers */
 
+static constexpr char _VALUE_SEPARATOR = '=';
+
+static constexpr int _DEFAULT_BAUD_RATE     = 115200;
+static constexpr int _DEFAULT_SCREEN_WIDTH  = 320;
+static constexpr int _DEFAULT_SCREEN_HEIGHT = 240;
+
+CommonArgs::CommonArgs(void)
+#ifdef NDEBUG
+: baudRate(0) {}
+#else
+// Enable serial port logging by default in debug builds.
+: baudRate(_DEFAULT_BAUD_RATE) {}
+#endif
+
+
 bool CommonArgs::parseArgument(const char *arg) {
 	if (!arg)
 		return false;
 
-	switch (util::hash(arg, VALUE_SEPARATOR)) {
+	switch (util::hash(arg, _VALUE_SEPARATOR)) {
 #if 0
 		case "boot.rom"_h:
 			LOG_APP("boot.rom=%s", &arg[9]);
@@ -47,11 +62,15 @@ bool CommonArgs::parseArgument(const char *arg) {
 	}
 }
 
+MainArgs::MainArgs(void)
+: screenWidth(_DEFAULT_SCREEN_WIDTH), screenHeight(_DEFAULT_SCREEN_HEIGHT),
+forceInterlace(false), resourcePtr(nullptr), resourceLength(0) {}
+
 bool MainArgs::parseArgument(const char *arg) {
 	if (!arg)
 		return false;
 
-	switch (util::hash(arg, VALUE_SEPARATOR)) {
+	switch (util::hash(arg, _VALUE_SEPARATOR)) {
 		case "screen.width"_h:
 			screenWidth = int(strtol(&arg[13], nullptr, 0));
 			return true;
@@ -81,11 +100,15 @@ bool MainArgs::parseArgument(const char *arg) {
 	}
 }
 
+ExecutableLauncherArgs::ExecutableLauncherArgs(void)
+: entryPoint(nullptr), initialGP(nullptr), stackTop(nullptr),
+loadAddress(nullptr), device(0), numArgs(0), numFragments(0) {}
+
 bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 	if (!arg)
 		return false;
 
-	switch (util::hash(arg, VALUE_SEPARATOR)) {
+	switch (util::hash(arg, _VALUE_SEPARATOR)) {
 		case "entry.pc"_h:
 			entryPoint = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
 			return true;

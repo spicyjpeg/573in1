@@ -41,28 +41,32 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
 		return 0;
 
-	auto enable = disableInterrupts();
-	GPU_GP1     = gp1_dmaRequestMode(GP1_DREQ_NONE);
+	{
+		util::CriticalSection sec;
 
-	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
-		__asm__ volatile("");
+		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_NONE);
 
-	GPU_GP0 = gp0_flushCache();
-	GPU_GP0 = gp0_vramWrite();
-	GPU_GP0 = gp0_xy(rect.x, rect.y);
-	GPU_GP0 = gp0_xy(rect.w, rect.h);
+		while (!(GPU_GP1 & GP1_STAT_CMD_READY))
+			__asm__ volatile("");
 
-	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
+		GPU_GP0 = gp0_flushCache();
+		GPU_GP0 = gp0_vramWrite();
+		GPU_GP0 = gp0_xy(rect.x, rect.y);
+		GPU_GP0 = gp0_xy(rect.w, rect.h);
 
-	while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
-		__asm__ volatile("");
+		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
-	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
-	DMA_CHCR(DMA_GPU) = DMA_CHCR_WRITE | DMA_CHCR_MODE_SLICE | DMA_CHCR_ENABLE;
+		while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
+			__asm__ volatile("");
 
-	if (enable)
-		enableInterrupts();
+		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+		DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
+		DMA_CHCR(DMA_GPU) = 0
+			| DMA_CHCR_WRITE
+			| DMA_CHCR_MODE_SLICE
+			| DMA_CHCR_ENABLE;
+	}
+
 	if (wait)
 		waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT);
 
@@ -79,28 +83,32 @@ size_t download(const RectWH &rect, void *data, bool wait) {
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
 		return 0;
 
-	auto enable = disableInterrupts();
-	GPU_GP1     = gp1_dmaRequestMode(GP1_DREQ_NONE);
+	{
+		util::CriticalSection sec;
 
-	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
-		__asm__ volatile("");
+		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_NONE);
 
-	GPU_GP0 = gp0_flushCache();
-	GPU_GP0 = gp0_vramRead();
-	GPU_GP0 = gp0_xy(rect.x, rect.y);
-	GPU_GP0 = gp0_xy(rect.w, rect.h);
+		while (!(GPU_GP1 & GP1_STAT_CMD_READY))
+			__asm__ volatile("");
 
-	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_READ);
+		GPU_GP0 = gp0_flushCache();
+		GPU_GP0 = gp0_vramRead();
+		GPU_GP0 = gp0_xy(rect.x, rect.y);
+		GPU_GP0 = gp0_xy(rect.w, rect.h);
 
-	while (!(GPU_GP1 & GP1_STAT_READ_READY))
-		__asm__ volatile("");
+		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_READ);
 
-	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
-	DMA_CHCR(DMA_GPU) = DMA_CHCR_READ | DMA_CHCR_MODE_SLICE | DMA_CHCR_ENABLE;
+		while (!(GPU_GP1 & GP1_STAT_READ_READY))
+			__asm__ volatile("");
 
-	if (enable)
-		enableInterrupts();
+		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+		DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
+		DMA_CHCR(DMA_GPU) = 0
+			| DMA_CHCR_READ
+			| DMA_CHCR_MODE_SLICE
+			| DMA_CHCR_ENABLE;
+	}
+
 	if (wait)
 		waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT);
 
@@ -182,14 +190,17 @@ void Context::flip(void) {
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
 	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(oldBuffer.displayList);
-	DMA_CHCR(DMA_GPU) = DMA_CHCR_WRITE | DMA_CHCR_MODE_LIST | DMA_CHCR_ENABLE;
+	DMA_CHCR(DMA_GPU) = 0
+		| DMA_CHCR_WRITE
+		| DMA_CHCR_MODE_LIST
+		| DMA_CHCR_ENABLE;
 }
 
 void Context::setResolution(
 	VideoMode mode, int _width, int _height, bool forceInterlace,
 	bool sideBySide
 ) {
-	auto enable = disableInterrupts();
+	util::CriticalSection sec;
 
 	width       = _width;
 	height      = _height;
@@ -218,9 +229,6 @@ void Context::setResolution(
 
 	flip();
 	_applyResolution(mode, forceInterlace);
-
-	if (enable)
-		enableInterrupts();
 }
 
 uint32_t *Context::newPacket(size_t length) {

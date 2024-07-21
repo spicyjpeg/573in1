@@ -196,15 +196,13 @@ char *LogBuffer::allocateLine(void) {
 }
 
 void Logger::setLogBuffer(LogBuffer *buffer) {
-	auto enable = disableInterrupts();
-	_buffer     = buffer;
+	util::CriticalSection sec;
 
-	if (enable)
-		enableInterrupts();
+	_buffer = buffer;
 }
 
 void Logger::setupSyslog(int baudRate) {
-	auto enable = disableInterrupts();
+	util::CriticalSection sec;
 
 	if (baudRate) {
 		initSerialIO(baudRate);
@@ -212,13 +210,11 @@ void Logger::setupSyslog(int baudRate) {
 	} else {
 		_enableSyslog = false;
 	}
-
-	if (enable)
-		enableInterrupts();
 }
 
 void Logger::log(const char *format, ...) {
-	auto    enable = disableInterrupts();
+	util::CriticalSection sec;
+
 	va_list ap;
 
 	if (_buffer) {
@@ -237,9 +233,6 @@ void Logger::log(const char *format, ...) {
 
 		putchar('\n');
 	}
-
-	if (enable)
-		enableInterrupts();
 }
 
 /* MD5 hash */

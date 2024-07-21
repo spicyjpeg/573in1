@@ -275,22 +275,20 @@ bool App::_cartRestoreWorker(void) {
 	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
 	cart::CartDump newDump;
-	size_t         length;
 
-	if (!_file)
-		goto _fileOpenError;
+	if (_file) {
+		auto length = _file->read(&newDump, sizeof(newDump));
 
-	length = _file->read(&newDump, sizeof(newDump));
+		_file->close();
+		delete _file;
 
-	if (length < (sizeof(newDump) - sizeof(newDump.data)))
-		goto _fileError;
-	if (!newDump.validateMagic())
-		goto _fileError;
-	if (length != newDump.getDumpLength())
-		goto _fileError;
-
-	_file->close();
-	delete _file;
+		if (length < (sizeof(newDump) - sizeof(newDump.data)))
+			goto _fileError;
+		if (!newDump.validateMagic())
+			goto _fileError;
+		if (length != newDump.getDumpLength())
+			goto _fileError;
+	}
 
 	if (_cartDump.chipType != newDump.chipType) {
 		_messageScreen.setMessage(
@@ -300,43 +298,39 @@ bool App::_cartRestoreWorker(void) {
 		return false;
 	}
 
-	cart::DriverError error;
+	{
+		_workerStatus.update(1, 3, WSTR("App.cartRestoreWorker.setDataKey"));
+		auto error = _cartDriver->setDataKey(newDump.dataKey);
 
-	_workerStatus.update(1, 3, WSTR("App.cartRestoreWorker.setDataKey"));
-	error = _cartDriver->setDataKey(newDump.dataKey);
+		if (error) {
+			LOG_APP("key error [%s]", cart::getErrorString(error));
+		} else {
+			if (newDump.flags & (
+				cart::DUMP_PUBLIC_DATA_OK | cart::DUMP_PRIVATE_DATA_OK
+			))
+				_cartDump.copyDataFrom(newDump.data);
+			if (newDump.flags & cart::DUMP_CONFIG_OK)
+				_cartDump.copyConfigFrom(newDump.config);
 
-	if (error) {
-		LOG_APP("key error [%s]", cart::getErrorString(error));
-	} else {
-		if (newDump.flags & (
-			cart::DUMP_PUBLIC_DATA_OK | cart::DUMP_PRIVATE_DATA_OK
-		))
-			_cartDump.copyDataFrom(newDump.data);
-		if (newDump.flags & cart::DUMP_CONFIG_OK)
-			_cartDump.copyConfigFrom(newDump.config);
+			_workerStatus.update(2, 3, WSTR("App.cartRestoreWorker.write"));
+			error = _cartDriver->writeData();
+		}
 
-		_workerStatus.update(2, 3, WSTR("App.cartRestoreWorker.write"));
-		error = _cartDriver->writeData();
-	}
+		_cartDetectWorker();
 
-	_cartDetectWorker();
-
-	if (error) {
-		_messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.cartRestoreWorker.writeError"),
-			cart::getErrorString(error)
-		);
-		_workerStatus.setNextScreen(_messageScreen);
-		return false;
+		if (error) {
+			_messageScreen.setMessage(
+				MESSAGE_ERROR, WSTR("App.cartRestoreWorker.writeError"),
+				cart::getErrorString(error)
+			);
+			_workerStatus.setNextScreen(_messageScreen);
+			return false;
+		}
 	}
 
 	return _cartUnlockWorker();
 
 _fileError:
-	_file->close();
-	delete _file;
-
-_fileOpenError:
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, WSTR("App.cartRestoreWorker.fileError"), path
 	);

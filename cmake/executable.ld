@@ -108,6 +108,7 @@ SECTIONS {
 	} > APP_RAM
 
 	/DISCARD/ : {
-		*(.gnu.lto_*)
+		*(.note.GNU-stack .gnu_debuglink .gnu.lto_*)
+		*(.MIPS.abiflags)
 	}
 }

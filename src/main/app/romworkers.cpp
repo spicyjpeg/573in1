@@ -202,29 +202,28 @@ bool App::_romRestoreWorker(void) {
 	const char *path = _fileBrowserScreen.selectedPath;
 	auto       _file = _fileIO.vfs.openFile(path, file::READ);
 
-	auto region       = _storageActionsScreen.selectedRegion;
-	auto regionLength = _storageActionsScreen.selectedLength;
+	if (!_file) {
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, WSTR("App.romRestoreWorker.fileError"), path
+		);
+		return false;
+	}
 
-	size_t bytesWritten = 0;
-
-	util::Data buffers, chunkLengths;
-
-	if (!_file)
-		goto _fileError;
 	if (!_romEraseWorker())
 		return false;
 
-	rom::Driver *driver;
-	size_t      chipLength, numChips, maxChunkLength;
+	auto region       = _storageActionsScreen.selectedRegion;
+	auto regionLength = _storageActionsScreen.selectedLength;
 
-	driver         = region->newDriver();
-	chipLength     = driver->getChipSize().chipLength;
-	numChips       = (regionLength + chipLength - 1) / chipLength;
-	maxChunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH / numChips);
+	auto driver         = region->newDriver();
+	auto chipLength     = driver->getChipSize().chipLength;
+	auto numChips       = (regionLength + chipLength - 1) / chipLength;
+	auto maxChunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH / numChips);
 
 	LOG_APP("%d chips, buf=%d", numChips, maxChunkLength);
 
-	rom::DriverError error;
+	util::Data buffers, chunkLengths;
+	size_t     bytesWritten = 0;
 
 	buffers.allocate(maxChunkLength * numChips);
 	chunkLengths.allocate<size_t>(numChips);
@@ -294,10 +293,22 @@ bool App::_romRestoreWorker(void) {
 					continue;
 
 				auto value = *reinterpret_cast<const uint16_t *>(chunkPtr);
-				error      = driver->flushWrite(chunkOffset, value);
+				auto error = driver->flushWrite(chunkOffset, value);
 
-				if (error)
-					goto _flashError;
+				if (!error)
+					continue;
+
+				buffers.destroy();
+				chunkLengths.destroy();
+				_file->close();
+				delete _file;
+				delete driver;
+
+				_messageScreen.setMessage(
+					MESSAGE_ERROR, WSTR("App.romRestoreWorker.flashError"),
+					rom::getErrorString(error), bytesWritten
+				);
+				return false;
 			}
 		}
 	}
@@ -316,25 +327,6 @@ bool App::_romRestoreWorker(void) {
 
 	_messageScreen.setMessage(MESSAGE_SUCCESS, WSTRH(message), bytesWritten);
 	return true;
-
-_fileError:
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.romRestoreWorker.fileError"), path
-	);
-	return false;
-
-_flashError:
-	buffers.destroy();
-	chunkLengths.destroy();
-	_file->close();
-	delete _file;
-	delete driver;
-
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.romRestoreWorker.flashError"),
-		rom::getErrorString(error), bytesWritten
-	);
-	return false;
 }
 
 bool App::_romEraseWorker(void) {
@@ -348,10 +340,14 @@ bool App::_romEraseWorker(void) {
 
 	size_t sectorsErased = 0;
 
-	if (!chipLength)
-		goto _unsupported;
+	if (!chipLength) {
+		delete driver;
 
-	rom::DriverError error;
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, WSTR("App.romEraseWorker.unsupported")
+		);
+		return false;
+	}
 
 	_checksumScreen.valid = false;
 
@@ -364,10 +360,18 @@ bool App::_romEraseWorker(void) {
 			driver->eraseSector(i + j);
 
 		for (size_t j = 0; j < regionLength; j += chipLength, sectorsErased++) {
-			error = driver->flushErase(i + j);
+			auto error = driver->flushErase(i + j);
 
-			if (error)
-				goto _flashError;
+			if (!error)
+				continue;
+
+			delete driver;
+
+			_messageScreen.setMessage(
+				MESSAGE_ERROR, WSTR("App.romEraseWorker.flashError"),
+				rom::getErrorString(error), sectorsErased
+			);
+			return false;
 		}
 	}
 
@@ -377,23 +381,6 @@ bool App::_romEraseWorker(void) {
 		MESSAGE_SUCCESS, WSTR("App.romEraseWorker.success"), sectorsErased
 	);
 	return true;
-
-_flashError:
-	delete driver;
-
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.romEraseWorker.flashError"),
-		rom::getErrorString(error), sectorsErased
-	);
-	return false;
-
-_unsupported:
-	delete driver;
-
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.romEraseWorker.unsupported")
-	);
-	return false;
 }
 
 bool App::_flashExecutableWriteWorker(void) {
@@ -405,26 +392,30 @@ bool App::_flashHeaderWriteWorker(void) {
 	auto   driver       = rom::flash.newDriver();
 	size_t sectorLength = driver->getChipSize().eraseSectorLength;
 
-	util::Data buffer;
-
 	// This should never happen since the flash chips are soldered to the 573,
 	// but whatever.
-	if (!sectorLength)
-		goto _unsupported;
+	if (!sectorLength) {
+		delete driver;
+
+		_messageScreen.setMessage(
+			MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.unsupported")
+		);
+		_workerStatus.setNextScreen(_messageScreen);
+		return false;
+	}
 
 	_checksumScreen.valid = false;
 	_workerStatus.update(0, 2, WSTR("App.flashHeaderWriteWorker.erase"));
 
 	// The flash can only be erased with sector granularity, so all data in the
 	// first sector other than the header must be backed up and rewritten.
-	rom::DriverError error;
-	const uint16_t   *ptr;
+	util::Data buffer;
 
 	buffer.allocate(sectorLength);
 	rom::flash.read(buffer.ptr, 0, sectorLength);
 
 	driver->eraseSector(0);
-	error = driver->flushErase(0);
+	auto error = driver->flushErase(0);
 
 	if (error)
 		goto _flashError;
@@ -433,7 +424,7 @@ bool App::_flashHeaderWriteWorker(void) {
 
 	// Write the new header (if any).
 	if (!_romHeaderDump.isDataEmpty()) {
-		ptr = reinterpret_cast<const uint16_t *>(_romHeaderDump.data);
+		auto ptr = reinterpret_cast<const uint16_t *>(_romHeaderDump.data);
 
 		for (
 			uint32_t offset = rom::FLASH_HEADER_OFFSET;
@@ -450,19 +441,21 @@ bool App::_flashHeaderWriteWorker(void) {
 	}
 
 	// Restore the rest of the sector that was erased.
-	ptr = &buffer.as<const uint16_t>()[rom::FLASH_CRC_OFFSET / 2];
+	{
+		auto ptr = &buffer.as<const uint16_t>()[rom::FLASH_CRC_OFFSET / 2];
 
-	for (
-		uint32_t offset = rom::FLASH_CRC_OFFSET; offset < sectorLength;
-		offset += 2
-	) {
-		auto value = *(ptr++);
+		for (
+			uint32_t offset = rom::FLASH_CRC_OFFSET; offset < sectorLength;
+			offset += 2
+		) {
+			auto value = *(ptr++);
 
-		driver->write(offset, value);
-		error = driver->flushWrite(offset, value);
+			driver->write(offset, value);
+			error = driver->flushWrite(offset, value);
 
-		if (error)
-			goto _flashError;
+			if (error)
+				goto _flashError;
+		}
 	}
 
 	buffer.destroy();
@@ -476,15 +469,6 @@ _flashError:
 	_messageScreen.setMessage(
 		MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.flashError"),
 		rom::getErrorString(error)
-	);
-	_workerStatus.setNextScreen(_messageScreen);
-	return false;
-
-_unsupported:
-	delete driver;
-
-	_messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.unsupported")
 	);
 	_workerStatus.setNextScreen(_messageScreen);
 	return false;
