@@ -16,9 +16,11 @@
 
 #pragma once
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "ps1/system.h"
 
 namespace util {
 
@@ -65,7 +67,7 @@ template<typename T> static inline T roundUpToMultiple(T value, T length) {
 }
 
 template<typename T, typename X> static inline void assertAligned(X *ptr) {
-	//assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
+	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
 }
 
 template<typename T> static inline void clear(T &obj, uint8_t value = 0) {
@@ -108,6 +110,34 @@ template<typename T> static constexpr inline Hash hash(
 
 Hash hash(const char *str, char terminator = 0);
 Hash hash(const uint8_t *data, size_t length);
+
+/* Critical section helper */
+
+class CriticalSection {
+private:
+	bool _enable;
+
+public:
+	inline CriticalSection(void) {
+		_enable = disableInterrupts();
+	}
+	inline ~CriticalSection(void) {
+		if (_enable)
+			enableInterrupts();
+	}
+};
+
+class ThreadCriticalSection {
+public:
+	inline ThreadCriticalSection(void) {
+		bool enable = disableInterrupts();
+
+		assert(enable);
+	}
+	inline ~ThreadCriticalSection(void) {
+		enableInterrupts();
+	}
+};
 
 /* Simple "smart" pointer */
 

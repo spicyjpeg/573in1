@@ -14,7 +14,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "ps1/cop0gte.h"
@@ -94,10 +93,9 @@ void uninstallExceptionHandler(void) {
 
 void setInterruptHandler(ArgFunction func, void *arg) {
 	disableInterrupts();
-
 	interruptHandler    = func;
 	interruptHandlerArg = arg;
-	atomic_signal_fence(memory_order_release);
+	flushWriteQueue();
 }
 
 void flushCache(void) {
@@ -154,5 +152,5 @@ void switchThread(Thread *thread) {
 		thread = &_mainThread;
 
 	nextThread = thread;
-	atomic_signal_fence(memory_order_release);
+	flushWriteQueue();
 }

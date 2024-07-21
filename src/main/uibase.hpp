@@ -124,10 +124,10 @@ private:
 	ButtonMap _buttonMap;
 	uint32_t  _mappings[NUM_BUTTONS];
 
-	uint8_t  _held, _prevHeld;
-	uint8_t  _longHeld, _prevLongHeld;
-	uint8_t  _pressed, _released;
-	uint8_t  _longPressed, _longReleased;
+	uint8_t _held, _prevHeld;
+	uint8_t _longHeld, _prevLongHeld;
+	uint8_t _pressed, _released;
+	uint8_t _longPressed, _longReleased;
 
 	int _repeatTimer;
 
@@ -184,6 +184,7 @@ public:
 	spu::Sound sounds[NUM_UI_SOUNDS];
 
 	ButtonState buttons;
+	spu::Stream audioStream;
 
 	int  time;
 	void *screenData; // Opaque, can be accessed by screens
@@ -210,8 +211,12 @@ public:
 class Layer {
 protected:
 	void _newLayer(Context &ctx, int x, int y, int width, int height) const;
-	void _setTexturePage(Context &ctx, uint16_t texpage, bool dither = false) const;
-	void _setBlendMode(Context &ctx, gpu::BlendMode blendMode, bool dither = false) const;
+	void _setTexturePage(
+		Context &ctx, uint16_t texpage, bool dither = false
+	) const;
+	void _setBlendMode(
+		Context &ctx, gpu::BlendMode blendMode, bool dither = false
+	) const;
 
 public:
 	virtual void draw(Context &ctx, bool active = true) const {}

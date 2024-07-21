@@ -308,12 +308,15 @@ public:
 	Device(uint32_t flags);
 	DeviceError enumerate(void);
 	DeviceError poll(void);
+	void handleInterrupt(void);
 
 	DeviceError readData(void *data, uint64_t lba, size_t count);
 	DeviceError writeData(const void *data, uint64_t lba, size_t count);
+#ifdef ENABLE_FULL_IDE_DRIVER
 	DeviceError goIdle(bool standby = false);
 	DeviceError startStopUnit(ATAPIStartStopMode mode);
 	DeviceError flushCache(void);
+#endif
 };
 
 extern const char *const DEVICE_ERROR_NAMES[];

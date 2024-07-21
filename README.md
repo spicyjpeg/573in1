@@ -71,9 +71,7 @@ to lowest priority:
   new data to the game list (see above) and reverse engineering all flash header
   formats used by games.
 - Fixing a bunch of stability bugs, such as the executable loader occasionally
-  crashing or the filesystem drivers not being thread safe (resulting in
-  filesystem corruption if e.g. a screenshot is taken while dumping data to the
-  hard drive).
+  crashing.
 - Adding support for installing arbitrary executables directly to the internal
   flash or a PCMCIA card, allowing the 573 BIOS to boot them automatically even
   with no CD-ROM drive present.

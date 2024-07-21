@@ -53,7 +53,7 @@ extern Thread *nextThread;
  * were disabled, any callback set using setInterruptHandler() will be invoked
  * immediately.
  */
-static inline void enableInterrupts(void) {
+__attribute__((always_inline)) static inline void enableInterrupts(void) {
 	cop0_setSR(cop0_getSR() | COP0_SR_IEc);
 }
 
@@ -65,11 +65,22 @@ static inline void enableInterrupts(void) {
  *
  * @return True if interrupts were previously enabled, false otherwise
  */
-static inline bool disableInterrupts(void) {
+__attribute__((always_inline)) static inline bool disableInterrupts(void) {
 	uint32_t sr = cop0_getSR();
 
 	cop0_setSR(sr & ~COP0_SR_IEc);
 	return (sr & COP0_SR_IEc);
+}
+
+/**
+ * @brief Forces all pending memory writes to complete and stalls until the
+ * write queue is empty. Calling this function is not necessary when accessing
+ * memory or hardware registers through KSEG1 as the write queue is only enabled
+ * when using KUSEG or KSEG0.
+ */
+__attribute__((always_inline)) static inline void flushWriteQueue(void) {
+	__atomic_signal_fence(__ATOMIC_RELEASE);
+	*((volatile uint8_t *) 0xbfc00000);
 }
 
 /**
@@ -82,7 +93,7 @@ static inline bool disableInterrupts(void) {
  * @param arg Optional argument to entry point
  * @param stack Pointer to last 8 bytes in the stack
  */
-static inline void initThread(
+__attribute__((always_inline)) static inline void initThread(
 	Thread *thread, ArgFunction func, void *arg, void *stack
 ) {
 	register uint32_t gp __asm__("gp");
@@ -220,7 +231,9 @@ void switchThread(Thread *thread);
  *
  * @param thread Pointer to new thread or NULL for main thread
  */
-static inline void switchThreadImmediate(Thread *thread) {
+__attribute__((always_inline)) static inline void switchThreadImmediate(
+	Thread *thread
+) {
 	switchThread(thread);
 
 	// Execute a syscall to force the switch to happen.

@@ -48,13 +48,12 @@ enum WorkerStatusType {
 // the main thread and the WorkerStatusScreen.
 class WorkerStatus {
 public:
-	volatile WorkerStatusType status;
+	WorkerStatusType status;
+	int              progress, progressTotal;
 
-	volatile int progress, progressTotal;
-
-	const char *volatile message;
-	ui::Screen *volatile nextScreen;
-	volatile bool        nextGoBack;
+	const char *message;
+	ui::Screen *nextScreen;
+	bool       nextGoBack;
 
 	void reset(ui::Screen &next, bool goBack = false);
 	void update(int part, int total, const char *text = nullptr);

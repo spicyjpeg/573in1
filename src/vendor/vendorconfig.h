@@ -53,7 +53,7 @@
 #define FF_FS_NOFSINFO 0
 
 #define FF_FS_LOCK      0
-#define FF_FS_REENTRANT 0
+#define FF_FS_REENTRANT 1
 
 /* miniz configuration */
 

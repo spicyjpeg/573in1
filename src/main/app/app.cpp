@@ -41,40 +41,41 @@ void WorkerStatus::reset(ui::Screen &next, bool goBack) {
 	message       = nullptr;
 	nextScreen    = &next;
 	nextGoBack    = goBack;
+
+	flushWriteQueue();
 }
 
 void WorkerStatus::update(int part, int total, const char *text) {
-	auto enable   = disableInterrupts();
+	util::CriticalSection sec;
+
 	status        = WORKER_BUSY;
 	progress      = part;
 	progressTotal = total;
 
 	if (text)
 		message = text;
-	if (enable)
-		enableInterrupts();
+
+	flushWriteQueue();
 }
 
 ui::Screen &WorkerStatus::setNextScreen(ui::Screen &next, bool goBack) {
-	auto enable  = disableInterrupts();
+	util::CriticalSection sec;
+
 	auto oldNext = nextScreen;
 	nextScreen   = &next;
 	nextGoBack   = goBack;
 
-	if (enable)
-		enableInterrupts();
-
+	flushWriteQueue();
 	return *oldNext;
 }
 
 WorkerStatusType WorkerStatus::setStatus(WorkerStatusType value) {
-	auto enable    = disableInterrupts();
+	util::CriticalSection sec;
+
 	auto oldStatus = status;
 	status         = value;
 
-	if (enable)
-		enableInterrupts();
-
+	flushWriteQueue();
 	return oldStatus;
 }
 
@@ -219,7 +220,10 @@ void App::_setupInterrupts(void) {
 		util::forcedCast<ArgFunction>(&App::_interruptHandler), this
 	);
 
-	IRQ_MASK = 1 << IRQ_VSYNC;
+	IRQ_MASK = 0
+		| (1 << IRQ_VSYNC)
+		| (1 << IRQ_SPU)
+		| (1 << IRQ_PIO);
 	enableInterrupts();
 }
 
@@ -319,6 +323,8 @@ void App::_updateOverlays(void) {
 	// Splash screen overlay
 	int timeout = _ctx.gpuCtx.refreshRate * _SPLASH_SCREEN_TIMEOUT;
 
+	__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
 	if ((_workerStatus.status == WORKER_DONE) || (_ctx.time > timeout))
 		_splashOverlay.hide(_ctx);
 
@@ -339,20 +345,20 @@ void App::_updateOverlays(void) {
 void App::_runWorker(
 	bool (App::*func)(void), ui::Screen &next, bool goBack, bool playSound
 ) {
-	auto enable = disableInterrupts();
+	{
+		util::CriticalSection sec;
 
-	_workerStatus.reset(next, goBack);
-	_workerStack.allocate(_WORKER_STACK_SIZE);
+		_workerStatus.reset(next, goBack);
+		_workerStack.allocate(_WORKER_STACK_SIZE);
 
-	_workerFunction  = func;
-	auto stackBottom = _workerStack.as<uint8_t>();
+		_workerFunction  = func;
+		auto stackBottom = _workerStack.as<uint8_t>();
 
-	initThread(
-		&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
-		&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
-	);
-	if (enable)
-		enableInterrupts();
+		initThread(
+			&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
+			&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
+		);
+	}
 
 	_ctx.show(_workerStatusScreen, false, playSound);
 }
@@ -372,10 +378,20 @@ void App::_interruptHandler(void) {
 	if (acknowledgeInterrupt(IRQ_VSYNC)) {
 		_ctx.tick();
 
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
 		if (_workerStatus.status != WORKER_REBOOT)
 			io::clearWatchdog();
 		if (gpu::isIdle() && (_workerStatus.status != WORKER_BUSY_SUSPEND))
 			switchThread(nullptr);
+	}
+
+	if (acknowledgeInterrupt(IRQ_SPU))
+		_ctx.audioStream.handleInterrupt();
+
+	if (acknowledgeInterrupt(IRQ_PIO)) {
+		for (auto &dev : ide::devices)
+			dev.handleInterrupt();
 	}
 }
 

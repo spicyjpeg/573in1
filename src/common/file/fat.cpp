@@ -21,6 +21,7 @@
 #include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/util.hpp"
+#include "ps1/system.h"
 #include "vendor/diskio.h"
 #include "vendor/ff.h"
 
@@ -285,6 +286,10 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 
 /* FatFs library API glue */
 
+static constexpr int _MUTEX_TIMEOUT = 30000000;
+
+static uint32_t _fatMutex = 0;
+
 extern "C" DSTATUS disk_initialize(uint8_t drive) {
 #if 0
 	auto &dev = ide::devices[drive];
@@ -371,6 +376,42 @@ extern "C" uint32_t get_fattime(void) {
 
 	io::getRTCTime(date);
 	return date.toDOSTime();
+}
+
+extern "C" int ff_mutex_create(int id) {
+	return true;
+}
+
+extern "C" void ff_mutex_delete(int id) {}
+
+extern "C" int ff_mutex_take(int id) {
+	uint32_t mask = 1 << id;
+
+	for (int timeout = _MUTEX_TIMEOUT; timeout > 0; timeout -= 10) {
+		{
+			util::ThreadCriticalSection sec;
+			__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+			auto locked = _fatMutex & mask;
+
+			if (!locked) {
+				_fatMutex |= mask;
+				flushWriteQueue();
+				return true;
+			}
+		}
+
+		delayMicroseconds(10);
+	}
+
+	return false;
+}
+
+extern "C" void ff_mutex_give(int id) {
+	util::CriticalSection sec;
+
+	_fatMutex &= ~(1 << id);
+	flushWriteQueue();
 }
 
 }

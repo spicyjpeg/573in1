@@ -22,15 +22,29 @@
 
 namespace spu {
 
+using Channel     = int;
+using ChannelMask = uint32_t;
+
+enum LoopFlag : uint8_t {
+	LOOP_END     = 1 << 0,
+	LOOP_SUSTAIN = 1 << 1,
+	LOOP_START   = 1 << 2
+};
+
 static constexpr uint32_t DUMMY_BLOCK_OFFSET = 0x1000;
 static constexpr uint32_t DUMMY_BLOCK_END    = 0x1010;
 
 static constexpr int      NUM_CHANNELS = 24;
 static constexpr uint16_t MAX_VOLUME   = 0x3fff;
 
-using Channel = int;
+static constexpr ChannelMask ALL_CHANNELS = (1 << NUM_CHANNELS) - 1;
 
 /* Basic API */
+
+void init(void);
+Channel getFreeChannel(void);
+ChannelMask getFreeChannels(int count = NUM_CHANNELS);
+void stopChannels(ChannelMask mask);
 
 static inline void setMasterVolume(uint16_t master, uint16_t reverb = 0) {
 	SPU_MASTER_VOL_L = master;
@@ -47,13 +61,16 @@ static inline void setChannelVolume(Channel ch, uint16_t left, uint16_t right) {
 	SPU_CH_VOL_R(ch) = right;
 }
 
-void init(void);
-Channel getFreeChannel(void);
-void stopChannel(Channel ch);
-void resetAllChannels(void);
-size_t upload(uint32_t ramOffset, const void *data, size_t length, bool wait);
+static inline void stopChannel(Channel ch) {
+	stopChannels(1 << ch);
+}
+
+size_t upload(uint32_t offset, const void *data, size_t length, bool wait);
+size_t download(uint32_t offset, void *data, size_t length, bool wait);
 
 /* Sound class */
+
+static constexpr size_t INTERLEAVED_VAG_BODY_OFFSET = 2048;
 
 struct VAGHeader {
 public:
@@ -64,19 +81,71 @@ public:
 
 class Sound {
 public:
-	uint16_t offset, sampleRate;
-	size_t   length;
+	uint32_t offset;
+	uint16_t sampleRate, length;
 
-	inline Sound(void)
-	: offset(0), length(0) {}
 	inline Channel play(
 		uint16_t left = MAX_VOLUME, uint16_t right = MAX_VOLUME
 	) const {
 		return play(left, right, getFreeChannel());
 	}
 
-	bool initFromVAGHeader(const VAGHeader *header, uint32_t ramOffset);
+	Sound(void);
+	bool initFromVAGHeader(const VAGHeader *header, uint32_t _offset);
 	Channel play(uint16_t left, uint16_t right, Channel ch) const;
+};
+
+/* Stream class */
+
+class Stream {
+private:
+	ChannelMask _channelMask;
+	uint16_t    _head, _tail, _bufferedChunks;
+
+	inline uint32_t _getChunkOffset(size_t chunk) const {
+		return offset + getChunkLength() * chunk;
+	}
+
+	void _configureIRQ(void) const;
+
+public:
+	uint32_t offset;
+	uint16_t interleave, numChunks, sampleRate, channels;
+
+	inline ~Stream(void) {
+		stop();
+	}
+	inline ChannelMask start(
+		uint16_t left = MAX_VOLUME, uint16_t right = MAX_VOLUME
+	) {
+		return start(left, right, getFreeChannels(channels));
+	}
+	inline bool isPlaying(void) const {
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+		return (_channelMask != 0);
+	}
+	inline size_t getChunkLength(void) const {
+		return size_t(interleave) * size_t(channels);
+	}
+	inline size_t getFreeChunkCount(void) const {
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+		// The currently playing chunk cannot be overwritten.
+		size_t playingChunk = isPlaying() ? 1 : 0;
+		return numChunks - (_bufferedChunks + playingChunk);
+	}
+
+	Stream(void);
+	bool initFromVAGHeader(
+		const VAGHeader *header, uint32_t _offset, size_t _numChunks
+	);
+	ChannelMask start(uint16_t left, uint16_t right, ChannelMask mask);
+	void stop(void);
+	void handleInterrupt(void);
+
+	size_t feed(const void *data, size_t count);
+	void resetBuffer(void);
 };
 
 }
