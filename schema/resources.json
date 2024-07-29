@@ -62,6 +62,8 @@
 
 				"oneOf": [
 					{
+						"additionalProperties": false,
+
 						"properties": {
 							"type": { "const": "empty" },
 
@@ -75,11 +77,14 @@
 						}
 					},
 					{
-						"required": [ "source" ],
+						"required":             [ "source" ],
+						"additionalProperties": false,
 
 						"properties": {
-							"type": { "pattern": "^text|binary$" },
-							"name": { "type":    "string" },
+							"type":          { "pattern": "^text|binary$" },
+							"name":          { "type":    "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"source": {
 								"title":       "Path to source file",
@@ -95,8 +100,10 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "const": "tim" },
-							"name": { "type":  "string" },
+							"type":          { "const": "tim" },
+							"name":          { "type":  "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"source": {
 								"title":       "Path to source file",
@@ -174,8 +181,10 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "pattern": "^metrics|palette|strings|db$" },
-							"name": { "type":    "string" },
+							"type":          { "pattern": "^metrics|palette|strings|db$" },
+							"name":          { "type":    "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"source": {
 								"title":       "Path to source file",
@@ -191,8 +200,10 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "const": "metrics" },
-							"name": { "type":  "string" },
+							"type":          { "const": "metrics" },
+							"name":          { "type":  "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"metrics": {
 								"title":       "Font metrics",
@@ -206,8 +217,10 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "const": "palette" },
-							"name": { "type":  "string" },
+							"type":          { "const": "palette" },
+							"name":          { "type":  "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"palette": {
 								"title":       "Color entries",
@@ -221,8 +234,10 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "const": "strings" },
-							"name": { "type":  "string" },
+							"type":          { "const": "strings" },
+							"name":          { "type":  "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"strings": {
 								"title":       "String table",
@@ -236,8 +251,10 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type": { "const": "db" },
-							"name": { "type":  "string" },
+							"type":          { "const": "db" },
+							"name":          { "type":  "string" },
+							"compression":   {},
+							"compressLevel": {},
 
 							"strings": {
 								"title":       "Game database",

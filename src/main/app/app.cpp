@@ -243,12 +243,12 @@ static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 void App::_loadResources(void) {
 	auto &res = _fileIO.resource;
 
+	res.loadStruct(_ctx.colors,       "assets/palette.dat");
 	res.loadTIM(_background.tile,     "assets/textures/background.tim");
 	res.loadTIM(_ctx.font.image,      "assets/textures/font.tim");
-	res.loadStruct(_ctx.font.metrics, "assets/textures/font.metrics");
+	res.loadData(_ctx.font.metrics,   "assets/textures/font.metrics");
 	res.loadTIM(_splashOverlay.image, "assets/textures/splash.tim");
-	res.loadStruct(_ctx.colors,       "assets/app.palette");
-	res.loadData(_stringTable,        "assets/app.strings");
+	res.loadData(_stringTable,        "assets/lang/en.lang");
 
 	file::currentSPUOffset = spu::DUMMY_BLOCK_END;
 

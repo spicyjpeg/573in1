@@ -15,11 +15,32 @@
  */
 
 #include <stdint.h>
+#include "common/util/string.hpp"
 #include "common/gpu.hpp"
 #include "common/gpufont.hpp"
 #include "ps1/gpucmd.h"
 
 namespace gpu {
+
+/* Font metrics class */
+
+CharacterSize FontMetrics::get(util::UTF8CodePoint id) const {
+	if (!ptr)
+		return 0;
+
+	auto table = reinterpret_cast<const FontMetricsEntry *>(getHeader() + 1);
+	auto index = id % METRICS_BUCKET_COUNT;
+
+	do {
+		auto entry = &table[index];
+		index      = entry->getChained();
+
+		if (entry->getCodePoint() == id)
+			return entry->size;
+	} while (index);
+
+	return (id == FONT_INVALID_CHAR) ? 0 : get(FONT_INVALID_CHAR);
+}
 
 /* Font class */
 
@@ -27,28 +48,39 @@ void Font::draw(
 	Context &ctx, const char *str, const Rect &rect, const Rect &clipRect,
 	Color color, bool wordWrap
 ) const {
-	// This is required for non-ASCII characters to work properly.
-	auto _str = reinterpret_cast<const uint8_t *>(str);
-
-	if (!str)
+	if (!str || !metrics.ptr)
 		return;
 
 	ctx.setTexturePage(image.texpage);
 
-	int x = rect.x1, y = rect.y1;
+	auto header = metrics.getHeader();
 
-	for (uint8_t ch = *_str; ch; ch = *(++_str)) {
+	int x      = rect.x1;
+	int clipX1 = clipRect.x1;
+	int clipX2 = clipRect.x2;
+
+	int y      = rect.y1     + header->baselineOffset;
+	int clipY1 = clipRect.y1 + header->baselineOffset;
+	int clipY2 = clipRect.y2 + header->baselineOffset;
+	int rectY2 = rect.y2     + header->baselineOffset - header->lineHeight;
+
+	for (;;) {
+		auto ch   = util::parseUTF8Character(str);
 		bool wrap = wordWrap;
+		str      += ch.length;
 
-		switch (ch) {
+		switch (ch.codePoint) {
+			case 0:
+				return;
+
 			case '\t':
-				x += metrics.tabWidth;
-				x -= x % metrics.tabWidth;
+				x += header->tabWidth;
+				x -= x % header->tabWidth;
 				break;
 
 			case '\n':
 				x  = rect.x1;
-				y += metrics.lineHeight;
+				y += header->lineHeight;
 				break;
 
 			case '\r':
@@ -56,26 +88,25 @@ void Font::draw(
 				break;
 
 			case ' ':
-				x += metrics.spaceWidth;
+				x += header->spaceWidth;
 				break;
 
 			default:
-				uint32_t size = metrics.getCharacterSize(ch);
+				auto size = metrics.get(ch.codePoint);
 
 				int u = size & 0xff; size >>= 8;
 				int v = size & 0xff; size >>= 8;
 				int w = size & 0x7f; size >>= 7;
 				int h = size & 0x7f; size >>= 7;
 
-				if (y > clipRect.y2)
+				if (y > clipY2)
 					return;
 				if (
-					(x >= (clipRect.x1 - w)) && (x <= clipRect.x2) &&
-					(y >= (clipRect.y1 - h))
+					(x >= (clipX1 - w)) && (x <= clipX2) && (y >= (clipY1 - h))
 				) {
 					auto cmd = ctx.newPacket(4);
 
-					cmd[0] = color | gp0_rectangle(true, size, true);
+					cmd[0] = color | gp0_rectangle(true, size & 1, true);
 					cmd[1] = gp0_xy(x, y);
 					cmd[2] = gp0_uv(u + image.u, v + image.v, image.palette);
 					cmd[3] = gp0_xy(w, h);
@@ -88,16 +119,15 @@ void Font::draw(
 		// Handle word wrapping by calculating the length of the next word and
 		// checking if it can still fit in the current line.
 		int boundaryX = rect.x2;
+
 		if (wrap)
-			boundaryX -= getStringWidth(
-				reinterpret_cast<const char *>(&_str[1]), true
-			);
+			boundaryX -= getStringWidth(str, true);
 
 		if (x > boundaryX) {
 			x  = rect.x1;
-			y += metrics.lineHeight;
+			y += header->lineHeight;
 		}
-		if (y > (rect.y2 - metrics.lineHeight))
+		if (y > rectY2)
 			return;
 	}
 }
@@ -122,7 +152,9 @@ void Font::draw(
 	draw(ctx, str, _rect, color, wordWrap);
 }
 
-int Font::getCharacterWidth(char ch) const {
+int Font::getCharacterWidth(util::UTF8CodePoint ch) const {
+	auto header = metrics.getHeader();
+
 	switch (ch) {
 		case 0:
 		case '\n':
@@ -130,36 +162,43 @@ int Font::getCharacterWidth(char ch) const {
 			return 0;
 
 		case '\t':
-			return metrics.tabWidth;
+			return header->tabWidth;
 
 		case ' ':
-			return metrics.spaceWidth;
+			return header->spaceWidth;
 
 		default:
-			return (metrics.getCharacterSize(ch) >> 16) & 0x7f;
+			auto size = metrics.get(ch);
+
+			return (size >> 16) & 0x7f;
 	}
 }
 
 void Font::getStringBounds(
 	const char *str, Rect &rect, bool wordWrap, bool breakOnSpace
 ) const {
-	auto _str = reinterpret_cast<const uint8_t *>(str);
-
-	if (!str)
+	if (!str || !metrics.ptr)
 		return;
+
+	auto header = metrics.getHeader();
 
 	int x = rect.x1, maxX = rect.x1, y = rect.y1;
 
-	for (uint8_t ch = *_str; ch; ch = *(++_str)) {
+	for (;;) {
+		auto ch   = util::parseUTF8Character(str);
 		bool wrap = wordWrap;
+		str      += ch.length;
 
-		switch (ch) {
+		switch (ch.codePoint) {
+			case 0:
+				goto _break;
+
 			case '\t':
 				if (breakOnSpace)
 					goto _break;
 
-				x += metrics.tabWidth;
-				x -= x % metrics.tabWidth;
+				x += header->tabWidth;
+				x -= x % header->tabWidth;
 				break;
 
 			case '\n':
@@ -169,7 +208,7 @@ void Font::getStringBounds(
 					maxX = x;
 
 				x  = rect.x1;
-				y += metrics.lineHeight;
+				y += header->lineHeight;
 				break;
 
 			case '\r':
@@ -185,51 +224,59 @@ void Font::getStringBounds(
 				if (breakOnSpace)
 					goto _break;
 
-				x += metrics.spaceWidth;
+				x += header->spaceWidth;
 				break;
 
 			default:
-				x   += (metrics.getCharacterSize(ch) >> 16) & 0x7f;
+				auto size = metrics.get(ch.codePoint);
+
+				x   += (size >> 16) & 0x7f;
 				wrap = false;
 		}
 
 		int boundaryX = rect.x2;
+
 		if (wrap)
-			boundaryX -= getStringWidth(
-				reinterpret_cast<const char *>(&_str[1]), true
-			);
+			boundaryX -= getStringWidth(str, true);
 
 		if (x > boundaryX) {
 			if (x > maxX)
 				maxX = x;
 
 			x  = rect.x1;
-			y += metrics.lineHeight;
+			y += header->lineHeight;
 		}
-		if (y > (rect.y2 - metrics.lineHeight))
+		if (y > (rect.y2 - header->lineHeight))
 			goto _break;
 	}
 
 _break:
 	rect.x2 = maxX;
-	rect.y2 = y + metrics.lineHeight;
+	rect.y2 = y + header->lineHeight;
 }
 
 int Font::getStringWidth(const char *str, bool breakOnSpace) const {
-	auto _str = reinterpret_cast<const uint8_t *>(str);
-	if (!str)
+	if (!str || !metrics.ptr)
 		return 0;
+
+	auto header = metrics.getHeader();
 
 	int width = 0, maxWidth = 0;
 
-	for (uint8_t ch = *_str; ch; ch = *(++_str)) {
-		switch (ch) {
+	for (;;) {
+		auto ch = util::parseUTF8Character(str);
+		str    += ch.length;
+
+		switch (ch.codePoint) {
+			case 0:
+				goto _break;
+
 			case '\t':
 				if (breakOnSpace)
 					goto _break;
 
-				width += metrics.tabWidth;
-				width -= width % metrics.tabWidth;
+				width += header->tabWidth;
+				width -= width % header->tabWidth;
 				break;
 
 			case '\n':
@@ -246,11 +293,11 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 				if (breakOnSpace)
 					goto _break;
 
-				width += metrics.spaceWidth;
+				width += header->spaceWidth;
 				break;
 
 			default:
-				width += (metrics.getCharacterSize(ch) >> 16) & 0x7f;
+				width += (metrics.get(ch.codePoint) >> 16) & 0x7f;
 		}
 	}
 

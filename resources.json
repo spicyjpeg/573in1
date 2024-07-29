@@ -20,6 +20,11 @@
 		},
 
 		{
+			"type":   "strings",
+			"name":   "assets/lang/en.lang",
+			"source": "${PROJECT_SOURCE_DIR}/assets/lang/en.json"
+		},
+		{
 			"type":     "tim",
 			"name":     "assets/textures/background.tim",
 			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/background.png",
@@ -32,21 +37,21 @@
 			"name":     "assets/textures/font.tim",
 			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/font.png",
 			"quantize": 16,
-			"imagePos": { "x":  984, "y": 0 },
-			"clutPos":  { "x": 1008, "y": 1 }
+			"imagePos": { "x":  960, "y": 126 },
+			"clutPos":  { "x": 1008, "y":   1 }
 		},
 		{
 			"type":     "tim",
 			"name":     "assets/textures/splash.tim",
 			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/splash.png",
 			"quantize": 16,
-			"imagePos": { "x":  960, "y": 96 },
-			"clutPos":  { "x": 1008, "y":  2 }
+			"imagePos": { "x":  984, "y": 0 },
+			"clutPos":  { "x": 1008, "y": 2 }
 		},
 		{
 			"type":   "metrics",
 			"name":   "assets/textures/font.metrics",
-			"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.metrics.json"
+			"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.json"
 		},
 		{
 			"type":        "binary",
@@ -97,19 +102,15 @@
 			"compression": "none"
 		},
 		{
-			"type":   "palette",
-			"name":   "assets/app.palette",
-			"source": "${PROJECT_SOURCE_DIR}/assets/app.palette.json"
-		},
-		{
-			"type":   "strings",
-			"name":   "assets/app.strings",
-			"source": "${PROJECT_SOURCE_DIR}/assets/app.strings.json"
-		},
-		{
 			"type":   "text",
 			"name":   "assets/about.txt",
 			"source": "${PROJECT_BINARY_DIR}/about.txt"
+		},
+		{
+			"type":        "palette",
+			"name":        "assets/palette.dat",
+			"source":      "${PROJECT_SOURCE_DIR}/assets/palette.json",
+			"compression": "none"
 		},
 
 		{

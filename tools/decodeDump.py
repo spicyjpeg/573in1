@@ -82,7 +82,7 @@ def createParser() -> ArgumentParser:
 	)
 	group.add_argument(
 		"-l", "--log",
-		type    = FileType("at"),
+		type    = FileType("at", encoding = "utf-8"),
 		default = sys.stdout,
 		help    = "Log cartridge info to specified file (stdout by default)",
 		metavar = "file"

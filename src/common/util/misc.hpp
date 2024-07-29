@@ -69,6 +69,7 @@ public:
 		bool enable = disableInterrupts();
 
 		//assert(enable);
+		(void) enable;
 	}
 	inline ~ThreadCriticalSection(void) {
 		enableInterrupts();

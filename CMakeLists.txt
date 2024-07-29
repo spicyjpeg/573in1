@@ -121,6 +121,7 @@ addPS1Executable(
 	src/common/util/log.cpp
 	src/common/util/misc.cpp
 	src/common/util/string.cpp
+	src/common/util/string.s
 	src/common/util/tween.cpp
 	src/common/args.cpp
 	src/common/gpu.cpp
@@ -219,6 +220,8 @@ addLauncher(803fd000 803ffff0)
 
 ## Boot stub and resource archive
 
+file(GLOB_RECURSE assetList RELATIVE "${PROJECT_SOURCE_DIR}" assets/* )
+
 configure_file(assets/about.txt about.txt NEWLINE_STYLE LF)
 
 function(addBootStub name resourceName)
@@ -233,8 +236,7 @@ function(addBootStub name resourceName)
 		OUTPUT  ${resourceName}.zip
 		DEPENDS
 			${resourceName}.json
-			assets/app.palette.json
-			assets/app.strings.json
+			${assetList}
 			main.psexe
 			launcher801fd000.psexe
 			launcher803fd000.psexe

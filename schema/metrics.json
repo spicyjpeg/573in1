@@ -5,7 +5,13 @@
 	"title": "Root",
 	"type":  "object",
 
-	"required": [ "spaceWidth", "tabWidth", "lineHeight", "characterSizes" ],
+	"required": [
+		"spaceWidth",
+		"tabWidth",
+		"lineHeight",
+		"baselineOffset",
+		"characterSizes"
+	],
 
 	"properties":  {
 		"spaceWidth": {
@@ -20,13 +26,18 @@
 		},
 		"lineHeight": {
 			"title":       "Line height",
-			"description": "Height of each line in pixels, including any padding. Note that characters whose height is lower than this value will be aligned to the top of the line, rather than the bottom.",
+			"description": "Height of each line in pixels, including any padding. Note that characters whose height is lower than this value will be aligned to the top of the line by default.",
+			"type":        "integer"
+		},
+		"baselineOffset": {
+			"title":       "Baseline offset",
+			"description": "Offset to add to the Y coordinate of each line. Can be negative.",
 			"type":        "integer"
 		},
 
 		"characterSizes": {
 			"title":       "Character list",
-			"description": "List of all glyphs in the texture. Each entry's key must be a single-character string containing a printable ASCII or extended (\\u0080-\\u00ff) character.",
+			"description": "List of all glyphs in the texture. Each entry's key must be a single-character string containing a printable Unicode character.",
 			"type":        "object",
 
 			"additionalProperties": false,

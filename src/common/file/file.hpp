@@ -159,7 +159,7 @@ public:
 
 /* String table parser */
 
-static constexpr int TABLE_BUCKET_COUNT = 256;
+static constexpr size_t STRING_TABLE_BUCKET_COUNT = 256;
 
 struct StringTableEntry {
 public:

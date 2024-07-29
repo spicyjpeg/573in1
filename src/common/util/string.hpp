@@ -33,6 +33,28 @@ size_t serialNumberToString(char *output, const uint8_t *input);
 size_t traceIDToString(char *output, const uint8_t *input);
 size_t encodeBase41(char *output, const uint8_t *input, size_t length);
 
+/* UTF-8 parser */
+
+using UTF8CodePoint = uint32_t;
+
+struct UTF8Character {
+public:
+	UTF8CodePoint codePoint;
+	size_t        length;
+};
+
+extern "C" uint64_t _parseUTF8Character(const char *ch);
+size_t getUTF8StringLength(const char *str);
+
+static inline UTF8Character parseUTF8Character(const char *ch) {
+	auto values = _parseUTF8Character(ch);
+
+	return {
+		.codePoint = UTF8CodePoint(values),
+		.length    = size_t(values >> 32)
+	};
+}
+
 /* LZ4 decompressor */
 
 static inline size_t getLZ4InPlaceMargin(size_t inputLength) {

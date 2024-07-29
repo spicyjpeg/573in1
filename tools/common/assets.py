@@ -14,16 +14,14 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-import re
-from collections import defaultdict
-from itertools   import chain
-from struct      import Struct
-from typing      import Any, Generator, Mapping, Sequence
+from itertools import chain
+from struct    import Struct
+from typing    import Any, Generator, Mapping, Sequence
 
 import numpy
 from numpy import ndarray
 from PIL   import Image
-from .util import colorFromString, hashData
+from .util import colorFromString, generateHashTable, hashData
 
 ## .TIM image converter
 
@@ -102,51 +100,49 @@ def generateIndexedTIM(
 	if (cx < 0) or (cx > 1023) or (cy < 0) or (cy > 1023):
 		raise ValueError("palette X/Y coordinates must be in 0-1023 range")
 
-	image, clut = convertIndexedImage(imageObj)
+	image, clut     = convertIndexedImage(imageObj)
+	data: bytearray = bytearray()
 
-	mode: int       = 0x8 if (clut.size <= 16) else 0x9
-	data: bytearray = bytearray(
-		_TIM_HEADER_STRUCT.pack(_TIM_HEADER_VERSION, mode)
+	data += _TIM_HEADER_STRUCT.pack(
+		_TIM_HEADER_VERSION,
+		0x8 if (clut.size <= 16) else 0x9
 	)
 
-	data.extend(_TIM_SECTION_STRUCT.pack(
+	data += _TIM_SECTION_STRUCT.pack(
 		_TIM_SECTION_STRUCT.size + clut.size * 2,
-		cx, cy, clut.shape[1], clut.shape[0]
-	))
+		cx,
+		cy,
+		clut.shape[1],
+		clut.shape[0]
+	)
 	data.extend(clut)
 
-	data.extend(_TIM_SECTION_STRUCT.pack(
+	data += _TIM_SECTION_STRUCT.pack(
 		_TIM_SECTION_STRUCT.size + image.size,
-		ix, iy, image.shape[1] // 2, image.shape[0]
-	))
+		ix,
+		iy,
+		image.shape[1] // 2,
+		image.shape[0]
+	)
 	data.extend(image)
 
 	return data
 
 ## Font metrics generator
 
-_METRICS_HEADER_STRUCT: Struct = Struct("< 3B x")
-_METRICS_ENTRY_STRUCT:  Struct = Struct("< 2B H")
+_METRICS_HEADER_STRUCT: Struct = Struct("< 3B b")
+_METRICS_ENTRY_STRUCT:  Struct = Struct("< 2I")
+_METRICS_BUCKET_COUNT:  int    = 256
 
 def generateFontMetrics(metrics: Mapping[str, Any]) -> bytearray:
-	data: bytearray = bytearray(
-		_METRICS_HEADER_STRUCT.size + _METRICS_ENTRY_STRUCT.size * 256
-	)
+	spaceWidth:     int = int(metrics["spaceWidth"])
+	tabWidth:       int = int(metrics["tabWidth"])
+	lineHeight:     int = int(metrics["lineHeight"])
+	baselineOffset: int = int(metrics["baselineOffset"])
 
-	spaceWidth: int = int(metrics["spaceWidth"])
-	tabWidth:   int = int(metrics["tabWidth"])
-	lineHeight: int = int(metrics["lineHeight"])
-
-	data[0:_METRICS_HEADER_STRUCT.size] = \
-		_METRICS_HEADER_STRUCT.pack(spaceWidth, tabWidth, lineHeight)
+	entries: dict[int, int] = {}
 
 	for ch, entry in metrics["characterSizes"].items():
-		index: int = ord(ch)
-		#index: int = ch.encode("ascii")[0]
-
-		if (index < 0) or (index > 255):
-			raise ValueError(f"extended character {index} is not supported")
-
 		x: int  = int(entry["x"])
 		y: int  = int(entry["y"])
 		w: int  = int(entry["width"])
@@ -160,12 +156,38 @@ def generateFontMetrics(metrics: Mapping[str, Any]) -> bytearray:
 		if h > lineHeight:
 			raise ValueError("character height exceeds line height")
 
-		offset: int = \
-			_METRICS_HEADER_STRUCT.size + _METRICS_ENTRY_STRUCT.size * index
-		data[offset:offset + _METRICS_ENTRY_STRUCT.size] = \
-			_METRICS_ENTRY_STRUCT.pack(x, y, w | (h << 7) | (i << 14))
+		entries[ord(ch)] = (0
+			| (x <<  0)
+			| (y <<  8)
+			| (w << 16)
+			| (h << 23)
+			| (i << 30)
+		)
 
-	return data
+	buckets, chained = generateHashTable(entries, _METRICS_BUCKET_COUNT)
+	table: bytearray = bytearray()
+
+	if (len(buckets) + len(chained)) > 2048:
+		raise RuntimeError("font hash table must have <=2048 entries")
+
+	table += _METRICS_HEADER_STRUCT.pack(
+		spaceWidth,
+		tabWidth,
+		lineHeight,
+		baselineOffset
+	)
+
+	for entry in chain(buckets, chained):
+		if entry is None:
+			table += _METRICS_ENTRY_STRUCT.pack(0, 0)
+			continue
+
+		table += _METRICS_ENTRY_STRUCT.pack(
+			entry.fullHash | (entry.chainIndex << 21),
+			entry.data
+		)
+
+	return table
 
 ## Color palette generator
 
@@ -207,125 +229,71 @@ def generateColorPalette(
 		else:
 			r, g, b = color
 
-		data.extend(_PALETTE_ENTRY_STRUCT.pack(r, g, b))
+		data += _PALETTE_ENTRY_STRUCT.pack(r, g, b)
 
 	return data
 
 ## String table generator
 
-_TABLE_ENTRY_STRUCT: Struct = Struct("< I 2H")
-_TABLE_BUCKET_COUNT: int    = 256
-_TABLE_STRING_ALIGN: int    = 4
-
-_TABLE_ESCAPE_REGEX: re.Pattern            = re.compile(rb"\$?\{(.+?)\}")
-_TABLE_ESCAPE_REPL:  Mapping[bytes, bytes] = {
-	b"UP_ARROW":        b"\x80",
-	b"DOWN_ARROW":      b"\x81",
-	b"LEFT_ARROW":      b"\x82",
-	b"RIGHT_ARROW":     b"\x83",
-	b"UP_ARROW_ALT":    b"\x84",
-	b"DOWN_ARROW_ALT":  b"\x85",
-	b"LEFT_ARROW_ALT":  b"\x86",
-	b"RIGHT_ARROW_ALT": b"\x87",
-
-	b"LEFT_BUTTON":  b"\x90",
-	b"RIGHT_BUTTON": b"\x91",
-	b"START_BUTTON": b"\x92",
-	b"CLOSED_LOCK":  b"\x93",
-	b"OPEN_LOCK":    b"\x94",
-	b"CHIP_ICON":    b"\x95",
-	b"CART_ICON":    b"\x96",
-
-	b"CDROM_ICON":      b"\xa0",
-	b"HDD_ICON":        b"\xa1",
-	b"HOST_ICON":       b"\xa2",
-	b"DIR_ICON":        b"\xa3",
-	b"PARENT_DIR_ICON": b"\xa4",
-	b"FILE_ICON":       b"\xa5"
-}
-
-def _convertString(string: str) -> bytes:
-	return _TABLE_ESCAPE_REGEX.sub(
-		lambda match: _TABLE_ESCAPE_REPL[match.group(1).strip().upper()],
-		string.encode("ascii")
-	)
+_STRING_TABLE_ENTRY_STRUCT: Struct = Struct("< I 2H")
+_STRING_TABLE_BUCKET_COUNT: int    = 256
+_STRING_TABLE_ALIGNMENT:    int    = 4
 
 def _walkStringTree(
 		strings: Mapping[str, Any], prefix: str = ""
 ) -> Generator[tuple[int, bytes | None], None, None]:
 	for key, value in strings.items():
 		fullKey: str = prefix + key
+		keyHash: int = hashData(fullKey.encode("ascii"))
 
 		if value is None:
-			yield hashData(fullKey.encode("ascii")), None
+			yield keyHash, None
 		elif isinstance(value, str):
-			yield hashData(fullKey.encode("ascii")), _convertString(value)
+			yield keyHash, value.encode("utf-8")
 		else:
 			yield from _walkStringTree(value, f"{fullKey}.")
 
 def generateStringTable(strings: Mapping[str, Any]) -> bytearray:
-	offsets: dict[bytes, int]                               = {}
-	chains:  defaultdict[int, list[tuple[int, int | None]]] = defaultdict(list)
+	offsets: dict[bytes, int] = {}
+	entries: dict[int, int]   = {}
+	blob:    bytearray        = bytearray()
 
-	blob: bytearray = bytearray()
-
-	for fullHash, string in _walkStringTree(strings):
+	for keyHash, string in _walkStringTree(strings):
 		if string is None:
-			entry: tuple[int, int | None] = fullHash, 0
-		else:
-			offset: int | None = offsets.get(string, None)
-
-			if offset is None:
-				offset          = len(blob)
-				offsets[string] = offset
-
-				blob.extend(string)
-				blob.append(0)
-
-				while len(blob) % _TABLE_STRING_ALIGN:
-					blob.append(0)
-
-			entry: tuple[int, int | None] = fullHash, offset
-
-		chains[fullHash % _TABLE_BUCKET_COUNT].append(entry)
-
-	# Build the bucket array and all chains of entries.
-	buckets: list[tuple[int, int | None, int]] = []
-	chained: list[tuple[int, int | None, int]] = []
-
-	for shortHash in range(_TABLE_BUCKET_COUNT):
-		entries: list[tuple[int, int | None]] = chains[shortHash]
-
-		if not entries:
-			buckets.append(( 0, None, 0 ))
+			entries[keyHash] = 0
 			continue
 
-		for index, entry in enumerate(entries):
-			if index < (len(entries) - 1):
-				chainIndex: int = _TABLE_BUCKET_COUNT + len(chained)
-			else:
-				chainIndex: int = 0
+		# Identical strings associated to multiple keys are deduplicated.
+		offset: int | None = offsets.get(string, None)
 
-			fullHash, offset = entry
+		if offset is None:
+			offset          = len(blob)
+			offsets[string] = offset
 
-			if index:
-				chained.append(( fullHash, offset, chainIndex + 1 ))
-			else:
-				buckets.append(( fullHash, offset, chainIndex ))
+			blob += string
+			blob.append(0)
+
+			while len(blob) % _STRING_TABLE_ALIGNMENT:
+				blob.append(0)
+
+		entries[keyHash] = offset
+
+	buckets, chained = generateHashTable(entries, _STRING_TABLE_BUCKET_COUNT)
+	table: bytearray = bytearray()
 
 	# Relocate the offsets and serialize the table.
-	totalLength: int       = len(buckets) + len(chained)
-	blobOffset:  int       = _TABLE_ENTRY_STRUCT.size * totalLength
-	data:        bytearray = bytearray()
+	blobOffset: int = \
+		(len(buckets) + len(chained)) * _STRING_TABLE_ENTRY_STRUCT.size
 
-	for fullHash, offset, chainIndex in chain(buckets, chained):
-		absOffset: int = 0 if (offset is None) else (blobOffset + offset)
+	for entry in chain(buckets, chained):
+		if entry is None:
+			table += _STRING_TABLE_ENTRY_STRUCT.pack(0, 0, 0)
+			continue
 
-		if absOffset > 0xffff:
-			raise RuntimeError("string table exceeds 64 KB size limit")
+		table += _STRING_TABLE_ENTRY_STRUCT.pack(
+			entry.fullHash,
+			0 if (entry.data is None) else (blobOffset + entry.data),
+			entry.chainIndex
+		)
 
-		data.extend(_TABLE_ENTRY_STRUCT.pack(fullHash, absOffset, chainIndex))
-
-	data.extend(blob)
-
-	return data
+	return table + blob

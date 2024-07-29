@@ -72,7 +72,7 @@ def createParser() -> ArgumentParser:
 	)
 	group.add_argument(
 		"configFile",
-		type = FileType("rt"),
+		type = FileType("rt", encoding = "utf-8"),
 		help = "Path to JSON configuration file",
 	)
 	group.add_argument(
@@ -101,7 +101,9 @@ def main():
 					data: ByteString = bytes(int(asset.get("size", 0)))
 
 				case "text":
-					with open(sourceDir / asset["source"], "rt") as file:
+					with open(
+						sourceDir / asset["source"], "rt", encoding = "utf-8"
+					) as file:
 						data: ByteString = file.read().encode("ascii")
 
 				case "binary":
@@ -128,7 +130,10 @@ def main():
 					if "metrics" in asset:
 						metrics: dict = asset["metrics"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as file:
+						with open(
+							sourceDir / asset["source"], "rt",
+							encoding = "utf-8"
+						) as file:
 							metrics: dict = json.load(file)
 
 					data: ByteString = generateFontMetrics(metrics)
@@ -137,7 +142,10 @@ def main():
 					if "palette" in asset:
 						palette: dict = asset["palette"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as file:
+						with open(
+							sourceDir / asset["source"], "rt",
+							encoding = "utf-8"
+						) as file:
 							palette: dict = json.load(file)
 
 					data: ByteString = generateColorPalette(palette)
@@ -146,7 +154,10 @@ def main():
 					if "strings" in asset:
 						strings: dict = asset["strings"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as file:
+						with open(
+							sourceDir / asset["source"], "rt",
+							encoding = "utf-8"
+						) as file:
 							strings: dict = json.load(file)
 
 					data: ByteString = generateStringTable(strings)
@@ -155,7 +166,10 @@ def main():
 					if "db" in asset:
 						db: dict = asset["db"]
 					else:
-						with open(sourceDir / asset["source"], "rt") as file:
+						with open(
+							sourceDir / asset["source"], "rt",
+							encoding = "utf-8"
+						) as file:
 							db: dict = json.load(file)
 
 					# TODO: implement

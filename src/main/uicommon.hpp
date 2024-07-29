@@ -70,7 +70,7 @@ private:
 	inline int _getListHeight(Context &ctx) const {
 		int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
 		return screenHeight - (
-			ctx.font.metrics.lineHeight + SCREEN_PROMPT_HEIGHT +
+			ctx.font.getLineHeight() + SCREEN_PROMPT_HEIGHT +
 			SCREEN_BLOCK_MARGIN * 2
 		);
 	}

@@ -38,6 +38,7 @@ void TextScreen::show(Context &ctx, bool goBack) {
 void TextScreen::draw(Context &ctx, bool active) const {
 	int screenWidth  = ctx.gpuCtx.width  - SCREEN_MARGIN_X * 2;
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
+	int lineHeight   = ctx.font.getLineHeight();
 
 	// Top/bottom text
 	_newLayer(
@@ -49,14 +50,14 @@ void TextScreen::draw(Context &ctx, bool active) const {
 	rect.x1 = 0;
 	rect.y1 = 0;
 	rect.x2 = screenWidth;
-	rect.y2 = ctx.font.metrics.lineHeight;
+	rect.y2 = lineHeight;
 	ctx.font.draw(ctx.gpuCtx, _title, rect, ctx.colors[COLOR_TITLE]);
 
 	rect.y1 = screenHeight - SCREEN_PROMPT_HEIGHT_MIN;
 	rect.y2 = screenHeight;
 	ctx.font.draw(ctx.gpuCtx, _prompt, rect, ctx.colors[COLOR_TEXT1], true);
 
-	int bodyOffset = ctx.font.metrics.lineHeight + SCREEN_BLOCK_MARGIN;
+	int bodyOffset = lineHeight + SCREEN_BLOCK_MARGIN;
 	int bodyHeight = screenHeight -
 		(bodyOffset + SCREEN_PROMPT_HEIGHT_MIN + SCREEN_BLOCK_MARGIN);
 
@@ -82,7 +83,7 @@ void TextScreen::update(Context &ctx) {
 		return;
 
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
-	int bodyOffset   = ctx.font.metrics.lineHeight + SCREEN_BLOCK_MARGIN;
+	int bodyOffset   = ctx.font.getLineHeight() + SCREEN_BLOCK_MARGIN;
 	int bodyHeight   = screenHeight -
 		(bodyOffset + SCREEN_PROMPT_HEIGHT_MIN + SCREEN_BLOCK_MARGIN);
 
@@ -128,6 +129,8 @@ _prompt(nullptr) {}
 void ImageScreen::draw(Context &ctx, bool active) const {
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 
+	int lineHeight = ctx.font.getLineHeight();
+
 	if (_image) {
 		int x      = ctx.gpuCtx.width  / 2;
 		int y      = ctx.gpuCtx.height / 2;
@@ -135,7 +138,7 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 		int height = _image->height * _imageScale / 2;
 
 		if (_prompt)
-			y -= (SCREEN_PROMPT_HEIGHT - ctx.font.metrics.lineHeight) / 2;
+			y -= (SCREEN_PROMPT_HEIGHT - lineHeight) / 2;
 
 		// Backdrop
 		if (_imagePadding) {
@@ -162,7 +165,7 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 	rect.x1 = SCREEN_MARGIN_X;
 	rect.y1 = SCREEN_MARGIN_Y;
 	rect.x2 = ctx.gpuCtx.width - SCREEN_MARGIN_X;
-	rect.y2 = SCREEN_MARGIN_Y + ctx.font.metrics.lineHeight;
+	rect.y2 = SCREEN_MARGIN_Y + lineHeight;
 	ctx.font.draw(ctx.gpuCtx, _title, rect, ctx.colors[COLOR_TITLE]);
 
 	rect.y1 = ctx.gpuCtx.height - (SCREEN_MARGIN_Y + SCREEN_PROMPT_HEIGHT);
@@ -177,6 +180,7 @@ void ListScreen::_drawItems(Context &ctx) const {
 	int itemY      = _scrollAnim.getValue(ctx.time);
 	int itemWidth  = _getItemWidth(ctx);
 	int listHeight = _getListHeight(ctx);
+	int lineHeight = ctx.font.getLineHeight();
 
 	gpu::Rect rect;
 
@@ -185,10 +189,10 @@ void ListScreen::_drawItems(Context &ctx) const {
 	//rect.y2 = listHeight;
 
 	for (int i = 0; (i < _listLength) && (itemY < listHeight); i++) {
-		int itemHeight = ctx.font.metrics.lineHeight + LIST_ITEM_PADDING * 2;
+		int itemHeight = lineHeight + LIST_ITEM_PADDING * 2;
 
 		if (i == _activeItem)
-			itemHeight += ctx.font.metrics.lineHeight;
+			itemHeight += lineHeight;
 
 		if ((itemY + itemHeight) >= 0) {
 			if (i == _activeItem) {
@@ -201,15 +205,15 @@ void ListScreen::_drawItems(Context &ctx) const {
 					itemHeight, ctx.colors[COLOR_HIGHLIGHT1]
 				);
 
-				rect.y1 = itemY + LIST_ITEM_PADDING + ctx.font.metrics.lineHeight;
-				rect.y2 = rect.y1 + ctx.font.metrics.lineHeight;
+				rect.y1 = itemY + LIST_ITEM_PADDING + lineHeight;
+				rect.y2 = rect.y1 + lineHeight;
 				ctx.font.draw(
 					ctx.gpuCtx, _itemPrompt, rect, ctx.colors[COLOR_SUBTITLE]
 				);
 			}
 
 			rect.y1 = itemY + LIST_ITEM_PADDING;
-			rect.y2 = rect.y1 + ctx.font.metrics.lineHeight;
+			rect.y2 = rect.y1 + lineHeight;
 			ctx.font.draw(
 				ctx.gpuCtx, _getItemName(ctx, i), rect, ctx.colors[COLOR_TITLE]
 			);
@@ -231,6 +235,7 @@ void ListScreen::draw(Context &ctx, bool active) const {
 	int screenWidth  = ctx.gpuCtx.width  - SCREEN_MARGIN_X * 2;
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MARGIN_Y * 2;
 	int listHeight   = _getListHeight(ctx);
+	int lineHeight   = ctx.font.getLineHeight();
 
 	_newLayer(
 		ctx, SCREEN_MARGIN_X, SCREEN_MARGIN_Y, screenWidth, screenHeight
@@ -242,7 +247,7 @@ void ListScreen::draw(Context &ctx, bool active) const {
 	rect.x1 = 0;
 	rect.y1 = 0;
 	rect.x2 = screenWidth;
-	rect.y2 = ctx.font.metrics.lineHeight;
+	rect.y2 = lineHeight;
 	ctx.font.draw(ctx.gpuCtx, _title, rect, ctx.colors[COLOR_TITLE]);
 
 	rect.y1 = screenHeight - SCREEN_PROMPT_HEIGHT;
@@ -251,8 +256,8 @@ void ListScreen::draw(Context &ctx, bool active) const {
 
 	_newLayer(
 		ctx, SCREEN_MARGIN_X,
-		SCREEN_MARGIN_Y + ctx.font.metrics.lineHeight + SCREEN_BLOCK_MARGIN,
-		screenWidth, listHeight
+		SCREEN_MARGIN_Y + lineHeight + SCREEN_BLOCK_MARGIN, screenWidth,
+		listHeight
 	);
 	_setBlendMode(ctx, GP0_BLEND_SEMITRANS, true);
 
@@ -270,23 +275,22 @@ void ListScreen::draw(Context &ctx, bool active) const {
 
 		// Up/down arrow icons
 		gpu::RectWH iconRect;
-		char        arrow[2]{ 0, 0 };
 
-		iconRect.x = screenWidth -
-			(ctx.font.metrics.lineHeight + LIST_BOX_PADDING);
-		iconRect.w = ctx.font.metrics.lineHeight;
-		iconRect.h = ctx.font.metrics.lineHeight;
+		iconRect.x = screenWidth - (lineHeight + LIST_BOX_PADDING);
+		iconRect.w = lineHeight;
+		iconRect.h = lineHeight;
 
 		if (_activeItem) {
-			arrow[0]   = CH_UP_ARROW;
 			iconRect.y = LIST_BOX_PADDING;
-			ctx.font.draw(ctx.gpuCtx, arrow, iconRect, ctx.colors[COLOR_TEXT1]);
+			ctx.font.draw(
+				ctx.gpuCtx, CH_UP_ARROW, iconRect, ctx.colors[COLOR_TEXT1]
+			);
 		}
 		if (_activeItem < (_listLength - 1)) {
-			arrow[0]   = CH_DOWN_ARROW;
-			iconRect.y = listHeight -
-				(ctx.font.metrics.lineHeight + LIST_BOX_PADDING);
-			ctx.font.draw(ctx.gpuCtx, arrow, iconRect, ctx.colors[COLOR_TEXT1]);
+			iconRect.y = listHeight - (lineHeight + LIST_BOX_PADDING);
+			ctx.font.draw(
+				ctx.gpuCtx, CH_DOWN_ARROW, iconRect, ctx.colors[COLOR_TEXT1]
+			);
 		}
 	}
 }
@@ -323,8 +327,9 @@ void ListScreen::update(Context &ctx) {
 	}
 
 	// Scroll the list if the selected item is not fully visible.
-	int itemHeight       = ctx.font.metrics.lineHeight + LIST_ITEM_PADDING * 2;
-	int activeItemHeight = itemHeight + ctx.font.metrics.lineHeight;
+	int lineHeight       = ctx.font.getLineHeight();
+	int itemHeight       = lineHeight + LIST_ITEM_PADDING * 2;
+	int activeItemHeight = lineHeight + itemHeight;
 
 	int topOffset     = _activeItem * itemHeight;
 	int bottomOffset  = topOffset + activeItemHeight - _getListHeight(ctx);

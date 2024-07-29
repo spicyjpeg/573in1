@@ -30,28 +30,28 @@
 #define VERSION_STRING VERSION "-debug"
 #endif
 
-enum Character : char {
-	CH_UP_ARROW        = '\x80',
-	CH_DOWN_ARROW      = '\x81',
-	CH_LEFT_ARROW      = '\x82',
-	CH_RIGHT_ARROW     = '\x83',
-	CH_UP_ARROW_ALT    = '\x84',
-	CH_DOWN_ARROW_ALT  = '\x85',
-	CH_LEFT_ARROW_ALT  = '\x86',
-	CH_RIGHT_ARROW_ALT = '\x87',
+#define CH_UP_ARROW        "\u25b4"
+#define CH_DOWN_ARROW      "\u25be"
+#define CH_LEFT_ARROW      "\u25c2"
+#define CH_RIGHT_ARROW     "\u25b8"
+#define CH_UP_ARROW_ALT    "\u2191"
+#define CH_DOWN_ARROW_ALT  "\u2193"
+#define CH_LEFT_ARROW_ALT  "\u2190"
+#define CH_RIGHT_ARROW_ALT "\u2192"
+#define CH_INVALID_CHAR    "\ufffd"
 
-	CH_LEFT_BUTTON  = '\x90',
-	CH_RIGHT_BUTTON = '\x91',
-	CH_START_BUTTON = '\x92',
-	CH_CLOSED_LOCK  = '\x93',
-	CH_OPEN_LOCK    = '\x94',
-	CH_CHIP_ICON    = '\x95',
-	CH_CART_ICON    = '\x96',
-
-	CH_CDROM_ICON      = '\xa0',
-	CH_HDD_ICON        = '\xa1',
-	CH_HOST_ICON       = '\xa2',
-	CH_DIR_ICON        = '\xa3',
-	CH_PARENT_DIR_ICON = '\xa4',
-	CH_FILE_ICON       = '\xa5'
-};
+#define CH_LEFT_BUTTON     "\u25c1"
+#define CH_RIGHT_BUTTON    "\u25b7"
+#define CH_START_BUTTON    "\u25ad"
+#define CH_CLOSED_LOCK     "\U0001f512"
+#define CH_OPEN_LOCK       "\U0001f513"
+#define CH_CIRCLE_BUTTON   "\u25cb"
+#define CH_X_BUTTON        "\u2715"
+#define CH_TRIANGLE_BUTTON "\u25b3"
+#define CH_SQUARE_BUTTON   "\u25a1"
+#define CH_CDROM_ICON      "\U0001f5b8"
+#define CH_HDD_ICON        "\U0001f5b4"
+#define CH_HOST_ICON       "\U0001f5a7"
+#define CH_DIR_ICON        "\U0001f5c0"
+#define CH_PARENT_DIR_ICON "\U0001f5bf"
+#define CH_FILE_ICON       "\U0001f5ce"

@@ -15,10 +15,13 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import logging, re
-from hashlib import md5
-from io      import SEEK_END, SEEK_SET
-from typing  import \
-	Any, BinaryIO, ByteString, Iterable, Iterator, Sequence, TextIO
+from collections import defaultdict
+from dataclasses import dataclass
+from hashlib     import md5
+from io          import SEEK_END, SEEK_SET
+from typing      import \
+	Any, BinaryIO, ByteString, Generator, Iterable, Iterator, Mapping, \
+	Sequence, TextIO
 
 ## Value manipulation
 
@@ -141,6 +144,44 @@ def setupLogger(level: int | None):
 			logging.DEBUG
 		)[min(level or 0, 2)]
 	)
+
+## Hash table generator
+
+@dataclass
+class HashTableEntry:
+	fullHash:   int
+	chainIndex: int
+	data:       Any
+
+def generateHashTable(
+	entries: Mapping[int, Any], numBuckets: int
+) -> tuple[list[HashTableEntry | None], list[HashTableEntry]]:
+	chains: defaultdict[int, list[HashTableEntry]] = defaultdict(list)
+
+	for fullHash, data in entries.items():
+		entry: HashTableEntry = HashTableEntry(fullHash, 0, data)
+
+		chains[fullHash % numBuckets].append(entry)
+
+	buckets: list[HashTableEntry | None] = []
+	chained: list[HashTableEntry]        = []
+
+	for shortHash in range(numBuckets):
+		entries: list[HashTableEntry] = chains[shortHash]
+
+		if not len(entries): # Empty bucket
+			buckets.append(None)
+			continue
+
+		for index, entry in enumerate(entries):
+			entry.chainIndex = numBuckets + len(chained) + index
+
+		entries[-1].chainIndex = 0 # Terminate chain
+
+		buckets.append(entries[0])
+		chained += entries[1:]
+
+	return buckets, chained
 
 ## Odd/even interleaved file reader
 

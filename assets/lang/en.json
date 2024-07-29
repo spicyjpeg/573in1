@@ -1,7 +1,7 @@
 {
 	"AboutScreen": {
-		"title":  "{RIGHT_ARROW} About 573in1",
-		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+		"title":  "▸ About 573in1",
+		"prompt": "▸ Use ◁▷ to scroll. Press ▭ to go back."
 	},
 
 	"App": {
@@ -73,7 +73,7 @@
 			"erase":       "Erasing existing header...\nDo not turn off the 573.",
 			"write":       "Writing new header...\nDo not turn off the 573.",
 			"flashError":  "An error occurred while erasing and rewriting the first sector of the internal flash memory.\n\nError code: %s\nPress the Test button to view debug logs.",
-			"unsupported": "The flash memory chips on this device are unresponsive to commands or are currently unsupported. If you are trying to erase a PCMCIA card with a write protect switch, make sure the switch is off.\n\nSee the documentation for more information on supported flash chips."
+			"unsupported": "The internal flash memory chips are unresponsive to commands or are currently unsupported. This likely means the 573 motherboard is damaged.\n\nSee the documentation for more information on supported flash chips."
 		},
 		"qrCodeWorker": {
 			"compress": "Compressing cartridge dump...",
@@ -122,9 +122,9 @@
 	},
 
 	"AudioTestScreen": {
-		"title":      "{RIGHT_ARROW} Audio output test",
+		"title":      "▸ Audio output test",
 		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by default.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"playLeft":    "Play sound on left channel",
 		"playRight":   "Play sound on right channel",
@@ -140,13 +140,13 @@
 		"rom":   "A valid boot executable has been found on the internal flash memory or a PCMCIA card and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or for flash devices only by using DIP switch 4.",
 		"ide":   "A valid boot executable has been found on an IDE drive and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or per-drive by creating a file named noboot.txt in the root of the filesystem.\n\nFile: %s",
 
-		"cancel": "{START_BUTTON} Cancel (%ds)"
+		"cancel": "▭ Cancel (%ds)"
 	},
 
 	"ButtonMappingScreen": {
-		"title":      "{RIGHT_ARROW} Select button mapping",
-		"prompt":     "Use {START_BUTTON} or the Test button to select a mapping preset suitable for your cabinet or JAMMA setup. Other buttons will be enabled once a mapping is selected.",
-		"itemPrompt": "{RIGHT_ARROW} Press and hold {START_BUTTON} or Test to confirm",
+		"title":      "▸ Select button mapping",
+		"prompt":     "Use ▭ or the Test button to select a mapping preset suitable for your cabinet or JAMMA setup. Other buttons will be enabled once a mapping is selected.",
+		"itemPrompt": "▸ Press and hold ▭ or Test to confirm",
 
 		"joystick":   "JAMMA supergun or joystick/buttons",
 		"ddrCab":     "Dance Dance Revolution (2-player) cabinet",
@@ -166,8 +166,8 @@
 	},
 
 	"CartActionsScreen": {
-		"title":      "{RIGHT_ARROW} Cartridge options",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"title":      "▸ Cartridge options",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"qrDump": {
 			"name":   "Dump cartridge as QR code",
@@ -218,7 +218,7 @@
 	},
 
 	"CartInfoScreen": {
-		"title": "{RIGHT_ARROW} Cartridge information",
+		"title": "▸ Cartridge information",
 
 		"digitalIO": {
 			"header":  "Digital I/O board:\n",
@@ -233,8 +233,8 @@
 			"zs01Info":    "  Chip type:\t\tKonami ZS01 (PIC16CE625)\n  Unlock status:\t%s\n  DS2401 ID:\t\t%s\n  ZS01 ID:\t\t%s\n  Configuration:\t%s\n"
 		},
 		"unlockStatus": {
-			"locked":   "{CLOSED_LOCK} locked, game key required",
-			"unlocked": "{OPEN_LOCK} unlocked"
+			"locked":   "🔒 locked, game key required",
+			"unlocked": "🔓 unlocked"
 		},
 		"id": {
 			"error":    "read failure",
@@ -265,9 +265,9 @@
 			}
 		},
 		"prompt": {
-			"locked":   "{RIGHT_ARROW} Press {START_BUTTON} to unlock, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
-			"unlocked": "{RIGHT_ARROW} Press {START_BUTTON} to continue, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
-			"error":    "{RIGHT_ARROW} Hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back."
+			"locked":   "▸ Press ▭ to unlock, hold ◁▷ + ▭ to go back.",
+			"unlocked": "▸ Press ▭ to continue, hold ◁▷ + ▭ to go back.",
+			"error":    "▸ Hold ◁▷ + ▭ to go back."
 		},
 
 		"unlockWarning": {
@@ -278,8 +278,8 @@
 	},
 
 	"ChecksumScreen": {
-		"title":  "{RIGHT_ARROW} Storage device checksums",
-		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back.",
+		"title":  "▸ Storage device checksums",
+		"prompt": "▸ Press ▭ to go back.",
 
 		"bios":        "BIOS ROM (512 KB):\t\t\t\t%08X\n",
 		"rtc":         "RTC RAM (8184 bytes):\t\t\t%08X\n",
@@ -289,8 +289,8 @@
 	},
 
 	"ColorIntensityScreen": {
-		"title":  "{RIGHT_ARROW} Monitor color intensity test",
-		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back.",
+		"title":  "▸ Monitor color intensity test",
+		"prompt": "▸ Press ▭ to go back.",
 
 		"white": "White",
 		"red":   "Red",
@@ -305,18 +305,18 @@
 	},
 
 	"FileBrowserScreen": {
-		"title":      "{RIGHT_ARROW} Select file",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"title":      "▸ Select file",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"parentDir":   "[Parent directory]",
 		"subdirError": "An error occurred while enumerating files in the selected subdirectory. The filesystem may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
 	},
 
 	"FilePickerScreen": {
-		"title":      "{RIGHT_ARROW} Select IDE drive",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"title":      "▸ Select IDE drive",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
-		"host": "{HOST_ICON} Host filesystem (PCDRV)",
+		"host": "🖧 Host filesystem (PCDRV)",
 		"noFS": "no disc or unsupported FS",
 
 		"noDeviceError": "No drives have been found and successfully initialized on the IDE bus. Make sure the drives are appropriately configured as primary or secondary and are receiving power.\n\nPress the Test button to view debug logs.",
@@ -326,18 +326,18 @@
 	},
 
 	"GeometryScreen": {
-		"title":  "{RIGHT_ARROW} Monitor geometry test",
-		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} to go back."
+		"title":  "▸ Monitor geometry test",
+		"prompt": "▸ Press ▭ to go back."
 	},
 
 	"HexdumpScreen": {
-		"title":  "{RIGHT_ARROW} Cartridge dump",
-		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back."
+		"title":  "▸ Cartridge dump",
+		"prompt": "▸ Use ◁▷ to scroll. Press ▭ to go back."
 	},
 
 	"IDEInfoScreen": {
-		"title":  "{RIGHT_ARROW} IDE device information",
-		"prompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to scroll. Press {START_BUTTON} to go back.",
+		"title":  "▸ IDE device information",
+		"prompt": "▸ Use ◁▷ to scroll. Press ▭ to go back.",
 
 		"device": {
 			"header": {
@@ -371,8 +371,8 @@
 	},
 
 	"JAMMATestScreen": {
-		"title":  "{RIGHT_ARROW} JAMMA input test",
-		"prompt": "{RIGHT_ARROW} Press and hold {START_BUTTON} to go back.",
+		"title":  "▸ JAMMA input test",
+		"prompt": "▸ Press and hold ▭ to go back.",
 
 		"noInputs":   "No button is currently held down. If a button does not appear here when pressed, make sure the JAMMA harness is wired up correctly and the button is not damaged.\n",
 		"inputs":     "The following buttons are currently held down:\n",
@@ -389,7 +389,7 @@
 			"button4": "  Player 1 button 4\t\tJAMMA pin 25\n",
 			"button5": "  Player 1 button 5\t\tJAMMA pin 26\n",
 			"button6": "  Player 1 button 6\n",
-			"start":   "  Player 1 start button ({START_BUTTON})\tJAMMA pin 17\n"
+			"start":   "  Player 1 start button (▭)\tJAMMA pin 17\n"
 		},
 		"p2": {
 			"left":    "  Player 2 joystick left\t\tJAMMA pin X\n",
@@ -402,7 +402,7 @@
 			"button4": "  Player 2 button 4\t\tJAMMA pin c\n",
 			"button5": "  Player 2 button 5\t\tJAMMA pin d\n",
 			"button6": "  Player 2 button 6\n",
-			"start":   "  Player 2 start button ({START_BUTTON})\tJAMMA pin U\n"
+			"start":   "  Player 2 start button (▭)\tJAMMA pin U\n"
 		},
 
 		"coin1":   "  Coin switch 1\t\t\tJAMMA pin 16\n",
@@ -413,14 +413,14 @@
 
 	"KeyEntryScreen": {
 		"title":  "Enter unlocking key",
-		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"body":   "Enter the 8-byte key this cartridge was last locked with.\n\nUse ◁▷ to move the cursor, hold ▭ and use ◁▷ to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
 	},
 
 	"MainMenuScreen": {
-		"title":      "{RIGHT_ARROW} 573in1",
-		"itemPrompt": "{RIGHT_ARROW} Use {LEFT_BUTTON}{RIGHT_BUTTON} to move, select by pressing {START_BUTTON}",
+		"title":      "▸ 573in1",
+		"itemPrompt": "▸ Use ◁▷ to move, select by pressing ▭",
 
 		"cartInfo": {
 			"name":   "Manage security cartridge",
@@ -476,20 +476,20 @@
 	},
 
 	"QRCodeScreen": {
-		"title":  "{RIGHT_ARROW} Cartridge dump",
-		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press {START_BUTTON} to go back."
+		"title":  "▸ Cartridge dump",
+		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press ▭ to go back."
 	},
 
 	"ReflashGameScreen": {
-		"title":      "{RIGHT_ARROW} Select game to convert cartridge to",
+		"title":      "▸ Select game to convert cartridge to",
 		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back"
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back"
 	},
 
 	"ResolutionScreen": {
-		"title":      "{RIGHT_ARROW} Select screen resolution",
+		"title":      "▸ Select screen resolution",
 		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"320x240p": "320x240 (4:3), progressive",
 		"320x240i": "320x240 (4:3), interlaced (line doubled)",
@@ -504,14 +504,14 @@
 
 	"RTCTimeScreen": {
 		"title":  "Set RTC date and time",
-		"body":   "Enter the current date and time. Note that System 573 games only accept years in 1970-2069 range.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted field.",
+		"body":   "Enter the current date and time. Note that System 573 games only accept years in 1970-2069 range.\n\nUse ◁▷ to move the cursor, hold ▭ and use ◁▷ to edit the highlighted field.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
 	},
 
 	"StorageActionsScreen": {
-		"title":      "{RIGHT_ARROW} Storage device options",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"title":      "▸ Storage device options",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
 
 		"runExecutable": {
@@ -616,8 +616,8 @@
 	},
 
 	"StorageInfoScreen": {
-		"title":  "{RIGHT_ARROW} Storage device information",
-		"prompt": "{RIGHT_ARROW} Press {START_BUTTON} for more options, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back.",
+		"title":  "▸ Storage device information",
+		"prompt": "▸ Press ▭ for more options, hold ◁▷ + ▭ to go back.",
 
 		"bios": {
 			"header": "BIOS ROM:\n",
@@ -666,14 +666,14 @@
 
 	"SystemIDEntryScreen": {
 		"title":  "Edit system identifier",
-		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run 573in1 on its respective system.\n\nUse {LEFT_BUTTON}{RIGHT_BUTTON} to move the cursor, hold {START_BUTTON} and use {LEFT_BUTTON}{RIGHT_BUTTON} to edit the highlighted digit.",
+		"body":   "Enter the new digital I/O board's identifier. To obtain the ID of another board, run 573in1 on its respective system.\n\nUse ◁▷ to move the cursor, hold ▭ and use ◁▷ to edit the highlighted digit.",
 		"cancel": "Cancel",
 		"ok":     "Confirm"
 	},
 
 	"TestMenuScreen": {
-		"title":      "{RIGHT_ARROW} Hardware test suite",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"title":      "▸ Hardware test suite",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"jammaTest": {
 			"name":   "Test JAMMA inputs",
@@ -694,9 +694,9 @@
 	},
 
 	"UnlockKeyScreen": {
-		"title":      "{RIGHT_ARROW} Select unlocking key",
+		"title":      "▸ Select unlocking key",
 		"prompt":     "If the cartridge has been converted before, select the game it was last converted to. If it is currently blank, select 00-00-00-00-00-00-00-00.",
-		"itemPrompt": "{RIGHT_ARROW} Press {START_BUTTON} to select, hold {LEFT_BUTTON}{RIGHT_BUTTON} + {START_BUTTON} to go back",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"autoUnlock":   "Use key from identified game (recommended)",
 		"useCustomKey": "Enter key manually...",
@@ -709,7 +709,7 @@
 		"body":  "573in1 is an experimental tool provided with no warranty whatsoever. It is not guaranteed to work and improper usage may PERMANENTLY BRICK your System 573 security cartridges.\n\nUse this tool at your own risk. Do not proceed if you do not know what you are doing.",
 
 		"cooldown": "Wait... (%ds)",
-		"ok":       "{START_BUTTON} Continue"
+		"ok":       "▭ Continue"
 	},
 
 	"WorkerStatusScreen": {

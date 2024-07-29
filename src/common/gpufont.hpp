@@ -16,33 +16,74 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
+#include "common/gpufont.hpp"
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 
 namespace gpu {
 
-/* Font class */
+/* Font metrics class */
 
-static constexpr char FONT_INVALID_CHAR = 0x7f;
+static constexpr size_t METRICS_BUCKET_COUNT    = 256;
+static constexpr size_t METRICS_CODE_POINT_BITS = 21;
 
-class FontMetrics {
+static constexpr util::UTF8CodePoint FONT_INVALID_CHAR = 0xfffd;
+
+using CharacterSize = uint32_t;
+
+struct FontMetricsHeader {
 public:
-	uint8_t  spaceWidth, tabWidth, lineHeight, _reserved;
-	uint32_t characterSizes[256];
+	uint8_t spaceWidth, tabWidth, lineHeight;
+	int8_t  baselineOffset;
+};
 
-	inline uint32_t getCharacterSize(uint8_t ch) const {
-		uint32_t sizes = characterSizes[ch];
-		if (!sizes)
-			return characterSizes[int(FONT_INVALID_CHAR)];
+struct FontMetricsEntry {
+public:
+	uint32_t      codePoint;
+	CharacterSize size;
 
-		return sizes;
+	inline util::UTF8CodePoint getCodePoint(void) const {
+		return codePoint & ((1 << METRICS_CODE_POINT_BITS) - 1);
+	}
+	inline uint32_t getChained(void) const {
+		return codePoint >> METRICS_CODE_POINT_BITS;
 	}
 };
+
+class FontMetrics : public util::Data {
+public:
+	inline const FontMetricsHeader *getHeader(void) const {
+		return as<const FontMetricsHeader>();
+	}
+	inline CharacterSize operator[](util::UTF8CodePoint id) const {
+		return get(id);
+	}
+
+	CharacterSize get(util::UTF8CodePoint id) const;
+};
+
+/* Font class */
 
 class Font {
 public:
 	Image       image;
 	FontMetrics metrics;
+
+	inline int getSpaceWidth(void) const {
+		if (!metrics.ptr)
+			return 0;
+
+		return metrics.getHeader()->spaceWidth;
+	}
+	inline int getLineHeight(void) const {
+		if (!metrics.ptr)
+			return 0;
+
+		return metrics.getHeader()->lineHeight;
+	}
 
 	void draw(
 		Context &ctx, const char *str, const Rect &rect, const Rect &clipRect,
@@ -56,7 +97,7 @@ public:
 		Context &ctx, const char *str, const RectWH &rect,
 		Color color = 0x808080, bool wordWrap = false
 	) const;
-	int getCharacterWidth(char ch) const;
+	int getCharacterWidth(util::UTF8CodePoint ch) const;
 	void getStringBounds(
 		const char *str, Rect &rect, bool wordWrap = false,
 		bool breakOnSpace = false

@@ -152,14 +152,14 @@ const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
 	auto &dev  = ide::devices[drive];
 	auto fs    = APP->_fileIO.ide[drive];
 
-	auto icon  = (dev.flags & ide::DEVICE_ATAPI)
-		? CH_CDROM_ICON
-		: CH_HDD_ICON;
-	auto label = fs
+	auto format = (dev.flags & ide::DEVICE_ATAPI)
+		? (CH_CDROM_ICON " %s: %s")
+		: (CH_HDD_ICON   " %s: %s");
+	auto label  = fs
 		? fs->volumeLabel
 		: STR("FilePickerScreen.noFS");
 
-	snprintf(name, sizeof(name), "%c %s: %s", icon, dev.model, label);
+	snprintf(name, sizeof(name), format, dev.model, label);
 	return name;
 }
 
@@ -310,26 +310,24 @@ const char *FileBrowserScreen::_getItemName(ui::Context &ctx, int index) const {
 	if (!_isRoot)
 		index--;
 
-	const char *path;
+	const char *format, *path;
 
 	if (index < 0) {
-		name[0] = CH_PARENT_DIR_ICON;
-		path    = STR("FileBrowserScreen.parentDir");
+		format = CH_PARENT_DIR_ICON " %s";
+		path   = STR("FileBrowserScreen.parentDir");
 	} else if (index < _numDirectories) {
 		auto entries = _directories.as<file::FileInfo>();
 
-		name[0] = CH_DIR_ICON;
-		path    = entries[index].name;
+		format = CH_DIR_ICON " %s";
+		path   = entries[index].name;
 	} else {
 		auto entries = _files.as<file::FileInfo>();
 
-		name[0] = CH_FILE_ICON;
-		path    = entries[index - _numDirectories].name;
+		format = CH_FILE_ICON " %s";
+		path   = entries[index - _numDirectories].name;
 	}
 
-	name[1] = ' ';
-	__builtin_strncpy(&name[2], path, sizeof(name) - 2);
-
+	snprintf(name, sizeof(name), format, path);
 	return name;
 }
 

@@ -272,10 +272,12 @@ void TiledBackground::draw(Context &ctx, bool active) const {
 }
 
 void TextOverlay::draw(Context &ctx, bool active) const {
+	int lineHeight = ctx.font.getLineHeight();
+
 	gpu::RectWH rect;
 
-	rect.y = ctx.gpuCtx.height - (8 + ctx.font.metrics.lineHeight);
-	rect.h = ctx.font.metrics.lineHeight;
+	rect.y = ctx.gpuCtx.height - (8 + lineHeight);
+	rect.h = lineHeight;
 
 	if (leftText) {
 		rect.x = 8;
@@ -342,22 +344,22 @@ void LogOverlay::draw(Context &ctx, bool active) const {
 
 	// Text
 	int screenHeight = ctx.gpuCtx.height - SCREEN_MIN_MARGIN_Y * 2;
-	int linesShown   = screenHeight / ctx.font.metrics.lineHeight;
+	int lineHeight   = ctx.font.getLineHeight();
 
 	gpu::Rect rect;
 
 	rect.x1 = SCREEN_MIN_MARGIN_X;
 	rect.y1 = SCREEN_MIN_MARGIN_Y;
 	rect.x2 = ctx.gpuCtx.width  - SCREEN_MIN_MARGIN_X;
-	rect.y2 = SCREEN_MIN_MARGIN_Y + ctx.font.metrics.lineHeight;
+	rect.y2 = SCREEN_MIN_MARGIN_Y + lineHeight;
 
-	for (int i = linesShown - 1; i >= 0; i--) {
+	for (int i = (screenHeight / lineHeight) - 1; i >= 0; i--) {
 		ctx.font.draw(
 			ctx.gpuCtx, _buffer.getLine(i), rect, ctx.colors[COLOR_TEXT1]
 		);
 
 		rect.y1  = rect.y2;
-		rect.y2 += ctx.font.metrics.lineHeight;
+		rect.y2 += lineHeight;
 	}
 }
 
@@ -471,7 +473,7 @@ void ModalScreen::draw(Context &ctx, bool active) const {
 		rect.x1 = TITLE_BAR_PADDING;
 		rect.y1 = TITLE_BAR_PADDING;
 		rect.x2 = _width - TITLE_BAR_PADDING;
-		rect.y2 = TITLE_BAR_PADDING + ctx.font.metrics.lineHeight;
+		rect.y2 = TITLE_BAR_PADDING + ctx.font.getLineHeight();
 		//rect.y2 = TITLE_BAR_HEIGHT - TITLE_BAR_PADDING;
 		ctx.font.draw(ctx.gpuCtx, _title, rect, ctx.colors[COLOR_TITLE]);
 

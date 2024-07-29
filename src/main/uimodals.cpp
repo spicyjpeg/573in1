@@ -51,7 +51,7 @@ void MessageBoxScreen::draw(Context &ctx, bool active) const {
 
 	rect.y = buttonY + BUTTON_PADDING;
 	rect.w = _getButtonWidth();
-	rect.h = rect.y + ctx.font.metrics.lineHeight;
+	rect.h = rect.y + ctx.font.getLineHeight();
 	//rect.h = BUTTON_HEIGHT - BUTTON_PADDING * 2;
 
 	for (int i = 0; i < _numButtons; i++) {
@@ -184,7 +184,7 @@ void HexEntryScreen::draw(Context &ctx, bool active) const {
 	rect.x1 = stringOffset;
 	rect.y1 = boxY + BUTTON_PADDING;
 	rect.x2 = _width - MODAL_PADDING;
-	rect.y2 = boxY + BUTTON_PADDING + ctx.font.metrics.lineHeight;
+	rect.y2 = boxY + BUTTON_PADDING + ctx.font.getLineHeight();
 	ctx.font.draw(ctx.gpuCtx, string, rect, ctx.colors[COLOR_TITLE]);
 
 	// Highlighted field
@@ -297,7 +297,7 @@ void DateEntryScreen::show(Context &ctx, bool goBack) {
 	_charWidth         = ctx.font.getCharacterWidth('0');
 
 	int dateSepWidth = ctx.font.getCharacterWidth('-');
-	int spaceWidth   = ctx.font.metrics.spaceWidth;
+	int spaceWidth   = ctx.font.getSpaceWidth();
 	int timeSepWidth = ctx.font.getCharacterWidth(':');
 
 	_fieldOffsets[0] = 0;
@@ -354,7 +354,7 @@ void DateEntryScreen::draw(Context &ctx, bool active) const {
 	rect.x1 = stringOffset;
 	rect.y1 = boxY + BUTTON_PADDING;
 	rect.x2 = _width - MODAL_PADDING;
-	rect.y2 = boxY + BUTTON_PADDING + ctx.font.metrics.lineHeight;
+	rect.y2 = boxY + BUTTON_PADDING + ctx.font.getLineHeight();
 	ctx.font.draw(ctx.gpuCtx, string, rect, ctx.colors[COLOR_TITLE]);
 
 	// Highlighted field

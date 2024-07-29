@@ -275,6 +275,7 @@ void TestPatternScreen::_drawTextOverlay(
 ) const {
 	int screenWidth  = ctx.gpuCtx.width  - ui::SCREEN_MARGIN_X * 2;
 	int screenHeight = ctx.gpuCtx.height - ui::SCREEN_MARGIN_Y * 2;
+	int lineHeight   = ctx.font.getLineHeight();
 
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 
@@ -283,7 +284,7 @@ void TestPatternScreen::_drawTextOverlay(
 	backdropRect.x = ui::SCREEN_MARGIN_X - ui::SHADOW_OFFSET;
 	backdropRect.y = ui::SCREEN_MARGIN_Y - ui::SHADOW_OFFSET;
 	backdropRect.w = ui::SHADOW_OFFSET * 2 + screenWidth;
-	backdropRect.h = ui::SHADOW_OFFSET * 2 + ctx.font.metrics.lineHeight;
+	backdropRect.h = ui::SHADOW_OFFSET * 2 + lineHeight;
 	ctx.gpuCtx.drawRect(backdropRect, ctx.colors[ui::COLOR_SHADOW], true);
 
 	backdropRect.y += screenHeight - ui::SCREEN_PROMPT_HEIGHT_MIN;
@@ -294,7 +295,7 @@ void TestPatternScreen::_drawTextOverlay(
 	textRect.x1 = ui::SCREEN_MARGIN_X;
 	textRect.y1 = ui::SCREEN_MARGIN_Y;
 	textRect.x2 = textRect.x1 + screenWidth;
-	textRect.y2 = textRect.y1 + ctx.font.metrics.lineHeight;
+	textRect.y2 = textRect.y1 + lineHeight;
 	ctx.font.draw(ctx.gpuCtx, title, textRect, ctx.colors[ui::COLOR_TITLE]);
 
 	textRect.y1 += screenHeight - ui::SCREEN_PROMPT_HEIGHT_MIN;
@@ -345,18 +346,19 @@ static const IntensityBar _INTENSITY_BARS[]{
 void ColorIntensityScreen::draw(ui::Context &ctx, bool active) const {
 	TestPatternScreen::draw(ctx, active);
 
-	int barWidth  = _INTENSITY_BAR_NAME_WIDTH + _INTENSITY_BAR_WIDTH;
-	int barHeight = _INTENSITY_BAR_HEIGHT * util::countOf(_INTENSITY_BARS);
-	int offsetX   = (ctx.gpuCtx.width  - barWidth)  / 2;
-	int offsetY   = (ctx.gpuCtx.height - barHeight) / 2;
+	int barWidth   = _INTENSITY_BAR_NAME_WIDTH + _INTENSITY_BAR_WIDTH;
+	int barHeight  = _INTENSITY_BAR_HEIGHT * util::countOf(_INTENSITY_BARS);
+	int offsetX    = (ctx.gpuCtx.width  - barWidth)  / 2;
+	int offsetY    = (ctx.gpuCtx.height - barHeight) / 2;
+	int lineHeight = ctx.font.getLineHeight();
 
 	gpu::RectWH textRect, barRect;
 
 	textRect.x = offsetX;
 	textRect.y =
-		offsetY + (_INTENSITY_BAR_HEIGHT - ctx.font.metrics.lineHeight) / 2;
+		offsetY + (_INTENSITY_BAR_HEIGHT - lineHeight) / 2;
 	textRect.w = _INTENSITY_BAR_NAME_WIDTH;
-	textRect.h = ctx.font.metrics.lineHeight;
+	textRect.h = lineHeight;
 
 	barRect.x = offsetX + _INTENSITY_BAR_NAME_WIDTH;
 	barRect.y = offsetY;
@@ -381,7 +383,7 @@ void ColorIntensityScreen::draw(ui::Context &ctx, bool active) const {
 	char value[2]{ 0, 0 };
 
 	textRect.x = barRect.x + 1;
-	textRect.y = offsetY - ctx.font.metrics.lineHeight;
+	textRect.y = offsetY - lineHeight;
 	textRect.w = _INTENSITY_BAR_WIDTH / 32;
 
 	for (int i = 0; i < 32; i++, textRect.x += textRect.w) {

@@ -174,7 +174,7 @@ def createParser() -> ArgumentParser:
 	)
 	group.add_argument(
 		"configFile",
-		type = FileType("rt"),
+		type = FileType("rt", encoding = "utf-8"),
 		help = "Path to JSON configuration file",
 	)
 	group.add_argument(
