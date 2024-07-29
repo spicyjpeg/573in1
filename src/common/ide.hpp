@@ -18,8 +18,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "common/idedefs.hpp"
-#include "common/util.hpp"
 #include "ps1/registers573.h"
 
 namespace ide {

@@ -19,8 +19,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/file/file.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/templates.hpp"
 #include "common/gpu.hpp"
-#include "common/util.hpp"
 
 namespace file {
 

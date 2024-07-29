@@ -16,8 +16,9 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include "common/util/hash.hpp"
+#include "common/util/templates.hpp"
 #include "common/args.hpp"
-#include "common/util.hpp"
 
 namespace args {
 

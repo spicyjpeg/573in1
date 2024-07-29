@@ -15,9 +15,9 @@
  */
 
 #include <stdio.h>
+#include "common/util/log.hpp"
 #include "common/io.hpp"
 #include "common/rom.hpp"
-#include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/romactions.hpp"
 #include "main/uibase.hpp"

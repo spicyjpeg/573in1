@@ -19,7 +19,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/file/file.hpp"
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/templates.hpp"
 #include "ps1/pcdrv.h"
 
 namespace file {

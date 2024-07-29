@@ -19,8 +19,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/file/file.hpp"
+#include "common/util/templates.hpp"
 #include "common/ide.hpp"
-#include "common/util.hpp"
 
 namespace file {
 

@@ -16,8 +16,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/misc.hpp"
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "common/io.hpp"
-#include "common/util.hpp"
 #include "ps1/system.h"
 
 extern "C" const uint8_t _resourceArchive[];

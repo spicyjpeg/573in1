@@ -18,8 +18,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "common/rom.hpp"
-#include "common/util.hpp"
 
 namespace cart {
 

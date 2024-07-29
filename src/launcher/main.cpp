@@ -15,10 +15,12 @@
  */
 
 #include <stdint.h>
+#include "common/util/log.hpp"
+#include "common/util/misc.hpp"
+#include "common/util/templates.hpp"
 #include "common/args.hpp"
 #include "common/ide.hpp"
 #include "common/io.hpp"
-#include "common/util.hpp"
 #include "ps1/system.h"
 
 extern "C" uint8_t _textStart[];

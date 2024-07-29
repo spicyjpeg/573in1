@@ -17,7 +17,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "common/util.hpp"
+#include "common/util/misc.hpp"
+#include "common/util/tween.hpp"
 #include "main/uibase.hpp"
 
 namespace ui {

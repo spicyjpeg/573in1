@@ -18,8 +18,10 @@
 #include <stdint.h>
 #include "common/file/file.hpp"
 #include "common/file/iso9660.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "common/ide.hpp"
-#include "common/util.hpp"
 
 namespace file {
 

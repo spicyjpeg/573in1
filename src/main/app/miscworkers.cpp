@@ -17,12 +17,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/file/file.hpp"
+#include "common/util/log.hpp"
+#include "common/util/misc.hpp"
+#include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/ide.hpp"
 #include "common/idedefs.hpp"
 #include "common/io.hpp"
 #include "common/rom.hpp"
-#include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "ps1/system.h"
 

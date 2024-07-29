@@ -18,10 +18,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/file/file.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/rom.hpp"
 #include "common/romdrivers.hpp"
-#include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/romactions.hpp"
 

@@ -18,7 +18,8 @@
 #include <stdint.h>
 #include "common/file/file.hpp"
 #include "common/file/zip.hpp"
-#include "common/util.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "vendor/miniz.h"
 
 namespace file {

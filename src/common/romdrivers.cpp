@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/log.hpp"
 #include "common/rom.hpp"
 #include "common/romdrivers.hpp"
 

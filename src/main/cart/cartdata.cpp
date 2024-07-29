@@ -16,7 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"
 

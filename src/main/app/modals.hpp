@@ -17,8 +17,8 @@
 #pragma once
 
 #include "common/file/file.hpp"
+#include "common/util/templates.hpp"
 #include "common/ide.hpp"
-#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 #include "main/uimodals.hpp"

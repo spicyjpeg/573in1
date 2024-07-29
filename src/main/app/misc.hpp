@@ -17,8 +17,8 @@
 #pragma once
 
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "common/spu.hpp"
-#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 #include "main/uimodals.hpp"

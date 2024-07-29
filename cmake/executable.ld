@@ -17,8 +17,7 @@
 ENTRY(_start)
 
 MEMORY {
-	KERNEL_RAM (rwx) : ORIGIN = 0x80000000, LENGTH = 0x010000
-	APP_RAM    (rwx) : ORIGIN = 0x80010000, LENGTH = 0x7f0000
+	APP_RAM (rwx) : ORIGIN = 0x80010000, LENGTH = 0x3f0000
 }
 
 SECTIONS {
@@ -108,7 +107,7 @@ SECTIONS {
 	} > APP_RAM
 
 	/DISCARD/ : {
-		*(.note.GNU-stack .gnu_debuglink .gnu.lto_*)
+		*(.note.* .gnu_debuglink .gnu.lto_*)
 		*(.MIPS.abiflags)
 	}
 }

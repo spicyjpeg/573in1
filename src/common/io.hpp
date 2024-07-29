@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/util.hpp"
+#include "common/util/misc.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 #include "ps1/system.h"

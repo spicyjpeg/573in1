@@ -17,10 +17,11 @@
 #pragma once
 
 #include <stdint.h>
+#include "common/util/log.hpp"
+#include "common/util/tween.hpp"
 #include "common/gpu.hpp"
 #include "common/gpufont.hpp"
 #include "common/spu.hpp"
-#include "common/util.hpp"
 
 namespace ui {
 

@@ -16,8 +16,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/misc.hpp"
 #include "common/io.hpp"
-#include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 #include "ps1/system.h"

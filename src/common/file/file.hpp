@@ -18,9 +18,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/hash.hpp"
+#include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 #include "common/spu.hpp"
-#include "common/util.hpp"
 
 namespace file {
 

@@ -16,7 +16,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
 #include "main/cart/zs01.hpp"
 
 namespace cart {

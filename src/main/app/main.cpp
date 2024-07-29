@@ -15,7 +15,8 @@
  */
 
 #include <stdio.h>
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/templates.hpp"
 #include "main/app/app.hpp"
 #include "main/app/main.hpp"
 #include "main/uibase.hpp"

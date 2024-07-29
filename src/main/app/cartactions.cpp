@@ -14,7 +14,10 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/app.hpp"
 #include "main/uibase.hpp"

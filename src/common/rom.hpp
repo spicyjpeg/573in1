@@ -18,7 +18,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/misc.hpp"
+#include "common/util/string.hpp"
 #include "ps1/registers.h"
 
 namespace rom {

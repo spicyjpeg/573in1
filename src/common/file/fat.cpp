@@ -18,9 +18,10 @@
 #include <stdint.h>
 #include "common/file/fat.hpp"
 #include "common/file/file.hpp"
+#include "common/util/log.hpp"
+#include "common/util/misc.hpp"
 #include "common/ide.hpp"
 #include "common/io.hpp"
-#include "common/util.hpp"
 #include "ps1/system.h"
 #include "vendor/diskio.h"
 #include "vendor/ff.h"

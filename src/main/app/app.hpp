@@ -20,6 +20,8 @@
 #include "common/file/file.hpp"
 #include "common/file/misc.hpp"
 #include "common/file/zip.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "common/ide.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"

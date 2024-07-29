@@ -15,8 +15,11 @@
  */
 
 #include <stdint.h>
+#include "common/util/log.hpp"
+#include "common/util/misc.hpp"
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "common/io.hpp"
-#include "common/util.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartio.hpp"
 #include "main/cart/zs01.hpp"

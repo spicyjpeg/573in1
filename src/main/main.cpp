@@ -14,11 +14,12 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
 #include "common/args.hpp"
 #include "common/gpu.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
-#include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/uibase.hpp"
 #include "ps1/gpucmd.h"

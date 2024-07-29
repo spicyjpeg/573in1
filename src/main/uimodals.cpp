@@ -16,8 +16,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/misc.hpp"
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
+#include "common/util/tween.hpp"
 #include "common/gpu.hpp"
-#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "main/uimodals.hpp"
 

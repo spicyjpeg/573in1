@@ -15,11 +15,13 @@
  */
 
 #include <stdint.h>
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
+#include "common/util/tween.hpp"
 #include "common/gpu.hpp"
 #include "common/gpufont.hpp"
 #include "common/io.hpp"
 #include "common/pad.hpp"
-#include "common/util.hpp"
 #include "main/uibase.hpp"
 #include "ps1/gpucmd.h"
 

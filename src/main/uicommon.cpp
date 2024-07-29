@@ -14,6 +14,7 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/gpu.hpp"
 #include "main/uibase.hpp"

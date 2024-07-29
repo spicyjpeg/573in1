@@ -16,10 +16,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "common/io.hpp"
 #include "common/rom.hpp"
 #include "common/romdrivers.hpp"
-#include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 

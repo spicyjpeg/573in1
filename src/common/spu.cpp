@@ -16,8 +16,9 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include "common/util/misc.hpp"
+#include "common/util/templates.hpp"
 #include "common/spu.hpp"
-#include "common/util.hpp"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 

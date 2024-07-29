@@ -18,9 +18,11 @@
 #include <stdio.h>
 #include "common/file/file.hpp"
 #include "common/file/misc.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/ide.hpp"
-#include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/app/modals.hpp"
 #include "main/uibase.hpp"

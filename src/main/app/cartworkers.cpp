@@ -18,9 +18,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/file/file.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/io.hpp"
-#include "common/util.hpp"
 #include "main/app/app.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"

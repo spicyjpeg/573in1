@@ -15,7 +15,10 @@
  */
 
 #include <stdio.h>
-#include "common/util.hpp"
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
+#include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "main/app/app.hpp"
 #include "main/app/cartunlock.hpp"
 #include "main/cart/cartdata.hpp"
