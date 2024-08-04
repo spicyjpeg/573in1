@@ -177,56 +177,89 @@ void RTCTimeScreen::update(ui::Context &ctx) {
 	}
 }
 
-struct Resolution {
+struct Language {
 public:
 	util::Hash name;
-	int        width, height;
-	bool       forceInterlace;
+	const char *path;
+};
+
+static const Language _LANGUAGES[]{
+	{
+		.name = "LanguageScreen.en"_h,
+		.path = "assets/lang/en.lang"
+	}, {
+		.name = "LanguageScreen.it"_h,
+		.path = "assets/lang/it.lang"
+	}
+};
+
+const char *LanguageScreen::_getItemName(ui::Context &ctx, int index) const {
+	return STRH(_LANGUAGES[index].name);
+}
+
+void LanguageScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("LanguageScreen.title");
+	_prompt     = STR("LanguageScreen.prompt");
+	_itemPrompt = STR("LanguageScreen.itemPrompt");
+
+	_listLength = util::countOf(_LANGUAGES);
+
+	ListScreen::show(ctx, goBack);
+}
+
+void LanguageScreen::update(ui::Context &ctx) {
+	ListScreen::update(ctx);
+
+	if (ctx.buttons.pressed(ui::BTN_START)) {
+		if (!ctx.buttons.held(ui::BTN_LEFT) && !ctx.buttons.held(ui::BTN_RIGHT))
+			APP->_fileIO.resource.loadData(
+				APP->_stringTable, _LANGUAGES[_activeItem].path
+			);
+
+		ctx.show(APP->_mainMenuScreen, true, true);
+	}
+}
+
+struct Resolution {
+public:
+	uint16_t width, height;
+	bool     forceInterlace;
 };
 
 static const Resolution _RESOLUTIONS[]{
 	{
-		.name           = "ResolutionScreen.320x240p"_h,
 		.width          = 320,
 		.height         = 240,
 		.forceInterlace = false
 	}, {
-		.name           = "ResolutionScreen.320x240i"_h,
 		.width          = 320,
 		.height         = 240,
 		.forceInterlace = true
 	}, {
-		.name           = "ResolutionScreen.368x240p"_h,
 		.width          = 368,
 		.height         = 240,
 		.forceInterlace = false
 	}, {
-		.name           = "ResolutionScreen.368x240i"_h,
 		.width          = 368,
 		.height         = 240,
 		.forceInterlace = true
 	}, {
-		.name           = "ResolutionScreen.512x240p"_h,
 		.width          = 512,
 		.height         = 240,
 		.forceInterlace = false
 	}, {
-		.name           = "ResolutionScreen.512x240i"_h,
 		.width          = 512,
 		.height         = 240,
 		.forceInterlace = true
 	}, {
-		.name           = "ResolutionScreen.640x240p"_h,
 		.width          = 640,
 		.height         = 240,
 		.forceInterlace = false
 	}, {
-		.name           = "ResolutionScreen.640x240i"_h,
 		.width          = 640,
 		.height         = 240,
 		.forceInterlace = true
 	}, {
-		.name           = "ResolutionScreen.640x480i"_h,
 		.width          = 640,
 		.height         = 480,
 		.forceInterlace = true
@@ -234,7 +267,20 @@ static const Resolution _RESOLUTIONS[]{
 };
 
 const char *ResolutionScreen::_getItemName(ui::Context &ctx, int index) const {
-	return STRH(_RESOLUTIONS[index].name);
+	static char name[96]; // TODO: get rid of this ugly crap
+
+	auto       &res = _RESOLUTIONS[index];
+	util::Hash format;
+
+	if (res.height > 240)
+		format = "ResolutionScreen.interlaced480"_h;
+	else if (res.forceInterlace)
+		format = "ResolutionScreen.interlaced"_h;
+	else
+		format = "ResolutionScreen.progressive"_h;
+
+	snprintf(name, sizeof(name), STRH(format), res.width, res.height);
+	return name;
 }
 
 void ResolutionScreen::show(ui::Context &ctx, bool goBack) {

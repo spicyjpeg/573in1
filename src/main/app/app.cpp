@@ -327,7 +327,7 @@ void App::_updateOverlays(void) {
 
 	__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-	if ((_workerStatus.status == WORKER_DONE) || (_ctx.time > timeout))
+	if ((_workerStatus.status != WORKER_BUSY) || (_ctx.time > timeout))
 		_splashOverlay.hide(_ctx);
 
 	// Log overlay

@@ -25,6 +25,11 @@
 			"source": "${PROJECT_SOURCE_DIR}/assets/lang/en.json"
 		},
 		{
+			"type":   "strings",
+			"name":   "assets/lang/it.lang",
+			"source": "${PROJECT_SOURCE_DIR}/assets/lang/it.json"
+		},
+		{
 			"type":     "tim",
 			"name":     "assets/textures/background.tim",
 			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/background.png",

@@ -1,0 +1,725 @@
+{
+	"AboutScreen": {
+		"title":  "▸ Informazioni su 573in1",
+		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭."
+	},
+
+	"App": {
+		"ideInitWorker": {
+			"init":     "Inizializzazione bus IDE in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"autoboot": "Ricerca di eseguibili da avviare in corso...\nNon spegnere il 573 o rimuovere dischi."
+		},
+		"fileInitWorker": {
+			"unmount":       "Smontaggio filesystem in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"mount":         "Rilevamento e montaggio filesystem in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"loadResources": "Caricamento resource pack...\nNon spegnere il 573 o rimuovere dischi."
+		},
+		"cartDetectWorker": {
+			"readDigitalIO": "Lettura ID digital I/O in corso...",
+			"readCart":      "Lettura security cart in corso...\nNon spegnere il 573.",
+			"identifyGame":  "Identificazione gioco in corso..."
+		},
+		"cartEraseWorker": {
+			"erase":  "Cancellazione security cart in corso...\nNon spegnere il 573.",
+			"error":  "Si è verificato un errore durante la cancellazione dell'EEPROM della security cart. È possibile che la password di sblocco non sia stata modificata con successo.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"cartReflashWorker": {
+			"init":       "Generazione dati security cart in corso...\nNon spegnere il 573.",
+			"setDataKey": "Impostazione nuova password in corso...\nNon spegnere il 573.",
+			"write":      "Scrittura nuovi dati in corso...\nNon spegnere il 573.",
+			"idError":    "Il gioco selezionato non è compatibile con la security cart inserita, in quanto ne richiede una dotata di un identificatore DS2401.",
+			"writeError": "Si è verificato un errore durante la scrittura dell'EEPROM della security cart. È possibile che la password di sblocco non sia stata modificata con successo.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"cartRestoreWorker": {
+			"init":       "Validazione dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"setDataKey": "Impostazione nuova password in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"write":      "Scrittura nuovi dati in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"fileError":  "Il file selezionato è danneggiato o non è un dump valido. Assicurati che il file sia stato copiato correttamente.\n\nFile: %s",
+			"typeError":  "Il file selezionato non è compatibile con la security cart inserita, in quanto richiede un tipo di EEPROM differente.\n\nFile: %s",
+			"writeError": "Si è verificato un errore durante la scrittura dell'EEPROM della security cart. È possibile che la password di sblocco non sia stata modificata con successo.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug.",
+			"idWarning":  "Il dump è stato ripristinato correttamente, tuttavia è possibile che la security cart non venga riconosciuta poiché il dump proviene da una cart con un ID DS2401 differente.\n\nID dump:\t%s\nID cart:\t%s"
+		},
+		"cartUnlockWorker": {
+			"read":         "Lettura security cart in corso...\nNon spegnere il 573.",
+			"identifyGame": "Identificazione gioco in corso...",
+			"x76f041Error": "Impossibile sbloccare la security cart; la password è probabilmente errata. Se la password è corretta, è possibile che la cart sia divenuta inutilizzabile a causa di troppi tentativi di sblocco falliti.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug.",
+			"x76f100Error": "Impossibile sbloccare la security cart; la password è probabilmente errata. Se la password è corretta, è possibile che la cart abbia azzerato i contenuti e la password a causa di troppi tentativi di sblocco falliti.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug.",
+			"zs01Error":    "Impossibile sbloccare la security cart; la password è probabilmente errata. Se la password è corretta, è possibile che la cart abbia azzerato i contenuti e la password a causa di troppi tentativi di sblocco falliti.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"cartWriteWorker": {
+			"write": "Scrittura nuovi dati in corso...\nNon spegnere il 573.",
+			"error": "Si è verificato un errore durante la scrittura dell'EEPROM della security cart.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"cartDumpWorker": {
+			"save":    "Salvataggio dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"success": "Il dump della security cart e dei suoi ID è stato salvato. Usa lo script decodeDump.py fornito con 573in1 per visualizzare e decodificare il dump.\n\nFile: %s",
+			"error":   "Si è verificato un errore durante il salvataggio del dump. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nFile: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"executableWorker": {
+			"init":          "Validazione eseguibile in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"load":          "Caricamento eseguibile in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"fileError":     "Il file selezionato è danneggiato o non è un eseguibile System 573 valido. Assicurati che il file sia stato copiato correttamente.\n\nFile: %s",
+			"addressError":  "Questo eseguibile non può essere caricato poiché sovrascriverebbe la memoria usata dal launcher.\n\nRegione:\t%08X-%08X\nStack top:\t%08X",
+			"fragmentError": "Questo eseguibile non può essere caricato poiché è frammentato in troppe regioni non contigue del filesystem. Prova a deframmentare o riformattare il filesystem.\n\nFile:\t\t\t%s\nNumero frammenti:\t%d\nOverflow:\t\t%d"
+		},
+		"flashExecutableWriteWorker": {
+			"init":       "Validazione eseguibile in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"write":      "Copia nuovo eseguibile in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"success":    "L'eseguibile è stato installato. Il BIOS salterà l'inizializzazione del lettore ottico e avvierà l'eseguibile direttamente se il DIP switch 4 è attivato.\n\nByte scritti: %d",
+			"fileError":  "Il file selezionato è danneggiato o non è un eseguibile System 573 valido. Assicurati che il file sia stato copiato correttamente.\n\nFile: %s",
+			"flashError": "Si è verificato un errore durante la scrittura dei dati su uno dei chip.\n\nCodice errore:\t%s\nByte scritti:\t%d\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"flashHeaderWriteWorker": {
+			"erase":       "Cancellazione header esistente in corso...\nNon spegnere il 573.",
+			"write":       "Scrittura nuovo header in corso...\nNon spegnere il 573.",
+			"flashError":  "Si è verificato un errore durante la cancellazione o la riscrittura del primo settore.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug.",
+			"unsupported": "I chip di memoria flash non rispondono ai comandi o non sono attualmente supportati da 573in1. Ciò probabilmente significa che il 573 è danneggiato.\n\nFai riferimento alla documentazione per ulteriori informazioni sui chip supportati."
+		},
+		"qrCodeWorker": {
+			"compress": "Compressione dump in corso...",
+			"generate": "Generazione QR code in corso..."
+		},
+		"romChecksumWorker": {
+			"hashBIOS":    "Calcolo CRC32 BIOS in corso...",
+			"hashRTC":     "Calcolo CRC32 memoria RTC in corso...",
+			"hashFlash":   "Calcolo CRC32 flash interna in corso...",
+			"hashPCMCIA1": "Calcolo CRC32 flash card PCMCIA 1 in corso...",
+			"hashPCMCIA2": "Calcolo CRC32 flash card PCMCIA 2 in corso..."
+		},
+		"romDumpWorker": {
+			"init":        "Creazione cartella dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"dumpBIOS":    "Salvataggio dump BIOS in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"dumpRTC":     "Salvataggio dump memoria RTC in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"dumpFlash":   "Salvataggio dump flash interna in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"dumpPCMCIA1": "Salvataggio dump flash card PCMCIA 1 in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"dumpPCMCIA2": "Salvataggio dump flash card PCMCIA 2 in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"success":     "Tutti i dump sono stati salvati.\n\nDirectory: %s",
+			"initError":   "Impossibile creare una nuova directory per i dump. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nDirectory: %s\nPremi il pulsante Test per mostrare i log di debug.",
+			"fileError":   "Si è verificato un errore durante il salvataggio di uno dei dump. Controlla che ci sia abbastanza spazio libero (minimo 32 MB, più eventuali flash card PCMCIA) e che il filesystem non sia danneggiato.\n\nFile: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"romEraseWorker": {
+			"erase":       "Cancellazione in corso...\nNon spegnere il 573.",
+			"success":     "Tutti i dati sono stati eliminati correttamente.\n\nSettori cancellati: %d",
+			"flashError":  "Si è verificato un errore durante la cancellazione dei dati su uno dei chip.\n\nCodice errore:\t%s\nSettori cancellati:\t%d\nPremi il pulsante Test per mostrare i log di debug.",
+			"unsupported": "I chip di memoria flash di questo dispositivo non rispondono ai comandi o non sono attualmente supportati da 573in1. Se stai usando una flash card PCMCIA con uno switch di protezione scrittura, assicurati che sia disattivato.\n\nFai riferimento alla documentazione per ulteriori informazioni sui chip supportati."
+		},
+		"romRestoreWorker": {
+			"init":        "Lettura file dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"write":       "Scrittura nuovi dati in corso...\nNon spegnere il 573 o rimuovere dischi.",
+			"success":     "Tutti i dati sono stati ripristinati correttamente.\n\nByte scritti: %d",
+			"overflow":    "Il file selezionato aveva dimensioni superiori alla capacità del dispositivo; i contenuti oltre il limite sono stati ignorati. Tutti gli altri dati sono stati ripristinati correttamente.\n\nByte scritti: %d",
+			"fileError":   "Si è verificato un errore durante la lettura del file. Assicurati che il filesystem non sia danneggiato.\n\nFile: %s\nPremi il pulsante Test per mostrare i log di debug.",
+			"flashError":  "Si è verificato un errore durante la scrittura dei dati su uno dei chip.\n\nCodice errore:\t%s\nByte scritti:\t%d\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"atapiEjectWorker": {
+			"eject":      "Espulsione del disco in corso...",
+			"noDrive":    "Non è stato rilevato o non è stato possibile inizializzare alcun lettore CD-ROM ATAPI sul bus IDE. Il lettore ottico potrebbe essere incompatibile con il driver ATAPI usato da 573in1.\n\nPremi il pulsante Test per mostrare i log di debug.",
+			"ejectError": "Espulsione del disco fallita. Assicurati che il pannello frontale dell'unità non sia ostruito dal case del 573. Il lettore ottico potrebbe anche essere incompatibile con il driver ATAPI usato da 573in1.\n\nCodice errore: %s\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"rebootWorker": {
+			"reboot": "In attesa del riavvio..."
+		}
+	},
+
+	"AudioTestScreen": {
+		"title":      "▸ Test output audio e amplificatore",
+		"prompt":     "L'amplificatore audio e il passthrough CD-DA/MP3 sono disattivati di default.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"playLeft":    "Riproduci suono sul canale sinistro",
+		"playRight":   "Riproduci suono sul canale destro",
+		"playBoth":    "Riproduci suono su entrambi i canali",
+		"enableAmp":   "Attiva amplificatore integrato",
+		"disableAmp":  "Disattiva amplificatore integrato",
+		"enableCDDA":  "Attiva passthrough audio CD-DA/MP3",
+		"disableCDDA": "Disattiva passthrough audio CD-DA/MP3"
+	},
+
+	"AutobootScreen": {
+		"title": "Nota",
+		"rom":   "Un eseguibile di boot è stato trovato nella flash interna o in una flash card PCMCIA e sarà avviato a breve. Puoi disattivare il boot automatico tramite il DIP switch 1 o solo per flash e PCMCIA con il DIP switch 4.",
+		"ide":   "Un eseguibile di boot è stato trovato in uno dei dischi IDE connessi e sarà avviato a breve. Puoi disattivare il boot automatico tramite il DIP switch 1 o per un solo disco creando un file noboot.txt nella directory radice.\n\nFile: %s",
+
+		"cancel": "▭ Annulla (%ds)"
+	},
+
+	"ButtonMappingScreen": {
+		"title":      "▸ Seleziona configurazione pulsanti",
+		"prompt":     "Usa ▭ o il pulsante Test per selezionare una configurazione adatta al tuo cabinato o setup JAMMA.",
+		"itemPrompt": "▸ Tieni premuto ▭ o Test per confermare",
+
+		"joystick":   "Supergun JAMMA o joystick/pulsanti",
+		"ddrCab":     "Cabinato Dance Dance Revolution",
+		"ddrSoloCab": "Cabinato Dance Dance Revolution Solo",
+		"dmCab":      "Cabinato DrumMania o PercussionFreaks",
+		"dmxCab":     "Cabinato Dance Maniax"
+	},
+
+	"CardSizeScreen": {
+		"title":  "Seleziona capacità flash card",
+		"body":   "Non è stato possibile determinare automaticamente la capacità della flash card inserita nello slot. Seleziona la capacità manualmente per continuare.",
+		"cancel": "Annulla",
+		"8":      "8 MB",
+		"16":     "16 MB",
+		"32":     "32 MB",
+		"64":     "64 MB"
+	},
+
+	"CartActionsScreen": {
+		"title":      "▸ Opzioni security cart",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"qrDump": {
+			"name":   "Mostra dump come QR code",
+			"prompt": "Genera un QR code con il contenuto dell'EEPROM e gli ID della security cart in formato compresso. Il codice può essere scansionato ed in seguito convertito in un file."
+		},
+		"hddDump": {
+			"name":   "Salva dump su hard disk",
+			"prompt": "Salva il contenuto dell'EEPROM e gli ID della security cart in un file su un hard disk IDE o CF card (se connessi)."
+		},
+		"hexdump": {
+			"name":   "Visualizza hexdump EEPROM",
+			"prompt": "Mostra il contenuto dell'EEPROM della security cart in formato esadecimale."
+		},
+		"hddRestore": {
+			"name":       "Ripristina cart da dump",
+			"prompt":     "Ripristina i contenuti dell'EEPROM della security cart da un file sul CD-ROM o su un hard disk IDE o CF card (se connessi).",
+			"filePrompt": "Il dump deve avere lo stesso tipo di EEPROM, e dovrebbe avere lo stesso ID DS2401 (se presente), della cart di destinazione.",
+			"confirm":    "Il contenuto dell'EEPROM della cart e la chiave di sblocco verranno modificati in modo da rispecchiare il dump, sovrascrivendo permanentemente qualsiasi altro dato.\n\nDesideri procedere?"
+		},
+		"reflash": {
+			"name":    "Cancella EEPROM e converti cart ad un altro gioco",
+			"prompt":  "Sovrascrivi tutti i dati presenti nella cart con quelli di un altro gioco supportato. Tutte le cart possono essere convertite a qualunque altro gioco che usa lo stesso tipo di cart.",
+			"confirm": "Tutti i contenuti dell'EEPROM saranno sovrascritti, l'ID del PCB I/O (se presente) verrà azzerato e la chiave di sblocco sarà impostata a quella richiesta dal gioco selezionato.\n\nDesideri procedere?"
+		},
+		"erase": {
+			"name":    "Cancella EEPROM",
+			"prompt":  "Elimina tutti i dati presenti nella cart. Le cart formattate in questo modo possono essere convertite a giochi non supportati da 573in1 usando un master calendar JVS.",
+			"confirm": "Tutti i dati contenuti nell'EEPROM della cart saranno eliminati, rendendola inutilizzabile finché non riconvertita e impostando la chiave di sblocco a 00-00-00-00-00-00-00-00. L'ID DS2401 non verrà alterato.\n\nDesideri procedere?"
+		},
+		"resetSystemID": {
+			"name":    "Cancella ID sistema (dissocia cart)",
+			"prompt":  "Elimina l'ID del PCB I/O in modo che la cart possa essere utilizzata per installare il gioco su qualsiasi 573.",
+			"confirm": "L'identificatore sarà azzerato in modo da permettere l'utilizzo della cart con qualunque PCB digital I/O. Il gioco dovrà essere reinstallato per associare la cart al nuovo PCB.\n\nDesideri procedere?",
+			"error":   "L'identificatore di questa cart è già stato eliminato."
+		},
+		"matchSystemID": {
+			"name":    "Copia ID sistema (associa a questo 573)",
+			"prompt":  "Modifica l'ID del PCB I/O in modo che la cart possa essere utilizzata per installare o avviare il gioco su questo 573.",
+			"confirm": "L'identificatore sarà modificato in modo da permettere l'utilizzo della cart con il PCB digital I/O di questo 573. Non sarà necessario reinstallare il gioco se già installato su questo 573.\n\nDesideri procedere?",
+			"error":   "Impossibile rilevare o inizializzare il PCB digital I/O di questo 573. È necessario che il PCB sia presente per poter copiare il suo ID."
+		},
+		"editSystemID": {
+			"name":    "Modifica ID sistema (associa ad un altro 573)",
+			"prompt":  "Modifica l'ID del PCB I/O in modo che la cart possa essere utilizzata per installare o avviare il gioco su un altro 573.",
+			"confirm": "L'identificatore sarà modificato in modo da permettere l'utilizzo della cart con il PCB digital I/O del nuovo 573. Non sarà necessario reinstallare il gioco se già installato sul 573 di destinazione.\n\nDesideri procedere?",
+			"error":   "L'identificatore inserito non è valido. Controlla che tutte le cifre siano corrette e riprova."
+		}
+	},
+
+	"CartInfoScreen": {
+		"title": "▸ Informazioni security cart",
+
+		"digitalIO": {
+			"header":  "PCB digital I/O:\n",
+			"info":    "  ID DS2401:\t\t%s\n  Numero di serie:\t%s\n",
+			"error":   "  Errore durante la lettura dell'ID\n",
+			"noBoard": "  PCB digital I/O non installato\n"
+		},
+		"cart": {
+			"header":      "Security cart:\n",
+			"x76f041Info": "  Tipo chip:\t\tXicor X76F041\n  Stato sblocco:\t%s\n  ID DS2401:\t\t%s\n  Configurazione:\t%s\n",
+			"x76f100Info": "  Tipo chip:\t\tXicor X76F100\n  Stato sblocco:\t%s\n  ID DS2401:\t\t%s\n",
+			"zs01Info":    "  Tipo chip:\t\tKonami ZS01 (PIC16CE625)\n  Stato sblocco:\t%s\n  ID DS2401:\t\t%s\n  ID ZS01:\t\t%s\n  Configurazione:\t%s\n"
+		},
+		"unlockStatus": {
+			"locked":   "🔒 bloccata, password richiesta",
+			"unlocked": "🔓 sbloccata"
+		},
+		"id": {
+			"error":    "errore di lettura",
+			"noCartID": "DS2401 non presente in questa cart",
+			"locked":   "sblocco richiesto"
+		},
+
+		"pairing": {
+			"unsupported": "Questo gioco non si associa ad alcun PCB I/O",
+			"unknown":     "Sblocco richiesto per mostrare lo stato di associazione",
+			"unpaired":    "Non ancora associata ad alcun PCB I/O",
+			"thisSystem":  "Associata al PCB I/O di questo 573",
+			"otherSystem": "Associata al PCB %s (%s)"
+		},
+		"description": {
+			"noCart":    "Nessuna security cart è attualmente presente.\n\nSpegni il 573 e inserisci una security cart per procedere. NON INSERIRE SECURITY CART A 573 ACCESO; ciò potrebbe danneggiare sia il 573 che la cart.\n\nSe una cart è inserita ma non viene riconosciuta, prova a pulire i pin della cart e del connettore sul 573.\n\nPremi il pulsante Test per mostrare i log di debug.",
+			"initError": "Impossibile inizializzare o leggere dati dalla security cart attualmente installata.\n\nSpegni il 573 e assicurati che la cart sia inserita correttamente. Se il problema persiste, prova a utilizzare un'altra cart dello stesso tipo.",
+
+			"locked": {
+				"unidentified": "Sono stati rilevati dati appartenenti ad un gioco non supportato da 573in1.\n\nPoiché la cart è attualmente bloccata, dovrai selezionare manualmente a quale gioco appartiene per poterla leggere o riformattare, dato che ogni gioco usa una password di sblocco diversa.",
+				"identified":   "Questa cart è stata identificata come:\n  %s\n  %s\n\nSe ciò è corretto, puoi procedere sbloccando la cart utilizzando la password di questo gioco.",
+				"unknown":      "Questa cart non può essere identificata automaticamente senza essere prima sbloccata.\n\nDovrai selezionare manualmente a quale gioco appartiene per poterla leggere o riformattare, dato che ogni gioco usa una password di sblocco diversa."
+			},
+			"unlocked": {
+				"unidentified": "Sono stati rilevati dati appartenenti ad un gioco non supportato da 573in1.\n\nL'ID del PCB I/O associato alla cart (se presente) non potrà essere modificato, tuttavia puoi comunque salvare un dump o riformattare la cart per un altro gioco.",
+				"identified":   "Questa cart è stata identificata come:\n  %s\n  %s\n\nPuoi procedere a cancellare o modificare l'ID del PCB I/O o a convertire la cart ad un altro gioco.",
+				"blank":        "Questa cart è stata precedentemente cancellata ed è attualmente vuota.\n\nDovrà essere formattata e opzionalmente inizializzata con un ID di un PCB I/O per essere usata con uno dei giochi supportati."
+			}
+		},
+		"prompt": {
+			"locked":   "▸ ▭ per continuare, ◁▷ + ▭ per tornare indietro.",
+			"unlocked": "▸ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
+			"error":    "▸ Tieni premuto ◁▷ + ▭ per tornare indietro."
+		},
+
+		"unlockWarning": {
+			"x76f041": "I chip X76F041 contano il numero di tentativi di sblocco con una password errata. In caso di troppi tentativi falliti, la cart diventerà PERMANENTEMENTE INUTILIZZABILE e non potrà essere più sbloccata (nemmeno con la password corretta).\n\nProcedere con la password selezionata?",
+			"x76f100": "I chip X76F100 contano il numero di tentativi di sblocco con una password errata. In caso di troppi tentativi falliti, tutti i dati esistenti verranno eliminati e la cart dovrà essere reinizializzata e riassociata al sistema se il gioco lo richiede.\n\nProcedere con la password selezionata?",
+			"zs01":    "I chip ZS01 contano il numero di tentativi di sblocco con una password errata. In caso di troppi tentativi falliti, tutti i dati esistenti verranno eliminati e la cart dovrà essere reinizializzata e riassociata al sistema se il gioco lo richiede.\n\nProcedere con la password selezionata?"
+		}
+	},
+
+	"ChecksumScreen": {
+		"title":  "▸ Checksum",
+		"prompt": "▸ Torna indietro con ▭.",
+
+		"bios":        "BIOS (512 KB):\t\t\t\t%08X\n",
+		"rtc":         "Memoria RTC (8184 byte):\t\t\t%08X\n",
+		"flash":       "Flash interna (16 MB):\t\t\t%08X\n",
+		"pcmcia":      "Flash card PCMCIA %d (primi %d MB):\t%08X\n",
+		"description": "Tutti i checksum sono calcolati utilizzando i parametri CRC32 standard (polinomio 04C11DB7, valore iniziale FFFFFFFF, ordine bit input e output invertito, bit di output negati)."
+	},
+
+	"ColorIntensityScreen": {
+		"title":  "▸ Test livelli colori monitor",
+		"prompt": "▸ Torna indietro con ▭.",
+
+		"white": "Bianco",
+		"red":   "Rosso",
+		"green": "Verde",
+		"blue":  "Blu"
+	},
+
+	"ConfirmScreen": {
+		"title": "Conferma operazione",
+		"no":    "No, torna indietro",
+		"yes":   "Sì, continua"
+	},
+
+	"FileBrowserScreen": {
+		"title":      "▸ Seleziona file",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"parentDir":   "[Directory superiore]",
+		"subdirError": "Impossibile enumerare i file contenuti nella directory selezionata. Il filesystem potrebbe essere danneggiato o altrimenti inaccessibile.\n\nPath: %s\nPremi il pulsante Test per mostrare i log di debug."
+	},
+
+	"FilePickerScreen": {
+		"title":      "▸ Seleziona unità IDE",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"host": "🔌 Filesystem host (PCDRV)",
+		"noFS": "nessun disco o FS non supportato",
+
+		"noDeviceError": "Non è stato rilevato alcun dispositivo sul bus IDE. Assicurati che le unità siano alimentate e abbiano i jumper (primario o secondario) appropriati.\n\nPremi il pulsante Test per mostrare i log di debug.",
+		"atapiError":    "Impossibile inizializzare l'unità CD-ROM o accedere al suo filesystem. Assicurati che un disco sia inserito e formattato come ISO9660. Il lettore ottico potrebbe anche essere incompatibile con il driver ATAPI usato da 573in1.\n\nPremi il pulsante Test per mostrare i log di debug.",
+		"ideError":      "Impossibile inizializzare l'unità o accedere al suo filesystem. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nPremi il pulsante Test per mostrare i log di debug.",
+		"noFilesError":  "Il filesystem dell'unità selezionata è vuoto e non contiene file o subdirectory."
+	},
+
+	"GeometryScreen": {
+		"title":  "▸ Test geometria e overscan monitor",
+		"prompt": "▸ Torna indietro con ▭."
+	},
+
+	"HexdumpScreen": {
+		"title":  "▸ Dump security cart",
+		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭."
+	},
+
+	"IDEInfoScreen": {
+		"title":  "▸ Informazioni unità IDE",
+		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭.",
+
+		"device": {
+			"header": {
+				"primary":   "Dispositivo IDE primario:\n",
+				"secondary": "Dispositivo IDE secondario:\n"
+			},
+
+			"commonInfo": "  Nome modello:\t\t%s\n  Revisione:\t%s\n  Numero di serie:\t%s\n",
+			"ataInfo":    "  Tipo unità:\tATA\n  Capacità:\t\t%llu MB (LBA %d-bit)\n",
+			"atapiInfo":  "  Tipo unità:\tATAPI\n  Tipo comandi:\t%d byte\n",
+			"hasTrim":    "  Supporta trimming dei settori\n",
+			"hasFlush":   "  Supporta flushing della cache\n",
+			"error":      "  Nessuna unità rilevata o errore di inizializzazione\n"
+		},
+		"fat": {
+			"header": {
+				"primary":   "Filesystem FAT su unità primaria:\n",
+				"secondary": "Filesystem FAT su unità secondaria:\n"
+			},
+
+			"info": "  Tipo:\t\t%s\n  Nome volume:\t%s\n  Numero di serie:\t%04X-%04X\n  Formattato:\t\t%llu MB\n  Spazio libero:\t%llu MB\n"
+		},
+		"iso9660": {
+			"header": {
+				"primary":   "Filesystem ISO9660 su unità primaria:\n",
+				"secondary": "Filesystem ISO9660 su unità secondaria:\n"
+			},
+
+			"info": "  Nome volume:\t%s\n  Formattato:\t\t%llu MB\n"
+		}
+	},
+
+	"JAMMATestScreen": {
+		"title":  "▸ Test pulsanti e input JAMMA",
+		"prompt": "▸ Tieni premuto ▭ per uscire.",
+
+		"noInputs":   "Nessun pulsante è attualmente premuto. Se un pulsante non appare qui quando premuto, controlla che il cablaggio sia corretto e il pulsante non sia danneggiato.\n",
+		"inputs":     "I seguenti pulsanti sono attualmente premuti:\n",
+		"inputsNote": "\nNota che nei cabinati DDR alcuni input possono apparire sempre premuti a causa della presenza dei PCB I/O delle pedane, che li utilizzano come bus di comunicazione.\n",
+
+		"p1": {
+			"left":    "  Player 1, joystick sinistra\t\tJAMMA pin 20\n",
+			"right":   "  Player 1, joystick destra\t\tJAMMA pin 21\n",
+			"up":      "  Player 1, joystick su\t\tJAMMA pin 18\n",
+			"down":    "  Player 1, joystick giù\t\tJAMMA pin 19\n",
+			"button1": "  Player 1, pulsante 1\t\tJAMMA pin 22\n",
+			"button2": "  Player 1, pulsante 2\t\tJAMMA pin 23\n",
+			"button3": "  Player 1, pulsante 3\t\tJAMMA pin 24\n",
+			"button4": "  Player 1, pulsante 4\t\tJAMMA pin 25\n",
+			"button5": "  Player 1, pulsante 5\t\tJAMMA pin 26\n",
+			"button6": "  Player 1, pulsante 6\n",
+			"start":   "  Player 1, pulsante start (▭)\tJAMMA pin 17\n"
+		},
+		"p2": {
+			"left":    "  Player 2, joystick sinistra\t\tJAMMA pin X\n",
+			"right":   "  Player 2, joystick destra\t\tJAMMA pin Y\n",
+			"up":      "  Player 2, joystick su\t\tJAMMA pin V\n",
+			"down":    "  Player 2, joystick giù\t\tJAMMA pin W\n",
+			"button1": "  Player 2, pulsante 1\t\tJAMMA pin Z\n",
+			"button2": "  Player 2, pulsante 2\t\tJAMMA pin a\n",
+			"button3": "  Player 2, pulsante 3\t\tJAMMA pin b\n",
+			"button4": "  Player 2, pulsante 4\t\tJAMMA pin c\n",
+			"button5": "  Player 2, pulsante 5\t\tJAMMA pin d\n",
+			"button6": "  Player 2, pulsante 6\n",
+			"start":   "  Player 2, pulsante start (▭)\tJAMMA pin U\n"
+		},
+
+		"coin1":   "  Gettoniera 1\t\t\tJAMMA pin 16\n",
+		"coin2":   "  Gettoniera 2\t\t\tJAMMA pin T\n",
+		"test":    "  Pulsante Test\t\t\tJAMMA pin 15\n",
+		"service": "  Pulsante Service\t\t\tJAMMA pin R\n"
+	},
+
+	"KeyEntryScreen": {
+		"title":  "Inserisci password",
+		"body":   "Inserisci l'ultima password usata per bloccare la security cart.\n\nMuovi il cursore con ◁▷, tieni premuto ▭ e usa ◁▷ per modificare la cifra evidenziata.",
+		"cancel": "Annulla",
+		"ok":     "Conferma"
+	},
+
+	"LanguageScreen": {
+		"title":      "▸ Seleziona lingua - Select language",
+		"prompt":     "Nota che le traduzioni in lingue diverse dall'inglese potrebbero non essere complete o accurate.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"en": "English",
+		"it": "Italiano"
+	},
+
+	"MainMenuScreen": {
+		"title":      "▸ 573in1",
+		"itemPrompt": "▸ Muovi con ◁▷, usa ▭ per confermare",
+
+		"cartInfo": {
+			"name":   "Gestisci security cart",
+			"prompt": "Mostra informazioni su, sblocca, leggi e modifica i contenuti della security cart attualmente inserita (se presente)."
+		},
+		"storageInfo": {
+			"name":   "Gestisci flash interna, flash card PCMCIA, RTC e BIOS",
+			"prompt": "Mostra informazioni su, leggi e modifica i contenuti dei dispositivi di storage integrati e delle flash card PCMCIA inserite."
+		},
+		"ideInfo": {
+			"name":   "Dettagli unità IDE e filesystem",
+			"prompt": "Mostra informazioni sui dispositivi IDE/ATAPI attualmente connessi (se presenti) e sui filesystem FAT e ISO9660 montati."
+		},
+		"runExecutable": {
+			"name":       "Avvia eseguibile da CD-ROM o hard disk",
+			"prompt":     "Carica e avvia un eseguibile System 573 dal CD-ROM o da un hard disk IDE o CF card (se connessi).",
+			"filePrompt": "Nota che gli eseguibili compilati per PS1 senza supporto per System 573 non saranno eseguiti se il watchdog non viene disattivato manualmente."
+		},
+		"setRTCTime": {
+			"name":   "Imposta data e ora RTC",
+			"prompt": "Regola la data e l'ora. L'orario impostato non persisterà se la batteria interna dell'RTC è scarica."
+		},
+		"testMenu": {
+			"name":   "Strumenti di test hardware",
+			"prompt": "Mostra schermate di test del monitor, controlla lo stato degli input o verifica che l'hardware del 573 o del cabinato funzioni correttamente."
+		},
+		"setLanguage": {
+			"name":   "Cambia lingua - Change language",
+			"prompt": "Passa ad un'altra lingua.\n(Switch to a different language.)"
+		},
+		"setResolution": {
+			"name":   "Cambia risoluzione schermo",
+			"prompt": "Passa ad un'altra risoluzione. Alcuni monitor e upscaler potrebbero non supportare tutte le risoluzioni."
+		},
+		"about": {
+			"name":   "Informazioni su 573in1",
+			"prompt": "Mostra informazioni su questo tool e le licenze open source."
+		},
+		"ejectCD": {
+			"name":   "Espelli CD-ROM",
+			"prompt": "Rimuovi il disco attualmente inserito nel lettore ottico. Usa questa opzione se il pulsante di espulsione dell'unità non è facilmente accessibile."
+		},
+		"reboot": {
+			"name":   "Riavvia",
+			"prompt": "Riavvia il sistema. Attiva il DIP switch 4 prima di selezionare questa opzione per avviare l'eseguibile installato nella flash interna (se presente)."
+		}
+	},
+
+	"MessageScreen": {
+		"title": {
+			"success": "Successo",
+			"warning": "Attenzione",
+			"error":   "Errore"
+		},
+
+		"ok": "Continua"
+	},
+
+	"QRCodeScreen": {
+		"title":  "▸ Dump security cart",
+		"prompt": "Scansiona il codice e usa lo script decodeDump.py fornito con 573in1 per decodificare la stringa risultante. Torna indietro con ▭."
+	},
+
+	"ReflashGameScreen": {
+		"title":      "▸ Select game to convert cartridge to",
+		"prompt":     "Assicurati di aver selezionato la regione corretta. Le security cart possono essere convertite solo ad altri giochi che utilizzano lo stesso tipo di EEPROM.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro"
+	},
+
+	"ResolutionScreen": {
+		"title":      "▸ Seleziona risoluzione schermo",
+		"prompt":     "Seleziona una modalità appropriata per il tuo monitor o upscaler. Le modalità interlacciate potrebbero essere soggette a flickering.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"progressive":   "%dx%d, progressivo",
+		"interlaced":    "%dx%d, interlacciato come 480i",
+		"interlaced480": "%dx%d, interlacciato"
+	},
+
+	"RTCTimeScreen": {
+		"title":  "Imposta data e ora RTC",
+		"body":   "Inserisci la data e l'orario correnti. Nota che i giochi accettano solo anni compresi tra 1970 e 2069.\n\nMuovi il cursore con ◁▷, tieni premuto ▭ e usa ◁▷ per modificare il campo evidenziato.",
+		"cancel": "Annulla",
+		"ok":     "Conferma"
+	},
+
+	"StorageActionsScreen": {
+		"title":      "▸ Opzioni storage",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"cardError":  "Lo slot PCMCIA selezionato è vuoto.\n\nSpegni il 573 e inserisci una flash card PCMCIA supportata per procedere. NON INSERIRE FLASH CARD A 573 ACCESO; ciò potrebbe danneggiare sia il 573 che la flash card.",
+
+		"runExecutable": {
+			"error": "Nel dispositivo selezionato non è presente un eseguibile System 573 valido o un CRC32 per verificarne l'integrità. Assicurati che i dati non siano danneggiati e che non siano stati precedentemente cancellati.",
+
+			"flash": {
+				"name":   "Avvia eseguibile da flash interna",
+				"prompt": "Carica e avvia l'eseguibile di boot installato nei primi settori della memoria flash interna (se presente)."
+			},
+			"pcmcia1": {
+				"name":   "Avvia eseguibile da flash card PCMCIA nello slot 1",
+				"prompt": "Carica e avvia l'eseguibile di boot installato nei primi settori della flash card PCMCIA inserita nello slot (se presente)."
+			},
+			"pcmcia2": {
+				"name":   "Avvia eseguibile da flash card PCMCIA nello slot 2",
+				"prompt": "Carica e avvia l'eseguibile di boot installato nei primi settori della flash card PCMCIA inserita nello slot (se presente)."
+			}
+		},
+		"checksum": {
+			"name":   "Calcola checksum flash interna, flash card, RTC e BIOS",
+			"prompt": "Calcola e mostra il CRC32 dei contenuti di tutti i dispositivi di storage integrati e delle flash card PCMCIA inserite."
+		},
+		"dump": {
+			"name":    "Salva dump di flash interna, flash card, RTC e BIOS",
+			"prompt":  "Salva un dump di tutte le ROM interne al 573 e di eventuali flash card PCMCIA inserite su un hard disk IDE o CF card (se connessi).",
+			"confirm": "I dump di flash interna, memoria RTC, BIOS e delle flash card PCMCIA presenti verranno salvati in una nuova directory nel filesystem FAT attualmente montato.\n\nDesideri procedere?"
+		},
+		"restore": {
+			"filePrompt": "Nota che i contenuti del file verranno scritti così come sono, senza aggiungere, modificare o correggere header o checksum.",
+			"confirm":    "Il contenuto del file selezionato sarà copiato sul dispositivo, sovrascrivendo permanentemente qualsiasi altro dato. Tutti i dati esistenti saranno cancellati prima del ripristino.\n\nDesideri procedere?",
+
+			"rtc": {
+				"name":   "Ripristina memoria RTC da dump",
+				"prompt": "Cancella la memoria dell'RTC e ripristina i suoi contenuti da un file sul CD-ROM o su un hard disk IDE o CF card (se connessi)."
+			},
+			"flash": {
+				"name":   "Ripristina flash interna da dump",
+				"prompt": "Cancella la memoria flash del 573 e ripristina i suoi contenuti da un file sul CD-ROM o su un hard disk IDE o CF card (se connessi)."
+			},
+			"pcmcia1": {
+				"name":   "Ripristina flash card PCMCIA nello slot 1 da dump",
+				"prompt": "Cancella la flash card e ripristina i suoi contenuti da un file sul CD-ROM o su un hard disk IDE o CF card (se connessi)."
+			},
+			"pcmcia2": {
+				"name":   "Ripristina flash card PCMCIA nello slot 2 da dump",
+				"prompt": "Cancella la flash card e ripristina i suoi contenuti da un file sul CD-ROM o su un hard disk IDE o CF card (se connessi)."
+			}
+		},
+		"erase": {
+			"confirm": "Tutti i dati contenuti nel dispositivo selezionato saranno permanentemente eliminati.\n\nDesideri procedere?",
+
+			"rtc": {
+				"name":   "Cancella memoria RTC",
+				"prompt": "Elimina tutti i dati attualmente presenti nella memoria dell'RTC, tra cui eventuali punteggi e impostazioni del gioco installato. La data e l'ora corrente verranno mantenute."
+			},
+			"flash": {
+				"name":   "Cancella flash interna",
+				"prompt": "Elimina tutti i dati attualmente presenti nella memoria flash interna, tra cui l'eventuale gioco installato."
+			},
+			"pcmcia1": {
+				"name":   "Cancella flash card PCMCIA nello slot 1",
+				"prompt": "Elimina tutti i dati attualmente presenti nella flash card PCMCIA, tra cui l'eventuale gioco installato."
+			},
+			"pcmcia2": {
+				"name":   "Cancella flash card PCMCIA nello slot 2",
+				"prompt": "Elimina tutti i dati attualmente presenti nella flash card PCMCIA, tra cui l'eventuale gioco installato."
+			}
+		},
+		"installExecutable": {
+			"filePrompt": "Nota che gli eseguibili compilati per PS1 senza supporto per System 573 non saranno eseguiti se il watchdog non viene disattivato manualmente.",
+			"confirm":    "Il file eseguibile selezionato sarà copiato sul dispositivo, sovrascrivendo permanentemente qualsiasi altro dato. Tutti i dati esistenti saranno cancellati prima dell'installazione.\n\nDesideri procedere?",
+
+			"flash": {
+				"name":   "Installa eseguibile su flash interna",
+				"prompt": "Sostituisci i contenuti della flash interna con un eseguibile personalizzato dal CD-ROM o da un hard disk IDE o CF card (se connessi), che verrà avviato automaticamente dal BIOS."
+			},
+			"pcmcia1": {
+				"name":   "Installa eseguibile su flash card PCMCIA nello slot 1",
+				"prompt": "Sostituisci i contenuti della flash card con un eseguibile personalizzato dal CD-ROM o da un hard disk IDE o CF card (se connessi), che verrà avviato automaticamente dal BIOS."
+			},
+			"pcmcia2": {
+				"name":   "Installa eseguibile su flash card PCMCIA nello slot 2",
+				"prompt": "Sostituisci i contenuti della flash card con un eseguibile personalizzato dal CD-ROM o da un hard disk IDE o CF card (se connessi), che verrà avviato automaticamente dal BIOS."
+			}
+		},
+		"resetFlashHeader": {
+			"name":    "Cancella header flash interna",
+			"prompt":  "Elimina i metadati relativi al gioco attualmente installato dalla memoria flash interna. Tutti gli altri dati saranno lasciati intatti.",
+			"confirm": "I primi 32 byte della flash interna saranno cancellati. Il gioco installato (se presente) non potrà più essere avviato fino a quando l'header non viene ripristinato.\n\nDesideri procedere?"
+		},
+		"matchFlashHeader": {
+			"name":    "Modifica header flash interna (usa ID PCB di questo 573)",
+			"prompt":  "Genera o ripara metadati nella flash interna in modo che un dump di un gioco ripristinato da un altro 573 o da un disco di installazione sia riconosciuto come un'installazione valida.",
+			"confirm": "I primi 32 byte della flash interna saranno sovrascritti con metadati sul gioco selezionato e l'ID del PCB I/O di questo 573.\n\nDesideri procedere?",
+			"error":   "Impossibile rilevare o inizializzare il PCB digital I/O di questo 573. Il gioco selezionato richiede un PCB digital I/O, il cui ID deve essere presente nell'header della flash interna."
+		},
+		"editFlashHeader": {
+			"name":    "Modifica header flash interna (use ID PCB personalizzato)",
+			"prompt":  "Genera o ripara metadati nella flash interna in modo che un dump di un gioco ripristinato da un altro 573 o da un disco di installazione sia riconosciuto come un'installazione valida.",
+			"confirm": "I primi 32 byte della flash interna saranno sovrascritti con metadati sul gioco selezionato e l'identificatore inserito.\n\nDesideri procedere?"
+		}
+	},
+
+	"StorageInfoScreen": {
+		"title":  "▸ Informazioni storage",
+		"prompt": "▸ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
+
+		"bios": {
+			"header": "BIOS:\n",
+
+			"kernelInfo": {
+				"sony":     "  Tipo kernel:\tkernel PlayStation\n  Versione kernel:\t%s\n  Data kernel:\t%04X-%02X-%02X\n",
+				"openbios": "  Tipo kernel:\tOpenBIOS\n  ID build kernel:\n    %s\n",
+				"unknown":  "  Tipo kernel:\tsconosciuto\n"
+			},
+			"shellInfo": {
+				"konami":  "  Tipo shell:\t\t%s\n  Nome file boot:\t%s\n",
+				"custom":  "  Tipo shell:\t\teseguibile personalizzato\n  Nome shell:\n    %s\n",
+				"unknown": "  Tipo shell:\t\tsconosciuto\n"
+			}
+		},
+		"rtc": {
+			"header":     "RTC:\n",
+			"batteryOK":  "  Livello batteria:\tsuperiore a 2.5V\n",
+			"batteryLow": "  Livello batteria:\tinferiore a 2.5V\n"
+		},
+		"flash": {
+			"header":   "Memoria flash interna:\n",
+			"info":     "  ID produttore:\t%02X (LSB), %02X (MSB)\n  ID chip:\t\t%02X (LSB), %02X (MSB)\n",
+			"bootable": "  Eseguibile di boot valido presente\n",
+
+			"pairing": {
+				"unsupported": "Questo gioco non si associa ad alcun PCB I/O",
+				"thisSystem":  "Associato al PCB I/O di questo 573",
+				"otherSystem": "Associato al PCB I/O di un altro 573"
+			},
+			"description": {
+				"unidentified": "È stato rilevato un header appartenente ad un gioco non supportato da 573in1.\n",
+				"identified":   "Il gioco attualmente installato è stato identificato come:\n  %s\n  %s\n",
+				"noHeader":     "Non è stato trovato alcun header, ma è presente un eseguibile valido. Se hai appena ripristinato un dump, usa l'opzione \"Modifica header flash interna\" per generare l'header.\n",
+				"blank":        "Non è stato trovato alcun header e non è presente un eseguibile di boot. È probabile che tutti i dati siano stati eliminati in precedenza.\n"
+			}
+		},
+		"pcmcia": {
+			"header":   "Flash card PCMCIA nello slot %d:\n",
+			"info":     "  ID produttore:\t%02X (LSB), %02X (MSB)\n  ID chip:\t\t%02X (LSB), %02X (MSB)\n",
+			"sizeInfo": "  Capacità rilevata:\t%d MB\n",
+			"bootable": "  Eseguibile di boot valido presente\n",
+			"noCard":   "  Nessuna flash card inserita\n"
+		}
+	},
+
+	"SystemIDEntryScreen": {
+		"title":  "Modifica ID sistema",
+		"body":   "Inserisci l'ID del nuovo PCB digital I/O. Per ottenere l'ID di un altro PCB, avvia 573in1 sul rispettivo 573.\n\nMuovi il cursore con ◁▷, tieni premuto ▭ e usa ◁▷ per modificare la cifra evidenziata.",
+		"cancel": "Annulla",
+		"ok":     "Conferma"
+	},
+
+	"TestMenuScreen": {
+		"title":      "▸ Strumenti di test hardware",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"jammaTest": {
+			"name":   "Test pulsanti e input JAMMA",
+			"prompt": "Mostra lo stato di tutti i pulsanti e degli altri input collegati al connettore JAMMA."
+		},
+		"audioTest": {
+			"name":   "Test output audio e amplificatore",
+			"prompt": "Riproduci un suono su uno dei canali di output audio e verifica il funzionamento dell'amplificatore integrato."
+		},
+		"colorIntensity": {
+			"name":   "Test livelli colori monitor",
+			"prompt": "Mostra una serie di barre di colore con e senza dithering in modo da facilitare la regolazione dei livelli del monitor."
+		},
+		"geometry": {
+			"name":   "Test geometria e overscan monitor",
+			"prompt": "Mostra una grlglia in modo da facilitare la calibrazione del monitor. Il rapporto d'aspetto può essere cambiato passando ad un'altra risoluzione dal menu principale."
+		}
+	},
+
+	"UnlockKeyScreen": {
+		"title":      "▸ Seleziona password di sblocco",
+		"prompt":     "Se la cart è stata precedentemente convertita, seleziona il gioco a cui è stata convertita. Se è stata cancellata, seleziona 00-00-00-00-00-00-00-00.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"autoUnlock":   "Seleziona password automaticamente (consigliato)",
+		"useCustomKey": "Inserisci password manualmente...",
+		"use00Key":     "Usa password vuota (00-00-00-00-00-00-00-00)",
+		"useFFKey":     "Usa password vuota (FF-FF-FF-FF-FF-FF-FF-FF)"
+	},
+
+	"WarningScreen": {
+		"title": "Importante",
+		"body":  "573in1 è un tool sperimentale fornito senza alcuna garanzia. Non è detto che funzioni e l'utilizzo improprio può rendere le tue security cart PERMANENTEMENTE INUTILIZZABILI.\n\nUsa questo tool a tuo rischio e pericolo. Non procedere se non sai cosa stai facendo.",
+
+		"cooldown": "Attendi... (%ds)",
+		"ok":       "▭ Continua"
+	},
+
+	"WorkerStatusScreen": {
+		"title": "Attendi..."
+	}
+}

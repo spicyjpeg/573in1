@@ -62,6 +62,7 @@ public:
 	void runExecutable(ui::Context &ctx);
 	void setRTCTime(ui::Context &ctx);
 	void testMenu(ui::Context &ctx);
+	void setLanguage(ui::Context &ctx);
 	void setResolution(ui::Context &ctx);
 	void about(ui::Context &ctx);
 	void ejectCD(ui::Context &ctx);

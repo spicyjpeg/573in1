@@ -43,7 +43,7 @@
 			"additionalProperties": false,
 
 			"patternProperties": {
-				"^[ -\\u00ff]$": {
+				"^[^\\u0000-\\u001f]$": {
 					"title": "Character metrics",
 					"type":  "object",
 

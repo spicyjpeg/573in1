@@ -133,6 +133,7 @@ class App {
 
 	friend class IDEInfoScreen;
 	friend class RTCTimeScreen;
+	friend class LanguageScreen;
 	friend class ResolutionScreen;
 	friend class AboutScreen;
 
@@ -178,6 +179,7 @@ private:
 	// misc.cpp
 	IDEInfoScreen    _ideInfoScreen;
 	RTCTimeScreen    _rtcTimeScreen;
+	LanguageScreen   _languageScreen;
 	ResolutionScreen _resolutionScreen;
 	AboutScreen      _aboutScreen;
 

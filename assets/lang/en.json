@@ -52,8 +52,8 @@
 		},
 		"cartDumpWorker": {
 			"save":    "Saving cartridge dump...\nDo not turn off the 573 or unplug drives.",
-			"success": "A dump of the cartridge and all its identifiers has been saved as %s in the root of the drive. The dump can be decoded and viewed using the decodeDump.py script provided with 573in1.",
-			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
+			"success": "A dump of the cartridge and all its identifiers has been successfully saved. The dump can be decoded and viewed using the decodeDump.py script provided with 573in1.\n\nFile: %s",
+			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"executableWorker": {
 			"init":          "Validating executable file...\nDo not turn off the 573 or unplug drives.",
@@ -93,9 +93,9 @@
 			"dumpFlash":   "Dumping internal flash...\nDo not turn off the 573 or unplug drives.",
 			"dumpPCMCIA1": "Dumping PCMCIA card in slot 1...\nDo not turn off the 573 or unplug drives.",
 			"dumpPCMCIA2": "Dumping PCMCIA card in slot 2...\nDo not turn off the 573 or unplug drives.",
-			"success":     "All dumps have been saved to the %s directory in the root of the drive.",
-			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
-			"fileError":   "An error occurred while saving one of the dumps. Ensure the drive has at least 32 MB of free space (256 MB if both PCMCIA cards are inserted) and the filesystem is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
+			"success":     "All dumps have been saved successfully.\n\nPath: %s",
+			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
+			"fileError":   "An error occurred while saving one of the dumps. Ensure the filesystem has enough free space available (32 MB minimum, more if PCMCIA cards are present) and is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"romEraseWorker": {
 			"erase":       "Erasing device...\nDo not turn off the 573.",
@@ -185,7 +185,7 @@
 			"name":       "Restore cartridge from dump",
 			"prompt":     "Wipe all data and restore the cartridge's contents from a previously saved dump on the CD-ROM, IDE hard drive or CF card (if connected).",
 			"filePrompt": "Note that the dump must have the same chip type, and should have the same DS2401 ID (if any), as the cartridge.",
-			"confirm":    "The contents of the cartridge's EEPROM will be altered and the unlocking key updated to match the selected dump.\n\nDo you wish to proceed?"
+			"confirm":    "The contents of the cartridge's EEPROM will be altered and the unlocking key updated to match the selected dump, permanently overwriting any other data.\n\nDo you wish to proceed?"
 		},
 		"reflash": {
 			"name":    "Erase and convert cartridge to another game",
@@ -194,7 +194,7 @@
 		},
 		"erase": {
 			"name":    "Erase cartridge",
-			"prompt":  "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by 573in1 using a master calendar.",
+			"prompt":  "Wipe all data including game identifiers. Erased cartridges can be flashed for use with games unsupported by 573in1 using a JVS master calendar.",
 			"confirm": "The contents of the cartridge's EEPROM will be erased, making it unusable until reflashed and resetting the unlocking key to 00-00-00-00-00-00-00-00. The cartridge ID will not be altered.\n\nDo you wish to proceed?"
 		},
 		"resetSystemID": {
@@ -316,12 +316,12 @@
 		"title":      "▸ Select IDE drive",
 		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
-		"host": "🖧 Host filesystem (PCDRV)",
+		"host": "🔌 Host filesystem (PCDRV)",
 		"noFS": "no disc or unsupported FS",
 
-		"noDeviceError": "No drives have been found and successfully initialized on the IDE bus. Make sure the drives are appropriately configured as primary or secondary and are receiving power.\n\nPress the Test button to view debug logs.",
+		"noDeviceError": "No drives have been detected on the IDE bus. Make sure the drives are receiving power and appropriately configured as primary or secondary.\n\nPress the Test button to view debug logs.",
 		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Your drive may also be incompatible with the ATAPI driver used by 573in1.\n\nPress the Test button to view debug logs.",
-		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus properly, set as secondary (if a CD-ROM drive is also present) and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
+		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem."
 	},
 
@@ -418,6 +418,15 @@
 		"ok":     "Confirm"
 	},
 
+	"LanguageScreen": {
+		"title":      "▸ Select language",
+		"prompt":     "Note that translations for languages other than English may not be 100% complete or accurate.",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+
+		"en": "English",
+		"it": "Italiano"
+	},
+
 	"MainMenuScreen": {
 		"title":      "▸ 573in1",
 		"itemPrompt": "▸ Use ◁▷ to move, select by pressing ▭",
@@ -446,6 +455,10 @@
 		"testMenu": {
 			"name":   "Hardware test suite",
 			"prompt": "Display monitor test patterns, check if all inputs are functional or test the system and cabinet's hardware."
+		},
+		"setLanguage": {
+			"name":   "Change language",
+			"prompt": "Switch to a different language."
 		},
 		"setResolution": {
 			"name":   "Change screen resolution",
@@ -491,15 +504,9 @@
 		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
 		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
-		"320x240p": "320x240 (4:3), progressive",
-		"320x240i": "320x240 (4:3), interlaced (line doubled)",
-		"368x240p": "368x240 (~16:10), progressive",
-		"368x240i": "368x240 (~16:10), interlaced (line doubled)",
-		"512x240p": "512x240 (~20:9), progressive",
-		"512x240i": "512x240 (~20:9), interlaced (line doubled)",
-		"640x240p": "640x240 (24:9), progressive",
-		"640x240i": "640x240 (24:9), interlaced (line doubled)",
-		"640x480i": "640x480 (4:3), interlaced"
+		"progressive":   "%dx%d, progressive",
+		"interlaced":    "%dx%d, interlaced as 480i",
+		"interlaced480": "%dx%d, interlaced"
 	},
 
 	"RTCTimeScreen": {
@@ -537,7 +544,7 @@
 		"dump": {
 			"name":    "Dump flash, cards, RTC and BIOS ROM",
 			"prompt":  "Dump the contents of the internal ROMs and any inserted flash cards to the IDE hard drive or CF card (if connected).",
-			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and the dumps saved to a new directory in the root of the hard drive or CF card currently configured as secondary on the IDE bus.\n\nDo you wish to proceed?"
+			"confirm": "The contents of the internal flash memory, RTC RAM, BIOS ROM and any inserted PCMCIA flash cards will be dumped and saved under a new directory on the currently mounted FAT filesystem.\n\nDo you wish to proceed?"
 		},
 		"restore": {
 			"filePrompt": "Note that the contents of the file will be written as-is, without adding or modifying any game-specific headers or checksums.",

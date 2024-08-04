@@ -52,7 +52,7 @@ _parseUTF8Character:
 .LmsbSet: # if (signExtend(codePoint) < 0)
 	# size_t length = countLeadingOnes(codePoint << 24);
 	sll   temp, codePoint, 24
-    mtc2  temp, GTE_LZCS
+	mtc2  temp, GTE_LZCS
 	li    contMask, (1 << 7)
 	nop
 	mfc2  length, GTE_LZCR

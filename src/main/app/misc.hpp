@@ -42,6 +42,15 @@ public:
 	void update(ui::Context &ctx);
 };
 
+class LanguageScreen : public ui::ListScreen {
+protected:
+	const char *_getItemName(ui::Context &ctx, int index) const;
+
+public:
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
 class ResolutionScreen : public ui::ListScreen {
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
