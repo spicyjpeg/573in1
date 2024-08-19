@@ -15,17 +15,23 @@
 # This script is roughly similar to the built-in synth_xilinx command, with the
 # appropriate modifications made in order to output gate netlists rather than
 # precompiled LUTs (which are not supported by the ISE mapper for Spartan-XL
-# devices). Note that more advanced features such as fast carry or distributed
-# LUT RAMs are not yet supported.
+# devices).
 
 ## Input and preliminary optimization
 
-read_verilog src/main.v
-read_verilog src/spartanxl/primitives.v
+read_verilog src/spartanxl/carry.v
+read_verilog src/spartanxl/io.v
+read_verilog src/spartanxl/logic.v
+read_verilog src/spartanxl/memory.v
+read_verilog src/main/alu.v
+read_verilog src/main/dram.v
+read_verilog src/main/main.v
+read_verilog src/main/mp3.v
+read_verilog src/main/util.v
 hierarchy -check -top FPGA
 
 proc
-flatten
+flatten -noscopeinfo
 tribuf -logic
 deminout
 opt_expr
@@ -46,9 +52,12 @@ share
 opt
 memory -nomap
 opt_clean
-memory_map
-opt -full
 
+memory_libmap -lib yosys/lutram.txt
+opt -fast -full
+memory_map
+
+opt -full
 techmap -map +/techmap.v
 opt -fast
 clean
@@ -57,26 +66,30 @@ clean
 
 dfflegalize -cell $_DFFE_PP?P_ r -cell $_DLATCH_PP?_ r
 opt_expr -mux_undef -noclkinv
-abc -liberty src/spartanxl/primitives.lib
-clean
+abc -liberty yosys/logic.lib
 
 #hilomap -hicell VCC P -locell GND G
-iopadmap -bits -inpad IBUF O:I -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore IFDX D -ignore IFDXI D -ignore BUFGLS I
-iopadmap -bits -outpad OBUF I:O -toutpad OBUFE E:I:O -tinoutpad IOBUFE E:O:I:IO -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD -ignore OFDX Q -ignore OFDXI Q -ignore OFDTX O -ignore OFDTXI O
-clkbufmap -buf BUFGLS O:I
-#extractinv -inv INV O:I
+#clkbufmap -buf BUFGLS O:I
+iopadmap -bits -inpad IBUF O:I -outpad OBUF I:O -toutpad _OBUFE E:I:O -tinoutpad _IOBUFE E:O:I:IO -ignore BUFGLS I -ignore IFDX D -ignore IFDXI D -ignore OFDX Q -ignore OFDXI Q -ignore OFDTX O -ignore OFDTXI O
 
-techmap -map src/spartanxl/map.v
+techmap -map yosys/cellmap.v
 clean
 
 ## Output
 
+# HACK: Yosys complains or inserts extraneous cells if these attributes, which
+# have already been processed, are not stripped out manually.
+setattr -unset init
+setattr -unset wand
+setattr -unset wor
+
 hierarchy -check
 autoname
-stat -tech xilinx
+stat
 check -noinit
 blackbox =A:whitebox
 
-show -notitle -colors 1 -format dot -viewer none -prefix build/synth
-write_verilog -noattr build/synth.v
-write_edif -top FPGA -pvector bra -lsbidx build/synth.edf
+write_verilog -norename build/synth.v
+
+iopadmap -bits -inpad IPAD IPAD -outpad OPAD OPAD -inoutpad IOPAD IOPAD -ignore IPAD IPAD -ignore OPAD OPAD -ignore IOPAD IOPAD
+write_edif -attrprop -top FPGA -pvector bra -lsbidx build/synth.edf

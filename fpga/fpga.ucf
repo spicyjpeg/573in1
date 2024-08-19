@@ -18,41 +18,41 @@ CONFIG PROHIBIT = "P154"; # DOUT
 
 ## System clocks
 
-TIMESPEC "TS_clock29M" = PERIOD "clock29M" 29.4500 MHz HIGH 50 %;
-#TIMESPEC "TS_clock19M" = PERIOD "clock19M" 19.6608 MHz HIGH 50 %;
+TIMESPEC "TS_clkMain" = PERIOD "clkMain" 29.4500 MHz HIGH 50 %;
+#TIMESPEC "TS_clkUART" = PERIOD "clkUART" 19.6608 MHz HIGH 50 %;
 
-NET "clockIn29M" LOC     = "P160";
-NET "clock29M"   TNM_NET = "clock29M";
-NET "clockIn19M" LOC     = "P207";
-#NET "clock19M"   TNM_NET = "clock19M";
+NET "clkInMain" LOC     = "P160";
+NET "clkMain"   TNM_NET = "clkMain";
+#NET "clkInUART" LOC     = "P207";
+#NET "clkUART"   TNM_NET = "clkUART";
 
 ## Host interface
 
-TIMESPEC "TS_hostAddress" = FROM "hostAddress" TO "FFS"      "TS_clock29M" / 1;
-TIMESPEC "TS_hostDataIn"  = FROM "hostData"    TO "FFS"      "TS_clock29M" / 1;
-TIMESPEC "TS_hostDataOut" = FROM "FFS"         TO "hostData" "TS_clock29M" / 1;
+TIMESPEC "TS_hostAddr"  = FROM "hostAddr" TO "FFS"      "TS_clkMain" / 1;
+TIMESPEC "TS_hostWData" = FROM "hostData" TO "FFS"      "TS_clkMain" / 1;
+TIMESPEC "TS_hostRData" = FROM "FFS"      TO "hostData" "TS_clkMain" / 1;
 
-NET "nHostRead"   LOC     = "P146";
-NET "nHostRead"   TNM_NET = "hostControl";
-NET "nHostWrite"  LOC     = "P145";
-NET "nHostWrite"  TNM_NET = "hostControl";
-NET "nHostEnable" LOC     = "P142";
-NET "nHostEnable" TNM_NET = "hostControl";
+NET "nHostCS"    LOC     = "P142";
+NET "nHostCS"    TNM_NET = "hostControl";
+NET "nHostRead"  LOC     = "P146";
+NET "nHostRead"  TNM_NET = "hostControl";
+NET "nHostWrite" LOC     = "P145";
+NET "nHostWrite" TNM_NET = "hostControl";
 
-NET "hostAddress[0]" LOC     = "P117";
-NET "hostAddress[0]" TNM_NET = "hostAddress";
-NET "hostAddress[1]" LOC     = "P116";
-NET "hostAddress[1]" TNM_NET = "hostAddress";
-NET "hostAddress[2]" LOC     = "P115";
-NET "hostAddress[2]" TNM_NET = "hostAddress";
-NET "hostAddress[3]" LOC     = "P114";
-NET "hostAddress[3]" TNM_NET = "hostAddress";
-NET "hostAddress[4]" LOC     = "P113";
-NET "hostAddress[4]" TNM_NET = "hostAddress";
-NET "hostAddress[5]" LOC     = "P112";
-NET "hostAddress[5]" TNM_NET = "hostAddress";
-NET "hostAddress[6]" LOC     = "P110";
-NET "hostAddress[6]" TNM_NET = "hostAddress";
+NET "hostAddr[0]" LOC     = "P117";
+NET "hostAddr[0]" TNM_NET = "hostAddr";
+NET "hostAddr[1]" LOC     = "P116";
+NET "hostAddr[1]" TNM_NET = "hostAddr";
+NET "hostAddr[2]" LOC     = "P115";
+NET "hostAddr[2]" TNM_NET = "hostAddr";
+NET "hostAddr[3]" LOC     = "P114";
+NET "hostAddr[3]" TNM_NET = "hostAddr";
+NET "hostAddr[4]" LOC     = "P113";
+NET "hostAddr[4]" TNM_NET = "hostAddr";
+NET "hostAddr[5]" LOC     = "P112";
+NET "hostAddr[5]" TNM_NET = "hostAddr";
+NET "hostAddr[6]" LOC     = "P110";
+NET "hostAddr[6]" TNM_NET = "hostAddr";
 
 NET "hostData[0]"  LOC     = "P138";
 NET "hostData[0]"  TNM_NET = "hostData";
@@ -89,50 +89,50 @@ NET "hostData[15]" TNM_NET = "hostData";
 
 ## SRAM interface
 
-NET "nSRAMRead"   LOC     = "P40";
-NET "nSRAMRead"   TNM_NET = "sramControl";
-NET "nSRAMRead"   FAST;
-NET "nSRAMWrite"  LOC     = "P55";
-NET "nSRAMWrite"  TNM_NET = "sramControl";
-NET "nSRAMWrite"  FAST;
-NET "nSRAMEnable" LOC     = "P34";
-NET "nSRAMEnable" TNM_NET = "sramControl";
-NET "nSRAMEnable" FAST;
+NET "nSRAMCS"    LOC     = "P34";
+NET "nSRAMCS"    TNM_NET = "sramCtrl";
+NET "nSRAMCS"    FAST;
+NET "nSRAMRead"  LOC     = "P40";
+NET "nSRAMRead"  TNM_NET = "sramCtrl";
+NET "nSRAMRead"  FAST;
+NET "nSRAMWrite" LOC     = "P55";
+NET "nSRAMWrite" TNM_NET = "sramCtrl";
+NET "nSRAMWrite" FAST;
 
-NET "sramAddress[0]"  LOC     = "P30";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[1]"  LOC     = "P32";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[2]"  LOC     = "P35";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[3]"  LOC     = "P37";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[4]"  LOC     = "P41";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[5]"  LOC     = "P43";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[6]"  LOC     = "P45";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[7]"  LOC     = "P47";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[8]"  LOC     = "P46";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[9]"  LOC     = "P44";
-NET "sramAddress[0]"  TNM_NET = "sramAddress";
-NET "sramAddress[10]" LOC     = "P36";
-NET "sramAddress[10]" TNM_NET = "sramAddress";
-NET "sramAddress[11]" LOC     = "P42";
-NET "sramAddress[11]" TNM_NET = "sramAddress";
-NET "sramAddress[12]" LOC     = "P49";
-NET "sramAddress[12]" TNM_NET = "sramAddress";
-NET "sramAddress[13]" LOC     = "P48";
-NET "sramAddress[13]" TNM_NET = "sramAddress";
-NET "sramAddress[14]" LOC     = "P56";
-NET "sramAddress[14]" TNM_NET = "sramAddress";
-NET "sramAddress[15]" LOC     = "P58";
-NET "sramAddress[15]" TNM_NET = "sramAddress";
-NET "sramAddress[16]" LOC     = "P57";
-NET "sramAddress[16]" TNM_NET = "sramAddress";
+NET "sramAddr[0]"  LOC     = "P30";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[1]"  LOC     = "P32";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[2]"  LOC     = "P35";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[3]"  LOC     = "P37";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[4]"  LOC     = "P41";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[5]"  LOC     = "P43";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[6]"  LOC     = "P45";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[7]"  LOC     = "P47";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[8]"  LOC     = "P46";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[9]"  LOC     = "P44";
+NET "sramAddr[0]"  TNM_NET = "sramAddr";
+NET "sramAddr[10]" LOC     = "P36";
+NET "sramAddr[10]" TNM_NET = "sramAddr";
+NET "sramAddr[11]" LOC     = "P42";
+NET "sramAddr[11]" TNM_NET = "sramAddr";
+NET "sramAddr[12]" LOC     = "P49";
+NET "sramAddr[12]" TNM_NET = "sramAddr";
+NET "sramAddr[13]" LOC     = "P48";
+NET "sramAddr[13]" TNM_NET = "sramAddr";
+NET "sramAddr[14]" LOC     = "P56";
+NET "sramAddr[14]" TNM_NET = "sramAddr";
+NET "sramAddr[15]" LOC     = "P58";
+NET "sramAddr[15]" TNM_NET = "sramAddr";
+NET "sramAddr[16]" LOC     = "P57";
+NET "sramAddr[16]" TNM_NET = "sramAddr";
 
 NET "sramData[0]" LOC     = "P28";
 NET "sramData[0]" TNM_NET = "sramData";
@@ -153,56 +153,69 @@ NET "sramData[7]" TNM_NET = "sramData";
 
 ## DRAM interface
 
-# TODO: trace these pins out
-NET "dramControl[0]"  LOC     = "P188";
-NET "dramControl[0]"  TNM_NET = "dramControl";
-NET "dramControl[1]"  LOC     = "P189";
-NET "dramControl[1]"  TNM_NET = "dramControl";
-NET "dramControl[2]"  LOC     = "P190";
-NET "dramControl[2]"  TNM_NET = "dramControl";
-NET "dramControl[3]"  LOC     = "P191";
-NET "dramControl[3]"  TNM_NET = "dramControl";
-NET "dramControl[4]"  LOC     = "P193";
-NET "dramControl[4]"  TNM_NET = "dramControl";
-NET "dramControl[5]"  LOC     = "P194";
-NET "dramControl[5]"  TNM_NET = "dramControl";
-NET "dramControl[6]"  LOC     = "P196";
-NET "dramControl[6]"  TNM_NET = "dramControl";
-NET "dramControl[7]"  LOC     = "P197";
-NET "dramControl[7]"  TNM_NET = "dramControl";
-NET "dramControl[8]"  LOC     = "P198";
-NET "dramControl[8]"  TNM_NET = "dramControl";
-NET "dramControl[9]"  LOC     = "P199";
-NET "dramControl[9]"  TNM_NET = "dramControl";
-NET "dramControl[10]" LOC     = "P200";
-NET "dramControl[10]" TNM_NET = "dramControl";
-NET "dramControl[11]" LOC     = "P201";
-NET "dramControl[11]" TNM_NET = "dramControl";
+NET "nDRAMRead"  LOC     = "P190";
+NET "nDRAMRead"  TNM_NET = "dramCtrl";
+NET "nDRAMRead"  FAST;
+NET "nDRAMWrite" LOC     = "P196";
+NET "nDRAMWrite" TNM_NET = "dramCtrl";
+NET "nDRAMWrite" FAST;
 
-NET "dramAddress[0]"  LOC     = "P186";
-NET "dramAddress[0]"  TNM_NET = "dramAddress";
-NET "dramAddress[1]"  LOC     = "P184";
-NET "dramAddress[1]"  TNM_NET = "dramAddress";
-NET "dramAddress[2]"  LOC     = "P180";
-NET "dramAddress[2]"  TNM_NET = "dramAddress";
-NET "dramAddress[3]"  LOC     = "P178";
-NET "dramAddress[3]"  TNM_NET = "dramAddress";
-NET "dramAddress[4]"  LOC     = "P176";
-NET "dramAddress[4]"  TNM_NET = "dramAddress";
-NET "dramAddress[5]"  LOC     = "P174";
-NET "dramAddress[5]"  TNM_NET = "dramAddress";
-NET "dramAddress[6]"  LOC     = "P175";
-NET "dramAddress[6]"  TNM_NET = "dramAddress";
-NET "dramAddress[7]"  LOC     = "P177";
-NET "dramAddress[7]"  TNM_NET = "dramAddress";
-NET "dramAddress[8]"  LOC     = "P179";
-NET "dramAddress[8]"  TNM_NET = "dramAddress";
-NET "dramAddress[9]"  LOC     = "P181";
-NET "dramAddress[9]"  TNM_NET = "dramAddress";
-NET "dramAddress[10]" LOC     = "P185";
-NET "dramAddress[10]" TNM_NET = "dramAddress";
-NET "dramAddress[11]" LOC     = "P187";
-NET "dramAddress[11]" TNM_NET = "dramAddress";
+NET "nDRAMRAS[0]" LOC     = "P191"; # 22H
+NET "nDRAMRAS[0]" TNM_NET = "dramCtrl";
+NET "nDRAMRAS[0]" FAST;
+NET "nDRAMRAS[1]" LOC     = "P189"; # 22J
+NET "nDRAMRAS[1]" TNM_NET = "dramCtrl";
+NET "nDRAMRAS[1]" FAST;
+NET "nDRAMRAS[2]" LOC     = "P193"; # 22G
+NET "nDRAMRAS[2]" TNM_NET = "dramCtrl";
+NET "nDRAMRAS[2]" FAST;
+
+NET "nDRAMLCAS[0]" LOC     = "P199"; # 22H
+NET "nDRAMLCAS[0]" TNM_NET = "dramCtrl";
+NET "nDRAMLCAS[0]" FAST;
+NET "nDRAMLCAS[1]" LOC     = "P201"; # 22J
+NET "nDRAMLCAS[1]" TNM_NET = "dramCtrl";
+NET "nDRAMLCAS[1]" FAST;
+NET "nDRAMLCAS[2]" LOC     = "P197"; # 22G
+NET "nDRAMLCAS[2]" TNM_NET = "dramCtrl";
+NET "nDRAMLCAS[2]" FAST;
+
+NET "nDRAMUCAS[0]" LOC     = "P198"; # 22H
+NET "nDRAMUCAS[0]" TNM_NET = "dramCtrl";
+NET "nDRAMUCAS[0]" FAST;
+NET "nDRAMUCAS[1]" LOC     = "P200"; # 22J
+NET "nDRAMUCAS[1]" TNM_NET = "dramCtrl";
+NET "nDRAMUCAS[1]" FAST;
+NET "nDRAMUCAS[2]" LOC     = "P194"; # 22G
+NET "nDRAMUCAS[2]" TNM_NET = "dramCtrl";
+NET "nDRAMUCAS[2]" FAST;
+
+NET "dramAddr[0]"  LOC     = "P186";
+NET "dramAddr[0]"  TNM_NET = "dramAddr";
+NET "dramAddr[1]"  LOC     = "P184";
+NET "dramAddr[1]"  TNM_NET = "dramAddr";
+NET "dramAddr[2]"  LOC     = "P180";
+NET "dramAddr[2]"  TNM_NET = "dramAddr";
+NET "dramAddr[3]"  LOC     = "P178";
+NET "dramAddr[3]"  TNM_NET = "dramAddr";
+NET "dramAddr[4]"  LOC     = "P176";
+NET "dramAddr[4]"  TNM_NET = "dramAddr";
+NET "dramAddr[5]"  LOC     = "P174";
+NET "dramAddr[5]"  TNM_NET = "dramAddr";
+NET "dramAddr[6]"  LOC     = "P175";
+NET "dramAddr[6]"  TNM_NET = "dramAddr";
+NET "dramAddr[7]"  LOC     = "P177";
+NET "dramAddr[7]"  TNM_NET = "dramAddr";
+NET "dramAddr[8]"  LOC     = "P179";
+NET "dramAddr[8]"  TNM_NET = "dramAddr";
+NET "dramAddr[9]"  LOC     = "P181";
+NET "dramAddr[9]"  TNM_NET = "dramAddr";
+NET "dramAddr[10]" LOC     = "P185";
+NET "dramAddr[10]" TNM_NET = "dramAddr";
+NET "dramAddr[11]" LOC     = "P187";
+NET "dramAddr[11]" TNM_NET = "dramAddr";
+NET "dramAddr[12]" LOC     = "P188";
+NET "dramAddr[12]" TNM_NET = "dramAddr";
 
 NET "dramData[0]"  LOC     = "P15";
 NET "dramData[0]"  TNM_NET = "dramData";
@@ -237,22 +250,32 @@ NET "dramData[14]" TNM_NET = "dramData";
 NET "dramData[15]" LOC     = "P20";
 NET "dramData[15]" TNM_NET = "dramData";
 
-## MP3 decoder interface
+## MP3 decoder control interface
 
-NET "mp3ClockIn"  LOC     = "P163";
-NET "mp3ClockIn"  TNM_NET = "mp3Clock";
-NET "mp3ClockOut" LOC     = "P162";
-NET "mp3ClockOut" TNM_NET = "mp3Clock";
+NET "mp3ClkIn"  LOC     = "P163";
+NET "mp3ClkIn"  TNM_NET = "mp3Clk";
+NET "mp3ClkOut" LOC     = "P162";
+NET "mp3ClkOut" TNM_NET = "mp3Clk";
 
-NET "mp3Reset" LOC = "P152";
-NET "mp3Ready" LOC = "P159";
-NET "mp3SDA"   LOC = "P150";
-NET "mp3SCL"   LOC = "P151";
+NET "mp3Reset" LOC     = "P152";
+NET "mp3Reset" TNM_NET = "mp3Control";
+NET "mp3Ready" LOC     = "P159";
+NET "mp3Ready" TNM_NET = "mp3Control";
+NET "mp3SDA"   LOC     = "P150";
+NET "mp3SDA"   TNM_NET = "mp3Control";
+NET "mp3SCL"   LOC     = "P151";
+NET "mp3SCL"   TNM_NET = "mp3Control";
 
-NET "mp3StatusCS"        LOC = "P149";
-NET "mp3StatusError"     LOC = "P168";
-NET "mp3StatusFrameSync" LOC = "P161";
-NET "mp3StatusDataReq"   LOC = "P148";
+NET "mp3StatusCS"        LOC     = "P149";
+NET "mp3StatusCS"        TNM_NET = "mp3Control";
+NET "mp3StatusError"     LOC     = "P168";
+NET "mp3StatusError"     TNM_NET = "mp3Control";
+NET "mp3StatusFrameSync" LOC     = "P161";
+NET "mp3StatusFrameSync" TNM_NET = "mp3Control";
+NET "mp3StatusDataReq"   LOC     = "P148";
+NET "mp3StatusDataReq"   TNM_NET = "mp3Control";
+
+## MP3 decoder data interface
 
 NET "mp3InSDIN"   LOC     = "P167";
 NET "mp3InSDIN"   TNM_NET = "mp3Data";
@@ -278,44 +301,15 @@ NET "dacLRCK" TNM_NET = "dacData";
 NET "dacMCLK" LOC     = "P97";
 NET "dacMCLK" TNM_NET = "dacData";
 
-## Light outputs
-
-NET "lightBankAH[0]" LOC = "P84";
-NET "lightBankAH[1]" LOC = "P83";
-NET "lightBankAH[2]" LOC = "P82";
-NET "lightBankAH[3]" LOC = "P81";
-
-NET "lightBankAL[0]" LOC = "P80";
-NET "lightBankAL[1]" LOC = "P76";
-NET "lightBankAL[2]" LOC = "P75";
-NET "lightBankAL[3]" LOC = "P74";
-
-NET "lightBankBH[0]" LOC = "P73";
-NET "lightBankBH[1]" LOC = "P72";
-NET "lightBankBH[2]" LOC = "P70";
-NET "lightBankBH[3]" LOC = "P69";
-
-NET "lightBankD[0]" LOC = "P68";
-NET "lightBankD[1]" LOC = "P67";
-NET "lightBankD[2]" LOC = "P60";
-NET "lightBankD[3]" LOC = "P59";
-
-## General-purpose inputs (unused)
-
-#NET "inputBank[0]" LOC = "P61";
-#NET "inputBank[1]" LOC = "P62";
-#NET "inputBank[2]" LOC = "P63";
-#NET "inputBank[3]" LOC = "P64";
-
 ## Serial interfaces
 
 # TODO: are pins 98 and 99 swapped?
-NET "networkTXEnable" LOC     = "P98";
-NET "networkTXEnable" TNM_NET = "network";
-NET "networkTX"       LOC     = "P99";
-NET "networkTX"       TNM_NET = "network";
-NET "networkRX"       LOC     = "P100";
-NET "networkRX"       TNM_NET = "network";
+NET "networkTXE" LOC     = "P98";
+NET "networkTXE" TNM_NET = "network";
+NET "networkTX"  LOC     = "P99";
+NET "networkTX"  TNM_NET = "network";
+NET "networkRX"  LOC     = "P100";
+NET "networkRX"  TNM_NET = "network";
 
 NET "serialTX"  LOC     = "P89";
 NET "serialTX"  TNM_NET = "serial";
@@ -330,7 +324,58 @@ NET "serialDTR" TNM_NET = "serial";
 NET "serialDSR" LOC     = "P85";
 NET "serialDSR" TNM_NET = "serial";
 
+## Light outputs
+
+NET "lightBankAH[0]" LOC     = "P84";
+NET "lightBankAH[0]" TNM_NET = "lights";
+NET "lightBankAH[1]" LOC     = "P83";
+NET "lightBankAH[1]" TNM_NET = "lights";
+NET "lightBankAH[2]" LOC     = "P82";
+NET "lightBankAH[2]" TNM_NET = "lights";
+NET "lightBankAH[3]" LOC     = "P81";
+NET "lightBankAH[3]" TNM_NET = "lights";
+
+NET "lightBankAL[0]" LOC     = "P80";
+NET "lightBankAL[0]" TNM_NET = "lights";
+NET "lightBankAL[1]" LOC     = "P76";
+NET "lightBankAL[1]" TNM_NET = "lights";
+NET "lightBankAL[2]" LOC     = "P75";
+NET "lightBankAL[2]" TNM_NET = "lights";
+NET "lightBankAL[3]" LOC     = "P74";
+NET "lightBankAL[3]" TNM_NET = "lights";
+
+NET "lightBankBH[0]" LOC     = "P73";
+NET "lightBankBH[0]" TNM_NET = "lights";
+NET "lightBankBH[1]" LOC     = "P72";
+NET "lightBankBH[1]" TNM_NET = "lights";
+NET "lightBankBH[2]" LOC     = "P70";
+NET "lightBankBH[2]" TNM_NET = "lights";
+NET "lightBankBH[3]" LOC     = "P69";
+NET "lightBankBH[3]" TNM_NET = "lights";
+
+NET "lightBankD[0]" LOC     = "P68";
+NET "lightBankD[0]" TNM_NET = "lights";
+NET "lightBankD[1]" LOC     = "P67";
+NET "lightBankD[1]" TNM_NET = "lights";
+NET "lightBankD[2]" LOC     = "P60";
+NET "lightBankD[2]" TNM_NET = "lights";
+NET "lightBankD[3]" LOC     = "P59";
+NET "lightBankD[3]" TNM_NET = "lights";
+
+## General-purpose inputs (unused)
+
+#NET "inputBank[0]" LOC     = "P61";
+#NET "inputBank[0]" TNM_NET = "inputs";
+#NET "inputBank[1]" LOC     = "P62";
+#NET "inputBank[1]" TNM_NET = "inputs";
+#NET "inputBank[2]" LOC     = "P63";
+#NET "inputBank[2]" TNM_NET = "inputs";
+#NET "inputBank[3]" LOC     = "P64";
+#NET "inputBank[3]" TNM_NET = "inputs";
+
 ## 1-wire bus
 
-NET "ds2433" LOC = "P107";
-NET "ds2401" LOC = "P109";
+NET "ds2433" LOC     = "P107";
+NET "ds2433" TNM_NET = "dsBus";
+NET "ds2401" LOC     = "P109";
+NET "ds2401" TNM_NET = "dsBus";

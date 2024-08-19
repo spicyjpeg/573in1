@@ -1,0 +1,44 @@
+# 573in1 - Copyright (C) 2022-2024 spicyjpeg
+#
+# 573in1 is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# 573in1 is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# 573in1. If not, see <https://www.gnu.org/licenses/>.
+
+ram distributed \_RAM16X1S {
+	abits 4;
+	width 1;
+	cost  1; # Uses a single F or G LUT
+	init  no_undef;
+	prune_rom;
+
+	port arsw "0" { clock posedge; }
+}
+
+ram distributed \_RAM16X1D {
+	abits 4;
+	width 1;
+	cost  2; # Uses both F and G LUTs
+	init  no_undef;
+	prune_rom;
+
+	port arsw "0" { clock posedge; }
+	port ar   "1" { }
+}
+
+ram distributed \_RAM32X1S {
+	abits 5;
+	width 1;
+	cost  2; # Uses both F and G LUTs
+	init  no_undef;
+	prune_rom;
+
+	port arsw "0" { clock posedge; }
+}
