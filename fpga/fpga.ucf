@@ -12,25 +12,70 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
+CONFIG PART     = "XCS40XL-PQ208-4";
 CONFIG PROHIBIT = "P77";  # /INIT
 CONFIG PROHIBIT = "P153"; # DIN
 CONFIG PROHIBIT = "P154"; # DOUT
 
+## Floorplan constraints
+
+SET "DRAMArbiter.apbWDataReg"      RLOC_ORIGIN = "R1C1";
+SET "DRAMArbiter.mainRDataReg"     RLOC_ORIGIN = "R1C2";
+SET "DRAMArbiter.auxRDataReg"      RLOC_ORIGIN = "R1C3";
+SET "MP3Descrambler.key1Reg"       RLOC_ORIGIN = "R1C4";
+SET "MP3Descrambler.key2Reg"       RLOC_ORIGIN = "R1C5";
+SET "MP3Descrambler.derivedKeyMux" RLOC_ORIGIN = "R1C6";
+SET "MP3Descrambler.swapper"       RLOC_ORIGIN = "R1C7";
+SET "MP3Descrambler.key3Reg"       RLOC_ORIGIN = "R9C8";
+SET "MP3Descrambler.xorMux"        RLOC_ORIGIN = "R1C8";
+SET "MP3Descrambler.byteSwapMux"   RLOC_ORIGIN = "R1C9";
+SET "MP3DataFeeder.baudRateGen"    RLOC_ORIGIN = "R9C9";
+SET "MP3DataFeeder.shiftReg"       RLOC_ORIGIN = "R1C10";
+SET "MP3DataFeeder.counter"        RLOC_ORIGIN = "R9C10";
+
+SET "MP3StateMachine.startAddrHReg" RLOC_ORIGIN = "R1C11";
+SET "MP3StateMachine.startAddrLReg" RLOC_ORIGIN = "R6C11";
+SET "MP3StateMachine.endAddrHReg"   RLOC_ORIGIN = "R1C12";
+SET "MP3StateMachine.endAddrLReg"   RLOC_ORIGIN = "R6C12";
+SET "DRAMArbiter.auxRAddrReg"       RLOC_ORIGIN = "R1C13";
+SET "DRAMArbiter.mainRAddrReg"      RLOC_ORIGIN = "R1C14";
+SET "DRAMArbiter.apbRAddrMux"       RLOC_ORIGIN = "R1C15";
+SET "DRAMArbiter.mainWAddrReg"      RLOC_ORIGIN = "R1C16";
+SET "DRAMArbiter.apbAddrMux"        RLOC_ORIGIN = "R1C17";
+SET "DRAMController.dramAddrMux"    RLOC_ORIGIN = "R1C18";
+SET "DRAMController.stateCounter"   RLOC_ORIGIN = "R1C19";
+SET "DRAMController.refreshTimer"   RLOC_ORIGIN = "R1C20";
+
+SET "MP3StateMachine.frameCountReg"   RLOC_ORIGIN = "R2C25";
+SET "MP3StateMachine.sampleDeltaReg"  RLOC_ORIGIN = "R2C26";
+SET "MP3StateMachine.sampleCountHReg" RLOC_ORIGIN = "R2C27";
+SET "MP3StateMachine.sampleCountLReg" RLOC_ORIGIN = "R1C28";
+
+SET "UARTTransmitter.counter"   RLOC_ORIGIN = "R10C1";
+SET "UARTTransmitter.fifo"      RLOC_ORIGIN = "R13C1";
+SET "UARTTransmitter.shiftReg"  RLOC_ORIGIN = "R12C2";
+SET "UARTReceiver.shiftReg"     RLOC_ORIGIN = "R12C3";
+SET "UARTReceiver.counter"      RLOC_ORIGIN = "R10C4";
+SET "UARTReceiver.fifo"         RLOC_ORIGIN = "R13C4";
+SET "BaudRateGenerator.divider" RLOC_ORIGIN = "R11C5";
+
 ## System clocks
 
 TIMESPEC "TS_clkMain" = PERIOD "clkMain" 29.4500 MHz HIGH 50 %;
-#TIMESPEC "TS_clkUART" = PERIOD "clkUART" 19.6608 MHz HIGH 50 %;
+TIMESPEC "TS_clkUART" = PERIOD "clkUART" 19.6608 MHz HIGH 50 %;
 
 NET "clkInMain" LOC     = "P160";
 NET "clkMain"   TNM_NET = "clkMain";
-#NET "clkInUART" LOC     = "P207";
-#NET "clkUART"   TNM_NET = "clkUART";
+NET "clkInUART" LOC     = "P207";
+NET "clkUART"   TNM_NET = "clkUART";
 
 ## Host interface
 
-TIMESPEC "TS_hostAddr"  = FROM "hostAddr" TO "FFS"      "TS_clkMain" / 1;
-TIMESPEC "TS_hostWData" = FROM "hostData" TO "FFS"      "TS_clkMain" / 1;
-TIMESPEC "TS_hostRData" = FROM "FFS"      TO "hostData" "TS_clkMain" / 1;
+# Bus timings are slightly overconstrained to reduce the chance of metastability
+# caused by the 573's bus running faster (33.8688 MHz).
+TIMESPEC "TS_hostAddr"  = FROM "hostAddr" TO "FFS"      "TS_clkMain" * 1.2;
+TIMESPEC "TS_hostWData" = FROM "hostData" TO "FFS"      "TS_clkMain" * 1.2;
+TIMESPEC "TS_hostRData" = FROM "FFS"      TO "hostData" "TS_clkMain" * 1.2;
 
 NET "nHostCS"    LOC     = "P142";
 NET "nHostCS"    TNM_NET = "hostControl";
@@ -362,16 +407,16 @@ NET "lightBankD[2]" TNM_NET = "lights";
 NET "lightBankD[3]" LOC     = "P59";
 NET "lightBankD[3]" TNM_NET = "lights";
 
-## General-purpose inputs (unused)
+## General-purpose inputs
 
-#NET "inputBank[0]" LOC     = "P61";
-#NET "inputBank[0]" TNM_NET = "inputs";
-#NET "inputBank[1]" LOC     = "P62";
-#NET "inputBank[1]" TNM_NET = "inputs";
-#NET "inputBank[2]" LOC     = "P63";
-#NET "inputBank[2]" TNM_NET = "inputs";
-#NET "inputBank[3]" LOC     = "P64";
-#NET "inputBank[3]" TNM_NET = "inputs";
+NET "inputBank[0]" LOC     = "P61";
+NET "inputBank[0]" TNM_NET = "inputs";
+NET "inputBank[1]" LOC     = "P62";
+NET "inputBank[1]" TNM_NET = "inputs";
+NET "inputBank[2]" LOC     = "P63";
+NET "inputBank[2]" TNM_NET = "inputs";
+NET "inputBank[3]" LOC     = "P64";
+NET "inputBank[3]" TNM_NET = "inputs";
 
 ## 1-wire bus
 

@@ -66,15 +66,17 @@ module OBUFT (input I, input T, output O);
 `endif
 endmodule
 
-/* I/O flip flops */
+/* IOB flip flops */
 
 module IFDX (input D, input C, input CE, output Q);
 `ifndef SYNTHESIS
 	reg    data = 1'b0;
 	assign Q    = data;
 
-	always @(posedge C)
-		data <= CE ? D : data;
+	always @(posedge C) begin
+		if (CE)
+			data <= D;
+	end
 `endif
 endmodule
 
@@ -83,38 +85,84 @@ module IFDXI (input D, input C, input CE, output Q);
 	reg    data = 1'b1;
 	assign Q    = data;
 
-	always @(posedge C)
-		data <= CE ? D : data;
+	always @(posedge C) begin
+		if (CE)
+			data <= D;
+	end
 `endif
 endmodule
 
 module OFDX (input D, input C, input CE, output Q);
 `ifndef SYNTHESIS
-	IFDX ff (.D(D), .C(C), .CE(CE), .Q(Q));
+	reg    data = 1'b0;
+	assign Q    = data;
+
+	always @(posedge C) begin
+		if (CE)
+			data <= D;
+	end
 `endif
 endmodule
 
 module OFDXI (input D, input C, input CE, output Q);
 `ifndef SYNTHESIS
-	IFDXI ff (.D(D), .C(C), .CE(CE), .Q(Q));
+	reg    data = 1'b1;
+	assign Q    = data;
+
+	always @(posedge C) begin
+		if (CE)
+			data <= D;
+	end
 `endif
 endmodule
 
 module OFDTX (input D, input C, input CE, input T, output O);
 `ifndef SYNTHESIS
-	wire   Q;
-	assign O = T ? 1'bz : Q;
+	reg    data = 1'b0;
+	assign O    = T ? 1'bz : data;
 
-	IFDX ff (.D(D), .C(C), .CE(CE), .Q(Q));
+	always @(posedge C) begin
+		if (CE)
+			data <= D;
+	end
 `endif
 endmodule
 
 module OFDTXI (input D, input C, input CE, input T, output O);
 `ifndef SYNTHESIS
-	wire   Q;
-	assign O = T ? 1'bz : Q;
+	reg    data = 1'b1;
+	assign O    = T ? 1'bz : data;
 
-	IFDXI ff (.D(D), .C(C), .CE(CE), .Q(Q));
+	always @(posedge C) begin
+		if (CE)
+			data <= D;
+	end
+`endif
+endmodule
+
+/* IOB latches */
+
+module ILDX_1 (input D, input G, input GE, output Q);
+`ifndef SYNTHESIS
+	reg    data = 1'b0;
+	assign Q    = data;
+
+	always @(D, G, GE) begin
+		if (~G & GE)
+			data <= D;
+	end
+`endif
+endmodule
+
+module ILDXI_1 (input D, input G, input GE, output Q);
+`ifndef SYNTHESIS
+	reg    data = 1'b1;
+	assign Q    = data;
+
+	always @(D, G, GE) begin
+		if (~G & GE)
+			data <= D;
+	end
 `endif
 endmodule
 

@@ -51,10 +51,10 @@ module LDCE_1 (input D, input G, input CLR, input GE, output Q);
 	reg    data = 1'b0;
 	assign Q    = data;
 
-	always @(*) begin
+	always @(D, G, CLR, GE) begin
 		if (CLR)
 			data <= 1'b0;
-		else if (GE)
+		else if (~G & GE)
 			data <= D;
 	end
 `endif
@@ -65,10 +65,10 @@ module LDPE_1 (input D, input G, input PRE, input GE, output Q);
 	reg    data = 1'b1;
 	assign Q    = data;
 
-	always @(*) begin
+	always @(D, G, PRE, GE) begin
 		if (PRE)
 			data <= 1'b1;
-		else if (GE)
+		else if (~G & GE)
 			data <= D;
 	end
 `endif

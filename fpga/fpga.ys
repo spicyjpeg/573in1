@@ -19,24 +19,29 @@
 
 ## Input and preliminary optimization
 
-read_verilog src/spartanxl/carry.v
-read_verilog src/spartanxl/io.v
-read_verilog src/spartanxl/logic.v
-read_verilog src/spartanxl/memory.v
-read_verilog src/main/alu.v
+read_verilog src/primitives/carry.v
+read_verilog src/primitives/io.v
+read_verilog src/primitives/logic.v
+read_verilog src/primitives/memory.v
+read_verilog src/spartanxl/alu.v
+read_verilog src/spartanxl/compare.v
+read_verilog src/spartanxl/counter.v
+read_verilog src/spartanxl/mux.v
+read_verilog src/spartanxl/register.v
 read_verilog src/main/dram.v
 read_verilog src/main/main.v
 read_verilog src/main/mp3.v
+read_verilog src/main/uart.v
 read_verilog src/main/util.v
 hierarchy -check -top FPGA
 
 proc
 flatten -noscopeinfo
-tribuf -logic
+tribuf
 deminout
 opt_expr
 opt_clean
-check
+#check
 opt -nodffe -nosdff
 fsm
 opt
@@ -86,7 +91,7 @@ setattr -unset wor
 hierarchy -check
 autoname
 stat
-check -noinit
+#check -mapped -noinit
 blackbox =A:whitebox
 
 write_verilog -norename build/synth.v

@@ -40,15 +40,15 @@ module FPGA (
 	output [12:0] dramAddr,
 	inout  [15:0] dramData,
 
-	output reg mp3ClkIn,
+	output reg mp3ClkIn = 1'b0,
 	input      mp3ClkOut,
 
-	output reg mp3Reset,
+	output reg mp3Reset = 1'b0,
 	input      mp3Ready,
 	inout      mp3SDA,
 	inout      mp3SCL,
 
-	output reg mp3StatusCS,
+	output reg mp3StatusCS = 1'b1,
 	input      mp3StatusError,
 	input      mp3StatusFrameSync,
 	input      mp3StatusDataReq,
@@ -60,9 +60,9 @@ module FPGA (
 	input  mp3OutBCLK,
 	input  mp3OutLRCK,
 
-	output reg dacSDIN,
-	output reg dacBCLK,
-	output reg dacLRCK,
+	output reg dacSDIN = 1'b0,
+	output reg dacBCLK = 1'b0,
+	output reg dacLRCK = 1'b0,
 	output     dacMCLK,
 
 	output networkTXE,
@@ -80,114 +80,122 @@ module FPGA (
 	output [3:0] lightBankAL,
 	output [3:0] lightBankBH,
 	output [3:0] lightBankD,
+	input  [3:0] inputBank,
 
 	inout ds2433,
 	inout ds2401
 );
-	genvar i;
+	genvar i, j;
 
 	/* System clocks */
 
 	(* keep *) wire clkMain, clkUART;
 
-	BUFGLS clkBufMain (.I(clkInMain), .O(clkMain));
-	BUFGLS clkBufUART (.I(clkInUART), .O(clkUART));
+	BUFGLS clkMainBuf (.I(clkInMain), .O(clkMain));
+	BUFGLS clkUARTBuf (.I(clkInUART), .O(clkUART));
 
 	/* Host interface */
 
 	wire        hostAPBEnable, hostAPBWrite;
-	reg         hostAPBReady = 1'b0;
-	wire [7:0]  hostAPBAddr;
-	wor  [15:0] hostAPBRData;
+	wire [6:0]  hostAPBAddr;
+	wire [15:0] hostAPBRData;
 	wire [15:0] hostAPBWData;
 
 	APBHostBridge #(
-		.ADDR_WIDTH(8),
+		.ADDR_WIDTH(7),
 		.DATA_WIDTH(16),
 
 		// The FPGA shall only respond to addresses in 0x80-0xef range, as
 		// 0xf0-0xff is used by the CPLD and 0x00-0x7f seems to be reserved for
 		// debugging hardware.
-		.VALID_ADDR_MASK   (8'b10000000),
-		.VALID_ADDR_VALUE  (8'b10000000),
-		.INVALID_ADDR_MASK (8'b01110000),
-		.INVALID_ADDR_VALUE(8'b01110000)
+		.VALID_ADDR_MASK   (7'b1000000),
+		.VALID_ADDR_VALUE  (7'b1000000),
+		.INVALID_ADDR_MASK (7'b0111000),
+		.INVALID_ADDR_VALUE(7'b0111000)
 	) hostBridge (
-		.clk  (clkMain),
-		.reset(1'b0),
+		.clk(clkMain),
 
-		// Bit 0 of the 573's address bus is not wired to the FPGA as all
-		// registers are 16 bits wide and aligned.
 		.nHostCS   (nHostCS),
 		.nHostRead (nHostRead),
 		.nHostWrite(nHostWrite),
-		.hostAddr  ({ hostAddr, 1'b0 }),
+		.hostAddr  (hostAddr),
 		.hostData  (hostData),
 
+		// The ready input is tied high as all accesses are processed in one
+		// cycle. This also ensures hostAPBEnable is not strobed for longer than
+		// a single cycle.
 		.apbEnable(hostAPBEnable),
 		.apbWrite (hostAPBWrite),
-		.apbReady (hostAPBReady),
+		.apbReady (1'b1),
 		.apbAddr  (hostAPBAddr),
 		.apbRData (hostAPBRData),
 		.apbWData (hostAPBWData)
 	);
 
-	/* Address decoding */
+	/* Host address decoder */
 
-	// All accesses are processed in two cycles, one to decode the address and
-	// one to actually dispatch the transaction.
-	reg [255:0] hostRegRead  = 256'h0;
-	reg [255:0] hostRegWrite = 256'h0;
+	wire [255:0] hostRegRead;
+	wire [255:0] hostRegWrite;
 
 	generate
-		for (i = 128; i < 256; i = i + 2) begin
-			wire cs = hostAPBEnable & (hostAPBAddr == i);
+		// Bit 0 of the 573's address bus is not wired to the FPGA as all
+		// registers are 16 bits wide and aligned. Bit 7 of the bus (hostAPBAddr
+		// bit 6) is not checked as it is always set for addresses 0x80-0xef.
+		for (i = 0; i < 14; i = i + 1) begin
+			wire       msbValid;
+			wire [3:0] lsb = { msbValid, hostAPBWrite, hostAPBAddr[1:0] };
 
-			always @(posedge clkMain) begin
-				hostRegRead [i] <= cs & ~hostAPBWrite;
-				hostRegWrite[i] <= cs &  hostAPBWrite;
+			CompareConst #(
+				.WIDTH(5),
+				.VALUE({ 1'b1, i[3:0] })
+			) readDec (
+				.value ({ hostAPBEnable, hostAPBAddr[5:2] }),
+				.result(msbValid)
+			);
+
+			for (j = 0; j < 4; j = j + 1) begin
+				localparam addr = { 1'b1, i[3:0], j[1:0], 1'b0 };
+
+				CompareConst #(
+					.WIDTH(4),
+					.VALUE({ 2'b10, j[1:0] })
+				) readDec (
+					.value (lsb),
+					.result(hostRegRead[addr])
+				);
+				CompareConst #(
+					.WIDTH(4),
+					.VALUE({ 2'b11, j[1:0] })
+				) writeDec (
+					.value (lsb),
+					.result(hostRegWrite[addr])
+				);
 			end
 		end
 	endgenerate
 
-	always @(posedge clkMain)
-		hostAPBReady <= hostAPBEnable;
-
 	/* Configuration and reset registers */
 
 	// TODO: find out which bits reset which blocks in Konami's bitstream
-	reg nFPGAReset0 = 1'b1;
-	reg nFPGAReset1 = 1'b1;
-	reg nFPGAReset2 = 1'b1;
-	reg nFPGAReset3 = 1'b1;
-
-	reg [1:0] mp3DescramblerMode      = 2'h0;
-	reg       resetCountOnStart       = 1'b1;
-	reg       disableCountOnIdleReset = 1'b1;
+	reg [3:0] mp3StateMachineCfg = 4'b1110;
+	reg [3:0] mp3DescramblerCfg  = 4'b0100;
+	reg [3:0] nFPGAReset         = 4'b1111;
 
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MAGIC]
-		? `BITSTREAM_MAGIC : 16'h0000;
+		? `BITSTREAM_MAGIC : 16'hzzzz;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_CONFIG]
 		? {
-			mp3DescramblerMode,
-			disableCountOnIdleReset,
-			resetCountOnStart,
-			4'h0,
-			`BITSTREAM_VERSION
-		} : 16'h0000;
+			mp3DescramblerCfg, mp3StateMachineCfg, `BITSTREAM_VERSION
+		} : 16'hzzzz;
 
 	always @(posedge clkMain) begin
 		if (hostRegWrite[`SYS573D_FPGA_CONFIG]) begin
-			resetCountOnStart       <= hostAPBWData[12];
-			disableCountOnIdleReset <= hostAPBWData[13];
-			mp3DescramblerMode      <= hostAPBWData[15:14];
+			mp3StateMachineCfg <= hostAPBWData[11:8];
+			mp3DescramblerCfg  <= hostAPBWData[15:12];
 		end
-		if (hostRegWrite[`SYS573D_FPGA_RESET]) begin
-			nFPGAReset0 <= hostAPBWData[12];
-			nFPGAReset1 <= hostAPBWData[13];
-			nFPGAReset2 <= hostAPBWData[14];
-			nFPGAReset3 <= hostAPBWData[15];
-		end
+
+		if (hostRegWrite[`SYS573D_FPGA_RESET])
+			nFPGAReset <= hostAPBWData[15:12];
 	end
 
 	/* SRAM interface (currently unused) */
@@ -235,80 +243,54 @@ module FPGA (
 
 	/* DRAM access arbiter */
 
-	wire [23:0] dramMainWAddr;
-	wire [23:0] dramMainRAddr;
+	// Each DRAM address is mapped to two different registers, one for bits
+	// 0-14 (the LSB is ignored as all accesses are word aligned) and the
+	// other for bits 15-23.
+	wire [23:0] hostAPBWDRAMAddr = { hostAPBWData[8:0], hostAPBWData[15:1] };
 	wire [15:0] dramMainRData;
 
+	wire        dramAuxRAddrWrite, dramAuxRDataAck, dramAuxRReady;
 	wire [23:0] dramAuxRAddr;
+	wire [23:0] dramAuxRAddrWData;
 	wire [15:0] dramAuxRData;
-	wire        dramAuxRAck, dramAuxRReady;
 
-	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_DRAM_DATA]
-		? dramMainRData                  : 16'h0000;
-	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_DRAM_PEEK]
-		? dramMainRData                  : 16'h0000;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MP3_PTR_H]
-		? { 7'h00, dramAuxRAddr[23:15] } : 16'h0000;
+		? { 7'h00, dramAuxRAddr[23:15] } : 16'hzzzz;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MP3_PTR_L]
-		? { dramAuxRAddr[14:0], 1'h0 }   : 16'h0000;
+		? { dramAuxRAddr[14:0], 1'h0 }   : 16'hzzzz;
 
-	// Each DRAM address is mapped to two different registers, one for bits 0-14
-	// (the LSB is ignored as the 573 writes byte offsets) and the other for
-	// bits 15-23.
-	wire [8:0]  hostDRAMAddrH = hostAPBWData[8:0];
-	wire [14:0] hostDRAMAddrL = hostAPBWData[15:1];
-	wor  [23:0] dramAddrValue;
-
-	assign dramAddrValue = hostRegWrite[`SYS573D_FPGA_DRAM_WR_PTR_H]
-		? { hostDRAMAddrH, dramMainWAddr[14:0] }  : 24'h000000;
-	assign dramAddrValue = hostRegWrite[`SYS573D_FPGA_DRAM_WR_PTR_L]
-		? { dramMainWAddr[23:15], hostDRAMAddrL } : 24'h000000;
-	assign dramAddrValue = hostRegWrite[`SYS573D_FPGA_DRAM_RD_PTR_H]
-		? { hostDRAMAddrH, dramMainRAddr[14:0] }  : 24'h000000;
-	assign dramAddrValue = hostRegWrite[`SYS573D_FPGA_DRAM_RD_PTR_L]
-		? { dramMainRAddr[23:15], hostDRAMAddrL } : 24'h000000;
-	assign dramAddrValue = hostRegWrite[`SYS573D_FPGA_MP3_PTR_H]
-		? { hostDRAMAddrH, dramAuxRAddr[14:0] }   : 24'h000000;
-	assign dramAddrValue = hostRegWrite[`SYS573D_FPGA_MP3_PTR_L]
-		? { dramAuxRAddr[23:15], hostDRAMAddrL }  : 24'h000000;
-
-	wire dramMainWAddrLoad = 1'b0
-		| hostRegWrite[`SYS573D_FPGA_DRAM_WR_PTR_H]
-		| hostRegWrite[`SYS573D_FPGA_DRAM_WR_PTR_L];
-	wire dramMainRAddrLoad = 1'b0
-		| hostRegWrite[`SYS573D_FPGA_DRAM_RD_PTR_H]
-		| hostRegWrite[`SYS573D_FPGA_DRAM_RD_PTR_L];
-	wire dramAuxRAddrLoad  = 1'b0
-		| hostRegWrite[`SYS573D_FPGA_MP3_PTR_H]
-		| hostRegWrite[`SYS573D_FPGA_MP3_PTR_L];
+	assign hostAPBRData = (
+		hostRegRead[`SYS573D_FPGA_DRAM_DATA] |
+		hostRegRead[`SYS573D_FPGA_DRAM_PEEK]
+	) ? dramMainRData : 16'hzzzz;
 
 	DRAMArbiter #(
-		// FIXME: enabling the round robin scheduler pushes the latency of some
-		// nets way too close to the 29.45 MHz limit...
-		.ADDR_WIDTH (24),
-		.DATA_WIDTH (16),
-		.ROUND_ROBIN(0)
+		.ADDR_H_WIDTH(9),
+		.ADDR_L_WIDTH(15),
+		.DATA_WIDTH  (16)
 	) dramArbiter (
 		.clk  (clkMain),
 		.reset(1'b0),
 
-		.addrValue    (dramAddrValue),
-		.mainWAddrLoad(dramMainWAddrLoad),
-		.mainRAddrLoad(dramMainRAddrLoad),
-		.auxRAddrLoad (dramAuxRAddrLoad),
+		.mainWAddrHWrite(hostRegWrite[`SYS573D_FPGA_DRAM_WR_PTR_H]),
+		.mainWAddrLWrite(hostRegWrite[`SYS573D_FPGA_DRAM_WR_PTR_L]),
+		.mainWrite      (hostRegWrite[`SYS573D_FPGA_DRAM_DATA]),
+		.mainWAddrWData (hostAPBWDRAMAddr),
+		.mainWData      (hostAPBWData),
 
-		.mainWAddr(dramMainWAddr),
-		.mainWData(hostAPBWData),
-		.mainWReq (hostRegWrite[`SYS573D_FPGA_DRAM_DATA]),
+		.mainRAddrHWrite(hostRegWrite[`SYS573D_FPGA_DRAM_RD_PTR_H]),
+		.mainRAddrLWrite(hostRegWrite[`SYS573D_FPGA_DRAM_RD_PTR_L]),
+		.mainRDataAck   (hostRegRead [`SYS573D_FPGA_DRAM_DATA]),
+		.mainRAddrWData (hostAPBWDRAMAddr),
+		.mainRData      (dramMainRData),
 
-		.mainRAddr(dramMainRAddr),
-		.mainRData(dramMainRData),
-		.mainRAck (hostRegRead[`SYS573D_FPGA_DRAM_DATA]),
-
-		.auxRAddr (dramAuxRAddr),
-		.auxRData (dramAuxRData),
-		.auxRAck  (dramAuxRAck),
-		.auxRReady(dramAuxRReady),
+		.auxRAddrHWrite(dramAuxRAddrWrite),
+		.auxRAddrLWrite(dramAuxRAddrWrite),
+		.auxRDataAck   (dramAuxRDataAck),
+		.auxRReady     (dramAuxRReady),
+		.auxRAddr      (dramAuxRAddr),
+		.auxRAddrWData (dramAuxRAddrWData),
+		.auxRData      (dramAuxRData),
 
 		.apbEnable(dramAPBEnable),
 		.apbWrite (dramAPBWrite),
@@ -320,7 +302,7 @@ module FPGA (
 
 	/* MP3 clock generator and DAC wiring */
 
-	reg dacMCLKOut;
+	reg dacMCLKOut = 1'b0;
 
 	always @(posedge clkMain)
 		mp3ClkIn   <= ~mp3ClkIn;
@@ -335,10 +317,17 @@ module FPGA (
 		dacLRCK <= mp3OutLRCK;
 	end
 
-	/* MP3 decoder reset and I2C interface */
+	/* MP3 decoder control interface */
 
-	reg mp3ReadyIn, mp3StatusErrorIn, mp3StatusFrameSyncIn, mp3StatusDataReqIn;
-	reg mp3SDAIn, mp3SDAOut, mp3SCLIn, mp3SCLOut;
+	reg mp3ReadyIn           = 1'b0;
+	reg mp3StatusErrorIn     = 1'b0;
+	reg mp3StatusFrameSyncIn = 1'b0;
+	reg mp3StatusDataReqIn   = 1'b0;
+
+	reg mp3SDAIn  = 1'b1;
+	reg mp3SCLIn  = 1'b1;
+	reg mp3SDAOut = 1'b1;
+	reg mp3SCLOut = 1'b1;
 
 	assign mp3SDA = mp3SDAOut ? 1'bz : 1'b0;
 	assign mp3SCL = mp3SCLOut ? 1'bz : 1'b0;
@@ -350,9 +339,9 @@ module FPGA (
 			mp3StatusErrorIn,
 			mp3StatusDataReqIn,
 			12'h000
-		} : 16'h0000;
+		} : 16'hzzzz;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MP3_I2C]
-		? { 2'h0, mp3SCLIn, mp3SDAIn, 12'h000 } : 16'h0000;
+		? { 2'h0, mp3SCLIn, mp3SDAIn, 12'h000 } : 16'hzzzz;
 
 	always @(posedge clkMain) begin
 		mp3ReadyIn           <= mp3Ready;
@@ -375,112 +364,141 @@ module FPGA (
 
 	/* MP3 playback state machine */
 
-	wire        mp3IsBusy;
+	wire        mp3Enabled, mp3Playing;
 	wire [15:0] mp3FrameCount;
-	wire [27:0] mp3SampleCount;
+	wire [31:0] mp3SampleCount;
 	wire [15:0] mp3SampleDelta;
 
-	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MP3_COUNTER]
-		? mp3FrameCount                   : 16'h0000;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MP3_FEED_STAT]
-		? { 3'h0, mp3IsBusy, 12'h000 }    : 16'h0000;
+		? { 3'h0, mp3Playing, 12'h000 } : 16'hzzzz;
+	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_MP3_COUNTER]
+		? mp3FrameCount                 : 16'hzzzz;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_DAC_COUNTER_H]
-		? { 4'h0, mp3SampleCount[27:16] } : 16'h0000;
+		? mp3SampleCount[31:16]         : 16'hzzzz;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_DAC_COUNTER_L]
-		? mp3SampleCount[15:0]            : 16'h0000;
+		? mp3SampleCount[15:0]          : 16'hzzzz;
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_DAC_COUNTER_D]
-		? mp3SampleDelta                  : 16'h0000;
-
-	wire sampleDeltaReset = 1'b0
-		| hostRegRead[`SYS573D_FPGA_DAC_COUNTER_H]
-		| hostRegRead[`SYS573D_FPGA_DAC_COUNTER_L]
-		| hostRegRead[`SYS573D_FPGA_DAC_COUNTER_D];
-
-	// Playback is automatically stopped once the current read pointer reaches
-	// the end address.
-	reg [23:0] mp3EndAddr;
-
-	always @(posedge clkMain) begin
-		if (hostRegWrite[`SYS573D_FPGA_MP3_END_PTR_H])
-			mp3EndAddr[23:15] <= hostDRAMAddrH;
-		if (hostRegWrite[`SYS573D_FPGA_MP3_END_PTR_L])
-			mp3EndAddr[14:0]  <= hostDRAMAddrL;
-	end
+		? mp3SampleDelta                : 16'hzzzz;
 
 	MP3StateMachine #(
-		// Note that 28 bits is the maximum size for a counter due to the
-		// requirement for its CLBs to be vertically adjacent (the XCS40XL has a
-		// 28x28 CLB grid).
-		.FRAME_COUNT_WIDTH (16),
-		.SAMPLE_COUNT_WIDTH(28),
-		.SAMPLE_DELTA_WIDTH(16)
+		.ADDR_H_WIDTH        (9),
+		.ADDR_L_WIDTH        (15),
+		.FRAME_COUNT_WIDTH   (16),
+		.SAMPLE_COUNT_H_WIDTH(16),
+		.SAMPLE_COUNT_L_WIDTH(16),
+		.SAMPLE_DELTA_WIDTH  (16)
 	) mp3StateMachine (
 		.clk  (clkMain),
 		.reset(1'b0),
+		.cfg  (mp3StateMachineCfg),
 
-		.resetCountOnStart      (resetCountOnStart),
-		.disableCountOnIdleReset(disableCountOnIdleReset),
+		.enabled  (mp3Enabled),
+		.playing  (mp3Playing),
+		.ctrlWrite(hostRegWrite[`SYS573D_FPGA_MP3_FEED_CTRL]),
+		.ctrlWData(hostAPBWData[15:13]),
 
-		.enabledValue     (hostAPBWData[13]),
-		.playingValue     (hostAPBWData[14]),
-		.frameCountEnValue(hostAPBWData[15]),
-		.loadFlags        (hostRegWrite[`SYS573D_FPGA_MP3_FEED_CTRL]),
+		.startAddrHWrite(hostRegWrite[`SYS573D_FPGA_MP3_PTR_H]),
+		.startAddrLWrite(hostRegWrite[`SYS573D_FPGA_MP3_PTR_L]),
+		.endAddrHWrite  (hostRegWrite[`SYS573D_FPGA_MP3_END_PTR_H]),
+		.endAddrLWrite  (hostRegWrite[`SYS573D_FPGA_MP3_END_PTR_L]),
+		.addrWData      (hostAPBWDRAMAddr),
 
-		.forceStop       (dramAuxRAddr == mp3EndAddr),
+		.feederAddrWrite(dramAuxRAddrWrite),
+		.feederReady    (dramAuxRReady),
+		.feederAddr     (dramAuxRAddr),
+		.feederAddrWData(dramAuxRAddrWData),
+
 		.sampleCountReset(hostRegWrite[`SYS573D_FPGA_DAC_COUNTER_L]),
-		.sampleDeltaReset(sampleDeltaReset),
+		.sampleDeltaReset(
+			hostRegRead[`SYS573D_FPGA_DAC_COUNTER_H] |
+			hostRegRead[`SYS573D_FPGA_DAC_COUNTER_L]
+		),
+		.sampleDeltaRead (hostRegRead [`SYS573D_FPGA_DAC_COUNTER_D]),
+		.frameCount      (mp3FrameCount),
+		.sampleCount     (mp3SampleCount),
+		.sampleDelta     (mp3SampleDelta),
 
-		.mp3FrameSync(mp3StatusFrameSync),
-		.mp3Error    (mp3StatusError),
-		.mp3SampleClk(mp3OutLRCK),
-
-		.isBusy     (mp3IsBusy),
-		.frameCount (mp3FrameCount),
-		.sampleCount(mp3SampleCount),
-		.sampleDelta(mp3SampleDelta)
+		.mp3FrameSync(mp3StatusFrameSyncIn),
+		.mp3Error    (mp3StatusErrorIn),
+		.mp3SampleClk(mp3OutLRCK)
 	);
 
 	/* MP3 decoder data feeder */
 
-	wire [15:0] decodedData;
+	wire        mp3DataReady = mp3Enabled & mp3Playing & dramAuxRReady;
+	wire [15:0] mp3Data;
+
+	assign mp3InLRCK = 1'b0;
 
 	MP3Descrambler mp3Descrambler (
 		.clk  (clkMain),
 		.reset(1'b0),
+		.cfg  (mp3DescramblerCfg),
 
-		.mode    (mp3DescramblerMode),
-		.keyValue(hostAPBWData),
-		.key1Load(hostRegWrite[`SYS573D_FPGA_MP3_KEY1]),
-		.key2Load(hostRegWrite[`SYS573D_FPGA_MP3_KEY2]),
-		.key3Load(hostRegWrite[`SYS573D_FPGA_MP3_KEY3]),
+		.key1Write(hostRegWrite[`SYS573D_FPGA_MP3_KEY1]),
+		.key2Write(hostRegWrite[`SYS573D_FPGA_MP3_KEY2]),
+		.key3Write(hostRegWrite[`SYS573D_FPGA_MP3_KEY3]),
+		.keyWData (hostAPBWData),
 
-		.dataIn    (dramAuxRData),
-		.dataOut   (decodedData),
-		.dataOutAck(dramAuxRAck)
+		.dataIn (dramAuxRData),
+		.dataOut(mp3Data),
+		.dataAck(dramAuxRDataAck)
 	);
-	MP3DataFeeder #(.DATA_WIDTH(16)) mp3DataFeeder (
-		.clk  (clkMain),
-		.reset(1'b0),
+	MP3DataFeeder #(
+		// The minimum I2S input bit clock period is ~28 cycles (rounded to 16
+		// cycles per bit clock state) as per the MAS3507D datasheet.
+		.DATA_BITS     (16),
+		.BIT_CLK_PERIOD(32)
+	) mp3DataFeeder (
+		.clk   (clkMain),
+		.reset (1'b0),
 
-		.dataIn     (decodedData),
-		.dataInAck  (dramAuxRAck),
-		.dataInReady(mp3IsBusy & dramAuxRReady),
+		.dataIn   (mp3Data),
+		.dataReady(mp3DataReady),
+		.dataAck  (dramAuxRDataAck),
 
 		.dataOut   (mp3InSDIN),
 		.dataOutClk(mp3InBCLK),
-		.dataOutReq(mp3StatusDataReq)
+		.dataOutReq(mp3StatusDataReqIn)
 	);
 
-	assign mp3InLRCK = 1'b0;
-
-	/* Serial interfaces (currently unused) */
+	/* Network interface (currently unused) */
 
 	assign networkTXE = 1'b1;
 	assign networkTX  = 1'b1;
 
-	assign serialTX  = 1'b1;
-	assign serialRTS = 1'b1;
-	assign serialDTR = 1'b1;
+	/* Serial interface */
+
+	wire [7:0]  uartFIFORData;
+	wire [15:0] uartCtrlRData;
+
+	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_UART_DATA]
+		? { 8'h00, uartFIFORData } : 16'hzzzz;
+	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_UART_CTRL]
+		? uartCtrlRData            : 16'hzzzz;
+
+	UART uart (
+		.clk    (clkMain),
+		.baudClk(clkUART),
+		.reset  (1'b0),
+
+		.fifoRead (hostRegRead [`SYS573D_FPGA_UART_DATA]),
+		.fifoRData(uartFIFORData),
+		.fifoWrite(hostRegWrite[`SYS573D_FPGA_UART_DATA]),
+		.fifoWData(hostAPBWData[7:0]),
+
+		.ctrlRead (hostRegRead [`SYS573D_FPGA_UART_CTRL]),
+		.ctrlRData(uartCtrlRData),
+		.ctrlWrite(hostRegWrite[`SYS573D_FPGA_UART_CTRL]),
+		.ctrlWData(hostAPBWData),
+
+		.tx (serialTX),
+		.rx (serialRX),
+		.rts(serialRTS),
+		.cts(serialCTS),
+		.dtr(serialDTR),
+		.dsr(serialDSR)
+	);
 
 	/* Light outputs */
 
@@ -511,7 +529,10 @@ module FPGA (
 
 	/* 1-wire bus */
 
-	reg ds2433In, ds2433Out, ds2401In, ds2401Out;
+	reg ds2433In  = 1'b1;
+	reg ds2401In  = 1'b1;
+	reg ds2433Out = 1'b0;
+	reg ds2401Out = 1'b0;
 
 	// The 1-wire pins are pulled low by writing 1 (rather than 0) to the
 	// respective register bits, but not inverted when read.
@@ -519,7 +540,7 @@ module FPGA (
 	assign ds2401 = ds2401Out ? 1'b0 : 1'bz;
 
 	assign hostAPBRData = hostRegRead[`SYS573D_FPGA_DS_BUS]
-		? { 3'h0, ds2401In, 3'h0, ds2433In, 8'h00 } : 16'h0000;
+		? { 3'h0, ds2401In, 3'h0, ds2433In, 8'h00 } : 16'hzzzz;
 
 	always @(posedge clkMain) begin
 		ds2433In <= ds2433;

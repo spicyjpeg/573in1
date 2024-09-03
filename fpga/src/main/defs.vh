@@ -24,8 +24,10 @@
 
 /* Register definitions */
 
-`define SYS573D_FPGA_MAGIC  8'h80
-`define SYS573D_FPGA_CONFIG 8'h82
+`define SYS573D_FPGA_MAGIC     8'h80
+`define SYS573D_FPGA_CONFIG    8'h82 // Custom register
+`define SYS573D_FPGA_UART_DATA 8'h84 // Custom register
+`define SYS573D_FPGA_UART_CTRL 8'h86 // Custom register
 
 `define SYS573D_FPGA_NET_ID 8'h90
 

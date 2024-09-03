@@ -1,10 +1,13 @@
 @echo off
 setlocal
 
-set TARGET=xcs40xl-pq208-4
+rem Modifying the settings below may yield significant improvements to the
+rem timings (but also major regressions).
 set COVER_MODE=speed
 set OPTIMIZATION_MODE=speed
 set OPTIMIZATION_LEVEL=normal
+set PLACER_EFFORT=3
+set ROUTER_EFFORT=3
 
 if not exist "%XILINX%\bin\nt\" (
 	echo The XILINX environment variable must be set to the root of a valid ^
@@ -18,10 +21,8 @@ cd /d "%~dp0\build"
 
 ngdbuild synth.edf synth.ngd ^
 	-uc ..\fpga.ucf ^
-	-p %TARGET% ^
 	|| exit /b 2
 map -o mapped.ncd synth.ngd mapped.pcf ^
-	-p %TARGET% ^
 	-cm %COVER_MODE% ^
 	-os %OPTIMIZATION_MODE% ^
 	-oe %OPTIMIZATION_LEVEL% ^
@@ -31,6 +32,8 @@ map -o mapped.ncd synth.ngd mapped.pcf ^
 
 par mapped.ncd fpga.ncd mapped.pcf ^
 	-w ^
+	-pl %PLACER_EFFORT% ^
+	-rl %ROUTER_EFFORT% ^
 	-detail ^
 	|| exit /b 3
 

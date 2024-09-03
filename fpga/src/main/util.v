@@ -14,55 +14,33 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* Edge detectors and synchronizers */
-
-module EdgeDetector (
+module EdgeDetector #(parameter STAGES = 2) (
 	input clk,
 	input reset,
+	input clkEn,
 
 	input  valueIn,
-	output delayedOut,
+	output valueOut,
 	output stableLow,
 	output stableHigh,
 	output rising,
 	output falling
 );
-	reg [1:0] state = 2'b00;
-
-	assign delayedOut = state[1];
-	assign stableLow  = (state == 2'b00);
-	assign stableHigh = (state == 2'b11);
-	assign rising     = (state == 2'b01);
-	assign falling    = (state == 2'b10);
-
-	always @(posedge clk, posedge reset) begin
-		if (reset)
-			state <= 2'b00;
-		else
-			state <= { state[0], valueIn };
-	end
-endmodule
-
-module Synchronizer #(parameter STAGES = 2) (
-	input clk,
-	input reset,
-
-	input  valueIn,
-	output valueOut
-);
 	reg [STAGES - 1:0] state = {STAGES{1'b0}};
 
-	assign valueOut = state[STAGES - 1];
+	assign valueOut   = state[STAGES - 1];
+	assign stableLow  = (state[STAGES - 1:STAGES - 2] == 2'b00);
+	assign stableHigh = (state[STAGES - 1:STAGES - 2] == 2'b11);
+	assign rising     = (state[STAGES - 1:STAGES - 2] == 2'b01);
+	assign falling    = (state[STAGES - 1:STAGES - 2] == 2'b10);
 
 	always @(posedge clk, posedge reset) begin
 		if (reset)
 			state <= {STAGES{1'b0}};
-		else
+		else if (clkEn)
 			state <= { state[STAGES - 2:0], valueIn };
 	end
 endmodule
-
-/* 573 to APB bridge */
 
 module APBHostBridge #(
 	parameter ADDR_WIDTH = 32,
@@ -74,7 +52,6 @@ module APBHostBridge #(
 	parameter INVALID_ADDR_VALUE = 1
 ) (
 	input clk,
-	input reset,
 
 	input                    nHostCS,
 	input                    nHostRead,
@@ -82,72 +59,65 @@ module APBHostBridge #(
 	input [ADDR_WIDTH - 1:0] hostAddr,
 	inout [DATA_WIDTH - 1:0] hostData,
 
-	output reg                    apbEnable = 1'b0,
-	output reg                    apbWrite  = 1'b0,
+	output                        apbEnable,
+	output                        apbWrite,
 	input                         apbReady,
-	output reg [ADDR_WIDTH - 1:0] apbAddr,
+	output     [ADDR_WIDTH - 1:0] apbAddr,
 	input      [DATA_WIDTH - 1:0] apbRData,
 	output reg [DATA_WIDTH - 1:0] apbWData
 );
-	wire hostAddrValid   = 1'b1
+	wire addrValid   = 1'b1
 		& ~nHostCS
 		& ((hostAddr & VALID_ADDR_MASK)   == VALID_ADDR_VALUE)
 		& ((hostAddr & INVALID_ADDR_MASK) != INVALID_ADDR_VALUE);
-	wire hostReadStrobe  = hostAddrValid & ~nHostRead & nHostWrite;
-	wire hostWriteStrobe = hostAddrValid &  nHostRead & ~nHostWrite;
+	wire readStrobe  = addrValid & ~nHostRead & nHostWrite;
+	wire writeStrobe = addrValid &  nHostRead & ~nHostWrite;
 
 	/* Read/write strobe edge detectors */
 
-	wire hostReadAsserted, hostWriteDelayed, hostWriteReleased;
+	wire readTrigger, writeTrigger;
+
+	wire updateState = ~apbEnable | apbReady;
+	wire dataReady   =  apbEnable & apbReady;
+
+	assign apbEnable = readTrigger | writeTrigger;
+	assign apbWrite  = writeTrigger;
 
 	EdgeDetector hostReadDet (
 		.clk  (clk),
-		.reset(reset),
+		.reset(1'b0),
+		.clkEn(updateState),
 
-		.valueIn(hostReadStrobe),
-		.rising (hostReadAsserted)
+		.valueIn(readStrobe),
+		.rising (readTrigger)
 	);
 	EdgeDetector hostWriteDet (
 		.clk  (clk),
-		.reset(reset),
+		.reset(1'b0),
+		.clkEn(updateState),
 
-		.valueIn   (hostWriteStrobe),
-		.delayedOut(hostWriteDelayed),
-		.falling   (hostWriteReleased)
+		.valueIn(writeStrobe),
+		.falling(writeTrigger)
 	);
 
-	/* Address and data buffers */
+	/* Data buffers */
 
 	reg [DATA_WIDTH - 1:0] hostRData;
 	reg                    hostDataDir = 1'b0;
 
+	assign apbAddr  = hostAddr;
 	assign hostData = hostDataDir ? hostRData : {DATA_WIDTH{1'bz}};
 
-	// Data written by the 573 must be latched as soon as possible once either
-	// the write strobe or chip select is deasserted.
-	always @(negedge hostWriteStrobe)
+	// Using separate clocks for apbRData and apbWData allows ISE to pack both
+	// into IOB flip flops (as the input and output flip flops of each IOB must
+	// share the same clock enable, but can have different clocks).
+	always @(negedge writeStrobe)
 		apbWData <= hostData;
 
-	/* State machine */
+	always @(posedge clk) begin
+		hostDataDir <= readStrobe & (hostDataDir | dataReady);
 
-	always @(posedge clk, posedge reset) begin
-		if (reset) begin
-			apbEnable   <= 1'b0;
-			apbWrite    <= 1'b0;
-			hostDataDir <= 1'b0;
-		end else if (~apbEnable) begin
-			// The address and write bit are not updated while a transaction is
-			// in progress.
-			apbEnable   <= hostReadAsserted | hostWriteReleased;
-			apbWrite    <= hostWriteDelayed;
-			apbAddr     <= hostAddr;
-			hostDataDir <= hostReadStrobe & hostDataDir;
-		end else if (apbReady) begin
-			apbEnable   <= 1'b0;
-			hostRData   <= apbRData;
-			hostDataDir <= hostReadStrobe;
-		end else begin
-			hostDataDir <= 1'b0;
-		end
+		if (dataReady)
+			hostRData <= apbRData;
 	end
 endmodule

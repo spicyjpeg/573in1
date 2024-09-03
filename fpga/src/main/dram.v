@@ -14,13 +14,6 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* DRAM controller */
-
-`define STATE_IDLE       2'h0
-`define STATE_REFRESHING 2'h1
-`define STATE_READING    2'h2
-`define STATE_WRITING    2'h3
-
 module DRAMController #(
 	parameter ROW_WIDTH  = 8,
 	parameter COL_WIDTH  = 8,
@@ -32,14 +25,15 @@ module DRAMController #(
 	parameter _CHIP_INDEX_WIDTH = $clog2(NUM_CHIPS),
 	parameter _APB_ADDR_WIDTH   = ROW_WIDTH + COL_WIDTH + _CHIP_INDEX_WIDTH,
 	parameter _DRAM_ADDR_WIDTH  = (ROW_WIDTH > COL_WIDTH) ? ROW_WIDTH : COL_WIDTH,
-	parameter _REF_TIMER_WIDTH  = $clog2(REFRESH_PERIOD + 1)
+	parameter _REF_TIMER_WIDTH  = $clog2(REFRESH_PERIOD + 1),
+	parameter _REFRESH_RELOAD   = {_REF_TIMER_WIDTH{1'b1}} - REFRESH_PERIOD
 ) (
 	input clk,
 	input reset,
 
 	input                              apbEnable,
 	input                              apbWrite,
-	output                             apbReady,
+	output reg                         apbReady = 1'b0,
 	input      [_APB_ADDR_WIDTH - 1:0] apbAddr,
 	output reg [DATA_WIDTH      - 1:0] apbRData,
 	input      [DATA_WIDTH      - 1:0] apbWData,
@@ -53,63 +47,49 @@ module DRAMController #(
 );
 	genvar i;
 
-	/* State register */
-
-	reg [1:0] currentState = `STATE_IDLE;
-
-	wire isIdle       = (currentState == `STATE_IDLE);
-	wire isRefreshing = (currentState == `STATE_REFRESHING);
-	wire isReading    = (currentState == `STATE_READING);
-	wire isWriting    = (currentState == `STATE_WRITING);
-
-	/* Counters */
+	/* State machine counters */
 
 	wire [2:0] stateCycle;
-	wire       isLastCycle = (stateCycle == 3'h5);
+	wire       isIdle, refreshTimeout;
 
-	wire refreshTimeout;
-	wire refreshTrigger = refreshTimeout & (isIdle | isLastCycle);
-
-	Counter #(
-		.ID   ("DRAMController.stateCounter"),
-		.WIDTH(3)
-	) stateCounter (
-		.clk    (clk),
-		.reset  (reset),
-		.countEn(~isIdle),
-
-		.loadEn  (isLastCycle),
-		.valueIn (3'h0),
-		.valueOut(stateCycle)
-	);
-	Counter #(
-		.ID   ("DRAMController.refreshTimer"),
-		.WIDTH(_REF_TIMER_WIDTH)
-	) refreshTimer (
-		.clk    (clk),
-		.reset  (reset),
-		.countEn(~refreshTimeout),
-
-		.loadEn  (refreshTimeout & isRefreshing),
-		.valueIn ((1 << _REF_TIMER_WIDTH) - REFRESH_PERIOD),
-		.carryOut(refreshTimeout)
-	);
-
-	/* State machine */
-
-	assign apbReady = isLastCycle & (isReading | isWriting);
+	wire trigger      = apbEnable | refreshTimeout;
+	reg  isRefreshing = 1'b0;
 
 	always @(posedge clk, posedge reset) begin
 		if (reset)
-			currentState <= `STATE_IDLE;
-		else if (refreshTrigger)
-			// Refreshing is always given priority over reading or writing.
-			currentState <= `STATE_REFRESHING;
-		else if (isLastCycle)
-			currentState <= `STATE_IDLE;
-		else if (isIdle & apbEnable)
-			currentState <= apbWrite ? `STATE_WRITING : `STATE_READING;
+			isRefreshing <= 1'b0;
+		else if (isIdle)
+			isRefreshing <= refreshTimeout;
 	end
+
+	Counter #(
+		.ID       ("DRAMController.stateCounter"),
+		.WIDTH    (3),
+		.INIT     (3'h7),
+		.CARRY_OUT(1)
+	) stateCounter (
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(~isIdle | trigger),
+
+		.load    (3'h0),
+		.valueIn (3'h0),
+		.valueOut(stateCycle),
+		.carryOut(isIdle)
+	);
+	Counter #(
+		.ID       ("DRAMController.refreshTimer"),
+		.WIDTH    (_REF_TIMER_WIDTH),
+		.CARRY_OUT(1)
+	) refreshTimer (
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(~refreshTimeout | isRefreshing),
+
+		.load    ({_REF_TIMER_WIDTH{isRefreshing}}),
+		.valueIn (_REFRESH_RELOAD[_REF_TIMER_WIDTH - 1:0]),
+		.carryOut(refreshTimeout)
+	);
 
 	/* Address and data buffers */
 
@@ -121,34 +101,47 @@ module DRAMController #(
 
 	assign dramData = dramDataDir ? apbWData : {DATA_WIDTH{1'bz}};
 
-	/* Control signal generator */
+	/* Control signal sequencer */
 
 	/*
-	 * All DRAM accesses are performed in 6 cycles. Read and write transactions
-	 * are done by asserting /CAS after /RAS for a single chip, alongside either
-	 * /OE (nDRAMRead) or /WE (nDRAMWrite).
-	 *             __    __    __    __    __    __
-	 * clk        |  |__|  |__|  |__|  |__|  |__|  |__
-	 *            __________________             _____
+	 * All DRAM accesses are performed in 6 cycles, plus 1 cycle of delay
+	 * between sequential accesses. Read and write transactions are done by
+	 * asserting /CAS after /RAS for a single chip, alongside either /OE
+	 * (nDRAMRead) or /WE (nDRAMWrite).
+	 *             __    __    __    __    __    __    __
+	 * clk        |  |__|  |__|  |__|  |__|  |__|  |__|  |__|
+	 *             _____ _____ _____ _____ _____ _____ _____
+	 * stateCycle <__0__X__1__X__2__X__3__X__4__X__5__X__6__>
+	 *            __________________             ____________
 	 * nDRAMRead                    \___________/
-	 *            ______                         _____
+	 *            ______                         ____________
 	 * nDRAMWrite       \_______________________/
-	 *            ______                         _____
+	 *            ______                         ____________
 	 * nDRAMRAS         \_______________________/
-	 *            __________________             _____
+	 *            __________________             ____________
 	 * nDRAMCAS                     \___________/
-	 *             ___________ ___________ ___________
-	 * dramAddr   <____Row____X__Column___X___________
+	 *             ___________ ___________ __________________
+	 * dramAddr   <____Row____X__Column___X__________________
+	 *                                           _____
+	 * apbReady   ______________________________/     \______
+	 *            ______________________________ ____________
+	 * apbRData   ______________________________X____Data____
 	 */
 	wire nReadStrobe  = 1'b1
-		& (stateCycle != 3'h3)
-		& (stateCycle != 3'h4);
-	wire nWriteStrobe = 1'b0
-		| (stateCycle == 3'h0)
-		| (stateCycle == 3'h5);
+		& (stateCycle != 3'h2)
+		& (stateCycle != 3'h3);
+	wire nWriteStrobe = 1'b1
+		& (stateCycle != 3'h0)
+		& (stateCycle != 3'h1)
+		& (stateCycle != 3'h2)
+		& (stateCycle != 3'h3);
+	wire sendColAddr = 1'b0
+		| (stateCycle == 3'h1)
+		| (stateCycle == 3'h2);
 
-	wire [NUM_CHIPS - 1:0] nReadWriteRAS;
-	wire [NUM_CHIPS - 1:0] nReadWriteCAS;
+	wire [NUM_CHIPS        - 1:0] nReadWriteRAS;
+	wire [NUM_CHIPS        - 1:0] nReadWriteCAS;
+	wire [_DRAM_ADDR_WIDTH - 1:0] dramAddrOut;
 
 	generate
 		if (_CHIP_INDEX_WIDTH) begin
@@ -157,10 +150,10 @@ module DRAMController #(
 			];
 
 			for (i = 0; i < NUM_CHIPS; i = i + 1) begin
-				wire cs = (chipIndex == i);
+				wire sel = (chipIndex == i);
 
-				assign nReadWriteRAS[i] = ~(cs & ~nWriteStrobe);
-				assign nReadWriteCAS[i] = ~(cs & ~nReadStrobe);
+				assign nReadWriteRAS[i] = ~(sel & ~nWriteStrobe);
+				assign nReadWriteCAS[i] = ~(sel & ~nReadStrobe);
 			end
 		end else begin
 			assign nReadWriteRAS[0] = nWriteStrobe;
@@ -168,120 +161,155 @@ module DRAMController #(
 		end
 	endgenerate
 
-	wire [_DRAM_ADDR_WIDTH - 1:0] readWriteAddr = stateCycle[1]
-		? { {_DRAM_ADDR_WIDTH - COL_WIDTH{1'b0}}, colIndex }
-		: { {_DRAM_ADDR_WIDTH - ROW_WIDTH{1'b0}}, rowIndex };
+	Multiplexer #(
+		.ID   ("DRAMController.dramAddrMux"),
+		.WIDTH(_DRAM_ADDR_WIDTH)
+	) dramAddrMux (
+		.sel(sendColAddr),
+
+		.valueA  ({ {_DRAM_ADDR_WIDTH - ROW_WIDTH{1'b0}}, rowIndex }),
+		.valueB  ({ {_DRAM_ADDR_WIDTH - COL_WIDTH{1'b0}}, colIndex }),
+		.valueOut(dramAddrOut)
+	);
 
 	/*
 	 * Refreshing is handled slightly differently and issued to all chips at
 	 * once as a /CAS-before-/RAS sequence. Providing a valid address is not
 	 * necessary as a refresh counter is built into each DRAM chip.
-	 *             __    __    __    __    __    __
-	 * clk        |  |__|  |__|  |__|  |__|  |__|  |__
-	 *            ____________                   _____
+	 *             __    __    __    __    __    __    __
+	 * clk        |  |__|  |__|  |__|  |__|  |__|  |__|  |__|
+	 *             _____ _____ _____ _____ _____ _____ _____
+	 * stateCycle <__0__X__1__X__2__X__3__X__4__X__5__X__6__>
+	 *            ____________                   ____________
 	 * nDRAMRAS               \_________________/
-	 *            ______                   ___________
+	 *            ______                   __________________
 	 * nDRAMCAS         \_________________/
 	 */
-	wire nRefreshRAS = 1'b0
-		| (stateCycle == 3'h0)
-		| (stateCycle == 3'h1)
-		| (stateCycle == 3'h5);
-	wire nRefreshCAS = 1'b0
-		| (stateCycle == 3'h0)
-		| (stateCycle == 3'h4)
-		| (stateCycle == 3'h5);
+	wire nRefreshRAS = 1'b1
+		& (stateCycle != 3'h1)
+		& (stateCycle != 3'h2)
+		& (stateCycle != 3'h3);
+	wire nRefreshCAS = 1'b1
+		& (stateCycle != 3'h0)
+		& (stateCycle != 3'h1)
+		& (stateCycle != 3'h2);
+
+	/* Output registers */
+
+	wire sampleData = ~isRefreshing & (stateCycle == 3'h4);
 
 	always @(posedge clk) begin
-		nDRAMRead   <= ~isReading | nReadStrobe;
-		nDRAMWrite  <= ~isWriting | nWriteStrobe;
-		nDRAMRAS    <= isIdle |
-			(isRefreshing ? {NUM_CHIPS{nRefreshRAS}} : nReadWriteRAS);
-		nDRAMCAS    <= isIdle |
-			(isRefreshing ? {NUM_CHIPS{nRefreshCAS}} : nReadWriteCAS);
-		dramAddr    <= readWriteAddr;
-		dramDataDir <= isWriting;
+		nDRAMRead   <= isRefreshing |  apbWrite | nReadStrobe;
+		nDRAMWrite  <= isRefreshing | ~apbWrite | nWriteStrobe;
+		nDRAMRAS    <= isRefreshing ? {NUM_CHIPS{nRefreshRAS}} : nReadWriteRAS;
+		nDRAMCAS    <= isRefreshing ? {NUM_CHIPS{nRefreshCAS}} : nReadWriteCAS;
+		dramAddr    <= dramAddrOut;
+		dramDataDir <= apbWrite & ~nWriteStrobe;
 
-		if (stateCycle == 3'h4)
+		if (sampleData) begin
+			apbReady <= 1'b1;
 			apbRData <= dramData;
+		end else begin
+			apbReady <= 1'b0;
+		end
 	end
 endmodule
 
-/* DRAM access arbiter */
-
 module DRAMArbiter #(
-	parameter ADDR_WIDTH  = 32,
-	parameter DATA_WIDTH  = 32,
-	parameter ROUND_ROBIN = 1
+	parameter ADDR_H_WIDTH = 16,
+	parameter ADDR_L_WIDTH = 16,
+	parameter DATA_WIDTH   = 32,
+	parameter ROUND_ROBIN  = 1,
+
+	parameter _ADDR_WIDTH = ADDR_H_WIDTH + ADDR_L_WIDTH
 ) (
 	input clk,
 	input reset,
 
-	input [ADDR_WIDTH - 1:0] addrValue,
-	input                    mainWAddrLoad,
-	input                    mainRAddrLoad,
-	input                    auxRAddrLoad,
+	input                      mainWAddrHWrite,
+	input                      mainWAddrLWrite,
+	input                      mainWrite,
+	output reg                 mainWReady = 1'b1,
+	output [_ADDR_WIDTH - 1:0] mainWAddr,
+	input  [_ADDR_WIDTH - 1:0] mainWAddrWData,
+	input  [DATA_WIDTH  - 1:0] mainWData,
 
-	output     [ADDR_WIDTH - 1:0] mainWAddr,
-	input      [DATA_WIDTH - 1:0] mainWData,
-	input                         mainWReq,
-	output reg                    mainWReady = 1'b1,
+	input                      mainRAddrHWrite,
+	input                      mainRAddrLWrite,
+	input                      mainRDataAck,
+	output reg                 mainRReady = 1'b1,
+	output [_ADDR_WIDTH - 1:0] mainRAddr,
+	input  [_ADDR_WIDTH - 1:0] mainRAddrWData,
+	output [DATA_WIDTH  - 1:0] mainRData,
 
-	output     [ADDR_WIDTH - 1:0] mainRAddr,
-	output reg [DATA_WIDTH - 1:0] mainRData,
-	input                         mainRAck,
-	output reg                    mainRReady = 1'b1,
+	input                      auxRAddrHWrite,
+	input                      auxRAddrLWrite,
+	input                      auxRDataAck,
+	output reg                 auxRReady = 1'b1,
+	output [_ADDR_WIDTH - 1:0] auxRAddr,
+	input  [_ADDR_WIDTH - 1:0] auxRAddrWData,
+	output [DATA_WIDTH  - 1:0] auxRData,
 
-	output     [ADDR_WIDTH - 1:0] auxRAddr,
-	output reg [DATA_WIDTH - 1:0] auxRData,
-	input                         auxRAck,
-	output reg                    auxRReady = 1'b1,
-
-	output reg                    apbEnable = 1'b0,
-	output                        apbWrite,
-	input                         apbReady,
-	output reg [ADDR_WIDTH - 1:0] apbAddr,
-	input      [DATA_WIDTH - 1:0] apbRData,
-	output reg [DATA_WIDTH - 1:0] apbWData
+	output reg                 apbEnable = 1'b0,
+	output                     apbWrite,
+	input                      apbReady,
+	output [_ADDR_WIDTH - 1:0] apbAddr,
+	input  [DATA_WIDTH  - 1:0] apbRData,
+	output [DATA_WIDTH  - 1:0] apbWData
 );
 	/* Address counters */
 
 	wire mainWAddrInc, mainRAddrInc, auxRAddrInc;
 
 	Counter #(
-		.ID   ("DRAMArbiter.mainWAddrReg"),
-		.WIDTH(ADDR_WIDTH)
+		.ID      ("DRAMArbiter.mainWAddrReg"),
+		.WIDTH   (_ADDR_WIDTH),
+		.CARRY_IN(1)
 	) mainWAddrReg (
-		.clk    (clk),
-		.reset  (reset),
-		.countEn(mainWAddrInc),
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(1'b1),
 
-		.loadEn  (mainWAddrLoad),
-		.valueIn (addrValue),
+		.carryIn (mainWAddrInc),
+		.load    ({
+			{ADDR_H_WIDTH{mainWAddrHWrite}},
+			{ADDR_L_WIDTH{mainWAddrLWrite}}
+		}),
+		.valueIn (mainWAddrWData),
 		.valueOut(mainWAddr)
 	);
 	Counter #(
-		.ID   ("DRAMArbiter.mainRAddrReg"),
-		.WIDTH(ADDR_WIDTH)
+		.ID      ("DRAMArbiter.mainRAddrReg"),
+		.WIDTH   (_ADDR_WIDTH),
+		.CARRY_IN(1)
 	) mainRAddrReg (
-		.clk    (clk),
-		.reset  (reset),
-		.countEn(mainRAddrInc),
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(1'b1),
 
-		.loadEn  (mainRAddrLoad),
-		.valueIn (addrValue),
+		.carryIn (mainRAddrInc),
+		.load    ({
+			{ADDR_H_WIDTH{mainRAddrHWrite}},
+			{ADDR_L_WIDTH{mainRAddrLWrite}}
+		}),
+		.valueIn (mainRAddrWData),
 		.valueOut(mainRAddr)
 	);
 	Counter #(
-		.ID   ("DRAMArbiter.auxRAddrReg"),
-		.WIDTH(ADDR_WIDTH)
+		.ID      ("DRAMArbiter.auxRAddrReg"),
+		.WIDTH   (_ADDR_WIDTH),
+		.CARRY_IN(1)
 	) auxRAddrReg (
-		.clk    (clk),
-		.reset  (reset),
-		.countEn(auxRAddrInc),
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(1'b1),
 
-		.loadEn  (auxRAddrLoad),
-		.valueIn (addrValue),
+		.carryIn (auxRAddrInc),
+		.load    ({
+			{ADDR_H_WIDTH{auxRAddrHWrite}},
+			{ADDR_L_WIDTH{auxRAddrLWrite}}
+		}),
+		.valueIn (auxRAddrWData),
 		.valueOut(auxRAddr)
 	);
 
@@ -306,7 +334,9 @@ module DRAMArbiter #(
 				if (reset)
 					roundRobinReg <= 2'b00;
 				else if (~isBusy)
-					roundRobinReg <= { roundRobinReg[0], ~roundRobinReg[1] };
+					roundRobinReg <= {
+						roundRobinReg[0] & ~roundRobinReg[1], ~roundRobinReg[1]
+					};
 			end
 		end else begin
 			// Choose which transaction to process based on its priority; writes
@@ -319,17 +349,87 @@ module DRAMArbiter #(
 		end
 	endgenerate
 
+	/* Address multiplexer */
+
+	wire [_ADDR_WIDTH - 1:0] currentRAddr;
+
+	assign apbWrite = doMainWrite;
+
+	Multiplexer #(
+		.ID   ("DRAMArbiter.apbRAddrMux"),
+		.WIDTH(_ADDR_WIDTH)
+	) apbRAddrMux (
+		.sel(doMainRead),
+
+		.valueA  (auxRAddr),
+		.valueB  (mainRAddr),
+		.valueOut(currentRAddr)
+	);
+	MultiplexerReg #(
+		.ID   ("DRAMArbiter.apbAddrMux"),
+		.WIDTH(_ADDR_WIDTH)
+	) apbAddrMux (
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(1'b1),
+		.sel  (doMainWrite),
+
+		.valueA  (currentRAddr),
+		.valueB  (mainWAddr),
+		.valueOut(apbAddr)
+	);
+
+	/* Data registers */
+
+	wire dataReady = apbEnable & apbReady;
+
+	Register #(
+		.ID   ("DRAMArbiter.mainRDataReg"),
+		.WIDTH(DATA_WIDTH)
+	) mainRDataReg (
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(doMainRead & dataReady),
+
+		.valueIn (apbRData),
+		.valueOut(mainRData)
+	);
+	Register #(
+		.ID   ("DRAMArbiter.auxRDataReg"),
+		.WIDTH(DATA_WIDTH)
+	) auxRDataReg (
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(doAuxRead & dataReady),
+
+		.valueIn (apbRData),
+		.valueOut(auxRData)
+	);
+	Register #(
+		.ID   ("DRAMArbiter.apbWDataReg"),
+		.WIDTH(DATA_WIDTH)
+	) apbWDataReg (
+		.clk  (clk),
+		.reset(reset),
+		.clkEn(~doMainWrite & mainWrite),
+
+		.valueIn (mainWData),
+		.valueOut(apbWData)
+	);
+
 	/* State machine */
 
-	wire isLastCycle = apbEnable & apbReady;
-
 	// Read pointers are incremented immediately when the respective read is
-	// acknowledged as the arbiter moves onto caching the next word, while the
-	// write pointer is only updated after the transaction is carried out.
-	assign apbWrite     = doMainWrite;
-	assign mainWAddrInc = doMainWrite & isLastCycle;
-	assign mainRAddrInc = mainRReady  & mainRAck;
-	assign auxRAddrInc  = auxRReady   & auxRAck;
+	// acknowledged as the arbiter moves onto prefetching the next word, while
+	// the write pointer is only updated after the transaction is carried out.
+	// This also means that settting a read address will invalidate the
+	// respective prefetched word.
+	wire mainRDataReq = mainRDataAck | mainRAddrHWrite | mainRAddrLWrite;
+	wire auxRDataReq  = auxRDataAck  | auxRAddrHWrite  | auxRAddrLWrite;
+
+	assign mainWAddrInc = doMainWrite & dataReady;
+	assign mainRAddrInc = mainRReady  & mainRDataAck;
+	assign auxRAddrInc  = auxRReady   & auxRDataAck;
 
 	always @(posedge clk, posedge reset) begin
 		if (reset) begin
@@ -338,40 +438,27 @@ module DRAMArbiter #(
 			auxRReady  <= 1'b1;
 			apbEnable  <= 1'b0;
 		end else begin
-			apbEnable <= isBusy & ~isLastCycle;
+			apbEnable <= isBusy & ~dataReady;
 
-			if (doMainWrite) begin
-				mainWReady <= isLastCycle;
-				apbAddr    <= mainWAddr;
-			end else if (mainWReq) begin
+			if (doMainWrite)
+				mainWReady <= dataReady;
+			else if (mainWrite)
 				// Writes are only carried out on demand, so a write request is
 				// the only way to invalidate the pointer.
 				mainWReady <= 1'b0;
-				apbWData   <= mainWData;
-			end
 
-			if (doMainRead) begin
-				mainRReady <= isLastCycle;
-				apbAddr    <= mainRAddr;
-
-				if (isLastCycle)
-					mainRData <= apbRData;
-			end else if (mainRAck | mainRAddrLoad) begin
+			if (doMainRead)
+				mainRReady <= dataReady;
+			else if (mainRDataReq)
 				// As the arbiter reads data in advance, read pointers can be
 				// invalidated by either acknowledging the last word read (thus
 				// incrementing the pointer) or loading a new address.
 				mainRReady <= 1'b0;
-			end
 
-			if (doAuxRead) begin
-				auxRReady <= isLastCycle;
-				apbAddr   <= auxRAddr;
-
-				if (isLastCycle)
-					auxRData <= apbRData;
-			end else if (auxRAck | auxRAddrLoad) begin
+			if (doAuxRead)
+				auxRReady <= dataReady;
+			else if (auxRDataReq)
 				auxRReady <= 1'b0;
-			end
 		end
 	end
 endmodule

@@ -109,6 +109,13 @@ endmodule
 
 /* I/O cells */
 
+module \$_TBUF_ (input A, input E, output Y);
+	wire T;
+
+	INV  _TECHMAP_REPLACE_.inv  (.I(E), .O(T));
+	BUFT _TECHMAP_REPLACE_.tbuf (.I(A), .T(T), .O(Y));
+endmodule
+
 module _OBUFE (input I, input E, output O);
 	wire T;
 
