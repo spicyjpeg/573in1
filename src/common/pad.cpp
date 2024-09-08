@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "common/pad.hpp"
 #include "ps1/registers.h"
 #include "ps1/system.h"
@@ -134,7 +135,7 @@ bool Port::pollPad(void) {
 	) >= 4) {
 		if (response[1] == PREFIX_PAD) {
 			padType = PadType(response[0] >> 4);
-			buttons = ~(response[2] | (response[3] << 8));
+			buttons = ~util::concat2(response[2], response[3]);
 
 			return true;
 		}

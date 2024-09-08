@@ -20,6 +20,7 @@
 #include "common/util/string.hpp"
 #include "common/util/templates.hpp"
 #include "common/io.hpp"
+#include "common/ioboard.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartio.hpp"
 #include "main/cart/zs01.hpp"
@@ -417,7 +418,7 @@ DriverError X76F100Driver::writeData(void) {
 DriverError X76F100Driver::erase(void) {
 	// The chip does not have an erase command, so erasing must be performed
 	// manually one block at a time.
-	uint8_t dummy[8]{ 0, 0, 0, 0, 0, 0, 0, 0 };
+	const uint8_t dummy[8]{ 0 };
 
 	for (int i = 0; i < 112; i += 8) {
 		auto error = _x76Command(

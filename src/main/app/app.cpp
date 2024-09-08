@@ -330,12 +330,14 @@ void App::_updateOverlays(void) {
 	if ((_workerStatus.status != WORKER_BUSY) || (_ctx.time > timeout))
 		_splashOverlay.hide(_ctx);
 
+#ifdef ENABLE_LOG_BUFFER
 	// Log overlay
 	if (
 		_ctx.buttons.released(ui::BTN_DEBUG) &&
 		!_ctx.buttons.longReleased(ui::BTN_DEBUG)
 	)
 		_logOverlay.toggle(_ctx);
+#endif
 
 	// Screenshot overlay
 	if (_ctx.buttons.longPressed(ui::BTN_DEBUG)) {

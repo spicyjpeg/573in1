@@ -44,15 +44,15 @@ using ISOCharD  = uint8_t;
 static constexpr size_t ISO9660_MAX_RECORD_DATA_LENGTH = 512;
 
 enum ISOSUSPEntryType : uint16_t {
-	ISO_SUSP_ATTRIBUTES     = util::concatenate('P', 'X'),
-	ISO_SUSP_DEVICE_NUMBER  = util::concatenate('P', 'N'),
-	ISO_SUSP_SYMBOLIC_LINK  = util::concatenate('S', 'L'),
-	ISO_SUSP_ALTERNATE_NAME = util::concatenate('N', 'M'),
-	ISO_SUSP_CHILD_LINK     = util::concatenate('C', 'L'),
-	ISO_SUSP_PARENT_LINK    = util::concatenate('P', 'L'),
-	ISO_SUSP_RELOCATED_DIR  = util::concatenate('R', 'E'),
-	ISO_SUSP_TIMESTAMP      = util::concatenate('T', 'F'),
-	ISO_SUSP_SPARSE_FILE    = util::concatenate('S', 'F')
+	ISO_SUSP_ATTRIBUTES     = util::concat2('P', 'X'),
+	ISO_SUSP_DEVICE_NUMBER  = util::concat2('P', 'N'),
+	ISO_SUSP_SYMBOLIC_LINK  = util::concat2('S', 'L'),
+	ISO_SUSP_ALTERNATE_NAME = util::concat2('N', 'M'),
+	ISO_SUSP_CHILD_LINK     = util::concat2('C', 'L'),
+	ISO_SUSP_PARENT_LINK    = util::concat2('P', 'L'),
+	ISO_SUSP_RELOCATED_DIR  = util::concat2('R', 'E'),
+	ISO_SUSP_TIMESTAMP      = util::concat2('T', 'F'),
+	ISO_SUSP_SPARSE_FILE    = util::concat2('S', 'F')
 };
 
 enum ISOSUSNameEntryFlag : uint8_t {
@@ -85,7 +85,7 @@ public:
 	uint8_t  _reserved[5]; // 0x9-0xd
 
 	inline bool validateMagic(void) const {
-		return !groupID && !userID && (magic == util::concatenate('X', 'A'));
+		return !groupID && !userID && (magic == util::concat2('X', 'A'));
 	}
 };
 

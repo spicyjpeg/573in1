@@ -61,7 +61,7 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 			__asm__ volatile("");
 
 		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
-		DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
+		DMA_BCR (DMA_GPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 		DMA_CHCR(DMA_GPU) = 0
 			| DMA_CHCR_WRITE
 			| DMA_CHCR_MODE_SLICE
@@ -103,7 +103,7 @@ size_t download(const RectWH &rect, void *data, bool wait) {
 			__asm__ volatile("");
 
 		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
-		DMA_BCR (DMA_GPU) = _DMA_CHUNK_SIZE | (length << 16);
+		DMA_BCR (DMA_GPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 		DMA_CHCR(DMA_GPU) = 0
 			| DMA_CHCR_READ
 			| DMA_CHCR_MODE_SLICE

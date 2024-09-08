@@ -18,7 +18,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/gpufont.hpp"
 #include "common/util/string.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"

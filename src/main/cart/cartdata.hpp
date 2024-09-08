@@ -41,13 +41,13 @@ enum TraceIDType : uint8_t {
 };
 
 /*
- * |                         | Simple (cart) | Basic (cart) | Extended (cart) | Extended (ROM) |
- * | :---------------------- | :------------ | :----------- | :-------------- | :------------- |
- * | DATA_HAS_CODE_PREFIX    |               | Optional     | Mandatory       | Mandatory      |
- * | DATA_HAS_*_ID           |               | Optional     | Optional        |                |
- * | DATA_HAS_SYSTEM_ID      |               | Optional     | Optional        | Optional       |
- * | DATA_HAS_PUBLIC_SECTION | Mandatory     |              | Optional        |                |
- * | DATA_GX706_WORKAROUND   |               |              | Optional        | Optional       |
+ * |                           | Simple (cart) | Basic (cart) | Extended (cart) | Extended (ROM) |
+ * | :------------------------ | :------------ | :----------- | :-------------- | :------------- |
+ * | `DATA_HAS_CODE_PREFIX`    |               | Optional     | Mandatory       | Mandatory      |
+ * | `DATA_HAS_*_ID`           |               | Optional     | Optional        |                |
+ * | `DATA_HAS_SYSTEM_ID`      |               | Optional     | Optional        | Optional       |
+ * | `DATA_HAS_PUBLIC_SECTION` | Mandatory     |              | Optional        |                |
+ * | `DATA_GX706_WORKAROUND`   |               |              | Optional        | Optional       |
  */
 
 // Note that DATA_HAS_SYSTEM_ID is used to indicate the presence of a signature

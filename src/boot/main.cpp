@@ -37,7 +37,7 @@ public:
 	uint16_t nameLength, extraLength;
 
 	inline bool validateMagic(void) const {
-		return (magic == util::concatenate('P', 'K', 0x03, 0x04));
+		return (magic == util::concat4('P', 'K', 0x03, 0x04));
 	}
 	inline size_t getHeaderLength(void) const {
 		return sizeof(ZIPFileHeader) + nameLength + extraLength;

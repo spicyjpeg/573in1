@@ -33,33 +33,39 @@ template<typename T> static inline uint32_t sum(const T *data, size_t length) {
 	return value;
 }
 
-template<typename T> static inline T min(T a, T b) {
+template<typename T> static constexpr inline T min(T a, T b) {
 	return (a < b) ? a : b;
 }
 
-template<typename T> static inline T max(T a, T b) {
+template<typename T> static constexpr inline T max(T a, T b) {
 	return (a > b) ? a : b;
 }
 
-template<typename T> static inline T clamp(T value, T minValue, T maxValue) {
+template<typename T> static constexpr inline T clamp(
+	T value, T minValue, T maxValue
+) {
 	return (value < minValue) ? minValue :
 		((value > maxValue) ? maxValue : value);
 }
 
-template<typename T> static inline T rotateLeft(T value, int amount) {
+template<typename T> static constexpr inline T rotateLeft(T value, int amount) {
 	return T((value << amount) | (value >> (sizeof(T) * 8 - amount)));
 }
 
-template<typename T> static inline T rotateRight(T value, int amount) {
+template<typename T> static constexpr inline T rotateRight(T value, int amount) {
 	return T((value >> amount) | (value << (sizeof(T) * 8 - amount)));
 }
 
 // These shall only be used with unsigned types.
-template<typename T> static inline T truncateToMultiple(T value, T length) {
+template<typename T> static constexpr inline T truncateToMultiple(
+	T value, T length
+) {
 	return value - (value % length);
 }
 
-template<typename T> static inline T roundUpToMultiple(T value, T length) {
+template<typename T> static constexpr inline T roundUpToMultiple(
+	T value, T length
+) {
 	T diff = value % length;
 	return diff ? (value - diff + length) : value;
 }
@@ -80,14 +86,43 @@ template<typename T, typename X> static inline T forcedCast(X item) {
 	return reinterpret_cast<T>(reinterpret_cast<void *>(item));
 }
 
-static constexpr inline uint16_t concatenate(uint8_t a, uint8_t b) {
-	return a | (b << 8);
+static constexpr inline uint16_t concat2(uint8_t low, uint8_t high) {
+	return low | (high << 8);
 }
 
-static constexpr inline uint32_t concatenate(
+static constexpr inline uint32_t concat4(uint16_t low, uint16_t high) {
+	return low | (high << 16);
+}
+
+static constexpr inline uint32_t concat4(
 	uint8_t a, uint8_t b, uint8_t c, uint8_t d
 ) {
 	return a | (b << 8) | (c << 16) | (d << 24);
+}
+
+static constexpr inline uint64_t concat8(uint32_t low, uint32_t high) {
+	return uint64_t(low) | (uint64_t(high) << 32);
+}
+
+static constexpr inline uint64_t concat8(
+	uint16_t a, uint16_t b, uint16_t c, uint16_t d
+) {
+	return 0
+		| (uint64_t(a) <<  0)
+		| (uint64_t(b) << 16)
+		| (uint64_t(c) << 32)
+		| (uint64_t(d) << 48);
+}
+
+static constexpr inline uint64_t concat8(
+	uint8_t a, uint8_t b, uint8_t c, uint8_t d,
+	uint8_t e, uint8_t f, uint8_t g, uint8_t h
+) {
+	return 0
+		| (uint64_t(a) <<  0) | (uint64_t(b) <<  8)
+		| (uint64_t(c) << 16) | (uint64_t(d) << 24)
+		| (uint64_t(e) << 32) | (uint64_t(f) << 40)
+		| (uint64_t(g) << 48) | (uint64_t(h) << 56);
 }
 
 /* Simple "smart" pointer */

@@ -88,6 +88,12 @@ extern Logger logger;
 #define LOG_CART_DATA(fmt, ...)
 #endif
 
+#ifdef ENABLE_IO_LOGGING
+#define LOG_IO(fmt, ...) LOG("io", fmt __VA_OPT__(,) __VA_ARGS__)
+#else
+#define LOG_IO(fmt, ...)
+#endif
+
 #ifdef ENABLE_ROM_LOGGING
 #define LOG_ROM(fmt, ...) LOG("rom", fmt __VA_OPT__(,) __VA_ARGS__)
 #else

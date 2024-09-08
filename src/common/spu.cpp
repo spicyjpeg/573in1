@@ -94,7 +94,7 @@ Channel getFreeChannel(void) {
 	// for e.g. short looping samples with a long release envelope, or samples
 	// looping indefinitely).
 	ChannelMask mask =
-		(SPU_FLAG_STATUS1 | (SPU_FLAG_STATUS2 << 16)) & ALL_CHANNELS;
+		util::concat4(SPU_FLAG_STATUS1, SPU_FLAG_STATUS2) & ALL_CHANNELS;
 
 	for (Channel ch = 0; mask; ch++, mask >>= 1) {
 		if (mask & 1)
@@ -167,7 +167,7 @@ size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
 	_waitForStatus(SPU_CTRL_XFER_BITMASK, SPU_CTRL_XFER_DMA_WRITE);
 
 	DMA_MADR(DMA_SPU) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_SPU) = _DMA_CHUNK_SIZE | (length << 16);
+	DMA_BCR (DMA_SPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 	DMA_CHCR(DMA_SPU) = 0
 		| DMA_CHCR_WRITE
 		| DMA_CHCR_MODE_SLICE
@@ -200,7 +200,7 @@ size_t download(uint32_t offset, void *data, size_t length, bool wait) {
 	_waitForStatus(SPU_CTRL_XFER_BITMASK, SPU_CTRL_XFER_DMA_READ);
 
 	DMA_MADR(DMA_SPU) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_SPU) = _DMA_CHUNK_SIZE | (length << 16);
+	DMA_BCR (DMA_SPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 	DMA_CHCR(DMA_SPU) = 0
 		| DMA_CHCR_READ
 		| DMA_CHCR_MODE_SLICE
@@ -218,7 +218,7 @@ Sound::Sound(void)
 : offset(0), sampleRate(0), length(0) {}
 
 bool Sound::initFromVAGHeader(const VAGHeader *header, uint32_t _offset) {
-	if (header->magic != util::concatenate('V', 'A', 'G', 'p'))
+	if (header->magic != util::concat4('V', 'A', 'G', 'p'))
 		return false;
 	if (header->channels > 1)
 		return false;
@@ -313,7 +313,7 @@ bool Stream::initFromVAGHeader(
 ) {
 	if (isPlaying())
 		return false;
-	if (header->magic != util::concatenate('V', 'A', 'G', 'i'))
+	if (header->magic != util::concat4('V', 'A', 'G', 'i'))
 		return false;
 	if (!header->interleave)
 		return false;

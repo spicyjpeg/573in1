@@ -71,7 +71,8 @@ public:
 
 class ZS01Packet {
 public:
-	uint8_t command, address, data[8], crc[2];
+	uint8_t  command, address, data[8];
+	uint16_t crc;
 
 	inline void copyFrom(const uint8_t *source) {
 		__builtin_memcpy(data, source, sizeof(data));

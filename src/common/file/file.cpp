@@ -173,7 +173,7 @@ public:
 
 		size_t length = _width * _height * _bpp / 8;
 
-		magic        = util::concatenate('B', 'M');
+		magic        = util::concat2('B', 'M');
 		fileLength   = sizeof(BMPHeader) + length;
 		dataOffset   = sizeof(BMPHeader);
 		headerLength = sizeof(BMPHeader) - offsetof(BMPHeader, headerLength);

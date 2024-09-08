@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 
 namespace util {
 
@@ -60,8 +61,7 @@ size_t hexToString(
 }
 
 size_t serialNumberToString(char *output, const uint8_t *input) {
-	uint32_t value =
-		input[0] | (input[1] << 8) | (input[2] << 16) | (input[3] << 24);
+	auto value = concat4(input[0], input[1], input[2], input[3]);
 
 	return sprintf(output, "%04d-%04d", (value / 10000) % 10000, value % 10000);
 }
@@ -71,9 +71,8 @@ size_t serialNumberToString(char *output, const uint8_t *input) {
 static const char _TRACE_ID_CHECKSUM_CHARSET[]{ "0X987654321" };
 
 size_t traceIDToString(char *output, const uint8_t *input) {
-	uint16_t high = (input[0] << 8) | input[1];
-	uint32_t low  =
-		(input[2] << 24) | (input[3] << 16) | (input[4] << 8) | input[5];
+	auto high = concat2(input[1], input[0]);
+	auto low  = concat4(input[5], input[4], input[3], input[2]);
 
 	size_t length = sprintf(&output[1], "%02d-%04d", high % 100, low % 10000);
 

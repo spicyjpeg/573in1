@@ -19,6 +19,7 @@
 #include "common/args.hpp"
 #include "common/gpu.hpp"
 #include "common/io.hpp"
+#include "common/ioboard.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
 #include "main/uibase.hpp"
@@ -52,8 +53,8 @@ int main(int argc, const char **argv) {
 	auto uiCtx  = new ui::Context(*gpuCtx);
 	auto app    = new App(*uiCtx);
 
-	io::initIOBoard();
 	io::resetIDEDevices();
+	io::setIOBoardLights(0);
 
 	gpu::enableDisplay(true);
 	spu::setMasterVolume(spu::MAX_VOLUME / 2);

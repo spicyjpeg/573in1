@@ -204,13 +204,13 @@ uint32_t FlashRegion::zipCRC32(
 /* Flash-specific functions */
 
 enum FlashIdentifier : uint16_t {
-	_ID_AM29F016   = 0x01 | (0xad << 8),
-	_ID_AM29F040   = 0x01 | (0xa4 << 8),
-	_ID_MBM29F016A = 0x04 | (0xad << 8),
-	_ID_MBM29F017A = 0x04 | (0x3d << 8),
-	_ID_MBM29F040A = 0x04 | (0xa4 << 8),
-	_ID_28F016S5   = 0x89 | (0xaa << 8),
-	_ID_28F640J5   = 0x89 | (0x15 << 8)
+	_ID_AM29F016   = util::concat2(0x01, 0xad),
+	_ID_AM29F040   = util::concat2(0x01, 0xa4),
+	_ID_MBM29F016A = util::concat2(0x04, 0xad),
+	_ID_MBM29F017A = util::concat2(0x04, 0x3d),
+	_ID_MBM29F040A = util::concat2(0x04, 0xa4),
+	_ID_28F016S5   = util::concat2(0x89, 0xaa),
+	_ID_28F640J5   = util::concat2(0x89, 0x15)
 };
 
 const util::ExecutableHeader *FlashRegion::getBootExecutableHeader(void) const {
@@ -262,12 +262,12 @@ uint32_t FlashRegion::getJEDECID(void) const {
 	_ptr[0x2aa] = JEDEC_HANDSHAKE2;
 	_ptr[0x555] = JEDEC_GET_ID; // Same as INTEL_GET_ID
 
-	uint32_t id1 = _ptr[0] | (_ptr[1] << 16);
+	auto id1 = util::concat4(_ptr[0], _ptr[1]);
 
 	_ptr[0x000] = JEDEC_RESET;
 	_ptr[0x000] = INTEL_RESET;
 
-	uint32_t id2 = _ptr[0] | (_ptr[1] << 16);
+	auto id2 = util::concat4(_ptr[0], _ptr[1]);
 
 	if (id1 == id2) {
 		LOG_ROM("chip not responding to commands");
@@ -294,7 +294,7 @@ size_t FlashRegion::getActualLength(void) const {
 	_ptr[0x2aa] = JEDEC_HANDSHAKE2;
 	_ptr[0x555] = JEDEC_GET_ID; // Same as INTEL_GET_ID
 
-	uint32_t id1 = _ptr[0] | (_ptr[1] << 16);
+	auto id1 = util::concat4(_ptr[0], _ptr[1]);
 
 	int bankOffset = 1;
 	int numBanks   = regionLength / FLASH_BANK_LENGTH;
@@ -307,7 +307,7 @@ size_t FlashRegion::getActualLength(void) const {
 
 		io::setFlashBank(bank);
 
-		uint32_t id2 = _ptr[0] | (_ptr[1] << 16);
+		auto id2 = util::concat4(_ptr[0], _ptr[1]);
 
 		if (id1 != id2)
 			break;
@@ -316,7 +316,7 @@ size_t FlashRegion::getActualLength(void) const {
 	_ptr[0x000] = JEDEC_RESET;
 	_ptr[0x000] = INTEL_RESET;
 
-	uint32_t id3 = _ptr[0] | (_ptr[1] << 16);
+	auto id3 = util::concat4(_ptr[0], _ptr[1]);
 
 	if (id1 == id3) {
 		LOG_ROM("chip not responding to commands");

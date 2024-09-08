@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/util/misc.hpp"
+#include "common/util/string.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
@@ -155,6 +156,18 @@ static inline void setMiscOutput(MiscOutputPin pin, bool value) {
 	SYS573_MISC_OUT = _miscOutputReg;
 }
 
+/* System initialization */
+
+void init(void);
+void resetIDEDevices(void);
+
+/* JAMMA and RTC functions */
+
+uint32_t getJAMMAInputs(void);
+void getRTCTime(util::Date &output);
+void setRTCTime(const util::Date &value, bool stop = false);
+bool isRTCBatteryLow(void);
+
 /* I2C driver */
 
 class I2CDriver {
@@ -183,6 +196,17 @@ private:
 	virtual void _setReset(bool value) const {}
 
 public:
+	inline bool startDeviceRead(uint8_t address) const {
+		start();
+		writeByte((1 << 0) | (address << 1));
+		return getACK();
+	}
+	inline bool startDeviceWrite(uint8_t address) const {
+		start();
+		writeByte((0 << 0) | (address << 1));
+		return getACK();
+	}
+
 	void start(void) const;
 	void startWithCS(int csDelay = 0) const;
 	void stop(void) const;
@@ -201,25 +225,6 @@ public:
 	uint32_t resetX76(void) const;
 	uint32_t resetZS01(void) const;
 };
-
-class CartI2CDriver : public I2CDriver {
-private:
-	bool _getSDA(void) const;
-	void _setSDA(bool value) const;
-	void _setSCL(bool value) const;
-	void _setCS(bool value) const;
-	void _setReset(bool value) const;
-};
-
-class DigitalIOI2CDriver : public I2CDriver {
-private:
-	bool _getSDA(void) const;
-	void _setSDA(bool value) const;
-	void _setSCL(bool value) const;
-};
-
-extern const CartI2CDriver      cartI2C;
-extern const DigitalIOI2CDriver digitalIOI2C;
 
 /* 1-wire driver */
 
@@ -240,42 +245,60 @@ public:
 	void writeByte(uint8_t value) const;
 };
 
+/* Security cartridge bus APIs */
+
+class CartI2CDriver : public I2CDriver {
+private:
+	bool _getSDA(void) const;
+	void _setSDA(bool value) const;
+	void _setSCL(bool value) const;
+	void _setCS(bool value) const;
+	void _setReset(bool value) const;
+};
+
 class CartDS2401Driver : public OneWireDriver {
 private:
 	bool _get(void) const;
 	void _set(bool value) const;
 };
 
-class DigitalIODS2401Driver : public OneWireDriver {
+extern const CartI2CDriver    cartI2C;
+extern const CartDS2401Driver cartDS2401;
+
+/* Debug LCD driver */
+
+static constexpr size_t NUM_LCD_ROWS    = 4;
+static constexpr size_t NUM_LCD_COLUMNS = 20;
+
+class DebugLCD {
 private:
-	bool _get(void) const;
-	void _set(bool value) const;
+	inline void _writeByte(uint8_t value, bool isCmd = false) const {
+		_writeNibble(value >> 4, isCmd);
+		_writeNibble(value & 15, isCmd);
+	}
+
+	void _writeNibble(uint8_t value, bool isCmd = false) const;
+	void _setCursor(int x, int y) const;
+
+public:
+	uint8_t width, height;
+	int8_t  cursorX, cursorY;
+	uint8_t buffer[NUM_LCD_ROWS][NUM_LCD_COLUMNS];
+
+	inline void clear(uint8_t fillCh = ' ') {
+		cursorX = -1;
+		cursorY = -1;
+
+		__builtin_memset(buffer, fillCh, sizeof(buffer));
+	}
+
+	void init(int _width, int _height);
+	void flush(void) const;
+
+	void put(int x, int y, util::UTF8CodePoint codePoint);
+	size_t print(int x, int y, const char *format, ...);
 };
 
-class DigitalIODS2433Driver : public OneWireDriver {
-private:
-	bool _get(void) const;
-	void _set(bool value) const;
-};
-
-extern const CartDS2401Driver      cartDS2401;
-extern const DigitalIODS2401Driver digitalIODS2401;
-extern const DigitalIODS2433Driver digitalIODS2433;
-
-/* Other APIs */
-
-void init(void);
-void initIOBoard(void);
-void resetIDEDevices(void);
-
-uint32_t getJAMMAInputs(void);
-void getRTCTime(util::Date &output);
-void setRTCTime(const util::Date &value, bool stop = false);
-bool isRTCBatteryLow(void);
-
-bool isDigitalIOPresent(void);
-bool loadDigitalIOBitstream(const uint8_t *data, size_t length);
-bool loadDigitalIORawBitstream(const uint8_t *data, size_t length);
-void initDigitalIOFPGA(void);
+extern DebugLCD debugLCD;
 
 }

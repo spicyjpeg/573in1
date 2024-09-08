@@ -99,14 +99,13 @@ public:
 	uint16_t checksum;              // 255
 
 	inline uint32_t getSectorCount(void) const {
-		return sectorCount[0] | (sectorCount[1] << 16);
+		return util::concat4(sectorCount[0], sectorCount[1]);
 	}
 	inline uint64_t getSectorCountExt(void) const {
-		return 0
-			| (uint64_t(sectorCountExt[0]) <<  0)
-			| (uint64_t(sectorCountExt[1]) << 16)
-			| (uint64_t(sectorCountExt[2]) << 32)
-			| (uint64_t(sectorCountExt[3]) << 48);
+		return util::concat8(
+			sectorCountExt[0], sectorCountExt[1],
+			sectorCountExt[2], sectorCountExt[3]
+		);
 	}
 
 	bool validateChecksum(void) const;
@@ -130,14 +129,10 @@ public:
 	uint8_t senseKeySpecific[2];    // 16-17
 
 	inline uint32_t getErrorLBA(void) const {
-		return 0
-			| (info[0] << 24)
-			| (info[1] << 16)
-			| (info[2] <<  8)
-			| (info[3] <<  0);
+		return util::concat4(info[3], info[2], info[1], info[0]);
 	}
 	inline uint16_t getPackedASC(void) const {
-		return asc | (ascQualifier << 8);
+		return util::concat2(asc, ascQualifier);
 	}
 };
 
@@ -250,7 +245,7 @@ private:
 		_write(CS0_CYLINDER_H, (value >> 8) & 0xff);
 	}
 	inline uint16_t _getCylinder(void) const {
-		return _read(CS0_CYLINDER_L) | (_read(CS0_CYLINDER_H) << 8);
+		return util::concat2(_read(CS0_CYLINDER_L), _read(CS0_CYLINDER_H));
 	}
 
 	void _readPIO(void *data, size_t length) const;

@@ -114,13 +114,11 @@ void ZS01Key::encodePayload(uint8_t *data, size_t length, uint8_t state) const {
 
 void ZS01Packet::updateCRC(void) {
 	uint16_t value = util::zsCRC16(&command, sizeof(ZS01Packet) - sizeof(crc));
-
-	crc[0] = value >> 8;
-	crc[1] = value & 0xff;
+	crc            = __builtin_bswap16(value);
 }
 
 bool ZS01Packet::validateCRC(void) const {
-	uint16_t _crc  = (crc[0] << 8) | crc[1];
+	uint16_t _crc  = __builtin_bswap16(crc);
 	uint16_t value = util::zsCRC16(&command, sizeof(ZS01Packet) - sizeof(crc));
 
 	if (value != _crc) {

@@ -22,7 +22,7 @@
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
-#include "common/io.hpp"
+#include "common/ioboard.hpp"
 #include "main/app/app.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"
@@ -108,26 +108,19 @@ _cartInitDone:
 		io::isDigitalIOPresent()
 	) {
 		util::Data bitstream;
-		bool       ready;
 
-		if (!_fileIO.resource.loadData(bitstream, "data/fpga.bit")) {
-			LOG_APP("no bitstream found");
+		if (!_fileIO.resource.loadData(bitstream, "data/fpga.bit"))
 			return true;
-		}
 
-		ready = io::loadDigitalIOBitstream(
+		bool ready = io::loadDigitalIOBitstream(
 			bitstream.as<uint8_t>(), bitstream.length
 		);
 		bitstream.destroy();
 
-		if (!ready) {
-			LOG_APP("bitstream upload failed");
+		if (!ready)
 			return true;
-		}
 
-		delayMicroseconds(5000); // Probably not necessary
 		io::initDigitalIOFPGA();
-
 		auto error = _cartDriver->readSystemID();
 
 		if (error)

@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "common/rom.hpp"
 #include "common/romdrivers.hpp"
 
@@ -83,7 +84,7 @@ void RTCDriver::eraseChip(uint32_t offset) {
 DriverError RTCDriver::flushWrite(uint32_t offset, uint16_t value) {
 	auto ptr = reinterpret_cast<volatile uint16_t *>(_region.ptr + offset * 2);
 
-	uint16_t actualValue = (ptr[0] & 0xff) | ((ptr[1] & 0xff) << 8);
+	uint16_t actualValue = util::concat2(ptr[0] & 0xff, ptr[1] & 0xff);
 
 	if (value != actualValue) {
 		LOG_ROM(

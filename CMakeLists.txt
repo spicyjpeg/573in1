@@ -128,6 +128,7 @@ addPS1Executable(
 	src/common/gpufont.cpp
 	src/common/ide.cpp
 	src/common/io.cpp
+	src/common/ioboard.cpp
 	src/common/pad.cpp
 	src/common/rom.cpp
 	src/common/romdrivers.cpp
@@ -164,6 +165,7 @@ target_compile_definitions(
 	ENABLE_APP_LOGGING=1
 	ENABLE_CART_IO_LOGGING=1
 	ENABLE_CART_DATA_LOGGING=1
+	ENABLE_IO_LOGGING=1
 	ENABLE_ROM_LOGGING=1
 	ENABLE_IDE_LOGGING=1
 	ENABLE_FS_LOGGING=1
@@ -220,7 +222,7 @@ addLauncher(803fd000 803ffff0)
 
 ## Boot stub and resource archive
 
-file(GLOB_RECURSE assetList RELATIVE "${PROJECT_SOURCE_DIR}" assets/* )
+file(GLOB_RECURSE assetList RELATIVE "${PROJECT_SOURCE_DIR}" assets/*)
 
 configure_file(assets/about.txt about.txt NEWLINE_STYLE LF)
 

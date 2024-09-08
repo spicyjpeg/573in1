@@ -123,7 +123,6 @@ enum ButtonMap {
 class ButtonState {
 private:
 	ButtonMap _buttonMap;
-	uint32_t  _mappings[NUM_BUTTONS];
 
 	uint8_t _held, _prevHeld;
 	uint8_t _longHeld, _prevLongHeld;
