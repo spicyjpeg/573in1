@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
@@ -116,7 +116,7 @@ bool App::_romDumpWorker(void) {
 
 	// Store all dumps in a subdirectory named "dumpNNNN" within the main data
 	// folder.
-	char dirPath[file::MAX_PATH_LENGTH], filePath[file::MAX_PATH_LENGTH];
+	char dirPath[fs::MAX_PATH_LENGTH], filePath[fs::MAX_PATH_LENGTH];
 
 	if (!_createDataDirectory())
 		goto _initError;
@@ -146,7 +146,7 @@ bool App::_romDumpWorker(void) {
 		snprintf(filePath, sizeof(filePath), entry.path, dirPath);
 
 		auto _file = _fileIO.vfs.openFile(
-			filePath, file::WRITE | file::ALLOW_CREATE
+			filePath, fs::WRITE | fs::ALLOW_CREATE
 		);
 
 		if (!_file)
@@ -201,7 +201,7 @@ bool App::_romRestoreWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romRestoreWorker.init"));
 
 	const char *path = _fileBrowserScreen.selectedPath;
-	auto       _file = _fileIO.vfs.openFile(path, file::READ);
+	auto       _file = _fileIO.vfs.openFile(path, fs::READ);
 
 	if (!_file) {
 		_messageScreen.setMessage(

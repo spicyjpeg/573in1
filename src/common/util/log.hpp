@@ -100,10 +100,10 @@ extern Logger logger;
 #define LOG_ROM(fmt, ...)
 #endif
 
-#ifdef ENABLE_IDE_LOGGING
-#define LOG_IDE(fmt, ...) LOG("ide", fmt __VA_OPT__(,) __VA_ARGS__)
+#ifdef ENABLE_STORAGE_LOGGING
+#define LOG_STORAGE(fmt, ...) LOG("storage", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
-#define LOG_IDE(fmt, ...)
+#define LOG_STORAGE(fmt, ...)
 #endif
 
 #ifdef ENABLE_FS_LOGGING

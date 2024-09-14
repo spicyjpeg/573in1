@@ -16,13 +16,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
-#include "common/ide.hpp"
-#include "common/idedefs.hpp"
 #include "common/io.hpp"
 #include "common/rom.hpp"
 #include "main/app/app.hpp"
@@ -44,21 +43,9 @@ static const char *const _AUTOBOOT_PATHS[][2]{
 	{ "hdd:/noboot.txt",   "hdd:/psx.exe"   }
 };
 
-bool App::_ideInitWorker(void) {
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		auto &dev = ide::devices[i];
-
-		if (dev.flags & ide::DEVICE_READY)
-			continue;
-
-		_workerStatus.update(
-			i, util::countOf(ide::devices), WSTR("App.ideInitWorker.init")
-		);
-
-		auto error = dev.enumerate();
-
-		LOG_APP("drive %d: %s", i, ide::getErrorString(error));
-	}
+bool App::_startupWorker(void) {
+	_workerStatus.update(0, 1, WSTR("App.startupWorker.ideInit"));
+	_fileIO.initIDE();
 
 	_fileInitWorker();
 
@@ -80,7 +67,7 @@ bool App::_ideInitWorker(void) {
 		}
 
 		for (auto path : _AUTOBOOT_PATHS) {
-			file::FileInfo info;
+			fs::FileInfo info;
 
 			if (_fileIO.vfs.getFileInfo(info, path[0]))
 				continue;
@@ -99,16 +86,16 @@ bool App::_ideInitWorker(void) {
 	}
 #endif
 
-	return false;
+	return true;
 }
 
 bool App::_fileInitWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.fileInitWorker.unmount"));
 	_fileIO.closeResourceFile();
-	_fileIO.closeIDE();
+	_fileIO.unmountIDE();
 
 	_workerStatus.update(1, 3, WSTR("App.fileInitWorker.mount"));
-	_fileIO.initIDE();
+	_fileIO.mountIDE();
 
 	_workerStatus.update(2, 3, WSTR("App.fileInitWorker.loadResources"));
 	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
@@ -155,7 +142,7 @@ bool App::_executableWorker(void) {
 	} else {
 		__builtin_memset(header.magic, 0, sizeof(header.magic));
 
-		auto _file = _fileIO.vfs.openFile(path, file::READ);
+		auto _file = _fileIO.vfs.openFile(path, fs::READ);
 		device     = -(path[3] - '0' + 1); // ide0: or ide1: -> -1 or -2
 
 		if (_file) {
@@ -231,11 +218,11 @@ bool App::_executableWorker(void) {
 		} else {
 			// Pass the list of LBAs taken up by the executable to the launcher
 			// through the command line.
-			file::FileFragmentTable fragments;
+			fs::FileFragmentTable fragments;
 
 			_fileIO.vfs.getFileFragments(fragments, path);
 
-			auto fragment = fragments.as<const file::FileFragment>();
+			auto fragment = fragments.as<const fs::FileFragment>();
 			auto count    = fragments.getNumFragments();
 
 			for (size_t i = count; i; i--, fragment++) {
@@ -261,7 +248,7 @@ bool App::_executableWorker(void) {
 		// main() before starting the new executable.
 		_unloadCartData();
 		_fileIO.closeResourceFile();
-		_fileIO.closeIDE();
+		_fileIO.unmountIDE();
 
 		LOG_APP("jumping to launcher");
 		uninstallExceptionHandler();
@@ -281,20 +268,23 @@ bool App::_executableWorker(void) {
 bool App::_atapiEjectWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
 
-	for (auto &dev : ide::devices) {
-		if (!(dev.flags & ide::DEVICE_ATAPI))
+	for (auto dev : _fileIO.ideDevices) {
+		if (!dev)
 			continue;
 
-		auto error = ide::DISC_CHANGED;
+		// If the device does not support ejecting (i.e. is not ATAPI), move
+		// onto the next drive.
+		auto error = storage::DISC_CHANGED;
 
-		while (error == ide::DISC_CHANGED)
-			error =
-				ide::devices[0].startStopUnit(ide::START_STOP_MODE_OPEN_TRAY);
+		while (error == storage::DISC_CHANGED)
+			error = dev->eject();
+		if (error == storage::UNSUPPORTED_OP)
+			continue;
 
 		if (error) {
 			_messageScreen.setMessage(
 				MESSAGE_ERROR, WSTR("App.atapiEjectWorker.ejectError"),
-				ide::getErrorString(error)
+				storage::getErrorString(error)
 			);
 			_workerStatus.setNextScreen(_messageScreen);
 			return false;
@@ -315,7 +305,7 @@ bool App::_rebootWorker(void) {
 
 	_unloadCartData();
 	_fileIO.closeResourceFile();
-	_fileIO.closeIDE();
+	_fileIO.unmountIDE();
 	_workerStatus.setStatus(WORKER_REBOOT);
 
 	// Fall back to a soft reboot if the watchdog fails to reset the system.

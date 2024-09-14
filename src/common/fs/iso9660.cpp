@@ -16,14 +16,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
-#include "common/file/iso9660.hpp"
+#include "common/fs/file.hpp"
+#include "common/fs/iso9660.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
-#include "common/ide.hpp"
 
-namespace file {
+namespace fs {
 
 /* Utilities */
 
@@ -219,7 +219,7 @@ bool ISOVolumeDesc::validateMagic(void) const {
 bool ISO9660File::_loadSector(uint32_t lba) {
 	if (lba == _bufferedLBA)
 		return true;
-	if (_device->readData(_sectorBuffer, lba, 1))
+	if (_dev->read(_sectorBuffer, lba, 1))
 		return false;
 
 	_bufferedLBA = lba;
@@ -241,18 +241,18 @@ size_t ISO9660File::read(void *output, size_t length) {
 
 	while (remaining > 0) {
 		auto     currentPtr   = reinterpret_cast<void *>(ptr);
-		uint32_t lba          = offset / ide::ATAPI_SECTOR_SIZE + _startLBA;
-		size_t   sectorOffset = offset % ide::ATAPI_SECTOR_SIZE;
+		uint32_t lba          = offset / _dev->sectorLength + _startLBA;
+		size_t   sectorOffset = offset % _dev->sectorLength;
 
 		// If the output pointer is on a sector boundary and satisfies the IDE
 		// driver's alignment requirements, read as many full sectors as
 		// possible without going through the sector buffer.
-		if (!sectorOffset && _device->isPointerAligned(currentPtr)) {
-			auto numSectors = remaining  / ide::ATAPI_SECTOR_SIZE;
-			auto spanLength = numSectors * ide::ATAPI_SECTOR_SIZE;
+		if (!sectorOffset && !(ptr % 4)) {
+			auto numSectors = remaining  / _dev->sectorLength;
+			auto spanLength = numSectors * _dev->sectorLength;
 
 			if (numSectors > 0) {
-				if (_device->readData(currentPtr, lba, numSectors))
+				if (_dev->read(currentPtr, lba, numSectors))
 					return false;
 
 				offset    += spanLength;
@@ -265,7 +265,7 @@ size_t ISO9660File::read(void *output, size_t length) {
 		// In all other cases, read one sector at a time into the buffer and
 		// copy it over.
 		auto chunkLength =
-			util::min(remaining, ide::ATAPI_SECTOR_SIZE - sectorOffset);
+			util::min(remaining, _dev->sectorLength - sectorOffset);
 
 		if (!_loadSector(lba))
 			return false;
@@ -323,9 +323,9 @@ static constexpr uint32_t _VOLUME_DESC_END_LBA   = 0x20;
 bool ISO9660Provider::_readData(
 	util::Data &output, uint32_t lba, size_t numSectors
 ) {
-	if (!output.allocate(numSectors * ide::ATAPI_SECTOR_SIZE))
+	if (!output.allocate(numSectors * _dev->sectorLength))
 		return false;
-	if (_device->readData(output.ptr, lba, numSectors))
+	if (_dev->read(output.ptr, lba, numSectors))
 		return false;
 
 	return true;
@@ -344,7 +344,7 @@ bool ISO9660Provider::_getRecord(
 
 	util::Data records;
 	auto       numSectors =
-		(root.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
+		(root.length.le + _dev->sectorLength - 1) / _dev->sectorLength;
 
 	if (!_readData(records, root.lba.le, numSectors))
 		return false;
@@ -384,43 +384,49 @@ bool ISO9660Provider::_getRecord(
 	return false;
 }
 
-bool ISO9660Provider::init(int drive) {
-	_device = &ide::devices[drive];
+bool ISO9660Provider::init(storage::Device &dev) {
+	_dev = &dev;
 
 	// Locate and parse the primary volume descriptor.
-	ISOPrimaryVolumeDesc pvd;
+	size_t numPVDSectors = util::min(
+		sizeof(ISOPrimaryVolumeDesc) / _dev->sectorLength, size_t(1)
+	);
 
 	for (
 		uint32_t lba = _VOLUME_DESC_START_LBA; lba < _VOLUME_DESC_END_LBA; lba++
 	) {
-		if (_device->readData(&pvd, lba, 1))
+		uint8_t pvdBuffer[storage::MAX_SECTOR_LENGTH];
+
+		if (_dev->read(pvdBuffer, lba, numPVDSectors))
 			return false;
-		if (!pvd.validateMagic()) {
+
+		auto pvd = reinterpret_cast<const ISOPrimaryVolumeDesc *>(pvdBuffer);
+
+		if (!pvd->validateMagic()) {
 			LOG_FS("invalid ISO descriptor, lba=0x%x", lba);
 			return false;
 		}
-
-		if (pvd.type == ISO_TYPE_TERMINATOR)
+		if (pvd->type == ISO_TYPE_TERMINATOR)
 			break;
-		if (pvd.type != ISO_TYPE_PRIMARY)
+		if (pvd->type != ISO_TYPE_PRIMARY)
 			continue;
 
-		if (pvd.isoVersion != 1) {
-			LOG_FS("unsupported ISO version 0x%02x", pvd.isoVersion);
+		if (pvd->isoVersion != 1) {
+			LOG_FS("unsupported ISO version 0x%02x", pvd->isoVersion);
 			return false;
 		}
-		if (pvd.sectorLength.le != ide::ATAPI_SECTOR_SIZE) {
-			LOG_FS("unsupported ISO sector size %d", pvd.sectorLength.le);
+		if (pvd->sectorLength.le != _dev->sectorLength) {
+			LOG_FS("mismatching ISO sector size: %d", pvd->sectorLength.le);
 			return false;
 		}
 
-		_copyPVDString(volumeLabel, pvd.volume, sizeof(pvd.volume));
-		__builtin_memcpy(&_root, &pvd.root, sizeof(_root));
+		_copyPVDString(volumeLabel, pvd->volume, sizeof(pvd->volume));
+		__builtin_memcpy(&_root, &(pvd->root), sizeof(_root));
 
 		type     = ISO9660;
-		capacity = uint64_t(pvd.volumeLength.le) * ide::ATAPI_SECTOR_SIZE;
+		capacity = uint64_t(pvd->volumeLength.le) * _dev->sectorLength;
 
-		LOG_FS("mounted ISO: %d", drive);
+		LOG_FS("mounted ISO: %s", volumeLabel);
 		return true;
 	}
 
@@ -431,7 +437,7 @@ bool ISO9660Provider::init(int drive) {
 void ISO9660Provider::close(void) {
 	type     = NONE;
 	capacity = 0;
-	_device  = nullptr;
+	_dev     = nullptr;
 }
 
 bool ISO9660Provider::getFileInfo(FileInfo &output, const char *path) {
@@ -459,7 +465,7 @@ bool ISO9660Provider::getFileFragments(
 	auto fragment    = output.as<FileFragment>();
 	fragment->lba    = record.lba.le;
 	fragment->length =
-		(record.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
+		(record.length.le + _dev->sectorLength - 1) / _dev->sectorLength;
 	return true;
 }
 
@@ -473,7 +479,7 @@ Directory *ISO9660Provider::openDirectory(const char *path) {
 
 	auto   dir       = new ISO9660Directory();
 	size_t dirLength =
-		(record.length.le + ide::ATAPI_SECTOR_SIZE - 1) / ide::ATAPI_SECTOR_SIZE;
+		(record.length.le + _dev->sectorLength - 1) / _dev->sectorLength;
 
 	if (!_readData(dir->_records, record.lba.le, dirLength)) {
 		LOG_FS("read failed: %s", path);
@@ -496,7 +502,7 @@ File *ISO9660Provider::openFile(const char *path, uint32_t flags) {
 	if (record.flags & ISO_RECORD_DIRECTORY)
 		return nullptr;
 
-	return new ISO9660File(_device, record);
+	return new ISO9660File(_dev, record);
 }
 
 }

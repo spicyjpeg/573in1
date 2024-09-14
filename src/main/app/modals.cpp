@@ -16,13 +16,13 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "common/file/file.hpp"
-#include "common/file/misc.hpp"
+#include "common/fs/file.hpp"
+#include "common/fs/misc.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
-#include "common/ide.hpp"
 #include "main/app/app.hpp"
 #include "main/app/modals.hpp"
 #include "main/uibase.hpp"
@@ -121,45 +121,63 @@ void ConfirmScreen::update(ui::Context &ctx) {
 
 /* File picker screen */
 
-#ifdef ENABLE_PCDRV
-struct SpecialEntry {
+struct DeviceType {
 public:
-	util::Hash name;
-	const char *prefix;
+	const char *format;
+	util::Hash error;
 };
 
-static const SpecialEntry _SPECIAL_ENTRIES[]{
+static const DeviceType _DEVICE_TYPES[]{
 	{
-		.name   = "FilePickerScreen.host"_h,
-		.prefix = "host:"
+		// storage::NONE
+		.format = CH_HOST_ICON " %s",
+		.error  = "FilePickerScreen.hostError"_h
+	}, {
+		// storage::ATA
+		.format = CH_HDD_ICON " %s: %s",
+		.error  = "FilePickerScreen.ataError"_h
+	}, {
+		// storage::ATAPI
+		.format = CH_CDROM_ICON " %s: %s",
+		.error  = "FilePickerScreen.atapiError"_h
 	}
 };
-#endif
+
+void FilePickerScreen::_addDevice(
+	storage::Device *dev, fs::Provider *provider, const char *prefix
+) {
+	// Note that devices are added (and thus displayed in the list) even if
+	// their filesystem is unrecognized and no file provider is available.
+	if (!dev && !provider)
+		return;
+	if (_listLength >= int(MAX_FILE_PICKER_DEVICES))
+		return;
+
+	auto &entry = _entries[_listLength++];
+
+	entry.dev      = dev;
+	entry.provider = provider;
+	entry.prefix   = prefix;
+}
 
 const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
-#ifdef ENABLE_PCDRV
-	int offset = util::countOf(_SPECIAL_ENTRIES);
+	static char name[fs::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
 
-	if (index < offset)
-		return STRH(_SPECIAL_ENTRIES[index].name);
-	else
-		index -= offset;
-#endif
-
-	static char name[file::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
-
-	int  drive = _drives[index];
-	auto &dev  = ide::devices[drive];
-	auto fs    = APP->_fileIO.ide[drive];
-
-	auto format = (dev.flags & ide::DEVICE_ATAPI)
-		? (CH_CDROM_ICON " %s: %s")
-		: (CH_HDD_ICON   " %s: %s");
-	auto label  = fs
-		? fs->volumeLabel
+	auto &entry = _entries[index];
+	auto label  = entry.provider
+		? entry.provider->volumeLabel
 		: STR("FilePickerScreen.noFS");
 
-	snprintf(name, sizeof(name), format, dev.model, label);
+	if (entry.dev)
+		snprintf(
+			name, sizeof(name), _DEVICE_TYPES[entry.dev->type].format,
+			entry.dev->model, label
+		);
+	else
+		snprintf(
+			name, sizeof(name), _DEVICE_TYPES[storage::NONE].format, label
+		);
+
 	return name;
 }
 
@@ -178,8 +196,10 @@ void FilePickerScreen::setMessage(
 void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
 	// Check if any drive has reported a disc change and reload all filesystems
 	// if necessary.
-	for (auto &dev : ide::devices) {
-		if (!dev.poll())
+	for (auto dev : APP->_fileIO.ideDevices) {
+		if (!dev)
+			continue;
+		if (!dev->poll())
 			continue;
 
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
@@ -198,14 +218,15 @@ void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
 
 	_listLength = 0;
 
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (ide::devices[i].flags & ide::DEVICE_READY)
-			_drives[_listLength++] = i;
-	}
-
 #ifdef ENABLE_PCDRV
-	_listLength += util::countOf(_SPECIAL_ENTRIES);
+	_addDevice(nullptr, APP->_fileIO.host, "host:");
 #endif
+
+	for (size_t i = 0; i < util::countOf(APP->_fileIO.ideDevices); i++)
+		_addDevice(
+			APP->_fileIO.ideDevices[i], APP->_fileIO.ideProviders[i],
+			IDE_MOUNT_POINTS[i]
+		);
 
 	ListScreen::show(ctx, goBack);
 }
@@ -226,27 +247,11 @@ void FilePickerScreen::update(ui::Context &ctx) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 			ctx.show(*previousScreen, true, true);
 		} else {
-			int index  = _activeItem;
-#ifdef ENABLE_PCDRV
-			int offset = util::countOf(_SPECIAL_ENTRIES);
+			auto &entry = _entries[_activeItem];
+			auto type   = entry.dev ? entry.dev->type : storage::NONE;
 
-			if (index < offset) {
-				APP->_fileBrowserScreen.loadDirectory(
-					ctx, _SPECIAL_ENTRIES[index].prefix
-				);
-				ctx.show(APP->_fileBrowserScreen, false, true);
-				return;
-			} else {
-				index -= offset;
-			}
-#endif
-
-			int  drive = _drives[index];
-			auto &dev  = ide::devices[drive];
-
-			int count = APP->_fileBrowserScreen.loadDirectory(
-				ctx, IDE_MOUNT_POINTS[drive]
-			);
+			int count =
+				APP->_fileBrowserScreen.loadDirectory(ctx, entry.prefix);
 
 			if (count > 0) {
 				ctx.show(APP->_fileBrowserScreen, false, true);
@@ -255,10 +260,8 @@ void FilePickerScreen::update(ui::Context &ctx) {
 
 				if (!count)
 					error = "FilePickerScreen.noFilesError"_h;
-				else if (dev.flags & ide::DEVICE_ATAPI)
-					error = "FilePickerScreen.atapiError"_h;
 				else
-					error = "FilePickerScreen.ideError"_h;
+					error = _DEVICE_TYPES[type].error;
 
 				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 				APP->_messageScreen.setMessage(MESSAGE_ERROR, STRH(error));
@@ -277,7 +280,7 @@ void FileBrowserScreen::_setPathToParent(void) {
 		__builtin_memcpy(selectedPath, _currentPath, length);
 		selectedPath[length] = 0;
 	} else {
-		ptr      = __builtin_strchr(_currentPath, file::VFS_PREFIX_SEPARATOR);
+		ptr      = __builtin_strchr(_currentPath, fs::VFS_PREFIX_SEPARATOR);
 		*(++ptr) = 0;
 	}
 }
@@ -305,7 +308,7 @@ void FileBrowserScreen::_unloadDirectory(void) {
 }
 
 const char *FileBrowserScreen::_getItemName(ui::Context &ctx, int index) const {
-	static char name[file::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
+	static char name[fs::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
 
 	if (!_isRoot)
 		index--;
@@ -316,12 +319,12 @@ const char *FileBrowserScreen::_getItemName(ui::Context &ctx, int index) const {
 		format = CH_PARENT_DIR_ICON " %s";
 		path   = STR("FileBrowserScreen.parentDir");
 	} else if (index < _numDirectories) {
-		auto entries = _directories.as<file::FileInfo>();
+		auto entries = _directories.as<fs::FileInfo>();
 
 		format = CH_DIR_ICON " %s";
 		path   = entries[index].name;
 	} else {
-		auto entries = _files.as<file::FileInfo>();
+		auto entries = _files.as<fs::FileInfo>();
 
 		format = CH_FILE_ICON " %s";
 		path   = entries[index - _numDirectories].name;
@@ -343,10 +346,10 @@ int FileBrowserScreen::loadDirectory(
 	if (!directory)
 		return -1;
 
-	file::FileInfo info;
+	fs::FileInfo info;
 
 	while (directory->getEntry(info)) {
-		if (info.attributes & file::DIRECTORY)
+		if (info.attributes & fs::DIRECTORY)
 			_numDirectories++;
 		else
 			_numFiles++;
@@ -364,13 +367,13 @@ int FileBrowserScreen::loadDirectory(
 
 	LOG_APP("files=%d, dirs=%d", _numFiles, _numDirectories);
 
-	file::FileInfo *files       = nullptr;
-	file::FileInfo *directories = nullptr;
+	fs::FileInfo *files       = nullptr;
+	fs::FileInfo *directories = nullptr;
 
 	if (_numFiles)
-		files       = _files.allocate<file::FileInfo>(_numFiles);
+		files       = _files.allocate<fs::FileInfo>(_numFiles);
 	if (_numDirectories)
-		directories = _directories.allocate<file::FileInfo>(_numDirectories);
+		directories = _directories.allocate<fs::FileInfo>(_numDirectories);
 
 	// Iterate over all entries again to populate the newly allocated arrays.
 	directory = APP->_fileIO.vfs.openDirectory(path);
@@ -379,10 +382,10 @@ int FileBrowserScreen::loadDirectory(
 		return -1;
 
 	while (directory->getEntry(info)) {
-		auto ptr = (info.attributes & file::DIRECTORY)
+		auto ptr = (info.attributes & fs::DIRECTORY)
 			? (directories++) : (files++);
 
-		__builtin_memcpy(ptr, &info, sizeof(file::FileInfo));
+		__builtin_memcpy(ptr, &info, sizeof(fs::FileInfo));
 	}
 
 	directory->close();
@@ -415,7 +418,7 @@ void FileBrowserScreen::update(ui::Context &ctx) {
 				index--;
 
 			if (index < _numDirectories) {
-				auto entries = _directories.as<file::FileInfo>();
+				auto entries = _directories.as<fs::FileInfo>();
 
 				if (index < 0)
 					_setPathToParent();
@@ -433,7 +436,7 @@ void FileBrowserScreen::update(ui::Context &ctx) {
 					ctx.show(APP->_messageScreen, false, true);
 				}
 			} else {
-				auto entries = _files.as<file::FileInfo>();
+				auto entries = _files.as<fs::FileInfo>();
 
 				_setPathToChild(entries[index - _numDirectories].name);
 				APP->_filePickerScreen._callback(ctx);

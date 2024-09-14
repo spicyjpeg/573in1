@@ -17,10 +17,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
-#include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
@@ -66,34 +66,36 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
 	for (int i = 0; i < 2; i++) {
-		auto &header = _IDE_INFO_HEADERS[i];
-		auto &dev    = ide::devices[i];
-		auto fs      = APP->_fileIO.ide[i];
+		auto &header  = _IDE_INFO_HEADERS[i];
+		auto dev      = APP->_fileIO.ideDevices[i];
+		auto provider = APP->_fileIO.ideProviders[i];
 
 		// Device information
 		_PRINT(STRH(header.device));
 
-		if (dev.flags & ide::DEVICE_READY) {
+		if (dev) {
 			_PRINT(
-				STR("IDEInfoScreen.device.commonInfo"), dev.model, dev.revision,
-				dev.serialNumber
+				STR("IDEInfoScreen.device.commonInfo"),
+				dev->model,
+				dev->revision,
+				dev->serialNumber
 			);
 
-			if (dev.flags & ide::DEVICE_ATAPI) {
+			if (dev->type == storage::ATAPI) {
 				_PRINT(
 					STR("IDEInfoScreen.device.atapiInfo"),
-					(dev.flags & ide::DEVICE_HAS_PACKET16) ? 16 : 12
+					(dev->flags & storage::REQUIRES_EXT_PACKET) ? 16 : 12
 				);
 			} else {
 				_PRINT(
 					STR("IDEInfoScreen.device.ataInfo"),
-					uint64_t(dev.capacity / (0x100000 / ide::ATA_SECTOR_SIZE)),
-					(dev.flags & ide::DEVICE_HAS_LBA48) ? 48 : 28
+					uint64_t(dev->capacity / (0x100000 / 512)),
+					(dev->flags & storage::SUPPORTS_EXT_LBA) ? 48 : 28
 				);
 
-				if (dev.flags & ide::DEVICE_HAS_TRIM)
+				if (dev->flags & storage::SUPPORTS_TRIM)
 					_PRINT(STR("IDEInfoScreen.device.hasTrim"));
-				if (dev.flags & ide::DEVICE_HAS_FLUSH)
+				if (dev->flags & storage::SUPPORTS_FLUSH)
 					_PRINT(STR("IDEInfoScreen.device.hasFlush"));
 			}
 		} else {
@@ -103,28 +105,28 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINTLN();
 
 		// Filesystem information
-		if (!fs)
+		if (!provider)
 			continue;
 
-		if (fs->type == file::ISO9660) {
+		if (provider->type == fs::ISO9660) {
 			_PRINT(STRH(header.iso9660));
 
 			_PRINT(
 				STR("IDEInfoScreen.iso9660.info"),
-				fs->volumeLabel,
-				fs->capacity / 0x100000
+				provider->volumeLabel,
+				provider->capacity / 0x100000
 			);
 		} else {
 			_PRINT(STRH(header.fat));
 
 			_PRINT(
 				STR("IDEInfoScreen.fat.info"),
-				_FAT_TYPES[fs->type],
-				fs->volumeLabel,
-				fs->serialNumber >> 16,
-				fs->serialNumber & 0xffff,
-				fs->capacity       / 0x100000,
-				fs->getFreeSpace() / 0x100000
+				_FAT_TYPES[provider->type],
+				provider->volumeLabel,
+				provider->serialNumber >> 16,
+				provider->serialNumber & 0xffff,
+				provider->capacity       / 0x100000,
+				provider->getFreeSpace() / 0x100000
 			);
 		}
 

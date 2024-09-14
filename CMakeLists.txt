@@ -19,7 +19,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.0
+	VERSION      1.0.1
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
@@ -112,11 +112,14 @@ endfunction()
 # (0x90000 bytes).
 addPS1Executable(
 	main 800a0000 801dfff0
-	src/common/file/fat.cpp
-	src/common/file/file.cpp
-	src/common/file/iso9660.cpp
-	src/common/file/misc.cpp
-	src/common/file/zip.cpp
+	src/common/fs/fat.cpp
+	src/common/fs/file.cpp
+	src/common/fs/iso9660.cpp
+	src/common/fs/misc.cpp
+	src/common/fs/zip.cpp
+	src/common/storage/ata.cpp
+	src/common/storage/atapi.cpp
+	src/common/storage/device.cpp
 	src/common/util/hash.cpp
 	src/common/util/log.cpp
 	src/common/util/misc.cpp
@@ -126,7 +129,6 @@ addPS1Executable(
 	src/common/args.cpp
 	src/common/gpu.cpp
 	src/common/gpufont.cpp
-	src/common/ide.cpp
 	src/common/io.cpp
 	src/common/ioboard.cpp
 	src/common/pad.cpp
@@ -167,7 +169,7 @@ target_compile_definitions(
 	ENABLE_CART_DATA_LOGGING=1
 	ENABLE_IO_LOGGING=1
 	ENABLE_ROM_LOGGING=1
-	ENABLE_IDE_LOGGING=1
+	ENABLE_STORAGE_LOGGING=1
 	ENABLE_FS_LOGGING=1
 	# Security cartridge driver options
 	#ENABLE_DUMMY_CART_DRIVER=1
@@ -175,7 +177,6 @@ target_compile_definitions(
 	#ENABLE_X76F100_CART_DRIVER=1
 	ENABLE_ZS01_CART_DRIVER=1
 	# Misc. options
-	ENABLE_FULL_IDE_DRIVER=1
 	ENABLE_LOG_BUFFER=1
 	#ENABLE_ARGV=1
 	#ENABLE_PCDRV=1
@@ -202,6 +203,9 @@ target_compile_definitions(
 function(addLauncher address stackTop)
 addPS1Executable(
 		launcher${address} ${address} ${stackTop}
+		#src/common/storage/ata.cpp
+		#src/common/storage/atapi.cpp
+		#src/common/storage/device.cpp
 		src/common/util/hash.cpp
 		src/common/util/misc.cpp
 		src/common/args.cpp

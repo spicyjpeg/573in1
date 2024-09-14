@@ -5,8 +5,8 @@
 	},
 
 	"App": {
-		"ideInitWorker": {
-			"init":     "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
+		"startupWorker": {
+			"ideInit":  "Initializing IDE devices...\nDo not turn off the 573 or unplug drives.",
 			"autoboot": "Searching for boot executables...\nDo not turn off the 573 or unplug drives."
 		},
 		"fileInitWorker": {
@@ -320,8 +320,9 @@
 		"noFS": "no disc or unsupported FS",
 
 		"noDeviceError": "No drives have been detected on the IDE bus. Make sure the drives are receiving power and appropriately configured as primary or secondary.\n\nPress the Test button to view debug logs.",
+		"hostError":     "Failed to initialize the PCDRV interface. Ensure PCDRV is enabled and configured properly at the debugger or emulator side.\n\nPress the Test button to view debug logs.",
+		"ataError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 		"atapiError":    "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Your drive may also be incompatible with the ATAPI driver used by 573in1.\n\nPress the Test button to view debug logs.",
-		"ideError":      "Failed to initialize the drive or access the filesystem on it. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPress the Test button to view debug logs.",
 		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem."
 	},
 

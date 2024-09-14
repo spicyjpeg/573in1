@@ -18,12 +18,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 
-namespace file {
+namespace fs {
 
 /* File fragment table */
 
@@ -64,7 +64,7 @@ size_t Provider::loadData(util::Data &output, const char *path) {
 	if (!_file)
 		return 0;
 
-	//assert(_file->size <= SIZE_MAX);
+	assert(_file->size <= SIZE_MAX);
 	if (!output.allocate(size_t(_file->size))) {
 		_file->close();
 		delete _file;
@@ -84,7 +84,7 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 	if (!_file)
 		return 0;
 
-	//assert(file->size >= length);
+	assert(_file->size >= length);
 	size_t actualLength = _file->read(output, length);
 
 	_file->close();

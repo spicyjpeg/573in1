@@ -18,11 +18,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/templates.hpp"
-#include "common/ide.hpp"
 
-namespace file {
+namespace fs {
 
 /* ISO9660 data types */
 
@@ -191,18 +191,18 @@ class ISO9660File : public File {
 	friend class ISO9660Provider;
 
 private:
-	ide::Device *_device;
-	uint32_t    _startLBA;
+	storage::Device *_dev;
+	uint32_t        _startLBA;
 
 	uint64_t _offset;
 	uint32_t _bufferedLBA;
-	uint8_t  _sectorBuffer[ide::ATAPI_SECTOR_SIZE];
+	uint8_t  _sectorBuffer[storage::MAX_SECTOR_LENGTH];
 
 	bool _loadSector(uint32_t lba);
 
 public:
-	inline ISO9660File(ide::Device *device, const ISORecord &record)
-	: _device(device), _startLBA(record.lba.le), _offset(0), _bufferedLBA(0) {
+	inline ISO9660File(storage::Device *dev, const ISORecord &record)
+	: _dev(dev), _startLBA(record.lba.le), _offset(0), _bufferedLBA(0) {
 		size = record.length.le;
 	}
 
@@ -227,8 +227,8 @@ public:
 
 class ISO9660Provider : public Provider {
 private:
-	ide::Device *_device;
-	ISORecord   _root;
+	storage::Device *_dev;
+	ISORecord       _root;
 
 	bool _readData(util::Data &output, uint32_t lba, size_t numSectors);
 	bool _getRecord(
@@ -237,9 +237,9 @@ private:
 
 public:
 	inline ISO9660Provider(void)
-	: _device(nullptr) {}
+	: _dev(nullptr) {}
 
-	bool init(int drive);
+	bool init(storage::Device &dev);
 	void close(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);

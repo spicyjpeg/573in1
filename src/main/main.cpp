@@ -53,12 +53,10 @@ int main(int argc, const char **argv) {
 	auto uiCtx  = new ui::Context(*gpuCtx);
 	auto app    = new App(*uiCtx);
 
-	io::resetIDEDevices();
-	io::setIOBoardLights(0);
-
 	gpu::enableDisplay(true);
 	spu::setMasterVolume(spu::MAX_VOLUME / 2);
 	io::setMiscOutput(io::MISC_OUT_SPU_ENABLE, true);
+	io::setIOBoardLights(0);
 
 	app->run(args.resourcePtr, args.resourceLength);
 

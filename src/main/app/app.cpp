@@ -16,17 +16,17 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include "common/file/fat.hpp"
-#include "common/file/file.hpp"
-#include "common/file/iso9660.hpp"
-#include "common/file/misc.hpp"
-#include "common/file/zip.hpp"
+#include "common/fs/fat.hpp"
+#include "common/fs/file.hpp"
+#include "common/fs/iso9660.hpp"
+#include "common/fs/misc.hpp"
+#include "common/fs/zip.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/gpu.hpp"
-#include "common/ide.hpp"
 #include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
@@ -87,7 +87,8 @@ const char *const IDE_MOUNT_POINTS[]{ "ide0:", "ide1:" };
 
 FileIOManager::FileIOManager(void)
 : _resourceFile(nullptr), resourcePtr(nullptr), resourceLength(0) {
-	__builtin_memset(ide, 0, sizeof(ide));
+	__builtin_memset(ideDevices,   0, sizeof(ideDevices));
+	__builtin_memset(ideProviders, 0, sizeof(ideProviders));
 
 	vfs.mount("resource:", &resource);
 #ifdef ENABLE_PCDRV
@@ -96,53 +97,72 @@ FileIOManager::FileIOManager(void)
 }
 
 void FileIOManager::initIDE(void) {
-	closeIDE();
+	io::resetIDEDevices();
 
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		auto &dev = ide::devices[i];
+	for (size_t i = 0; i < util::countOf(ideDevices); i++) {
+		auto dev = ideDevices[i];
 
-		if (!(dev.flags & ide::DEVICE_READY))
+		if (dev)
+			delete dev;
+
+		ideDevices[i] = storage::newIDEDevice(i);
+	}
+}
+
+void FileIOManager::mountIDE(void) {
+	unmountIDE();
+
+	for (size_t i = 0; i < util::countOf(ideProviders); i++) {
+		auto dev = ideDevices[i];
+
+		if (!dev)
+			continue;
+		if (!(dev->type))
 			continue;
 
 		// Note that calling vfs.mount() multiple times will *not* update any
 		// already mounted device, so if two hard drives or CD-ROMs are present
 		// the hdd:/cdrom: prefix will be assigned to the first one.
-		if (dev.flags & ide::DEVICE_ATAPI) {
-			auto iso = new file::ISO9660Provider();
+		// TODO: actually detect the filesystem rather than assuming FAT or
+		// ISO9660 depending on drive type
+		if (dev->type == storage::ATAPI) {
+			auto iso = new fs::ISO9660Provider();
 
-			if (!iso->init(i)) {
+			if (!iso->init(*dev)) {
 				delete iso;
 				continue;
 			}
 
-			ide[i] = iso;
+			ideProviders[i] = iso;
 			vfs.mount("cdrom:", iso);
 		} else {
-			auto fat = new file::FATProvider();
+			auto fat = new fs::FATProvider();
 
-			if (!fat->init(i)) {
+			if (!fat->init(*dev, i)) {
 				delete fat;
 				continue;
 			}
 
-			ide[i] = fat;
+			ideProviders[i] = fat;
 			vfs.mount("hdd:", fat);
 		}
 
-		vfs.mount(IDE_MOUNT_POINTS[i], ide[i], true);
+		vfs.mount(IDE_MOUNT_POINTS[i], ideProviders[i], true);
 	}
 }
 
-void FileIOManager::closeIDE(void) {
-	for (size_t i = 0; i < util::countOf(ide::devices); i++) {
-		if (!ide[i])
+void FileIOManager::unmountIDE(void) {
+	for (size_t i = 0; i < util::countOf(ideProviders); i++) {
+		auto provider = ideProviders[i];
+
+		if (!provider)
 			continue;
 
-		ide[i]->close();
-		delete ide[i];
-		ide[i] = nullptr;
+		provider->close();
+		vfs.unmount(provider);
 
-		vfs.unmount(IDE_MOUNT_POINTS[i]);
+		delete provider;
+		ideProviders[i] = nullptr;
 	}
 
 	vfs.unmount("cdrom:");
@@ -153,7 +173,7 @@ bool FileIOManager::loadResourceFile(const char *path) {
 	closeResourceFile();
 
 	if (path)
-		_resourceFile = vfs.openFile(path, file::READ);
+		_resourceFile = vfs.openFile(path, fs::READ);
 
 	// Fall back to the default in-memory resource archive in case of failure.
 	if (_resourceFile) {
@@ -250,18 +270,18 @@ void App::_loadResources(void) {
 	res.loadTIM(_splashOverlay.image, "assets/textures/splash.tim");
 	res.loadData(_stringTable,        "assets/lang/en.lang");
 
-	file::currentSPUOffset = spu::DUMMY_BLOCK_END;
+	fs::currentSPUOffset = spu::DUMMY_BLOCK_END;
 
 	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
 		res.loadVAG(_ctx.sounds[i], _UI_SOUND_PATHS[i]);
 }
 
 bool App::_createDataDirectory(void) {
-	file::FileInfo info;
+	fs::FileInfo info;
 
 	if (!_fileIO.vfs.getFileInfo(info, EXTERNAL_DATA_DIR))
 		return _fileIO.vfs.createDirectory(EXTERNAL_DATA_DIR);
-	if (info.attributes & file::DIRECTORY)
+	if (info.attributes & fs::DIRECTORY)
 		return true;
 
 	return false;
@@ -270,7 +290,7 @@ bool App::_createDataDirectory(void) {
 bool App::_getNumberedPath(
 	char *output, size_t length, const char *path, int maxIndex
 ) {
-	file::FileInfo info;
+	fs::FileInfo info;
 
 	// Perform a binary search in order to quickly find the first unused path.
 	int low  = 0;
@@ -295,7 +315,7 @@ bool App::_getNumberedPath(
 }
 
 bool App::_takeScreenshot(void) {
-	char path[file::MAX_PATH_LENGTH];
+	char path[fs::MAX_PATH_LENGTH];
 
 	if (!_createDataDirectory())
 		return false;
@@ -394,8 +414,10 @@ void App::_interruptHandler(void) {
 		_ctx.audioStream.handleInterrupt();
 
 	if (acknowledgeInterrupt(IRQ_PIO)) {
-		for (auto &dev : ide::devices)
-			dev.handleInterrupt();
+		for (auto dev : _fileIO.ideDevices) {
+			if (dev)
+				dev->handleInterrupt();
+		}
 	}
 }
 
@@ -424,7 +446,7 @@ void App::_interruptHandler(void) {
 #endif
 	_ctx.overlays[2]    = &_screenshotOverlay;
 
-	_runWorker(&App::_ideInitWorker, _warningScreen);
+	_runWorker(&App::_startupWorker, _warningScreen);
 	_setupInterrupts();
 
 	_splashOverlay.show(_ctx);

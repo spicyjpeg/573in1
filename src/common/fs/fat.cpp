@@ -16,17 +16,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/fat.hpp"
-#include "common/file/file.hpp"
+#include "common/fs/fat.hpp"
+#include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
-#include "common/ide.hpp"
 #include "common/io.hpp"
 #include "ps1/system.h"
 #include "vendor/diskio.h"
 #include "vendor/ff.h"
 
-namespace file {
+namespace fs {
 
 static const char *const _FATFS_ERROR_NAMES[]{
 	"OK",
@@ -120,25 +120,23 @@ void FATDirectory::close(void) {
 
 /* FAT filesystem provider */
 
-bool FATProvider::init(int drive) {
+bool FATProvider::init(storage::Device &dev, int mutexID) {
 	if (type)
 		return false;
 
-	_drive[0] = drive + '0';
-
-	auto error = f_mount(&_fs, _drive, 1);
+	auto error = f_mount(&_fs, &dev, mutexID, 1);
 
 	if (error) {
-		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], dev.model);
 		return false;
 	}
 
 	type     = FileSystemType(_fs.fs_type);
 	capacity = uint64_t(_fs.n_fatent - 2) * _fs.csize * _fs.ssize;
 
-	f_getlabel(_drive, volumeLabel, &serialNumber);
+	f_getlabel(&_fs, volumeLabel, &serialNumber);
 
-	LOG_FS("mounted FAT: %s", _drive);
+	LOG_FS("mounted FAT: %s", volumeLabel);
 	return true;
 }
 
@@ -146,17 +144,17 @@ void FATProvider::close(void) {
 	if (!type)
 		return;
 
-	auto error = f_unmount(_drive);
+	auto error = f_unmount(&_fs);
 
 	if (error) {
-		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG_FS("%s", _FATFS_ERROR_NAMES[error]);
 		return;
 	}
 
 	type     = NONE;
 	capacity = 0;
 
-	LOG_FS("unmounted FAT: %s", _drive);
+	LOG_FS("unmounted FAT: %s", volumeLabel);
 }
 
 uint64_t FATProvider::getFreeSpace(void) {
@@ -164,11 +162,10 @@ uint64_t FATProvider::getFreeSpace(void) {
 		return 0;
 
 	uint32_t count;
-	FATFS    *dummy;
-	auto     error = f_getfree(_drive, &count, &dummy);
+	auto     error = f_getfree(&_fs, &count);
 
 	if (error) {
-		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], _drive);
+		LOG_FS("%s", _FATFS_ERROR_NAMES[error]);
 		return 0;
 	}
 
@@ -177,22 +174,14 @@ uint64_t FATProvider::getFreeSpace(void) {
 	return uint64_t(count) * uint64_t(clusterSize);
 }
 
-bool FATProvider::_selectDrive(void) {
-	if (!_fs.fs_type)
-		return false;
-
-	return !f_chdrive(_drive);
-}
-
 bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
-	if (!_selectDrive())
-		return false;
-
 	FILINFO info;
-	auto    error = f_stat(path, &info);
+	auto    error = f_stat(&_fs, path, &info);
 
 	if (error) {
-		//LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+#if 0
+		LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+#endif
 		return false;
 	}
 
@@ -206,11 +195,8 @@ bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 bool FATProvider::getFileFragments(
 	FileFragmentTable &output, const char *path
 ) {
-	if (!_selectDrive())
-		return false;
-
 	FIL  fd;
-	auto error = f_open(&fd, path, READ);
+	auto error = f_open(&_fs, &fd, path, READ);
 
 	if (!error) {
 		size_t length;
@@ -231,19 +217,16 @@ bool FATProvider::getFileFragments(
 		f_close(&fd);
 	}
 
-	LOG_FS("%s, %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+	LOG_FS("%s, %s", _FATFS_ERROR_NAMES[error], path);
 	return false;
 }
 
 Directory *FATProvider::openDirectory(const char *path) {
-	if (!_selectDrive())
-		return nullptr;
-
 	auto dir   = new FATDirectory();
-	auto error = f_opendir(&(dir->_fd), path);
+	auto error = f_opendir(&_fs, &(dir->_fd), path);
 
 	if (error) {
-		LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], path);
 		delete dir;
 		return nullptr;
 	}
@@ -252,13 +235,10 @@ Directory *FATProvider::openDirectory(const char *path) {
 }
 
 bool FATProvider::createDirectory(const char *path) {
-	if (!_selectDrive())
-		return false;
-
-	auto error = f_mkdir(path);
+	auto error = f_mkdir(&_fs, path);
 
 	if (error) {
-		LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], path);
 		return false;
 	}
 
@@ -266,14 +246,11 @@ bool FATProvider::createDirectory(const char *path) {
 }
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
-	if (!_selectDrive())
-		return nullptr;
-
 	auto _file = new FATFile();
-	auto error = f_open(&(_file->_fd), path, uint8_t(flags));
+	auto error = f_open(&_fs, &(_file->_fd), path, uint8_t(flags));
 
 	if (error) {
-		LOG_FS("%s: %s%s", _FATFS_ERROR_NAMES[error], _drive, path);
+		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], path);
 		delete _file;
 		return nullptr;
 	}
@@ -288,81 +265,64 @@ static constexpr int _MUTEX_TIMEOUT = 30000000;
 
 static uint32_t _fatMutex = 0;
 
-extern "C" DSTATUS disk_initialize(uint8_t drive) {
-#if 0
-	auto &dev = ide::devices[drive];
-
-	if (!(dev.flags & ide::DEVICE_READY)) {
-		if (dev.enumerate())
-			return RES_NOTRDY;
-	}
-#endif
-
-	return disk_status(drive);
-}
-
-extern "C" DSTATUS disk_status(uint8_t drive) {
-	auto     &dev  = ide::devices[drive];
+extern "C" DSTATUS disk_status(PDRV_t drive) {
+	auto     dev   = reinterpret_cast<storage::Device *>(drive);
 	uint32_t flags = 0;
 
-	if (!(dev.flags & ide::DEVICE_READY))
+	if (!(dev->type))
 		flags |= STA_NOINIT;
-	if (!dev.capacity)
+	if (!dev->capacity)
 		flags |= STA_NODISK;
-	if (dev.flags & ide::DEVICE_READ_ONLY)
+	if (dev->flags & storage::READ_ONLY)
 		flags |= STA_PROTECT;
 
 	return flags;
 }
 
 extern "C" DRESULT disk_read(
-	uint8_t drive, uint8_t *data, LBA_t lba, size_t count
+	PDRV_t drive, uint8_t *data, LBA_t lba, size_t count
 ) {
-	auto &dev = ide::devices[drive];
+	auto dev = reinterpret_cast<storage::Device *>(drive);
 
-	if (!(dev.flags & ide::DEVICE_READY))
-		return RES_NOTRDY;
-	if (dev.readData(data, lba, count))
-		return RES_ERROR;
-
-	return RES_OK;
+	return dev->read(data, lba, count) ? RES_ERROR : RES_OK;
 }
 
 extern "C" DRESULT disk_write(
-	uint8_t drive, const uint8_t *data, LBA_t lba, size_t count
+	PDRV_t drive, const uint8_t *data, LBA_t lba, size_t count
 ) {
-	auto &dev = ide::devices[drive];
+	auto dev = reinterpret_cast<storage::Device *>(drive);
 
-	if (!(dev.flags & ide::DEVICE_READY))
-		return RES_NOTRDY;
-	if (dev.flags & ide::DEVICE_READ_ONLY)
+	if (dev->flags & storage::READ_ONLY)
 		return RES_WRPRT;
-	if (dev.writeData(data, lba, count))
-		return RES_ERROR;
 
-	return RES_OK;
+	return dev->write(data, lba, count) ? RES_ERROR : RES_OK;
 }
 
-extern "C" DRESULT disk_ioctl(uint8_t drive, uint8_t cmd, void *data) {
-	auto &dev = ide::devices[drive];
+extern "C" DRESULT disk_ioctl(PDRV_t drive, uint8_t cmd, void *data) {
+	auto dev  = reinterpret_cast<storage::Device *>(drive);
+	auto lbas = reinterpret_cast<LBA_t *>(data);
 
-	if (!(dev.flags & ide::DEVICE_READY))
+	if (!(dev->type))
 		return RES_NOTRDY;
 
 	switch (cmd) {
-#ifdef ENABLE_FULL_IDE_DRIVER
 		case CTRL_SYNC:
-			return dev.flushCache() ? RES_ERROR : RES_OK;
-#endif
+			return dev->flushCache() ? RES_ERROR : RES_OK;
 
 		case GET_SECTOR_COUNT:
-			__builtin_memcpy(data, &dev.capacity, sizeof(LBA_t));
+			*lbas = dev->capacity;
 			return RES_OK;
 
 		case GET_SECTOR_SIZE:
-		//case GET_BLOCK_SIZE:
-			*reinterpret_cast<uint16_t *>(data) = dev.getSectorSize();
+			*reinterpret_cast<uint16_t *>(data) = dev->sectorLength;
 			return RES_OK;
+
+		case GET_BLOCK_SIZE:
+			*reinterpret_cast<uint32_t *>(data) = dev->sectorLength;
+			return RES_OK;
+
+		case CTRL_TRIM:
+			return dev->trim(lbas[0], lbas[1] - lbas[0]) ? RES_ERROR : RES_OK;
 
 		default:
 			return RES_PARERR;

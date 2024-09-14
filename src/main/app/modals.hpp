@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/templates.hpp"
-#include "common/ide.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 #include "main/uimodals.hpp"
@@ -71,6 +71,15 @@ public:
 
 /* File picker screen */
 
+static constexpr size_t MAX_FILE_PICKER_DEVICES = 4;
+
+struct FilePickerEntry {
+public:
+	storage::Device *dev;
+	fs::Provider    *provider;
+	const char      *prefix;
+};
+
 class FilePickerScreen : public ui::ListScreen {
 	friend class FileBrowserScreen;
 
@@ -78,7 +87,11 @@ private:
 	char _promptText[512];
 	void (*_callback)(ui::Context &ctx);
 
-	int _drives[util::countOf(ide::devices)];
+	FilePickerEntry _entries[MAX_FILE_PICKER_DEVICES];
+
+	void _addDevice(
+		storage::Device *dev, fs::Provider *provider, const char *prefix
+	);
 
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
@@ -97,7 +110,7 @@ public:
 
 class FileBrowserScreen : public ui::ListScreen {
 private:
-	char _currentPath[file::MAX_PATH_LENGTH];
+	char _currentPath[fs::MAX_PATH_LENGTH];
 	bool _isRoot;
 
 	int        _numFiles, _numDirectories;
@@ -111,7 +124,7 @@ protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
 
 public:
-	char selectedPath[file::MAX_PATH_LENGTH];
+	char selectedPath[fs::MAX_PATH_LENGTH];
 
 	int loadDirectory(
 		ui::Context &ctx, const char *path, bool updateCurrent = true

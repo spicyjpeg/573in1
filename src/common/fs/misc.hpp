@@ -18,12 +18,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "ps1/pcdrv.h"
 
-namespace file {
+namespace fs {
 
 /* PCDRV driver */
 
@@ -90,6 +90,7 @@ public:
 
 	bool mount(const char *prefix, Provider *provider, bool force = false);
 	bool unmount(const char *prefix);
+	bool unmount(Provider *provider);
 
 	bool getFileInfo(FileInfo &output, const char *path);
 	bool getFileFragments(FileFragmentTable &output, const char *path);

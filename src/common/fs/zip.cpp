@@ -16,13 +16,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
-#include "common/file/zip.hpp"
+#include "common/fs/file.hpp"
+#include "common/fs/zip.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "vendor/miniz.h"
 
-namespace file {
+namespace fs {
 
 static const char *const _MINIZ_ZIP_ERROR_NAMES[]{
 	"NO_ERROR",

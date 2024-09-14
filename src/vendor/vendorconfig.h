@@ -35,10 +35,7 @@
 #define FF_LFN_UNICODE 0
 #define FF_LFN_BUF     255
 #define FF_SFN_BUF     12
-#define FF_FS_RPATH    1
 
-#define FF_VOLUMES         2
-#define FF_STR_VOLUME_ID   0
 #define FF_MULTI_PARTITION 0
 
 #define FF_MIN_SS   512
@@ -54,6 +51,14 @@
 
 #define FF_FS_LOCK      0
 #define FF_FS_REENTRANT 1
+
+// The following options have been removed entirely from the vendored copy of
+// FatFs.
+#if 0
+#define FF_FS_RPATH      0
+#define FF_VOLUMES       2
+#define FF_STR_VOLUME_ID 0
+#endif
 
 /* miniz configuration */
 

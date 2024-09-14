@@ -23,7 +23,7 @@
 #include "common/gpu.hpp"
 #include "common/spu.hpp"
 
-namespace file {
+namespace fs {
 
 /* Common structures */
 

@@ -18,43 +18,60 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
-#include "vendor/miniz.h"
+#include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
+#include "vendor/ff.h"
 
-namespace file {
+namespace fs {
 
-/* ZIP directory class */
+/* FAT file and directory classes */
 
-class ZIPDirectory : public Directory {
+class FATFile : public File {
+	friend class FATProvider;
+
 private:
-	mz_zip_archive *_zip;
-	size_t         _index;
+	FIL _fd;
 
 public:
-	inline ZIPDirectory(mz_zip_archive &zip)
-	: _zip(&zip), _index(0) {}
-
-	bool getEntry(FileInfo &output);
+	size_t read(void *output, size_t length);
+	size_t write(const void *input, size_t length);
+	uint64_t seek(uint64_t offset);
+	uint64_t tell(void) const;
+	void close(void);
 };
 
-/* ZIP filesystem provider */
+class FATDirectory : public Directory {
+	friend class FATProvider;
 
-// This implementation only supports loading an entire file at once.
-class ZIPProvider : public Provider {
 private:
-	mz_zip_archive _zip;
-	File           *_file;
+	DIR _fd;
 
 public:
-	bool init(File *file);
-	bool init(const void *zipData, size_t length);
+	bool getEntry(FileInfo &output);
 	void close(void);
+};
+
+/* FAT filesystem provider */
+
+class FATProvider : public Provider {
+private:
+	FATFS _fs;
+
+public:
+	inline FATProvider(void) {
+		_fs.fs_type = 0;
+	}
+
+	bool init(storage::Device &dev, int mutexID);
+	void close(void);
+	uint64_t getFreeSpace(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);
+	bool getFileFragments(FileFragmentTable &output, const char *path);
 	Directory *openDirectory(const char *path);
+	bool createDirectory(const char *path);
 
-	size_t loadData(util::Data &output, const char *path);
-	size_t loadData(void *output, size_t length, const char *path);
+	File *openFile(const char *path, uint32_t flags);
 };
 
 }

@@ -16,14 +16,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/file/file.hpp"
-#include "common/file/misc.hpp"
+#include "common/fs/file.hpp"
+#include "common/fs/misc.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "ps1/pcdrv.h"
 
-namespace file {
+namespace fs {
 
 /* PCDRV utilities */
 
@@ -106,6 +106,8 @@ bool HostProvider::init(void) {
 	}
 
 	type = HOST;
+	__builtin_strncpy(volumeLabel, "PCDRV", sizeof(volumeLabel));
+
 	return true;
 }
 
@@ -243,6 +245,22 @@ bool VFSProvider::unmount(const char *prefix) {
 	}
 
 	LOG_FS("%s was not mapped", prefix);
+	return false;
+}
+
+bool VFSProvider::unmount(Provider *provider) {
+	for (auto &mp : _mountPoints) {
+		if (mp.provider != provider)
+			continue;
+
+		mp.prefix     = 0;
+		mp.pathOffset = 0;
+		mp.provider   = nullptr;
+
+		return true;
+	}
+
+	LOG_FS("FS was not mapped");
 	return false;
 }
 

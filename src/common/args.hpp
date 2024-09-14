@@ -17,7 +17,7 @@
 #pragma once
 
 #include <stddef.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
 #include "common/util/misc.hpp"
 
 namespace args {
@@ -52,9 +52,9 @@ public:
 	void *loadAddress;
 	int  device; // 0-63 = flash, -1 or -2 = IDE
 
-	size_t             numArgs, numFragments;
-	const char         *executableArgs[util::MAX_EXECUTABLE_ARGS];
-	file::FileFragment fragments[MAX_LAUNCHER_FRAGMENTS];
+	size_t           numArgs, numFragments;
+	const char       *executableArgs[util::MAX_EXECUTABLE_ARGS];
+	fs::FileFragment fragments[MAX_LAUNCHER_FRAGMENTS];
 
 	ExecutableLauncherArgs(void);
 	bool parseArgument(const char *arg);

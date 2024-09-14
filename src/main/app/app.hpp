@@ -17,12 +17,12 @@
 #pragma once
 
 #include <stddef.h>
-#include "common/file/file.hpp"
-#include "common/file/misc.hpp"
-#include "common/file/zip.hpp"
+#include "common/fs/file.hpp"
+#include "common/fs/misc.hpp"
+#include "common/fs/zip.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
-#include "common/ide.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
 #include "main/app/main.hpp"
@@ -69,28 +69,31 @@ extern const char *const IDE_MOUNT_POINTS[];
 
 class FileIOManager {
 private:
-	file::File *_resourceFile;
+	fs::File *_resourceFile;
 
 public:
 	const void *resourcePtr;
 	size_t     resourceLength;
 
-	file::Provider     *ide[util::countOf(ide::devices)];
-	file::ZIPProvider  resource;
+	fs::ZIPProvider  resource;
 #ifdef ENABLE_PCDRV
-	file::HostProvider host;
+	fs::HostProvider host;
 #endif
-	file::VFSProvider  vfs;
+	fs::VFSProvider  vfs;
+
+	storage::Device *ideDevices[2];
+	fs::Provider    *ideProviders[2];
 
 	inline ~FileIOManager(void) {
 		closeResourceFile();
-		closeIDE();
+		unmountIDE();
 	}
 
 	FileIOManager(void);
 
 	void initIDE(void);
-	void closeIDE(void);
+	void mountIDE(void);
+	void unmountIDE(void);
 	bool loadResourceFile(const char *path);
 	void closeResourceFile(void);
 };
@@ -192,9 +195,9 @@ private:
 #endif
 	ui::ScreenshotOverlay _screenshotOverlay;
 
-	ui::Context       &_ctx;
-	file::StringTable _stringTable;
-	FileIOManager     _fileIO;
+	ui::Context     &_ctx;
+	fs::StringTable _stringTable;
+	FileIOManager   _fileIO;
 
 	cart::CartDump      _cartDump;
 	cart::ROMHeaderDump _romHeaderDump;
@@ -246,7 +249,7 @@ private:
 	bool _flashHeaderWriteWorker(void);
 
 	// miscworkers.cpp
-	bool _ideInitWorker(void);
+	bool _startupWorker(void);
 	bool _fileInitWorker(void);
 	bool _executableWorker(void);
 	bool _atapiEjectWorker(void);

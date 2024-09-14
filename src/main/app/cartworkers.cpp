@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/file/file.hpp"
+#include "common/fs/file.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
@@ -202,7 +202,7 @@ bool App::_qrCodeWorker(void) {
 bool App::_cartDumpWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
 
-	char   path[file::MAX_PATH_LENGTH], code[8], region[8];
+	char   path[fs::MAX_PATH_LENGTH], code[8], region[8];
 	size_t length = _cartDump.getDumpLength();
 
 	if (!_createDataDirectory())
@@ -267,7 +267,7 @@ bool App::_cartRestoreWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.cartRestoreWorker.init"));
 
 	const char *path = _fileBrowserScreen.selectedPath;
-	auto       _file = _fileIO.vfs.openFile(path, file::READ);
+	auto       _file = _fileIO.vfs.openFile(path, fs::READ);
 
 	cart::CartDump newDump;
 

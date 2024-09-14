@@ -1,3 +1,12 @@
+/*
+ * This library has been modified to remove unnecessary global state, change the
+ * data type used to identify physical drives and add a function for building
+ * file fragment tables (similar to the existing "fastseek" functionality).
+ * Additionally, all patches available on
+ * <http://elm-chan.org/fsw/ff/patches.html> have been applied. The original
+ * license and copyright notice is below.
+ */
+
 /*-----------------------------------------------------------------------/
 /  Low level disk interface modlue include file   (C)ChaN, 2019          /
 /-----------------------------------------------------------------------*/
@@ -28,11 +37,10 @@ typedef enum {
 /* Prototypes for disk control functions */
 
 
-DSTATUS disk_initialize (BYTE pdrv);
-DSTATUS disk_status (BYTE pdrv);
-DRESULT disk_read (BYTE pdrv, BYTE* buff, LBA_t sector, UINT count);
-DRESULT disk_write (BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count);
-DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
+DSTATUS disk_status (PDRV_t pdrv);
+DRESULT disk_read (PDRV_t pdrv, BYTE* buff, LBA_t sector, UINT count);
+DRESULT disk_write (PDRV_t pdrv, const BYTE* buff, LBA_t sector, UINT count);
+DRESULT disk_ioctl (PDRV_t pdrv, BYTE cmd, void* buff);
 
 
 /* Disk Status Bits (DSTATUS) */
