@@ -511,7 +511,6 @@ void ChecksumScreen::show(ui::Context &ctx, bool goBack) {
 
 	_PRINT(STR("ChecksumScreen.description"));
 
-	//*(--ptr) = 0;
 	LOG_APP("%d buffer bytes free", end - ptr);
 
 	TextScreen::show(ctx, goBack);

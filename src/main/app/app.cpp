@@ -234,7 +234,9 @@ void App::_unloadCartData(void) {
 	util::clear(_cartDump.data);
 
 	_identified    = nullptr;
-	//_selectedEntry = nullptr;
+#if 0
+	_selectedEntry = nullptr;
+#endif
 }
 
 void App::_setupInterrupts(void) {

@@ -66,9 +66,11 @@ private:
 public:
 	inline DummyDriver(CartDump &dump)
 	: Driver(dump) {
-		//dump.clearIdentifiers();
-		//dump.clearKey();
-		//dump.clearData();
+#if 0
+		dump.clearIdentifiers();
+		dump.clearKey();
+		dump.clearData();
+#endif
 
 		dump.chipType = dummyDriverDump.chipType;
 		dump.flags    = dummyDriverDump.flags &
@@ -91,9 +93,11 @@ public:
 	inline CartDriver(
 		CartDump &dump, ChipType chipType = NONE, uint8_t flags = 0
 	) : Driver(dump) {
-		//dump.clearIdentifiers();
-		//dump.clearKey();
-		//dump.clearData();
+#if 0
+		dump.clearIdentifiers();
+		dump.clearKey();
+		dump.clearData();
+#endif
 
 		dump.chipType = chipType;
 		dump.flags    = flags;

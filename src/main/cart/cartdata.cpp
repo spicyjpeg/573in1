@@ -319,7 +319,9 @@ void ExtendedCartParser::flush(void) {
 	auto pub = getPublicIdentifiers();
 
 	// The private installation ID seems to always go unused and zeroed out...
-	//pub->installID.copyFrom(pri->installID.data);
+#if 0
+	pub->installID.copyFrom(pri->installID.data);
+#endif
 	pub->systemID.copyFrom(pri->systemID.data);
 
 	auto header = _getHeader();
@@ -631,16 +633,18 @@ CartParser *newCartParser(
 			return new ExtendedCartParser(dump, flags);
 
 		default:
-			//return new CartParser(dump, flags);
 			return nullptr;
 	}
 }
 
 CartParser *newCartParser(CartDump &dump) {
 	// Try all formats from the most complex one to the simplest.
-	//for (auto &format : _KNOWN_CART_FORMATS) {
+#if 0
+	for (auto &format : _KNOWN_CART_FORMATS) {
+#else
 	for (int i = util::countOf(_KNOWN_CART_FORMATS) - 1; i >= 0; i--) {
 		auto &format = _KNOWN_CART_FORMATS[i];
+#endif
 		auto parser  = newCartParser(dump, format.format, format.flags);
 
 		LOG_CART_DATA("trying as %s", format.name);
@@ -662,15 +666,17 @@ ROMHeaderParser *newROMHeaderParser(
 			return new ExtendedROMHeaderParser(dump, flags);
 
 		default:
-			//return new ROMHeaderParser(dump, flags);
 			return nullptr;
 	}
 }
 
 ROMHeaderParser *newROMHeaderParser(ROMHeaderDump &dump) {
-	//for (auto &format : _KNOWN_ROM_HEADER_FORMATS) {
+#if 0
+	for (auto &format : _KNOWN_ROM_HEADER_FORMATS) {
+#else
 	for (int i = util::countOf(_KNOWN_ROM_HEADER_FORMATS) - 1; i >= 0; i--) {
 		auto &format = _KNOWN_ROM_HEADER_FORMATS[i];
+#endif
 		auto parser  = newROMHeaderParser(dump, format.format, format.flags);
 
 		LOG_CART_DATA("trying as %s", format.name);

@@ -213,7 +213,6 @@ void CartInfoScreen::show(ui::Context &ctx, bool goBack) {
 	}
 
 _done:
-	//*(--ptr) = 0;
 	LOG_APP("%d buffer bytes free", end - ptr);
 
 	TextScreen::show(ctx, goBack);
@@ -282,7 +281,6 @@ const char *UnlockKeyScreen::_getItemName(ui::Context &ctx, int index) const {
 void UnlockKeyScreen::autoUnlock(ui::Context &ctx) {
 	APP->_cartDump.copyKeyFrom(APP->_identified->dataKey);
 
-	//APP->_selectedEntry = APP->_identified;
 	APP->_selectedEntry = nullptr;
 	ctx.show(APP->_confirmScreen, false, true);
 }

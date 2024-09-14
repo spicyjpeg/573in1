@@ -203,14 +203,14 @@ target_compile_definitions(
 function(addLauncher address stackTop)
 addPS1Executable(
 		launcher${address} ${address} ${stackTop}
-		#src/common/storage/ata.cpp
-		#src/common/storage/atapi.cpp
-		#src/common/storage/device.cpp
+		src/common/storage/ata.cpp
+		src/common/storage/atapi.cpp
+		src/common/storage/device.cpp
 		src/common/util/hash.cpp
 		src/common/util/misc.cpp
 		src/common/args.cpp
-		src/common/ide.cpp
 		src/common/io.cpp
+		src/launcher/exchandler.s
 		src/launcher/main.cpp
 		src/libc/crt0.c
 		src/vendor/printf.c

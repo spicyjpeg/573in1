@@ -167,9 +167,11 @@ void JAMMATestScreen::update(ui::Context &ctx) {
 	}
 
 	*(--ptr) = 0;
-	//LOG_APP("%d buffer bytes free", end - ptr);
+#if 0
+	LOG_APP("%d buffer bytes free", end - ptr);
 
-	//TextScreen::update(ctx);
+	TextScreen::update(ctx);
+#endif
 
 	if (ctx.buttons.longPressed(ui::BTN_START))
 		ctx.show(APP->_testMenuScreen, true, true);

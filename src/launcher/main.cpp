@@ -14,24 +14,37 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stddef.h>
 #include <stdint.h>
+#include "common/storage/ata.hpp"
+#include "common/storage/atapi.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 #include "common/args.hpp"
-#include "common/ide.hpp"
 #include "common/io.hpp"
 #include "ps1/system.h"
 
-extern "C" uint8_t _textStart[];
+enum ExitCode {
+	NO_ERROR     = 0,
+	INVALID_ARGS = 1,
+	INIT_FAILED  = 2,
+	READ_FAILED  = 3
+};
+
+/* Executable loading */
 
 static constexpr size_t _LOAD_CHUNK_LENGTH = 0x8000;
 
-static int _loadFromFlash(args::ExecutableLauncherArgs &args) {
-	io::setFlashBank(args.device);
-
+static ExitCode _loadFromFlash(args::ExecutableLauncherArgs &args) {
 	// The executable's offset and length are always passed as a single
 	// fragment.
+	if (args.numFragments != 1)
+		return INVALID_ARGS;
+
+	io::setFlashBank(args.deviceIndex);
+
 	auto ptr    = reinterpret_cast<uintptr_t>(args.loadAddress);
 	auto source = uintptr_t(args.fragments[0].lba);
 	auto length = size_t(args.fragments[0].length);
@@ -43,34 +56,30 @@ static int _loadFromFlash(args::ExecutableLauncherArgs &args) {
 			reinterpret_cast<void *>(ptr),
 			reinterpret_cast<const void *>(source), chunkLength
 		);
-		io::clearWatchdog();
 
 		ptr    += chunkLength;
 		source += chunkLength;
 		length -= chunkLength;
 	}
 
-	return 0;
+	return NO_ERROR;
 }
 
-static int _loadFromIDE(args::ExecutableLauncherArgs &args) {
-	int  drive = -(args.device + 1);
-	auto &dev  = ide::devices[drive];
-
+static ExitCode _loadFromStorage(
+	args::ExecutableLauncherArgs &args, storage::Device &dev
+) {
 	auto error = dev.enumerate();
 
 	if (error) {
-		LOG_APP("drive %d: %s", drive, ide::getErrorString(error));
-		return 2;
+		LOG_APP(
+			"drive %d: %s", args.deviceIndex, storage::getErrorString(error)
+		);
+		return INIT_FAILED;
 	}
 
-	io::clearWatchdog();
-
-	size_t sectorSize  = dev.getSectorSize();
-	size_t skipSectors = util::EXECUTABLE_BODY_OFFSET / sectorSize;
-
-	auto ptr      = reinterpret_cast<uintptr_t>(args.loadAddress);
-	auto fragment = args.fragments;
+	auto ptr         = reinterpret_cast<uintptr_t>(args.loadAddress);
+	auto fragment    = args.fragments;
+	auto skipSectors = util::EXECUTABLE_BODY_OFFSET / dev.sectorLength;
 
 	for (size_t i = args.numFragments; i; i--, fragment++) {
 		auto lba    = fragment->lba;
@@ -87,22 +96,29 @@ static int _loadFromIDE(args::ExecutableLauncherArgs &args) {
 			length -= skipSectors;
 		}
 
-		error = dev.readData(reinterpret_cast<void *>(ptr), lba, length);
+		error = dev.read(reinterpret_cast<void *>(ptr), lba, length);
 
 		if (error) {
-			LOG_APP("drive %d: %s", drive, ide::getErrorString(error));
-			return 3;
+			LOG_APP(
+				"drive %d: %s", args.deviceIndex, storage::getErrorString(error)
+			);
+			return READ_FAILED;
 		}
 
-		io::clearWatchdog();
-		ptr += length * sectorSize;
+		ptr += length * dev.sectorLength;
 	}
 
-	return 0;
+	return NO_ERROR;
 }
 
+/* Main */
+
+extern "C" uint8_t _textStart[];
+
+extern "C" void _launcherExceptionVector(void);
+
 int main(int argc, const char **argv) {
-	disableInterrupts();
+	installCustomExceptionHandler(&_launcherExceptionVector);
 	io::init();
 
 	args::ExecutableLauncherArgs args;
@@ -110,24 +126,46 @@ int main(int argc, const char **argv) {
 	for (; argc > 0; argc--)
 		args.parseArgument(*(argv++));
 
-#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_IDE_LOGGING)
+#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_STORAGE_LOGGING) || defined(ENABLE_FS_LOGGING)
 	util::logger.setupSyslog(args.baudRate);
 #endif
 
 	if (!args.entryPoint || !args.loadAddress || !args.numFragments) {
 		LOG_APP("required arguments missing");
-		return 1;
+		return INVALID_ARGS;
 	}
 
 	if (!args.stackTop)
 		args.stackTop = _textStart - 16;
 
-	int error = (args.device >= 0)
-		? _loadFromFlash(args)
-		: _loadFromIDE(args);
+	ExitCode code;
 
-	if (error)
-		return error;
+	switch (args.deviceType) {
+		case "ata"_h:
+			{
+				storage::ATADevice dev(args.deviceIndex);
+				code = _loadFromStorage(args, dev);
+			};
+			break;
+
+		case "atapi"_h:
+			{
+				storage::ATAPIDevice dev(args.deviceIndex);
+				code = _loadFromStorage(args, dev);
+			};
+			break;
+
+		case "flash"_h:
+			code = _loadFromFlash(args);
+			break;
+
+		default:
+			LOG_APP("invalid device type");
+			code = INVALID_ARGS;
+	}
+
+	if (code)
+		return code;
 
 	// Launch the executable.
 	util::ExecutableLoader loader(
@@ -141,9 +179,10 @@ int main(int argc, const char **argv) {
 			break;
 	}
 
-	flushCache();
+	LOG_APP("launching executable");
+	uninstallExceptionHandler();
 	io::clearWatchdog();
 
 	loader.run();
-	return 0;
+	return NO_ERROR;
 }

@@ -73,11 +73,11 @@ bool MainArgs::parseArgument(const char *arg) {
 
 	switch (util::hash(arg, _VALUE_SEPARATOR)) {
 		case "screen.width"_h:
-			screenWidth = int(strtol(&arg[13], nullptr, 0));
+			screenWidth    = int(strtol(&arg[13], nullptr, 0));
 			return true;
 
 		case "screen.height"_h:
-			screenHeight = int(strtol(&arg[14], nullptr, 0));
+			screenHeight   = int(strtol(&arg[14], nullptr, 0));
 			return true;
 
 		case "screen.interlace"_h:
@@ -102,32 +102,36 @@ bool MainArgs::parseArgument(const char *arg) {
 }
 
 ExecutableLauncherArgs::ExecutableLauncherArgs(void)
-: entryPoint(nullptr), initialGP(nullptr), stackTop(nullptr),
-loadAddress(nullptr), device(0), numArgs(0), numFragments(0) {}
+: loadAddress(nullptr), entryPoint(nullptr), initialGP(nullptr),
+stackTop(nullptr), deviceType(0), deviceIndex(0), numFragments(0), numArgs(0) {}
 
 bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 	if (!arg)
 		return false;
 
 	switch (util::hash(arg, _VALUE_SEPARATOR)) {
-		case "entry.pc"_h:
-			entryPoint = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
-			return true;
-
-		case "entry.gp"_h:
-			initialGP = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
-			return true;
-
-		case "entry.sp"_h:
-			stackTop = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
-			return true;
-
 		case "load"_h:
 			loadAddress = reinterpret_cast<void *>(strtol(&arg[5], nullptr, 16));
 			return true;
 
-		case "device"_h:
-			device = int(strtol(&arg[7], nullptr, 0));
+		case "entry.pc"_h:
+			entryPoint  = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
+			return true;
+
+		case "entry.gp"_h:
+			initialGP   = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
+			return true;
+
+		case "entry.sp"_h:
+			stackTop    = reinterpret_cast<void *>(strtol(&arg[9], nullptr, 16));
+			return true;
+
+		case "device.type"_h:
+			deviceType  = util::hash(&arg[12]);
+			return true;
+
+		case "device.id"_h:
+			deviceIndex = int(strtol(&arg[10], nullptr, 0));
 			return true;
 
 		case "frag"_h:

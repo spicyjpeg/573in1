@@ -36,8 +36,11 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 	size_t length = (rect.w * rect.h) / 2;
 
 	util::assertAligned<uint32_t>(data);
-	//assert(!(length % _DMA_CHUNK_SIZE));
+#if 0
+	assert(!(length % _DMA_CHUNK_SIZE));
+#else
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
+#endif
 
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
 		return 0;
@@ -78,8 +81,11 @@ size_t download(const RectWH &rect, void *data, bool wait) {
 	size_t length = (rect.w * rect.h) / 2;
 
 	util::assertAligned<uint32_t>(data);
-	//assert(!(length % _DMA_CHUNK_SIZE));
+#if 0
+	assert(!(length % _DMA_CHUNK_SIZE));
+#else
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
+#endif
 
 	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
 		return 0;
@@ -236,7 +242,7 @@ uint32_t *Context::newPacket(size_t length) {
 	auto ptr        = _currentListPtr;
 	_currentListPtr = &ptr[length + 1];
 
-	//assert(_currentListPtr <= &_drawBuffer().displayList[DISPLAY_LIST_SIZE]);
+	assert(_currentListPtr <= &_drawBuffer().displayList[DISPLAY_LIST_SIZE]);
 
 	*(ptr++) = gp0_tag(length, _currentListPtr);
 	return ptr;

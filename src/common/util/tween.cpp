@@ -23,13 +23,13 @@ namespace util {
 template<typename T, typename E> void Tween<T, E>::setValue(
 	int time, T start, T target, int duration
 ) {
-	//assert(duration <= 0x800);
-
 	_base  = start;
 	_delta = target - start;
 
 	_endTime   = time + duration;
 	_timeScale = TWEEN_UNIT / duration;
+
+	assert(_timeScale > 0);
 }
 
 template<typename T, typename E> void Tween<T, E>::setValue(T target) {

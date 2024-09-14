@@ -47,6 +47,8 @@ extern Thread *currentThread;
  */
 extern Thread *nextThread;
 
+void _exceptionVector(void);
+
 /**
  * @brief Enables all interrupts at the COP0 side (without altering the IRQ_MASK
  * register). If any IRQs occurred and were not acknowledged while interrupts
@@ -107,15 +109,31 @@ __attribute__((always_inline)) static inline void initThread(
 }
 
 /**
+ * @brief Disables the exception handler provided by the BIOS, replaces it with
+ * the provided function, which must be relocatable and consist of no more than
+ * 4 instructions (16 bytes), and flushes the instruction cache (but does not
+ * enable interrupts). This function is mutually exclusive with
+ * installExceptionHandler() and must be called only once.
+ *
+ * @param func
+ */
+void installCustomExceptionHandler(VoidFunction func);
+
+/**
  * @brief Sets up the exception handler, disables the one provided by the BIOS
  * kernel and flushes the instruction cache (but does not enable interrupts).
- * Must be called only once, before *any* other function in this header is used.
+ * This function is mutually exclusive with installCustomExceptionHandler() and
+ * must be called only once.
  */
-void installExceptionHandler(void);
+static inline void installExceptionHandler(void) {
+	installCustomExceptionHandler(&_exceptionVector);
+}
 
 /**
  * @brief Restores the BIOS kernel's exception handler. Must be called before
- * returning to the kernel or launching another executable.
+ * returning to the kernel or launching another executable, if
+ * installExceptionHandler() or installCustomExceptionHandler() were previously
+ * called.
  */
 void uninstallExceptionHandler(void);
 

@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include "common/fs/file.hpp"
+#include "common/util/hash.hpp"
 #include "common/util/misc.hpp"
 
 namespace args {
@@ -47,14 +48,17 @@ public:
 
 class ExecutableLauncherArgs : public CommonArgs {
 public:
+	void *loadAddress;
 	void *entryPoint, *initialGP, *stackTop;
 
-	void *loadAddress;
-	int  device; // 0-63 = flash, -1 or -2 = IDE
+	util::Hash deviceType;
+	int        deviceIndex;
 
-	size_t           numArgs, numFragments;
-	const char       *executableArgs[util::MAX_EXECUTABLE_ARGS];
+	size_t           numFragments;
 	fs::FileFragment fragments[MAX_LAUNCHER_FRAGMENTS];
+
+	size_t     numArgs;
+	const char *executableArgs[util::MAX_EXECUTABLE_ARGS];
 
 	ExecutableLauncherArgs(void);
 	bool parseArgument(const char *arg);

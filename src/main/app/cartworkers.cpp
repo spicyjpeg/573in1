@@ -349,8 +349,10 @@ bool App::_cartReflashWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.cartReflashWorker.init"));
 
 	// TODO: preserve 0x81 traceid if possible
-	//uint8_t traceID[8];
-	//_cartParser->getIdentifiers()->traceID.copyTo(traceID);
+#if 0
+	uint8_t traceID[8];
+	_cartParser->getIdentifiers()->traceID.copyTo(traceID);
+#endif
 
 	if (!_cartEraseWorker())
 		return false;

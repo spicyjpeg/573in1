@@ -45,9 +45,7 @@ static inline void _flushCache(void) {
 	BIOS_API_TABLE[0x44]();
 }
 
-void _exceptionVector(void);
-
-void installExceptionHandler(void) {
+void installCustomExceptionHandler(VoidFunction func) {
 	// Clear all pending IRQ flags and prevent the interrupt controller from
 	// generating further IRQs.
 	IRQ_MASK = 0;
@@ -59,11 +57,11 @@ void installExceptionHandler(void) {
 	cop0_setSR(COP0_SR_CU0);
 
 	// Overwrite the default breakpoint and exception handlers placed into RAM
-	// by the BIOS with a function that will jump to our custom handler.
+	// by the BIOS.
 	__builtin_memcpy(_savedBreakpointVector, BIOS_BP_VECTOR,  16);
 	__builtin_memcpy(_savedExceptionVector,  BIOS_EXC_VECTOR, 16);
-	__builtin_memcpy(BIOS_BP_VECTOR,  &_exceptionVector, 16);
-	__builtin_memcpy(BIOS_EXC_VECTOR, &_exceptionVector, 16);
+	__builtin_memcpy(BIOS_BP_VECTOR,  func, 16);
+	__builtin_memcpy(BIOS_EXC_VECTOR, func, 16);
 	_flushCache();
 
 	DMA_DPCR = 0x0bbbbbbb;

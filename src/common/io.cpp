@@ -117,7 +117,7 @@ void getRTCTime(util::Date &output) {
 }
 
 void setRTCTime(const util::Date &value, bool stop) {
-	//assert((value.year >= 1970) && (value.year <= 2069));
+	assert((value.year >= 1970) && (value.year <= 2069));
 
 	int _year   = value.year % 100;
 	int weekday = value.getDayOfWeek() + 1;

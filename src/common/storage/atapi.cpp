@@ -67,8 +67,9 @@ static DeviceError _senseDataToError(const ATAPISenseData &data) {
 	LOG_STORAGE("err=0x%02x, key=0x%02x", data.errorCode, data.senseKey);
 	LOG_STORAGE("asc=0x%02x, ascq=0x%02x", data.asc, data.ascQualifier);
 
-	if (lba)
+	if (lba) {
 		LOG_STORAGE("lba=0x%08x", lba);
+	}
 
 	switch (key) {
 		case SENSE_KEY_NO_SENSE:

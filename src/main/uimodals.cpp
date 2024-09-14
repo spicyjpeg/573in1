@@ -52,7 +52,6 @@ void MessageBoxScreen::draw(Context &ctx, bool active) const {
 	rect.y = buttonY + BUTTON_PADDING;
 	rect.w = _getButtonWidth();
 	rect.h = rect.y + ctx.font.getLineHeight();
-	//rect.h = BUTTON_HEIGHT - BUTTON_PADDING * 2;
 
 	for (int i = 0; i < _numButtons; i++) {
 		rect.x = buttonX +
@@ -136,8 +135,6 @@ HexEntryScreen::HexEntryScreen(void)
 
 void HexEntryScreen::show(Context &ctx, bool goBack) {
 	MessageBoxScreen::show(ctx, goBack);
-
-	//util::clear(_buffer);
 
 	_buttonIndexOffset = _bufferLength * 2;
 	_charWidth         = ctx.font.getCharacterWidth('0');

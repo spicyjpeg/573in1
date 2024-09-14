@@ -386,7 +386,9 @@ DriverError X76F100Driver::readPrivateData(void) {
 	if (error)
 		return error;
 
-	//io::cartI2C.Start();
+#if 0
+	io::cartI2C.start();
+#endif
 	io::cartI2C.readBytes(_dump.data, 112);
 	io::cartI2C.stopWithCS();
 

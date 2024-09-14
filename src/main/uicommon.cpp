@@ -186,7 +186,6 @@ void ListScreen::_drawItems(Context &ctx) const {
 
 	rect.x1 = LIST_BOX_PADDING + LIST_ITEM_PADDING;
 	rect.x2 = itemWidth - LIST_ITEM_PADDING;
-	//rect.y2 = listHeight;
 
 	for (int i = 0; (i < _listLength) && (itemY < listHeight); i++) {
 		int itemHeight = lineHeight + LIST_ITEM_PADDING * 2;

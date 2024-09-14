@@ -150,8 +150,11 @@ size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
 	length /= 4;
 
 	util::assertAligned<uint32_t>(data);
-	//assert(!(length % _DMA_CHUNK_SIZE));
+#if 0
+	assert(!(length % _DMA_CHUNK_SIZE));
+#else
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
+#endif
 
 	if (!waitForDMATransfer(DMA_SPU, _DMA_TIMEOUT))
 		return 0;
@@ -183,8 +186,11 @@ size_t download(uint32_t offset, void *data, size_t length, bool wait) {
 	length /= 4;
 
 	util::assertAligned<uint32_t>(data);
-	//assert(!(length % _DMA_CHUNK_SIZE));
+#if 0
+	assert(!(length % _DMA_CHUNK_SIZE));
+#else
 	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
+#endif
 
 	if (!waitForDMATransfer(DMA_SPU, _DMA_TIMEOUT))
 		return 0;
@@ -362,8 +368,6 @@ ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
 		chunkOffset += interleave;
 		isRightCh   ^= 1;
 	}
-
-	//assert(streamCh == channels);
 
 	_channelMask = mask;
 	SPU_FLAG_ON1 = mask & 0xffff;

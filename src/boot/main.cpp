@@ -56,8 +56,10 @@ int main(int argc, const char **argv) {
 	auto ptr        = &_resourceArchive[zipHeader->getHeaderLength()];
 	auto compLength = zipHeader->compLength;
 
-	//assert(zipHeader->validateMagic());
-	//assert(!zipHeader->compType);
+#if 0
+	assert(zipHeader->validateMagic());
+	assert(!zipHeader->compType);
+#endif
 
 	// Decompress only the header to determine where to place the binary in
 	// memory, then rerun the decompressor on the entire executable.

@@ -26,6 +26,11 @@
 #include "ps1/gpucmd.h"
 #include "ps1/system.h"
 
+enum ExitCode {
+	NO_ERROR     = 0,
+	INVALID_ARGS = 1
+};
+
 int main(int argc, const char **argv) {
 	installExceptionHandler();
 	gpu::init();
@@ -44,7 +49,7 @@ int main(int argc, const char **argv) {
 	// by the boot stub.
 	if (!args.resourcePtr || !args.resourceLength) {
 		LOG_APP("required arguments missing");
-		return 1;
+		return INVALID_ARGS;
 	}
 
 	auto gpuCtx = new gpu::Context(
@@ -65,5 +70,5 @@ int main(int argc, const char **argv) {
 	delete gpuCtx;
 
 	uninstallExceptionHandler();
-	return 0;
+	return NO_ERROR;
 }

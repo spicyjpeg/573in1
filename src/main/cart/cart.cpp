@@ -14,6 +14,7 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "common/util/hash.hpp"
@@ -83,7 +84,7 @@ void CartDump::initConfig(uint8_t maxAttempts, bool hasPublicSection) {
 			break;
 
 		case ZS01:
-			//assert(hasPublicSection);
+			assert(hasPublicSection);
 			config[4] = maxAttempts;
 			break;
 

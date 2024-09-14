@@ -196,7 +196,12 @@ public:
 		return _screens[_currentScreen ^ 1];
 	}
 	inline void tick(void) {
-		//buttons.update();
+		// FIXME: poll buttons here to prevent slowdowns in case of frame drops
+		// (would require decoupling the PS1 controller driver as it's blocking
+		// and should not run in the exception handler)
+#if 0
+		buttons.update();
+#endif
 		time++;
 	}
 

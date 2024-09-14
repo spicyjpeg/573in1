@@ -337,7 +337,6 @@ bool App::_romEraseWorker(void) {
 	auto   driver       = region->newDriver();
 	size_t chipLength   = driver->getChipSize().chipLength;
 	size_t sectorLength = driver->getChipSize().eraseSectorLength;
-	//size_t numChips     = (regionLength + chipLength - 1) / chipLength;
 
 	size_t sectorsErased = 0;
 

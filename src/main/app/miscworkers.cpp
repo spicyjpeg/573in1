@@ -126,24 +126,32 @@ static const Launcher _LAUNCHERS[]{
 	}
 };
 
+static const char *const _DEVICE_TYPES[]{
+	"none", // storage::NONE
+	"ata",  // storage::ATA
+	"atapi" // storage::ATAPI
+};
+
 bool App::_executableWorker(void) {
 	_workerStatus.update(0, 2, WSTR("App.executableWorker.init"));
 
 	auto       region = _storageActionsScreen.selectedRegion;
 	const char *path  = _fileBrowserScreen.selectedPath;
 
-	int device;
+	const char *deviceType;
+	int        deviceIndex;
+
 	util::ExecutableHeader header;
 
 	if (region) {
-		device = region->bank;
-
 		region->read(&header, rom::FLASH_EXECUTABLE_OFFSET, sizeof(header));
+
+		deviceType  = "flash";
+		deviceIndex = region->bank;
 	} else {
 		__builtin_memset(header.magic, 0, sizeof(header.magic));
 
 		auto _file = _fileIO.vfs.openFile(path, fs::READ);
-		device     = -(path[3] - '0' + 1); // ide0: or ide1: -> -1 or -2
 
 		if (_file) {
 			_file->read(&header, sizeof(header));
@@ -158,6 +166,9 @@ bool App::_executableWorker(void) {
 			_workerStatus.setNextScreen(_messageScreen);
 			return false;
 		}
+
+		deviceIndex = path[3] - '0';
+		deviceType  = _DEVICE_TYPES[_fileIO.ideDevices[deviceIndex]->type];
 	}
 
 	auto executableEnd = header.textOffset + header.textLength;
@@ -202,11 +213,12 @@ bool App::_executableWorker(void) {
 		);
 		binary.destroy();
 
-		loader.formatArgument("entry.pc=%08x", header.getEntryPoint());
-		loader.formatArgument("entry.gp=%08x", header.getInitialGP());
-		loader.formatArgument("entry.sp=%08x", header.getStackPtr());
-		loader.formatArgument("load=%08x",     header.getTextPtr());
-		loader.formatArgument("device=%d",     device);
+		loader.formatArgument("load=%08x",      header.getTextPtr());
+		loader.formatArgument("entry.pc=%08x",  header.getEntryPoint());
+		loader.formatArgument("entry.gp=%08x",  header.getInitialGP());
+		loader.formatArgument("entry.sp=%08x",  header.getStackPtr());
+		loader.formatArgument("device.type=%s", deviceType);
+		loader.formatArgument("device.id=%d",   deviceIndex);
 
 		if (region) {
 			uintptr_t ptr = 0
