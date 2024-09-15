@@ -127,6 +127,9 @@ void IDEDevice::_writePIO(const void *data, size_t length) const {
 bool IDEDevice::_readDMA(void *data, size_t length) const {
 	util::assertAligned<uint32_t>(data);
 
+	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
+		return false;
+
 	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
 	DMA_BCR (DMA_PIO) = (length + 3) / 4;
 	DMA_CHCR(DMA_PIO) = 0
@@ -140,6 +143,9 @@ bool IDEDevice::_readDMA(void *data, size_t length) const {
 
 bool IDEDevice::_writeDMA(const void *data, size_t length) const {
 	util::assertAligned<uint32_t>(data);
+
+	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
+		return false;
 
 	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
 	DMA_BCR (DMA_PIO) = (length + 3) / 4;

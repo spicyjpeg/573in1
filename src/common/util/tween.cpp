@@ -50,14 +50,16 @@ template<typename T, typename E> T Tween<T, E>::getValue(int time) const {
 	) / TWEEN_UNIT;
 }
 
-template class Tween<int, LinearEasing>;
-template class Tween<int, QuadInEasing>;
-template class Tween<int, QuadOutEasing>;
-template class Tween<uint16_t, LinearEasing>;
-template class Tween<uint16_t, QuadInEasing>;
-template class Tween<uint16_t, QuadOutEasing>;
-template class Tween<uint32_t, LinearEasing>;
-template class Tween<uint32_t, QuadInEasing>;
-template class Tween<uint32_t, QuadOutEasing>;
+// NOTE: T should always be a signed type, as the delta will be negative when
+// interpolating from a higher value to a lower one.
+template class Tween<int,     LinearEasing>;
+template class Tween<int,     QuadInEasing>;
+template class Tween<int,     QuadOutEasing>;
+template class Tween<int8_t,  LinearEasing>;
+template class Tween<int8_t,  QuadInEasing>;
+template class Tween<int8_t,  QuadOutEasing>;
+template class Tween<int16_t, LinearEasing>;
+template class Tween<int16_t, QuadInEasing>;
+template class Tween<int16_t, QuadOutEasing>;
 
 }

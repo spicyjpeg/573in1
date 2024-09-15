@@ -111,6 +111,46 @@ size_t encodeBase41(char *output, const uint8_t *input, size_t length) {
 
 /* UTF-8 parser */
 
+#if 0
+#define L1(length)  (length)
+#define L2(length)  L1(length), L1(length)
+#define L4(length)  L2(length), L2(length)
+#define L8(length)  L4(length), L4(length)
+#define L16(length) L8(length), L8(length)
+
+static const uint8_t _START_BYTE_LENGTHS[]{
+	L16(1), // 0xxxx--- (1 byte)
+	L8 (0), // 10xxx--- (invalid)
+	L4 (2), // 110xx--- (2 bytes)
+	L2 (3), // 1110x--- (3 bytes)
+	L1 (4), // 11110--- (4 bytes)
+	L1 (0)  // 11111--- (invalid)
+};
+
+static const uint8_t _START_BYTE_MASKS[]{
+	0x00,
+	0x7f, // 0xxxxxxx (1 byte)
+	0x1f, // 110xxxxx (2 bytes)
+	0x0f, // 1110xxxx (3 bytes)
+	0x07  // 11110xxx (4 bytes)
+};
+
+UTF8Character parseUTF8Character(const char *ch) {
+	auto start  = uint8_t(*(ch++));
+	auto length = _START_BYTE_LENGTHS[start >> 3];
+	auto mask   = _START_BYTE_MASKS[length];
+
+	auto codePoint = UTF8CodePoint(start & mask);
+
+	for (size_t i = length - 1; i; i--) {
+		codePoint <<= 6;
+		codePoint  |= *(ch++) & 0x3f;
+	}
+
+	return { codePoint, length };
+}
+#endif
+
 size_t getUTF8StringLength(const char *str) {
 	for (size_t length = 0;; length++) {
 		auto value = parseUTF8Character(str);

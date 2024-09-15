@@ -52,56 +52,54 @@ Directory::~Directory(void) {
 
 /* Base file and asset provider classes */
 
-uint32_t currentSPUOffset = spu::DUMMY_BLOCK_END;
-
 Provider::~Provider(void) {
 	close();
 }
 
 size_t Provider::loadData(util::Data &output, const char *path) {
-	auto _file = openFile(path, READ);
+	auto file = openFile(path, READ);
 
-	if (!_file)
+	if (!file)
 		return 0;
 
-	assert(_file->size <= SIZE_MAX);
-	if (!output.allocate(size_t(_file->size))) {
-		_file->close();
-		delete _file;
+	assert(file->size <= SIZE_MAX);
+	if (!output.allocate(size_t(file->size))) {
+		file->close();
+		delete file;
 		return 0;
 	}
 
-	size_t actualLength = _file->read(output.ptr, output.length);
+	size_t actualLength = file->read(output.ptr, output.length);
 
-	_file->close();
-	delete _file;
+	file->close();
+	delete file;
 	return actualLength;
 }
 
 size_t Provider::loadData(void *output, size_t length, const char *path) {
-	auto _file = openFile(path, READ);
+	auto file = openFile(path, READ);
 
-	if (!_file)
+	if (!file)
 		return 0;
 
-	assert(_file->size >= length);
-	size_t actualLength = _file->read(output, length);
+	assert(file->size >= length);
+	size_t actualLength = file->read(output, length);
 
-	_file->close();
-	delete _file;
+	file->close();
+	delete file;
 	return actualLength;
 }
 
 size_t Provider::saveData(const void *input, size_t length, const char *path) {
-	auto _file = openFile(path, WRITE | ALLOW_CREATE);
+	auto file = openFile(path, WRITE | ALLOW_CREATE);
 
-	if (!_file)
+	if (!file)
 		return 0;
 
-	size_t actualLength = _file->write(input, length);
+	size_t actualLength = file->write(input, length);
 
-	_file->close();
-	delete _file;
+	file->close();
+	delete file;
 	return actualLength;
 }
 
@@ -118,22 +116,26 @@ size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 		data.destroy();
 		return 0;
 	}
-	if (header->flags & (1 << 3)) {
-		auto clut = reinterpret_cast<const gpu::TIMSectionHeader *>(section);
 
-		gpu::upload(clut->vram, &clut[1], true);
+	size_t uploadLength = 0;
+
+	if (header->flags & (1 << 3)) {
+		auto clut     = reinterpret_cast<const gpu::TIMSectionHeader *>(section);
+		uploadLength += gpu::upload(clut->vram, &clut[1], true);
+
 		section += clut->length;
 	}
 
-	auto image = reinterpret_cast<const gpu::TIMSectionHeader *>(section);
-
-	gpu::upload(image->vram, &image[1], true);
+	auto image    = reinterpret_cast<const gpu::TIMSectionHeader *>(section);
+	uploadLength += gpu::upload(image->vram, &image[1], true);
 
 	data.destroy();
-	return data.length;
+	return uploadLength;
 }
 
-size_t Provider::loadVAG(spu::Sound &output, const char *path) {
+size_t Provider::loadVAG(
+	spu::Sound &output, uint32_t offset, const char *path
+) {
 	// Sounds should be decompressed and uploaded to the SPU one chunk at a
 	// time, but whatever.
 	util::Data data;
@@ -144,17 +146,16 @@ size_t Provider::loadVAG(spu::Sound &output, const char *path) {
 	auto header = data.as<const spu::VAGHeader>();
 	auto body   = reinterpret_cast<const uint32_t *>(&header[1]);
 
-	if (!output.initFromVAGHeader(header, currentSPUOffset)) {
+	if (!output.initFromVAGHeader(header, offset)) {
 		data.destroy();
 		return 0;
 	}
 
-	currentSPUOffset += spu::upload(
-		currentSPUOffset, body, data.length - sizeof(spu::VAGHeader), true
-	);
+	auto uploadLength =
+		spu::upload(offset, body, data.length - sizeof(spu::VAGHeader), true);
 
 	data.destroy();
-	return data.length;
+	return uploadLength;
 }
 
 struct [[gnu::packed]] BMPHeader {
@@ -186,16 +187,16 @@ public:
 };
 
 size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
-	auto _file = openFile(path, WRITE | ALLOW_CREATE);
+	auto file = openFile(path, WRITE | ALLOW_CREATE);
 
-	if (!_file)
+	if (!file)
 		return 0;
 
 	BMPHeader header;
 
 	header.init(rect.w, rect.h, 16);
 
-	size_t     length = _file->write(&header, sizeof(header));
+	size_t     length = file->write(&header, sizeof(header));
 	util::Data buffer;
 
 	if (buffer.allocate<uint16_t>(rect.w + 32)) {
@@ -224,14 +225,14 @@ size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
 				*(ptr++)  = newValue;
 			}
 
-			length += _file->write(buffer.ptr, lineLength);
+			length += file->write(buffer.ptr, lineLength);
 		}
 
 		buffer.destroy();
 	}
 
-	_file->close();
-	delete _file;
+	file->close();
+	delete file;
 
 	return length;
 }

@@ -65,7 +65,7 @@ private:
 	util::Data   _text;
 	spu::Channel _loopChannel;
 
-	util::Tween<uint16_t, util::QuadInEasing> _loopVolume;
+	util::Tween<int, util::QuadInEasing> _loopVolume;
 
 public:
 	void show(ui::Context &ctx, bool goBack = false);

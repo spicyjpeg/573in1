@@ -151,12 +151,12 @@ bool App::_executableWorker(void) {
 	} else {
 		__builtin_memset(header.magic, 0, sizeof(header.magic));
 
-		auto _file = _fileIO.vfs.openFile(path, fs::READ);
+		auto file = _fileIO.vfs.openFile(path, fs::READ);
 
-		if (_file) {
-			_file->read(&header, sizeof(header));
-			_file->close();
-			delete _file;
+		if (file) {
+			file->read(&header, sizeof(header));
+			file->close();
+			delete file;
 		}
 
 		if (!header.validateMagic()) {

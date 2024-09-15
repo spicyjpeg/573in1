@@ -145,11 +145,11 @@ bool App::_romDumpWorker(void) {
 
 		snprintf(filePath, sizeof(filePath), entry.path, dirPath);
 
-		auto _file = _fileIO.vfs.openFile(
+		auto file = _fileIO.vfs.openFile(
 			filePath, fs::WRITE | fs::ALLOW_CREATE
 		);
 
-		if (!_file)
+		if (!file)
 			goto _fileError;
 
 		util::Data buffer;
@@ -161,10 +161,10 @@ bool App::_romDumpWorker(void) {
 			_workerStatus.update(i, numChunks, WSTRH(entry.dumpPrompt));
 			entry.region.read(buffer.ptr, offset, chunkLength);
 
-			if (_file->write(buffer.ptr, chunkLength) < chunkLength) {
+			if (file->write(buffer.ptr, chunkLength) < chunkLength) {
 				buffer.destroy();
-				_file->close();
-				delete _file;
+				file->close();
+				delete file;
 
 				goto _fileError;
 			}
@@ -173,8 +173,8 @@ bool App::_romDumpWorker(void) {
 		}
 
 		buffer.destroy();
-		_file->close();
-		delete _file;
+		file->close();
+		delete file;
 
 		LOG_APP("%s saved", filePath);
 	}
@@ -201,9 +201,9 @@ bool App::_romRestoreWorker(void) {
 	_workerStatus.update(0, 1, WSTR("App.romRestoreWorker.init"));
 
 	const char *path = _fileBrowserScreen.selectedPath;
-	auto       _file = _fileIO.vfs.openFile(path, fs::READ);
+	auto       file  = _fileIO.vfs.openFile(path, fs::READ);
 
-	if (!_file) {
+	if (!file) {
 		_messageScreen.setMessage(
 			MESSAGE_ERROR, WSTR("App.romRestoreWorker.fileError"), path
 		);
@@ -243,8 +243,8 @@ bool App::_romRestoreWorker(void) {
 			size_t j = numChips; j > 0; j--, bufferPtr += maxChunkLength,
 			offset += chipLength
 		) {
-			_file->seek(offset);
-			auto length = _file->read(bufferPtr, maxChunkLength);
+			file->seek(offset);
+			auto length = file->read(bufferPtr, maxChunkLength);
 
 			// Data is written 16 bits at a time, so the chunk must be padded to
 			// an even number of bytes.
@@ -301,8 +301,8 @@ bool App::_romRestoreWorker(void) {
 
 				buffers.destroy();
 				chunkLengths.destroy();
-				_file->close();
-				delete _file;
+				file->close();
+				delete file;
 				delete driver;
 
 				_messageScreen.setMessage(
@@ -316,14 +316,14 @@ bool App::_romRestoreWorker(void) {
 
 	util::Hash message;
 
-	message = (_file->size > regionLength)
+	message = (file->size > regionLength)
 		? "App.romRestoreWorker.overflow"_h
 		: "App.romRestoreWorker.success"_h;
 
 	buffers.destroy();
 	chunkLengths.destroy();
-	_file->close();
-	delete _file;
+	file->close();
+	delete file;
 	delete driver;
 
 	_messageScreen.setMessage(MESSAGE_SUCCESS, WSTRH(message), bytesWritten);

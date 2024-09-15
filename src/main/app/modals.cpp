@@ -221,7 +221,7 @@ void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
 	_listLength = 0;
 
 #ifdef ENABLE_PCDRV
-	_addDevice(nullptr, APP->_fileIO.host, "host:");
+	_addDevice(nullptr, &(APP->_fileIO.host), "host:");
 #endif
 
 	for (size_t i = 0; i < util::countOf(APP->_fileIO.ideDevices); i++)

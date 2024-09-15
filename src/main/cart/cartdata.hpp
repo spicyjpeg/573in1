@@ -133,7 +133,6 @@ public:
 	inline CartParser(CartDump &dump, uint8_t flags = 0)
 	: _dump(dump), flags(flags) {}
 
-	virtual ~CartParser(void) {}
 	virtual size_t getCode(char *output) const { return 0; }
 	virtual void setCode(const char *input) {}
 	virtual size_t getRegion(char *output) const { return 0; }
@@ -219,7 +218,6 @@ public:
 	inline ROMHeaderParser(ROMHeaderDump &dump, uint8_t flags = 0)
 	: _dump(dump), flags(flags) {}
 
-	virtual ~ROMHeaderParser(void) {}
 	virtual size_t getCode(char *output) const { return 0; }
 	virtual void setCode(const char *input) {}
 	virtual size_t getRegion(char *output) const { return 0; }

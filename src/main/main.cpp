@@ -20,6 +20,7 @@
 #include "common/gpu.hpp"
 #include "common/io.hpp"
 #include "common/ioboard.hpp"
+#include "common/mdec.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
 #include "main/uibase.hpp"
@@ -35,6 +36,7 @@ int main(int argc, const char **argv) {
 	installExceptionHandler();
 	gpu::init();
 	spu::init();
+	mdec::init();
 	io::init();
 	util::initZipCRC32();
 

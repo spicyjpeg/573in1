@@ -369,18 +369,45 @@ typedef enum {
 /* MDEC */
 
 typedef enum {
-	MDEC_STAT_BLOCK_BITMASK = 7 << 16,
-	MDEC_STAT_BLOCK_Y0      = 0 << 16,
-	MDEC_STAT_BLOCK_Y1      = 1 << 16,
-	MDEC_STAT_BLOCK_Y2      = 2 << 16,
-	MDEC_STAT_BLOCK_Y3      = 3 << 16,
-	MDEC_STAT_BLOCK_CR      = 4 << 16,
-	MDEC_STAT_BLOCK_CB      = 5 << 16,
-	MDEC_STAT_DREQ_OUT      = 1 << 27,
-	MDEC_STAT_DREQ_IN       = 1 << 28,
-	MDEC_STAT_BUSY          = 1 << 29,
-	MDEC_STAT_DATA_FULL     = 1 << 30,
-	MDEC_STAT_DATA_EMPTY    = 1 << 31
+	MDEC_CMD_NOP             = 0 << 29,
+	MDEC_CMD_DECODE          = 1 << 29,
+	MDEC_CMD_SET_QUANT_TABLE = 2 << 29,
+	MDEC_CMD_SET_IDCT_TABLE  = 3 << 29
+} MDECCommand;
+
+typedef enum {
+	MDEC_CMD_FLAG_LENGTH_BITMASK = 0xffff <<  0, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_USE_CHROMA     =      1 <<  0, // MDEC_CMD_SET_QUANT_TABLE
+	MDEC_CMD_FLAG_SIGNED         =      1 << 25, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_16BPP_MASK     =      1 << 26, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_FORMAT_BITMASK =      3 << 27, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_FORMAT_4BPP    =      0 << 27, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_FORMAT_8BPP    =      1 << 27, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_FORMAT_24BPP   =      2 << 27, // MDEC_CMD_DECODE
+	MDEC_CMD_FLAG_FORMAT_16BPP   =      3 << 27  // MDEC_CMD_DECODE
+} MDECCommandFlag;
+
+typedef enum {
+	MDEC_STAT_LENGTH_BITMASK = 0xffff <<  0,
+	MDEC_STAT_BLOCK_BITMASK  =      7 << 16,
+	MDEC_STAT_BLOCK_Y0       =      0 << 16,
+	MDEC_STAT_BLOCK_Y1       =      1 << 16,
+	MDEC_STAT_BLOCK_Y2       =      2 << 16,
+	MDEC_STAT_BLOCK_Y3       =      3 << 16,
+	MDEC_STAT_BLOCK_CR       =      4 << 16,
+	MDEC_STAT_BLOCK_CB       =      5 << 16,
+	MDEC_STAT_16BPP_MASK     =      1 << 23,
+	MDEC_STAT_SIGNED         =      1 << 24,
+	MDEC_STAT_FORMAT_BITMASK =      3 << 25,
+	MDEC_STAT_FORMAT_4BPP    =      0 << 25,
+	MDEC_STAT_FORMAT_8BPP    =      1 << 25,
+	MDEC_STAT_FORMAT_24BPP   =      2 << 25,
+	MDEC_STAT_FORMAT_16BPP   =      3 << 25,
+	MDEC_STAT_DREQ_OUT       =      1 << 27,
+	MDEC_STAT_DREQ_IN        =      1 << 28,
+	MDEC_STAT_BUSY           =      1 << 29,
+	MDEC_STAT_DATA_FULL      =      1 << 30,
+	MDEC_STAT_DATA_EMPTY     =      1 << 31
 } MDECStatusFlag;
 
 typedef enum {

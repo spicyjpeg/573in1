@@ -89,7 +89,6 @@ public:
 
 	// Note that all offsets must be multiples of 2, as writes are done in
 	// halfwords.
-	virtual ~Driver(void) {}
 	virtual void write(uint32_t offset, uint16_t value) {}
 	virtual void eraseSector(uint32_t offset) {}
 	virtual void eraseChip(uint32_t offset) {}

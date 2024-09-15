@@ -246,17 +246,17 @@ bool FATProvider::createDirectory(const char *path) {
 }
 
 File *FATProvider::openFile(const char *path, uint32_t flags) {
-	auto _file = new FATFile();
-	auto error = f_open(&_fs, &(_file->_fd), path, uint8_t(flags));
+	auto file  = new FATFile();
+	auto error = f_open(&_fs, &(file->_fd), path, uint8_t(flags));
 
 	if (error) {
 		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], path);
-		delete _file;
+		delete file;
 		return nullptr;
 	}
 
-	_file->size = f_size(&(_file->_fd));
-	return _file;
+	file->size = f_size(&(file->_fd));
+	return file;
 }
 
 /* FatFs library API glue */

@@ -90,7 +90,7 @@ int main(int argc, const char **argv) {
 	util::hexValueToString(&_lengthArg[16], _resourceArchiveLength, 8);
 	loader.addArgument(_lengthArg);
 
-#ifdef ENABLE_ARGV
+#ifdef ENABLE_ARGV_PARSER
 	for (; argc > 0; argc--) {
 		if (!loader.copyArgument(*(argv++)))
 			break;

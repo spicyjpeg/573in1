@@ -47,7 +47,6 @@ public:
 	inline Driver(CartDump &dump)
 	: _dump(dump) {}
 
-	virtual ~Driver(void) {}
 	virtual DriverError readSystemID(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readCartID(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readPublicData(void) { return UNSUPPORTED_OP; }

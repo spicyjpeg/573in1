@@ -267,15 +267,15 @@ bool App::_cartRestoreWorker(void) {
 	_workerStatus.update(0, 3, WSTR("App.cartRestoreWorker.init"));
 
 	const char *path = _fileBrowserScreen.selectedPath;
-	auto       _file = _fileIO.vfs.openFile(path, fs::READ);
+	auto       file  = _fileIO.vfs.openFile(path, fs::READ);
 
 	cart::CartDump newDump;
 
-	if (_file) {
-		auto length = _file->read(&newDump, sizeof(newDump));
+	if (file) {
+		auto length = file->read(&newDump, sizeof(newDump));
 
-		_file->close();
-		delete _file;
+		file->close();
+		delete file;
 
 		if (length < (sizeof(newDump) - sizeof(newDump.data)))
 			goto _fileError;

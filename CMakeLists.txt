@@ -24,36 +24,12 @@ project(
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
 
+include(cmake/options.cmake)
+
+## Source files
+
 set(
-	RELEASE_INFO "${PROJECT_NAME} ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg"
-	CACHE STRING "Executable description and version string (optional)"
-)
-set(
-	RELEASE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}"
-	CACHE STRING "CD-ROM image and release package file name"
-)
-
-string(TOUPPER "${RELEASE_NAME}" _cdVolumeName)
-string(REGEX REPLACE "[^0-9A-Z_]" "_" _cdVolumeName "${_cdVolumeName}")
-set(
-	CD_VOLUME_NAME "${_cdVolumeName}"
-	CACHE STRING   "CD-ROM image volume label"
-)
-
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-find_program(
-	CHDMAN_PATH chdman
-	PATHS
-		"C:/Program Files/MAME"
-		"C:/Program Files (x86)/MAME"
-		"/opt/mame"
-	DOC "Path to MAME chdman tool (optional)"
-)
-
-## Files common to all executables
-
-add_library(
-	common OBJECT
+	ps1Sources
 	#src/libc/crt0.c
 	src/libc/cxxsupport.cpp
 	src/libc/malloc.c
@@ -66,75 +42,61 @@ add_library(
 	src/ps1/system.s
 	src/ps1/unhandledexc.c
 )
-target_include_directories(
-	common PUBLIC
-	src
-	src/libc
+set(
+	vendorSources
+	src/vendor/ff.c
+	src/vendor/ffunicode.c
+	src/vendor/miniz.c
+	src/vendor/printf.c
+	src/vendor/qrcodegen.c
 )
-target_compile_options(
-	common PUBLIC
-	-Wall
-	-Wextra
-	-Wno-unused-parameter
-	$<$<COMPILE_LANGUAGE:CXX>:
-		-Wno-pmf-conversions
-	>
+
+set(
+	commonSources
+	src/common/args.cpp
+	src/common/gpu.cpp
+	src/common/gpufont.cpp
+	src/common/io.cpp
+	src/common/ioboard.cpp
+	src/common/mdec.cpp
+	src/common/mdec.s
+	src/common/pad.cpp
+	src/common/rom.cpp
+	src/common/romdrivers.cpp
+	src/common/spu.cpp
 )
-target_compile_definitions(
-	common PUBLIC
-	VERSION="${PROJECT_VERSION}"
-	EXTERNAL_DATA_DIR="hdd:/${PROJECT_NAME}"
-)
-link_libraries(common)
-
-function(addPS1Executable name address stackTop)
-	add_executable(${name} ${ARGN})
-	target_link_options(${name} PRIVATE -Ttext=0x${address})
-
-	add_custom_command(
-		TARGET     ${name} POST_BUILD
-		BYPRODUCTS "${name}.psexe"
-		COMMAND
-			"${Python3_EXECUTABLE}"
-			"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
-			-r "${RELEASE_INFO}"
-			-s 0x${stackTop}
-			"$<TARGET_FILE:${name}>"
-			"${name}.psexe"
-		VERBATIM
-	)
-endfunction()
-
-## Main executable
-
-# IMPORTANT: these addresses assume the boot executable's size (including code,
-# heap and stack allocations as well as the resource archive) is <576 KB
-# (0x90000 bytes).
-addPS1Executable(
-	main 800a0000 801dfff0
+set(
+	fsSources
 	src/common/fs/fat.cpp
 	src/common/fs/file.cpp
 	src/common/fs/iso9660.cpp
 	src/common/fs/misc.cpp
 	src/common/fs/zip.cpp
+)
+set(
+	storageSources
 	src/common/storage/ata.cpp
 	src/common/storage/atapi.cpp
 	src/common/storage/device.cpp
+)
+set(
+	utilSources
 	src/common/util/hash.cpp
 	src/common/util/log.cpp
 	src/common/util/misc.cpp
 	src/common/util/string.cpp
 	src/common/util/string.s
 	src/common/util/tween.cpp
-	src/common/args.cpp
-	src/common/gpu.cpp
-	src/common/gpufont.cpp
-	src/common/io.cpp
-	src/common/ioboard.cpp
-	src/common/pad.cpp
-	src/common/rom.cpp
-	src/common/romdrivers.cpp
-	src/common/spu.cpp
+)
+
+set(
+	mainSources
+	${ps1Sources}
+	${vendorSources}
+	${commonSources}
+	${fsSources}
+	${storageSources}
+	${utilSources}
 	src/libc/crt0.c
 	src/main/app/app.cpp
 	src/main/app/cartactions.cpp
@@ -155,82 +117,109 @@ addPS1Executable(
 	src/main/uibase.cpp
 	src/main/uicommon.cpp
 	src/main/uimodals.cpp
-	src/vendor/ff.c
-	src/vendor/ffunicode.c
-	src/vendor/miniz.c
-	src/vendor/printf.c
-	src/vendor/qrcodegen.c
 )
-target_compile_definitions(
-	main PRIVATE
-	# Logging options
-	ENABLE_APP_LOGGING=1
-	ENABLE_CART_IO_LOGGING=1
-	ENABLE_CART_DATA_LOGGING=1
-	ENABLE_IO_LOGGING=1
-	ENABLE_ROM_LOGGING=1
-	ENABLE_STORAGE_LOGGING=1
-	ENABLE_FS_LOGGING=1
-	# Security cartridge driver options
-	#ENABLE_DUMMY_CART_DRIVER=1
-	ENABLE_X76F041_CART_DRIVER=1
-	#ENABLE_X76F100_CART_DRIVER=1
-	ENABLE_ZS01_CART_DRIVER=1
-	# Misc. options
-	ENABLE_LOG_BUFFER=1
-	#ENABLE_ARGV=1
-	#ENABLE_PCDRV=1
-	ENABLE_PS1_CONTROLLER=1
-	ENABLE_AUTOBOOT=1
+set(
+	launcherSources
+	${ps1Sources}
+	${storageSources}
+	${utilSources}
+	src/common/args.cpp
+	src/common/io.cpp
+	src/launcher/exchandler.s
+	src/launcher/main.cpp
+	src/libc/crt0.c
+)
+set(
+	bootStubSources
+	${ps1Sources}
+	${utilSources}
+	src/boot/crt0.s
+	src/boot/main.cpp
+	src/common/io.cpp
 )
 
-## Boot stub and executable launchers
+## Flags and compile-time options
+
+set(
+	commonOptions
+	-Wall
+	-Wextra
+	-Wno-unused-parameter
+	$<$<COMPILE_LANGUAGE:CXX>:
+		-Wno-pmf-conversions
+		-Wno-delete-non-virtual-dtor
+	>
+)
+
+add_library(mainFlags          INTERFACE)
+add_library(subExecutableFlags INTERFACE)
+
+target_include_directories(mainFlags          INTERFACE src src/libc)
+target_include_directories(subExecutableFlags INTERFACE src src/libc)
 
 # NOTE: in order to make sure -Os is passed after -Og or -O3 (see
 # cmake/setup.cmake) and thus overrides it, it must be added to a separate
 # target rather than directly to the executables.
-add_library(bootFlags INTERFACE)
-target_compile_options(bootFlags INTERFACE -Os)
+target_compile_options(mainFlags          INTERFACE ${commonOptions})
+target_compile_options(subExecutableFlags INTERFACE ${commonOptions} -Os)
+
 target_compile_definitions(
-	bootFlags INTERFACE
-	$<$<CONFIG:Debug>:
-		#ENABLE_ARGV=1
-		#ENABLE_LOGGING=1
-		NDEBUG=1
-	>
+	mainFlags INTERFACE
+	${mainOptions}
+	VERSION="${PROJECT_VERSION}"
+	EXTERNAL_DATA_DIR="hdd:/${PROJECT_NAME}"
+)
+target_compile_definitions(
+	subExecutableFlags INTERFACE
+	${subExecutableOptions}
+	NDEBUG=1
 )
 
-function(addLauncher address stackTop)
-addPS1Executable(
-		launcher${address} ${address} ${stackTop}
-		src/common/storage/ata.cpp
-		src/common/storage/atapi.cpp
-		src/common/storage/device.cpp
-		src/common/util/hash.cpp
-		src/common/util/misc.cpp
-		src/common/args.cpp
-		src/common/io.cpp
-		src/launcher/exchandler.s
-		src/launcher/main.cpp
-		src/libc/crt0.c
-		src/vendor/printf.c
+## Main executables
+
+function(addPS1Executable name address stackTop)
+	add_executable     (${name} ${ARGN})
+	target_link_options(${name} PRIVATE -Ttext=0x${address})
+
+	add_custom_command(
+		TARGET     ${name} POST_BUILD
+		BYPRODUCTS "${name}.psexe"
+		COMMAND
+			"${Python3_EXECUTABLE}"
+			"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
+			-r "${RELEASE_INFO}"
+			-s 0x${stackTop}
+			"$<TARGET_FILE:${name}>"
+			"${name}.psexe"
+		VERBATIM
 	)
-	target_link_libraries(launcher${address} PRIVATE bootFlags)
 endfunction()
 
-# IMPORTANT: these addresses assume the launcher's total size (including code,
-# heap and stack allocations, but excluding the executable header) is <12 KB
-# (0x3000 bytes).
-addLauncher(801fd000 801ffff0)
-addLauncher(803fd000 803ffff0)
+# IMPORTANT: these addresses assume the boot executable's size (including code,
+# heap and stack allocations as well as the resource archive, but excluding the
+# executable header) is 576 KB (0x90000 bytes) or less, and that each launcher's
+# size is 12 KB (0x3000 bytes) or less.
+addPS1Executable(main             800a0000 801dfff0 ${mainSources})
+addPS1Executable(launcher801fd000 801fd000 801ffff0)
+addPS1Executable(launcher803fd000 803fd000 803ffff0)
 
-## Boot stub and resource archive
+add_library(launcher OBJECT ${launcherSources})
+add_library(bootStub OBJECT ${bootStubSources})
+
+target_link_libraries(main     PUBLIC mainFlags)
+target_link_libraries(launcher PUBLIC subExecutableFlags)
+target_link_libraries(bootStub PUBLIC subExecutableFlags)
+
+target_link_libraries(launcher801fd000 PUBLIC launcher)
+target_link_libraries(launcher803fd000 PUBLIC launcher)
+
+## Boot stubs and resource archives
 
 file(GLOB_RECURSE assetList RELATIVE "${PROJECT_SOURCE_DIR}" assets/*)
 
 configure_file(assets/about.txt about.txt NEWLINE_STYLE LF)
 
-function(addBootStub name resourceName)
+function(addBuildVariant name resourceName)
 	configure_file(${resourceName}.json ${resourceName}.json ESCAPE_QUOTES)
 
 	add_custom_command(
@@ -250,23 +239,17 @@ function(addBootStub name resourceName)
 		VERBATIM
 	)
 
-	addPS1Executable(
-		${name} 80010000 0
-		src/boot/crt0.s
-		src/boot/main.cpp
-		src/common/util/misc.cpp
-		src/common/util/string.cpp
-		src/common/io.cpp
-	)
+	addPS1Executable(${name} 80010000 0)
 	addBinaryFile(
 		${name} _resourceArchive _resourceArchiveLength
 		"${PROJECT_BINARY_DIR}/${resourceName}.zip"
 	)
-	target_link_libraries(${name} PRIVATE bootFlags)
+
+	target_link_libraries(${name} PUBLIC bootStub)
 endfunction()
 
-addBootStub("${RELEASE_NAME}"      resources)
-addBootStub("${RELEASE_NAME}-tiny" resourcestiny)
+addBuildVariant("${RELEASE_NAME}"      resources)
+addBuildVariant("${RELEASE_NAME}-tiny" resourcestiny)
 
 ## CD-ROM image
 

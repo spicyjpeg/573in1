@@ -272,10 +272,10 @@ void App::_loadResources(void) {
 	res.loadTIM(_splashOverlay.image, "assets/textures/splash.tim");
 	res.loadData(_stringTable,        "assets/lang/en.lang");
 
-	fs::currentSPUOffset = spu::DUMMY_BLOCK_END;
+	uint32_t spuOffset = spu::DUMMY_BLOCK_END;
 
 	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
-		res.loadVAG(_ctx.sounds[i], _UI_SOUND_PATHS[i]);
+		res.loadVAG(_ctx.sounds[i], spuOffset, _UI_SOUND_PATHS[i]);
 }
 
 bool App::_createDataDirectory(void) {

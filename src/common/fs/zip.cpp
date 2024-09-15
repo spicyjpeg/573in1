@@ -124,12 +124,12 @@ bool ZIPProvider::init(File *file) {
 	_zip.m_pRead            = [](
 		void *opaque, uint64_t offset, void *output, size_t length
 	) -> size_t {
-		auto _file = reinterpret_cast<File *>(opaque);
+		auto file = reinterpret_cast<File *>(opaque);
 
-		if (_file->seek(offset) != offset)
+		if (file->seek(offset) != offset)
 			return 0;
 
-		return _file->read(output, length);
+		return file->read(output, length);
 	};
 
 	if (!mz_zip_reader_init(&_zip, file->size, _ZIP_FLAGS)) {

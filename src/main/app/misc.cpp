@@ -310,8 +310,8 @@ void ResolutionScreen::update(ui::Context &ctx) {
 	}
 }
 
-static constexpr uint16_t _LOOP_FADE_IN_VOLUME = spu::MAX_VOLUME / 2;
-static constexpr int      _LOOP_FADE_IN_TIME   = 30;
+static constexpr int _LOOP_FADE_IN_VOLUME = spu::MAX_VOLUME / 2;
+static constexpr int _LOOP_FADE_IN_TIME   = 30;
 
 void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	_title  = STR("AboutScreen.title");

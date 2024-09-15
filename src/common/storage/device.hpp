@@ -206,7 +206,6 @@ public:
 	inline Device(uint8_t flags = 0)
 	: type(NONE), flags(flags), sectorLength(0), capacity(0) {}
 
-	virtual ~Device(void) {}
 	virtual DeviceError enumerate(void) { return UNSUPPORTED_OP; }
 	virtual DeviceError poll(void) { return UNSUPPORTED_OP; }
 	virtual void handleInterrupt(void) {}
