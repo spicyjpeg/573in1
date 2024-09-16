@@ -31,8 +31,9 @@ static uint32_t _savedBreakpointVector[4];
 static uint32_t _savedExceptionVector[4];
 static Thread   _mainThread;
 
-ArgFunction interruptHandler     = 0;
-void        *interruptHandlerArg = 0;
+ArgFunction interruptHandler      = 0;
+void        *interruptHandlerArg0 = 0;
+void        *interruptHandlerArg1 = 0;
 
 Thread *currentThread = &_mainThread;
 Thread *nextThread    = &_mainThread;
@@ -89,10 +90,11 @@ void uninstallExceptionHandler(void) {
 	_flushCache();
 }
 
-void setInterruptHandler(ArgFunction func, void *arg) {
+void setInterruptHandler(ArgFunction func, void *arg0, void *arg1) {
 	disableInterrupts();
-	interruptHandler    = func;
-	interruptHandlerArg = arg;
+	interruptHandler     = func;
+	interruptHandlerArg0 = arg0;
+	interruptHandlerArg1 = arg1;
 	flushWriteQueue();
 }
 

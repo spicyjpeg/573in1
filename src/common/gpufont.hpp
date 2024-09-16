@@ -39,7 +39,7 @@ public:
 	int8_t  baselineOffset;
 };
 
-struct FontMetricsEntry {
+class FontMetricsEntry {
 public:
 	uint32_t      codePoint;
 	CharacterSize size;

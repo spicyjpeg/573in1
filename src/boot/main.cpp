@@ -28,7 +28,7 @@ extern "C" const size_t  _resourceArchiveLength;
 static char _ptrArg[]{ "resource.ptr=xxxxxxxx\0" };
 static char _lengthArg[]{ "resource.length=xxxxxxxx\0" };
 
-struct [[gnu::packed]] ZIPFileHeader {
+class [[gnu::packed]] ZIPFileHeader {
 public:
 	uint32_t magic;
 	uint16_t version, flags, compType;

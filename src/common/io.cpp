@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include "common/util/misc.hpp"
 #include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "common/io.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
@@ -35,12 +36,6 @@ static constexpr int _IDE_RESET_ASSERT_DELAY = 5000;
 static constexpr int _IDE_RESET_CLEAR_DELAY  = 50000;
 
 void init(void) {
-	// Remapping the base address is required in order for IDE DMA to work
-	// properly, as the BIU will output it over the address lines during a DMA
-	// transfer. It does not affect non-DMA access since the BIU will replace
-	// the bottommost N bits, where N is the number of address lines used, with
-	// the respective CPU address bits.
-	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(SYS573_IDE_CS0_BASE) & 0x1fffffff;
 	BIU_DEV0_CTRL = 0
 		| (7 << 0) // Write delay
 		| (4 << 4) // Read delay
@@ -82,6 +77,65 @@ void resetIDEDevices(void) {
 
 	SYS573_IDE_RESET = 1;
 	delayMicroseconds(_IDE_RESET_CLEAR_DELAY);
+}
+
+/* System bus DMA */
+
+static constexpr int _DMA_TIMEOUT = 100000;
+
+size_t doDMARead(volatile void *source, void *data, size_t length, bool wait) {
+	length = (length + 3) / 4;
+
+	util::assertAligned<uint32_t>(data);
+
+	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
+		return 0;
+
+	// The BIU will output the base address set through this register over the
+	// address lines during a DMA transfer. This does not affect non-DMA access
+	// as the BIU will realign the address by masking off the bottommost N bits
+	// (where N is the number of address lines used) and replace them with the
+	// respective CPU address bits.
+	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(source) & 0x1fffffff;
+
+	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
+	DMA_BCR (DMA_PIO) = length;
+	DMA_CHCR(DMA_PIO) = 0
+		| DMA_CHCR_READ
+		| DMA_CHCR_MODE_BURST
+		| DMA_CHCR_ENABLE
+		| DMA_CHCR_TRIGGER;
+
+	if (wait)
+		waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT);
+
+	return length * 4;
+}
+
+size_t doDMAWrite(
+	volatile void *dest, const void *data, size_t length, bool wait
+) {
+	length = (length + 3) / 4;
+
+	util::assertAligned<uint32_t>(data);
+
+	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
+		return 0;
+
+	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(dest) & 0x1fffffff;
+
+	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
+	DMA_BCR (DMA_PIO) = length;
+	DMA_CHCR(DMA_PIO) = 0
+		| DMA_CHCR_WRITE
+		| DMA_CHCR_MODE_BURST
+		| DMA_CHCR_ENABLE
+		| DMA_CHCR_TRIGGER;
+
+	if (wait)
+		waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT);
+
+	return length * 4;
 }
 
 /* JAMMA and RTC functions */

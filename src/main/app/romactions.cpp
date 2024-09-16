@@ -20,6 +20,8 @@
 #include "common/rom.hpp"
 #include "main/app/app.hpp"
 #include "main/app/romactions.hpp"
+#include "main/workers/miscworkers.hpp"
+#include "main/workers/romworkers.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 
@@ -266,7 +268,7 @@ const char *StorageActionsScreen::_getItemName(
 
 void StorageActionsScreen::runExecutable(ui::Context &ctx, size_t length) {
 	if (selectedRegion->getBootExecutableHeader()) {
-		APP->_runWorker(&App::_executableWorker, *this, true, true);
+		APP->_runWorker(&executableWorker, *this, true, true);
 	} else {
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 		APP->_messageScreen.setMessage(
@@ -282,7 +284,7 @@ void StorageActionsScreen::checksum(ui::Context &ctx, size_t length) {
 		ctx.show(APP->_checksumScreen, false, true);
 	else
 		APP->_runWorker(
-			&App::_romChecksumWorker, APP->_checksumScreen, false, true
+			&romChecksumWorker, APP->_checksumScreen, false, true
 		);
 }
 
@@ -296,7 +298,7 @@ void StorageActionsScreen::dump(ui::Context &ctx, size_t length) {
 				&(APP->_storageActionsScreen);
 
 			APP->_runWorker(
-				&App::_romDumpWorker, APP->_messageScreen, false, true
+				&romDumpWorker, APP->_messageScreen, false, true
 			);
 		},
 		STR("StorageActionsScreen.dump.confirm")
@@ -325,7 +327,7 @@ void StorageActionsScreen::restore(ui::Context &ctx, size_t length) {
 				&(APP->_fileBrowserScreen);
 
 			APP->_runWorker(
-				&App::_romRestoreWorker, APP->_messageScreen, false, true
+				&romRestoreWorker, APP->_messageScreen, false, true
 			);
 		},
 		STR("StorageActionsScreen.restore.confirm")
@@ -345,9 +347,7 @@ void StorageActionsScreen::erase(ui::Context &ctx, size_t length) {
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
 				&(APP->_storageActionsScreen);
 
-			APP->_runWorker(
-				&App::_romEraseWorker, APP->_messageScreen, false, true
-			);
+			APP->_runWorker(&romEraseWorker, APP->_messageScreen, false, true);
 		},
 		STR("StorageActionsScreen.erase.confirm")
 	);
@@ -375,8 +375,7 @@ void StorageActionsScreen::installExecutable(ui::Context &ctx, size_t length) {
 				&(APP->_fileBrowserScreen);
 
 			APP->_runWorker(
-				&App::_flashExecutableWriteWorker, APP->_messageScreen, false,
-				true
+				&flashExecutableWriteWorker, APP->_messageScreen, false, true
 			);
 		},
 		STR("StorageActionsScreen.installExecutable.confirm")
@@ -395,8 +394,7 @@ void StorageActionsScreen::resetFlashHeader(ui::Context &ctx, size_t length) {
 				&(APP->_storageActionsScreen);
 
 			APP->_runWorker(
-				&App::_flashHeaderWriteWorker, APP->_storageInfoScreen, true,
-				true
+				&flashHeaderWriteWorker, APP->_storageInfoScreen, true, true
 			);
 		},
 		STR("StorageActionsScreen.resetFlashHeader.confirm")

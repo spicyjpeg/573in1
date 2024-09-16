@@ -66,8 +66,8 @@ static inline void enableDisplay(bool enable) {
 	GPU_GP1 = gp1_dispBlank(!enable);
 }
 
-size_t upload(const RectWH &rect, const void *data, bool wait);
-size_t download(const RectWH &rect, void *data, bool wait);
+size_t upload(const RectWH &rect, const void *data, bool wait = false);
+size_t download(const RectWH &rect, void *data, bool wait = false);
 
 /* Rendering context */
 
@@ -181,15 +181,46 @@ public:
 
 /* Image class */
 
-struct TIMHeader {
-public:
-	uint32_t magic, flags;
-};
-
-struct TIMSectionHeader {
+class TIMSectionHeader {
 public:
 	uint32_t length;
 	RectWH   vram;
+
+	inline const void *getData(void) const {
+		return this + 1;
+	}
+	inline const TIMSectionHeader *getNextSection(void) const {
+		return reinterpret_cast<const TIMSectionHeader *>(
+			reinterpret_cast<uintptr_t>(this) + length
+		);
+	}
+};
+
+class TIMHeader {
+public:
+	uint32_t magic, flags;
+
+	inline bool validateMagic(void) const {
+		return (magic == 0x10) && (getColorDepth() <= GP0_COLOR_16BPP);
+	}
+	inline ColorDepth getColorDepth(void) const {
+		return ColorDepth(flags & 7);
+	}
+
+	inline const TIMSectionHeader *getImage(void) const {
+		auto image = reinterpret_cast<const TIMSectionHeader *>(this + 1);
+
+		if (flags & (1 << 3))
+			image = image->getNextSection();
+
+		return image;
+	}
+	inline const TIMSectionHeader *getCLUT(void) const {
+		if (flags & (1 << 3))
+			return reinterpret_cast<const TIMSectionHeader *>(this + 1);
+
+		return nullptr;
+	}
 };
 
 class Image {
@@ -205,7 +236,7 @@ public:
 		BlendMode blendMode = GP0_BLEND_SEMITRANS
 	);
 	bool initFromTIMHeader(
-		const TIMHeader *header, BlendMode blendMode = GP0_BLEND_SEMITRANS
+		const TIMHeader &header, BlendMode blendMode = GP0_BLEND_SEMITRANS
 	);
 	void drawScaled(
 		Context &ctx, int x, int y, int w, int h, bool blend = false

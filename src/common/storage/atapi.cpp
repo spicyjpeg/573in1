@@ -131,7 +131,7 @@ DeviceError ATAPIDevice::_requestSense(void) {
 		error = _waitForDRQ(_REQ_SENSE_TIMEOUT, true);
 	}
 	if (!error) {
-		_writePIO(&packet, _getPacketLength());
+		_writeData(&packet, _getPacketLength());
 
 		error = _waitForDRQ(_REQ_SENSE_TIMEOUT, true);
 	}
@@ -141,7 +141,7 @@ DeviceError ATAPIDevice::_requestSense(void) {
 	if (!error) {
 		size_t length = _getCylinder();
 
-		_readPIO(&lastSenseData, length);
+		_readData(&lastSenseData, length);
 		LOG_STORAGE("data ok, length=0x%x", length);
 	} else {
 		// If the request sense command fails, fall back to reading the sense
@@ -185,7 +185,7 @@ DeviceError ATAPIDevice::_issuePacket(
 			error = _waitForDRQ();
 		}
 		if (!error) {
-			_writePIO(&packet, _getPacketLength());
+			_writeData(&packet, _getPacketLength());
 
 			error = dataLength
 				? _waitForDRQ()
@@ -228,7 +228,7 @@ DeviceError ATAPIDevice::enumerate(void) {
 	if (_waitForDRQ(_DETECT_TIMEOUT))
 		return NO_DRIVE;
 
-	_readPIO(&block, sizeof(IDEIdentifyBlock));
+	_readData(&block, sizeof(IDEIdentifyBlock));
 
 	if (!block.validateChecksum())
 		return CHECKSUM_MISMATCH;
@@ -298,7 +298,7 @@ DeviceError ATAPIDevice::read(void *data, uint64_t lba, size_t count) {
 
 		size_t chunkLength = _getCylinder();
 
-		_readPIO(reinterpret_cast<void *>(ptr), chunkLength);
+		_readData(reinterpret_cast<void *>(ptr), chunkLength);
 		ptr += chunkLength;
 	}
 

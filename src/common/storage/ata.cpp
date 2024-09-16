@@ -103,9 +103,9 @@ DeviceError ATADevice::_transfer(
 				return error;
 
 			if (write)
-				_writePIO(reinterpret_cast<const void *>(ptr), _SECTOR_LENGTH);
+				_writeData(reinterpret_cast<const void *>(ptr), _SECTOR_LENGTH);
 			else
-				_readPIO(reinterpret_cast<void *>(ptr), _SECTOR_LENGTH);
+				_readData(reinterpret_cast<void *>(ptr), _SECTOR_LENGTH);
 		}
 
 		lba   += chunkLength;
@@ -131,7 +131,7 @@ DeviceError ATADevice::enumerate(void) {
 	if (_waitForDRQ(_DETECT_TIMEOUT))
 		return NO_DRIVE;
 
-	_readPIO(&block, sizeof(IDEIdentifyBlock));
+	_readData(&block, sizeof(IDEIdentifyBlock));
 
 	if (!block.validateChecksum())
 		return CHECKSUM_MISMATCH;

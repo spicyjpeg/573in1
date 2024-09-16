@@ -29,7 +29,7 @@ typedef struct {
 } Thread;
 
 typedef void (*VoidFunction)(void);
-typedef void (*ArgFunction)(void *arg);
+typedef void (*ArgFunction)(void *arg0, void *arg1);
 
 #ifdef __cplusplus
 extern "C" {
@@ -92,16 +92,18 @@ __attribute__((always_inline)) static inline void flushWriteQueue(void) {
  *
  * @param thread
  * @param func
- * @param arg Optional argument to entry point
+ * @param arg0 Optional first argument to entry point
+ * @param arg1 Optional second argument to entry point
  * @param stack Pointer to last 8 bytes in the stack
  */
 __attribute__((always_inline)) static inline void initThread(
-	Thread *thread, ArgFunction func, void *arg, void *stack
+	Thread *thread, ArgFunction func, void *arg0, void *arg1, void *stack
 ) {
 	register uint32_t gp __asm__("gp");
 
 	thread->pc = (uint32_t) func;
-	thread->a0 = (uint32_t) arg;
+	thread->a0 = (uint32_t) arg0;
+	thread->a1 = (uint32_t) arg1;
 	thread->gp = (uint32_t) gp;
 	thread->sp = (uint32_t) stack;
 	thread->fp = (uint32_t) stack;
@@ -154,9 +156,10 @@ void uninstallExceptionHandler(void);
  * a new handler.
  *
  * @param func
- * @param arg Optional argument to be passed to handler
+ * @param arg Optional first argument to be passed to handler
+ * @param arg Optional second argument to be passed to handler
  */
-void setInterruptHandler(ArgFunction func, void *arg);
+void setInterruptHandler(ArgFunction func, void *arg0, void *arg1);
 
 /**
  * @brief Temporarily disables interrupts, then calls the BIOS function to clear

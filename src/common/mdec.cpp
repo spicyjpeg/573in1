@@ -62,8 +62,9 @@ static const uint8_t _BS_QUANT_TABLE[]{
 
 /* Basic API */
 
-static constexpr int _DMA_CHUNK_SIZE = 32;
-static constexpr int _DMA_TIMEOUT    = 100000;
+static constexpr int _DMA_CHUNK_SIZE_IN  = 32;
+static constexpr int _DMA_CHUNK_SIZE_OUT = 32;
+static constexpr int _DMA_TIMEOUT        = 100000;
 
 void init(void) {
 	MDEC1 = MDEC_CTRL_RESET;
@@ -82,16 +83,16 @@ size_t feed(const void *data, size_t length, bool wait) {
 
 	util::assertAligned<uint32_t>(data);
 #if 0
-	assert(!(length % _DMA_CHUNK_SIZE));
+	assert(!(length % _DMA_CHUNK_SIZE_IN));
 #else
-	length = (length + _DMA_CHUNK_SIZE - 1) / _DMA_CHUNK_SIZE;
+	length = (length + _DMA_CHUNK_SIZE_IN - 1) / _DMA_CHUNK_SIZE_IN;
 #endif
 
 	if (!waitForDMATransfer(DMA_MDEC_IN, _DMA_TIMEOUT))
 		return 0;
 
 	DMA_MADR(DMA_MDEC_IN) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_MDEC_IN) = util::concat4(_DMA_CHUNK_SIZE, length);
+	DMA_BCR (DMA_MDEC_IN) = util::concat4(_DMA_CHUNK_SIZE_IN, length);
 	DMA_CHCR(DMA_MDEC_IN) = 0
 		| DMA_CHCR_WRITE
 		| DMA_CHCR_MODE_SLICE
@@ -100,7 +101,33 @@ size_t feed(const void *data, size_t length, bool wait) {
 	if (wait)
 		waitForDMATransfer(DMA_MDEC_IN, _DMA_TIMEOUT);
 
-	return length * _DMA_CHUNK_SIZE * 4;
+	return length * _DMA_CHUNK_SIZE_IN * 4;
+}
+
+size_t receive(void *data, size_t length, bool wait) {
+	length /= 4;
+
+	util::assertAligned<uint32_t>(data);
+#if 0
+	assert(!(length % _DMA_CHUNK_SIZE_OUT));
+#else
+	length = (length + _DMA_CHUNK_SIZE_OUT - 1) / _DMA_CHUNK_SIZE_OUT;
+#endif
+
+	if (!waitForDMATransfer(DMA_MDEC_OUT, _DMA_TIMEOUT))
+		return 0;
+
+	DMA_MADR(DMA_MDEC_OUT) = reinterpret_cast<uint32_t>(data);
+	DMA_BCR (DMA_MDEC_OUT) = util::concat4(_DMA_CHUNK_SIZE_OUT, length);
+	DMA_CHCR(DMA_MDEC_OUT) = 0
+		| DMA_CHCR_READ
+		| DMA_CHCR_MODE_SLICE
+		| DMA_CHCR_ENABLE;
+
+	if (wait)
+		waitForDMATransfer(DMA_MDEC_OUT, _DMA_TIMEOUT);
+
+	return length * _DMA_CHUNK_SIZE_OUT * 4;
 }
 
 /* MDEC bitstream decompressor */

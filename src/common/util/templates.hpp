@@ -82,10 +82,6 @@ template<typename T> static constexpr inline size_t countOf(T &array) {
 	return sizeof(array) / sizeof(array[0]);
 }
 
-template<typename T, typename X> static inline T forcedCast(X item) {
-	return reinterpret_cast<T>(reinterpret_cast<void *>(item));
-}
-
 static constexpr inline uint16_t concat2(uint8_t low, uint8_t high) {
 	return low | (high << 8);
 }

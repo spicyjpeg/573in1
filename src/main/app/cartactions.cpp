@@ -20,6 +20,7 @@
 #include "common/util/templates.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/app.hpp"
+#include "main/workers/cartworkers.hpp"
 #include "main/uibase.hpp"
 
 /* Unlocked cartridge screens */
@@ -80,7 +81,7 @@ void CartActionsScreen::qrDump(ui::Context &ctx) {
 	if (APP->_qrCodeScreen.valid)
 		ctx.show(APP->_qrCodeScreen, false, true);
 	else
-		APP->_runWorker(&App::_qrCodeWorker, APP->_qrCodeScreen, false, true);
+		APP->_runWorker(&qrCodeWorker, APP->_qrCodeScreen, false, true);
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {
@@ -88,7 +89,7 @@ void CartActionsScreen::hddDump(ui::Context &ctx) {
 		&(APP->_cartInfoScreen);
 	APP->_messageScreen.previousScreens[MESSAGE_ERROR]   = this;
 
-	APP->_runWorker(&App::_cartDumpWorker, APP->_messageScreen, false, true);
+	APP->_runWorker(&cartDumpWorker, APP->_messageScreen, false, true);
 }
 
 void CartActionsScreen::hexdump(ui::Context &ctx) {
@@ -111,7 +112,7 @@ void CartActionsScreen::hddRestore(ui::Context &ctx) {
 				&(APP->_fileBrowserScreen);
 
 			APP->_runWorker(
-				&App::_cartRestoreWorker, APP->_cartInfoScreen, true, true
+				cartRestoreWorker, APP->_cartInfoScreen, true, true
 			);
 		},
 		STR("CartActionsScreen.hddRestore.confirm")
@@ -131,9 +132,7 @@ void CartActionsScreen::erase(ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 				&(APP->_cartActionsScreen);
 
-			APP->_runWorker(
-				&App::_cartEraseWorker, APP->_cartInfoScreen, true, true
-			);
+			APP->_runWorker(&cartEraseWorker, APP->_cartInfoScreen, true, true);
 		},
 		STR("CartActionsScreen.erase.confirm")
 	);
@@ -153,7 +152,7 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 					&(APP->_cartActionsScreen);
 
 				APP->_runWorker(
-					&App::_cartWriteWorker, APP->_cartInfoScreen, true, true
+					&cartWriteWorker, APP->_cartInfoScreen, true, true
 				);
 			},
 			STR("CartActionsScreen.resetSystemID.confirm")
@@ -184,7 +183,7 @@ void CartActionsScreen::matchSystemID(ui::Context &ctx) {
 					&(APP->_cartActionsScreen);
 
 				APP->_runWorker(
-					&App::_cartWriteWorker, APP->_cartInfoScreen, true, true
+					&cartWriteWorker, APP->_cartInfoScreen, true, true
 				);
 			},
 			STR("CartActionsScreen.matchSystemID.confirm")
@@ -314,8 +313,7 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 						&(APP->_reflashGameScreen);
 
 					APP->_runWorker(
-						&App::_cartReflashWorker, APP->_cartInfoScreen, true,
-						true
+						&cartReflashWorker, APP->_cartInfoScreen, true, true
 					);
 				},
 				STR("CartActionsScreen.reflash.confirm")
@@ -359,8 +357,7 @@ void SystemIDEntryScreen::update(ui::Context &ctx) {
 							&(APP->_systemIDEntryScreen);
 
 						APP->_runWorker(
-							&App::_cartWriteWorker, APP->_cartInfoScreen, true,
-							true
+							&cartWriteWorker, APP->_cartInfoScreen, true, true
 						);
 					},
 					STR("CartActionsScreen.editSystemID.confirm")

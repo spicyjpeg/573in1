@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "ps1/registers.h"
 
 namespace spu {
@@ -31,8 +32,9 @@ enum LoopFlag : uint8_t {
 	LOOP_START   = 1 << 2
 };
 
-static constexpr uint32_t DUMMY_BLOCK_OFFSET = 0x1000;
-static constexpr uint32_t DUMMY_BLOCK_END    = 0x1010;
+static constexpr uint32_t DUMMY_BLOCK_OFFSET = 0x01000;
+static constexpr uint32_t DUMMY_BLOCK_END    = 0x01010;
+static constexpr uint32_t SPU_RAM_END        = 0x7fff0;
 
 static constexpr int      NUM_CHANNELS = 24;
 static constexpr uint16_t MAX_VOLUME   = 0x3fff;
@@ -65,18 +67,37 @@ static inline void stopChannel(Channel ch) {
 	stopChannels(1 << ch);
 }
 
-size_t upload(uint32_t offset, const void *data, size_t length, bool wait);
-size_t download(uint32_t offset, void *data, size_t length, bool wait);
+size_t upload(
+	uint32_t offset, const void *data, size_t length, bool wait = false
+);
+size_t download(uint32_t offset, void *data, size_t length, bool wait = false);
 
 /* Sound class */
 
 static constexpr size_t INTERLEAVED_VAG_BODY_OFFSET = 2048;
 
-struct VAGHeader {
+class VAGHeader {
 public:
 	uint32_t magic, version, interleave, length, sampleRate;
 	uint16_t _reserved[5], channels;
 	char     name[16];
+
+	inline bool validateMagic(void) const {
+		return (magic == util::concat4('V', 'A', 'G', 'p')) && (channels <= 1);
+	}
+	inline bool validateInterleavedMagic(void) const {
+		return (magic == util::concat4('V', 'A', 'G', 'i')) && interleave;
+	}
+
+	inline uint16_t getSPUSampleRate(void) const {
+		return (__builtin_bswap32(sampleRate) << 12) / 44100;
+	}
+	inline uint16_t getSPULength(void) const {
+		return __builtin_bswap32(length) / 8;
+	}
+	inline const void *getData(void) const {
+		return this + 1;
+	}
 };
 
 class Sound {
@@ -91,7 +112,7 @@ public:
 	}
 
 	Sound(void);
-	bool initFromVAGHeader(const VAGHeader *header, uint32_t _offset);
+	bool initFromVAGHeader(const VAGHeader &header, uint32_t _offset);
 	Channel play(uint16_t left, uint16_t right, Channel ch) const;
 };
 
@@ -125,6 +146,12 @@ public:
 
 		return (_channelMask != 0);
 	}
+	inline bool isUnderrun(void) const {
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+		return !_bufferedChunks;
+	}
+
 	inline size_t getChunkLength(void) const {
 		return size_t(interleave) * size_t(channels);
 	}
@@ -132,19 +159,19 @@ public:
 		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
 		// The currently playing chunk cannot be overwritten.
-		size_t playingChunk = isPlaying() ? 1 : 0;
+		size_t playingChunk = _channelMask ? 1 : 0;
 		return numChunks - (_bufferedChunks + playingChunk);
 	}
 
 	Stream(void);
 	bool initFromVAGHeader(
-		const VAGHeader *header, uint32_t _offset, size_t _numChunks
+		const VAGHeader &header, uint32_t _offset, size_t _numChunks
 	);
 	ChannelMask start(uint16_t left, uint16_t right, ChannelMask mask);
 	void stop(void);
 	void handleInterrupt(void);
 
-	size_t feed(const void *data, size_t count);
+	size_t feed(const void *data, size_t length);
 	void resetBuffer(void);
 };
 

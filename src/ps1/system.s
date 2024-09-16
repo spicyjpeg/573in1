@@ -22,23 +22,25 @@
 .set CAUSE, $13
 .set EPC,   $14
 
+.set COP0_CAUSE_EXC_BITMASK, 31 << 2
+.set COP0_CAUSE_EXC_SYS,      8 << 2
+
 .section .text._exceptionVector, "ax", @progbits
 .global _exceptionVector
 .type _exceptionVector, @function
 
 _exceptionVector:
-	# This tiny stub is going to be relocated to the address the CPU jumps to
+	# This 16-byte stub is going to be relocated to the address the CPU jumps to
 	# when an exception occurs (0x80000080) at runtime, overriding the default
 	# one installed by the BIOS. We're going to fetch a pointer to the current
 	# thread, grab the EPC (i.e. the address of the instruction that was being
 	# executed before the exception occurred) and jump to the exception handler.
 	# NOTE: we can't use any registers other than $k0 and $k1 here, as doing so
 	# would destroy their contents and corrupt the current thread's state.
-	lui   $k0, %hi(currentThread)
-	lw    $k0, %lo(currentThread)($k0)
-
+	lw    $k0, %gprel(currentThread)($gp)
 	j     _exceptionHandler
 	mfc0  $k1, EPC
+	nop
 
 .section .text._exceptionHandler, "ax", @progbits
 .global _exceptionHandler
@@ -88,15 +90,17 @@ _exceptionHandler:
 	# exception. If it was caused by a syscall, increment EPC to make sure
 	# returning to the thread won't trigger another syscall.
 	mfc0  $v0, CAUSE
-	lui   $v1, %hi(interruptHandler)
+	lw    $v1, %gprel(interruptHandler)($gp)
 
-	andi  $v0, 0x1f << 2 # if (((CAUSE >> 2) & 0x1f) == 0) goto checkForGTEInst
-	beqz  $v0, .LcheckForGTEInst
-	li    $at, 8 << 2 # if (((CAUSE >> 2) & 0x1f) == 8) goto applyIncrement
-	beq   $v0, $at, .LapplyIncrement
-	lw    $v1, %lo(interruptHandler)($v1)
+	# int code = CAUSE & COP0_CAUSE_EXC_BITMASK;
+	andi  $v0, COP0_CAUSE_EXC_BITMASK
+	beqz  $v0, .LisInterrupt
+	li    $at, COP0_CAUSE_EXC_SYS
 
-.LotherException:
+	beq   $v0, $at, .LisSyscall
+	lw    $a0, %gprel(interruptHandlerArg0)($gp)
+
+.LisOtherException: # if ((code != INT) && (code != SYS)) {
 	# If the exception was not triggered by a syscall nor by an interrupt call
 	# _unhandledException(), which will then display information about the
 	# exception and lock up.
@@ -107,41 +111,44 @@ _exceptionHandler:
 	jal   _unhandledException
 	addiu $sp, -8
 
+	lw    $k0, %gprel(nextThread)($gp)
 	b     .Lreturn
 	addiu $sp, 8
 
-.LcheckForGTEInst:
+.LisInterrupt: # } else {
 	# If the exception was caused by an interrupt, check if the interrupted
 	# instruction was a GTE opcode and increment EPC to avoid executing it again
 	# if that is the case. This is a workaround for a hardware bug.
-	lw    $v0, 0($k1) # if ((*EPC >> 25) == 0x25) EPC++
+
+	# if ((code == INT) && ((*EPC >> 25) == 0x25)) EPC += 4;
+	lw    $v0, 0($k1)
 	li    $at, 0x25
 	srl   $v0, 25
-	bne   $v0, $at, .LskipIncrement
-	lw    $v1, %lo(interruptHandler)($v1)
+	bne   $v0, $at, .LskipEPCIncrement
+	lw    $a0, %gprel(interruptHandlerArg0)($gp)
 
-.LapplyIncrement:
+.LisSyscall:
+	# if (code == SYS) EPC += 4;
 	addiu $k1, 4
 
-.LskipIncrement:
-	# Save the modified EPC and dispatch any pending interrupts. The handler
-	# will temporarily use the current thread's stack.
+.LskipEPCIncrement:
+	# Save the modified EPC and invoke the interrupt handler, which will
+	# temporarily use the current thread's stack.
 	sw    $k1, 0x00($k0)
 
-	lui   $a0, %hi(interruptHandlerArg)
-	lw    $a0, %lo(interruptHandlerArg)($a0)
-	jalr  $v1 # interruptHandler(interruptHandlerArg)
+	# interruptHandler(interruptHandlerArg0, interruptHandlerArg1);
+	lw    $a1, %gprel(interruptHandlerArg1)($gp)
+	jalr  $v1
 	addiu $sp, -8
 
+	lw    $k0, %gprel(nextThread)($gp)
 	addiu $sp, 8
 
-.Lreturn:
-	# Grab a pointer to the next thread to be executed, restore its state and
-	# return.
-	lui   $k0, %hi(nextThread)
-	lw    $k0, %lo(nextThread)($k0)
-	lui   $at, %hi(currentThread)
-	sw    $k0, %lo(currentThread)($at)
+.Lreturn: # }
+	# Grab a pointer to the next thread to be executed and restore its state.
+
+	# currentThread = nextThread;
+	sw    $k0, %gprel(currentThread)($gp)
 
 	lw    $v0, 0x78($k0)
 	lw    $v1, 0x7c($k0)
@@ -197,7 +204,9 @@ _exceptionHandler:
 delayMicroseconds:
 	# Calculate the approximate number of CPU cycles that need to be burned,
 	# assuming a 33.8688 MHz clock (1 us = 33.8688 = ~33.875 cycles).
-	sll   $a1, $a0, 8 # cycles = ((us * 271) + 4) / 8
+
+	# cycles = ((us * 271) + 4) / 8;
+	sll   $a1, $a0, 8
 	sll   $a2, $a0, 4
 	addu  $a1, $a2
 	subu  $a1, $a0
@@ -208,9 +217,9 @@ delayMicroseconds:
 	# loop and returning.
 	addiu $a0, -(6 + 1 + 2 + 4 + 2)
 
-	# Reset timer 2 to its default setting of counting system clock edges.
+	# TIMER2_CTRL = 0;
 	lui   $v1, %hi(IO_BASE)
-	sh    $0,  %lo(TIMER2_CTRL)($v1) # TIMER2_CTRL = 0
+	sh    $0,  %lo(TIMER2_CTRL)($v1)
 
 	# Wait for up to 0xff00 cycles at a time (resetting the timer and waiting
 	# for it to count up each time), as the counter is only 16 bits wide. We
@@ -221,11 +230,13 @@ delayMicroseconds:
 	beqz  $v0, .LshortDelay
 	li    $a2, 0xff00 + 3
 
-.LlongDelay: # for (; cycles > 0xff00; cycles -= (0xff00 + 3))
-	sh    $0,  %lo(TIMER2_VALUE)($v1) # TIMER2_VALUE = 0
+.LlongDelay: # for (; cycles > 0xff00; cycles -= (0xff00 + 3)) {
+	# TIMER2_VALUE = 0;
+	sh    $0,  %lo(TIMER2_VALUE)($v1)
 	li    $v0, 0
 
-.LlongDelayLoop: # while (TIMER2_VALUE < 0xff00);
+.LlongDelayLoop:
+	# while (TIMER2_VALUE < 0xff00);
 	nop
 	slt   $v0, $v0, $a1
 	bnez  $v0, .LlongDelayLoop
@@ -235,17 +246,21 @@ delayMicroseconds:
 	bnez  $v0, .LlongDelay
 	subu  $a0, $a2
 
-.LshortDelay:
+.LshortDelay: # }
 	# Run the last busy loop once less than 0xff00 cycles are remaining.
-	sh    $0,  %lo(TIMER2_VALUE)($v1) # TIMER2_VALUE = 0
+
+	# TIMER2_VALUE = 0;
+	sh    $0,  %lo(TIMER2_VALUE)($v1)
 	li    $v0, 0
 
-.LshortDelayLoop: # while (TIMER2_VALUE < cycles);
+.LshortDelayLoop:
+	# while (TIMER2_VALUE < cycles);
 	nop
 	slt   $v0, $v0, $a0
 	bnez  $v0, .LshortDelayLoop
 	lhu   $v0, %lo(TIMER2_VALUE)($v1)
 
+	# return;
 	jr    $ra
 	nop
 
@@ -254,9 +269,8 @@ delayMicroseconds:
 .type delayMicrosecondsBusy, @function
 
 delayMicrosecondsBusy:
-	# Calculate the approximate number of CPU cycles that need to be burned,
-	# assuming a 33.8688 MHz clock (1 us = 33.8688 = ~33.875 cycles).
-	sll   $a1, $a0, 8 # cycles = ((us * 271) + 4) / 8
+	# cycles = ((us * 271) + 4) / 8:
+	sll   $a1, $a0, 8
 	sll   $a2, $a0, 4
 	addu  $a1, $a2
 	subu  $a1, $a0
@@ -266,9 +280,11 @@ delayMicrosecondsBusy:
 	# Compensate for the overhead of calculating the cycle count and returning.
 	addiu $a0, -(6 + 1 + 2)
 
-.Lloop: # while (cycles > 0) cycles -= 2
+.Lloop:
+	# while (cycles > 0) cycles -= 2;
 	bgtz  $a0, .Lloop
 	addiu $a0, -2
 
+	# return;
 	jr    $ra
 	nop

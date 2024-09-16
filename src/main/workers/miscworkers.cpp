@@ -25,6 +25,7 @@
 #include "common/io.hpp"
 #include "common/rom.hpp"
 #include "main/app/app.hpp"
+#include "main/workers/miscworkers.hpp"
 #include "ps1/system.h"
 
 static const rom::Region *const _AUTOBOOT_REGIONS[]{
@@ -43,25 +44,25 @@ static const char *const _AUTOBOOT_PATHS[][2]{
 	{ "hdd:/noboot.txt",   "hdd:/psx.exe"   }
 };
 
-bool App::_startupWorker(void) {
-	_workerStatus.update(0, 1, WSTR("App.startupWorker.ideInit"));
-	_fileIO.initIDE();
+bool startupWorker(App &app) {
+	app._workerStatus.update(0, 1, WSTR("App.startupWorker.ideInit"));
+	app._fileIO.initIDE();
 
-	_fileInitWorker();
+	fileInitWorker(app);
 
 #ifdef ENABLE_AUTOBOOT
 	// Only try to autoboot if DIP switch 1 is on.
 	if (io::getDIPSwitch(0)) {
-		_workerStatus.update(3, 4, WSTR("App.ideInitWorker.autoboot"));
+		app._workerStatus.update(3, 4, WSTR("App.ideInitWorker.autoboot"));
 
 		if (io::getDIPSwitch(3)) {
 			for (auto region : _AUTOBOOT_REGIONS) {
 				if (!region->getBootExecutableHeader())
 					continue;
 
-				_storageActionsScreen.selectedRegion = region;
+				app._storageActionsScreen.selectedRegion = region;
 
-				_workerStatus.setNextScreen(_autobootScreen);
+				app._workerStatus.setNextScreen(app._autobootScreen);
 				return true;
 			}
 		}
@@ -69,18 +70,18 @@ bool App::_startupWorker(void) {
 		for (auto path : _AUTOBOOT_PATHS) {
 			fs::FileInfo info;
 
-			if (_fileIO.vfs.getFileInfo(info, path[0]))
+			if (app._fileIO.vfs.getFileInfo(info, path[0]))
 				continue;
-			if (!_fileIO.vfs.getFileInfo(info, path[1]))
+			if (!app._fileIO.vfs.getFileInfo(info, path[1]))
 				continue;
 
-			_storageActionsScreen.selectedRegion = nullptr;
+			app._storageActionsScreen.selectedRegion = nullptr;
 			__builtin_strncpy(
-				_fileBrowserScreen.selectedPath, path[1],
-				sizeof(_fileBrowserScreen.selectedPath)
+				app._fileBrowserScreen.selectedPath, path[1],
+				sizeof(app._fileBrowserScreen.selectedPath)
 			);
 
-			_workerStatus.setNextScreen(_autobootScreen);
+			app._workerStatus.setNextScreen(app._autobootScreen);
 			return true;
 		}
 	}
@@ -89,17 +90,17 @@ bool App::_startupWorker(void) {
 	return true;
 }
 
-bool App::_fileInitWorker(void) {
-	_workerStatus.update(0, 3, WSTR("App.fileInitWorker.unmount"));
-	_fileIO.closeResourceFile();
-	_fileIO.unmountIDE();
+bool fileInitWorker(App &app) {
+	app._workerStatus.update(0, 3, WSTR("App.fileInitWorker.unmount"));
+	app._fileIO.closeResourceFile();
+	app._fileIO.unmountIDE();
 
-	_workerStatus.update(1, 3, WSTR("App.fileInitWorker.mount"));
-	_fileIO.mountIDE();
+	app._workerStatus.update(1, 3, WSTR("App.fileInitWorker.mount"));
+	app._fileIO.mountIDE();
 
-	_workerStatus.update(2, 3, WSTR("App.fileInitWorker.loadResources"));
-	if (_fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
-		_loadResources();
+	app._workerStatus.update(2, 3, WSTR("App.fileInitWorker.loadResources"));
+	if (app._fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
+		app._loadResources();
 
 	return true;
 }
@@ -132,11 +133,11 @@ static const char *const _DEVICE_TYPES[]{
 	"atapi" // storage::ATAPI
 };
 
-bool App::_executableWorker(void) {
-	_workerStatus.update(0, 2, WSTR("App.executableWorker.init"));
+bool executableWorker(App &app) {
+	app._workerStatus.update(0, 2, WSTR("App.executableWorker.init"));
 
-	auto       region = _storageActionsScreen.selectedRegion;
-	const char *path  = _fileBrowserScreen.selectedPath;
+	auto       region = app._storageActionsScreen.selectedRegion;
+	const char *path  = app._fileBrowserScreen.selectedPath;
 
 	const char *deviceType;
 	int        deviceIndex;
@@ -151,7 +152,7 @@ bool App::_executableWorker(void) {
 	} else {
 		__builtin_memset(header.magic, 0, sizeof(header.magic));
 
-		auto file = _fileIO.vfs.openFile(path, fs::READ);
+		auto file = app._fileIO.vfs.openFile(path, fs::READ);
 
 		if (file) {
 			file->read(&header, sizeof(header));
@@ -160,15 +161,15 @@ bool App::_executableWorker(void) {
 		}
 
 		if (!header.validateMagic()) {
-			_messageScreen.setMessage(
+			app._messageScreen.setMessage(
 				MESSAGE_ERROR, WSTR("App.executableWorker.fileError"), path
 			);
-			_workerStatus.setNextScreen(_messageScreen);
+			app._workerStatus.setNextScreen(app._messageScreen);
 			return false;
 		}
 
 		deviceIndex = path[3] - '0';
-		deviceType  = _DEVICE_TYPES[_fileIO.ideDevices[deviceIndex]->type];
+		deviceType  = _DEVICE_TYPES[app._fileIO.ideDevices[deviceIndex]->type];
 	}
 
 	auto executableEnd = header.textOffset + header.textLength;
@@ -197,10 +198,10 @@ bool App::_executableWorker(void) {
 		// appropriate location.
 		util::Data binary;
 
-		if (!_fileIO.resource.loadData(binary, launcher.path))
+		if (!app._fileIO.resource.loadData(binary, launcher.path))
 			continue;
 
-		_workerStatus.update(1, 2, WSTR("App.executableWorker.load"));
+		app._workerStatus.update(1, 2, WSTR("App.executableWorker.load"));
 		auto launcherHeader = binary.as<const util::ExecutableHeader>();
 
 		util::ExecutableLoader loader(
@@ -232,7 +233,7 @@ bool App::_executableWorker(void) {
 			// through the command line.
 			fs::FileFragmentTable fragments;
 
-			_fileIO.vfs.getFileFragments(fragments, path);
+			app._fileIO.vfs.getFileFragments(fragments, path);
 
 			auto fragment = fragments.as<const fs::FileFragment>();
 			auto count    = fragments.getNumFragments();
@@ -245,11 +246,11 @@ bool App::_executableWorker(void) {
 
 				fragments.destroy();
 
-				_messageScreen.setMessage(
+				app._messageScreen.setMessage(
 					MESSAGE_ERROR, WSTR("App.executableWorker.fragmentError"),
 					path, count, i
 				);
-				_workerStatus.setNextScreen(_messageScreen);
+				app._workerStatus.setNextScreen(app._messageScreen);
 				return false;
 			}
 
@@ -258,9 +259,9 @@ bool App::_executableWorker(void) {
 
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
-		_unloadCartData();
-		_fileIO.closeResourceFile();
-		_fileIO.unmountIDE();
+		app._unloadCartData();
+		app._fileIO.closeResourceFile();
+		app._fileIO.unmountIDE();
 
 		LOG_APP("jumping to launcher");
 		uninstallExceptionHandler();
@@ -269,18 +270,18 @@ bool App::_executableWorker(void) {
 		loader.run();
 	}
 
-	_messageScreen.setMessage(
+	app._messageScreen.setMessage(
 		MESSAGE_ERROR, WSTR("App.executableWorker.addressError"),
 		header.textOffset, executableEnd - 1, stackTop
 	);
-	_workerStatus.setNextScreen(_messageScreen);
+	app._workerStatus.setNextScreen(app._messageScreen);
 	return false;
 }
 
-bool App::_atapiEjectWorker(void) {
-	_workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
+bool atapiEjectWorker(App &app) {
+	app._workerStatus.update(0, 1, WSTR("App.atapiEjectWorker.eject"));
 
-	for (auto dev : _fileIO.ideDevices) {
+	for (auto dev : app._fileIO.ideDevices) {
 		if (!dev)
 			continue;
 
@@ -294,31 +295,31 @@ bool App::_atapiEjectWorker(void) {
 			continue;
 
 		if (error) {
-			_messageScreen.setMessage(
+			app._messageScreen.setMessage(
 				MESSAGE_ERROR, WSTR("App.atapiEjectWorker.ejectError"),
 				storage::getErrorString(error)
 			);
-			_workerStatus.setNextScreen(_messageScreen);
+			app._workerStatus.setNextScreen(app._messageScreen);
 			return false;
 		}
 
 		return true;
 	}
 
-	_messageScreen.setMessage(
+	app._messageScreen.setMessage(
 		MESSAGE_ERROR, WSTR("App.atapiEjectWorker.noDrive")
 	);
-	_workerStatus.setNextScreen(_messageScreen);
+	app._workerStatus.setNextScreen(app._messageScreen);
 	return false;
 }
 
-bool App::_rebootWorker(void) {
-	_workerStatus.update(0, 1, WSTR("App.rebootWorker.reboot"));
+bool rebootWorker(App &app) {
+	app._workerStatus.update(0, 1, WSTR("App.rebootWorker.reboot"));
 
-	_unloadCartData();
-	_fileIO.closeResourceFile();
-	_fileIO.unmountIDE();
-	_workerStatus.setStatus(WORKER_REBOOT);
+	app._unloadCartData();
+	app._fileIO.closeResourceFile();
+	app._fileIO.unmountIDE();
+	app._workerStatus.setStatus(WORKER_REBOOT);
 
 	// Fall back to a soft reboot if the watchdog fails to reset the system.
 	delayMicroseconds(2000000);

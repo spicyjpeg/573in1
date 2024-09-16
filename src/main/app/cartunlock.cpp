@@ -22,6 +22,7 @@
 #include "main/app/app.hpp"
 #include "main/app/cartunlock.hpp"
 #include "main/cart/cartdata.hpp"
+#include "main/workers/cartworkers.hpp"
 #include "main/uibase.hpp"
 
 /* Pre-unlock cartridge screens */
@@ -331,8 +332,7 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 						&(APP->_unlockKeyScreen);
 
 					APP->_runWorker(
-						&App::_cartUnlockWorker, APP->_cartInfoScreen, false,
-						true
+						&cartUnlockWorker, APP->_cartInfoScreen, false, true
 					);
 				},
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
@@ -381,8 +381,7 @@ void KeyEntryScreen::update(ui::Context &ctx) {
 						&(APP->_keyEntryScreen);
 
 					APP->_runWorker(
-						&App::_cartUnlockWorker, APP->_cartInfoScreen, false,
-						true
+						&cartUnlockWorker, APP->_cartInfoScreen, false, true
 					);
 				},
 				STRH(_UNLOCK_WARNINGS[dump.chipType])

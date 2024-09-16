@@ -184,7 +184,6 @@ public:
 	spu::Sound sounds[NUM_UI_SOUNDS];
 
 	ButtonState buttons;
-	spu::Stream audioStream;
 
 	int  time;
 	void *screenData; // Opaque, can be accessed by screens

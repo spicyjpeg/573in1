@@ -25,13 +25,16 @@ namespace mdec {
 /* Basic API */
 
 void init(void);
-size_t feed(const void *data, size_t length, bool wait);
+size_t feed(const void *data, size_t length, bool wait = false);
+size_t receive(void *data, size_t length, bool wait = false);
 
 static inline bool isIdle(void) {
 	return !(MDEC1 & MDEC_STAT_BUSY);
 }
 
-static inline size_t feedBS(const uint32_t *data, uint32_t flags, bool wait) {
+static inline size_t feedBS(
+	const uint32_t *data, uint32_t flags, bool wait = false
+) {
 	size_t length = data[0] & MDEC_CMD_FLAG_LENGTH_BITMASK;
 
 	MDEC0 = MDEC_CMD_DECODE | length | flags;
@@ -40,12 +43,19 @@ static inline size_t feedBS(const uint32_t *data, uint32_t flags, bool wait) {
 
 /* MDEC bitstream decompressor */
 
-struct BSHeader {
+class BSHeader {
 public:
 	uint16_t outputLength;
 	uint16_t mdecCommand;
 	uint16_t quantScale;
 	uint16_t version;
+
+	inline size_t getUncompLength(void) const {
+		// DMA feeds data to the MDEC in 32-word chunks so the uncompressed
+		// length has to be rounded accordingly. Additionally, the decompressor
+		// generates a 4-byte header containing the command to send to the MDEC.
+		return (outputLength + 4 + 127) / 128;
+	}
 };
 
 enum BSDecompressorError {
@@ -55,7 +65,7 @@ enum BSDecompressorError {
 };
 
 extern "C" BSDecompressorError _bsDecompressorStart(
-	void *_this, uint32_t *output, size_t outputLength, const uint32_t *input
+	void *_this, uint32_t *output, size_t outputLength, const void *input
 );
 extern "C" BSDecompressorError _bsDecompressorResume(
 	void *_this, uint32_t *output, size_t outputLength
@@ -63,7 +73,7 @@ extern "C" BSDecompressorError _bsDecompressorResume(
 
 class BSDecompressor {
 protected:
-	const uint32_t *_input;
+	const void *_input;
 
 	uint32_t _bits, _nextBits;
 	size_t   _remaining;
@@ -76,7 +86,7 @@ protected:
 
 public:
 	inline BSDecompressorError decompress(
-		uint32_t *output, const uint32_t *input, size_t outputLength
+		uint32_t *output, const void *input, size_t outputLength
 	) {
 		return _bsDecompressorStart(this, output, outputLength, input);
 	}

@@ -14,7 +14,9 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include "common/fs/fat.hpp"
 #include "common/fs/file.hpp"
@@ -30,7 +32,9 @@
 #include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
+#include "main/app/threads.hpp"
 #include "main/cart/cart.hpp"
+#include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
 
@@ -201,7 +205,7 @@ void FileIOManager::closeResourceFile(void) {
 
 /* App class */
 
-static constexpr size_t _WORKER_STACK_SIZE = 0x20000;
+static constexpr size_t _WORKER_STACK_SIZE = 0x8000;
 
 static constexpr int _SPLASH_SCREEN_TIMEOUT = 5;
 
@@ -239,17 +243,41 @@ void App::_unloadCartData(void) {
 #endif
 }
 
-void App::_setupInterrupts(void) {
-	setInterruptHandler(
-		util::forcedCast<ArgFunction>(&App::_interruptHandler), this
-	);
+void App::_updateOverlays(void) {
+	// Date and time overlay
+	static char dateString[24];
+	util::Date  date;
 
-	IRQ_MASK = 0
-		| (1 << IRQ_VSYNC)
-		| (1 << IRQ_SPU)
-		| (1 << IRQ_PIO);
-	enableInterrupts();
+	io::getRTCTime(date);
+	date.toString(dateString);
+
+	_textOverlay.leftText = dateString;
+
+	// Splash screen overlay
+	int timeout = _ctx.gpuCtx.refreshRate * _SPLASH_SCREEN_TIMEOUT;
+
+	__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+	if ((_workerStatus.status != WORKER_BUSY) || (_ctx.time > timeout))
+		_splashOverlay.hide(_ctx);
+
+#ifdef ENABLE_LOG_BUFFER
+	// Log overlay
+	if (
+		_ctx.buttons.released(ui::BTN_DEBUG) &&
+		!_ctx.buttons.longReleased(ui::BTN_DEBUG)
+	)
+		_logOverlay.toggle(_ctx);
+#endif
+
+	// Screenshot overlay
+	if (_ctx.buttons.longPressed(ui::BTN_DEBUG)) {
+		if (_takeScreenshot())
+			_screenshotOverlay.animate(_ctx);
+	}
 }
+
+/* App filesystem functions */
 
 static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 	"assets/sounds/startup.vag",   // ui::SOUND_STARTUP
@@ -275,7 +303,7 @@ void App::_loadResources(void) {
 	uint32_t spuOffset = spu::DUMMY_BLOCK_END;
 
 	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
-		res.loadVAG(_ctx.sounds[i], spuOffset, _UI_SOUND_PATHS[i]);
+		spuOffset += res.loadVAG(_ctx.sounds[i], spuOffset, _UI_SOUND_PATHS[i]);
 }
 
 bool App::_createDataDirectory(void) {
@@ -334,54 +362,74 @@ bool App::_takeScreenshot(void) {
 	return true;
 }
 
-void App::_updateOverlays(void) {
-	// Date and time overlay
-	static char dateString[24];
-	util::Date  date;
+/* App callbacks */
 
-	io::getRTCTime(date);
-	date.toString(dateString);
+void _appInterruptHandler(void *arg0, void *arg1) {
+	auto app = reinterpret_cast<App *>(arg0);
 
-	_textOverlay.leftText = dateString;
+	if (acknowledgeInterrupt(IRQ_VSYNC)) {
+		app->_ctx.tick();
 
-	// Splash screen overlay
-	int timeout = _ctx.gpuCtx.refreshRate * _SPLASH_SCREEN_TIMEOUT;
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-	__atomic_signal_fence(__ATOMIC_ACQUIRE);
+		if (app->_workerStatus.status != WORKER_REBOOT)
+			io::clearWatchdog();
+		if (
+			gpu::isIdle() &&
+			(app->_workerStatus.status != WORKER_BUSY_SUSPEND)
+		)
+			switchThread(nullptr);
+	}
 
-	if ((_workerStatus.status != WORKER_BUSY) || (_ctx.time > timeout))
-		_splashOverlay.hide(_ctx);
+	if (acknowledgeInterrupt(IRQ_SPU))
+		app->_audioStream.handleInterrupt();
 
-#ifdef ENABLE_LOG_BUFFER
-	// Log overlay
-	if (
-		_ctx.buttons.released(ui::BTN_DEBUG) &&
-		!_ctx.buttons.longReleased(ui::BTN_DEBUG)
-	)
-		_logOverlay.toggle(_ctx);
-#endif
-
-	// Screenshot overlay
-	if (_ctx.buttons.longPressed(ui::BTN_DEBUG)) {
-		if (_takeScreenshot())
-			_screenshotOverlay.animate(_ctx);
+	if (acknowledgeInterrupt(IRQ_PIO)) {
+		for (auto dev : app->_fileIO.ideDevices) {
+			if (dev)
+				dev->handleInterrupt();
+		}
 	}
 }
 
+void _workerMain(void *arg0, void *arg1) {
+	auto app  = reinterpret_cast<App *>(arg0);
+	auto func = reinterpret_cast<bool (*)(App &)>(arg1);
+
+	if (func)
+		func(*app);
+
+	app->_workerStatus.setStatus(WORKER_DONE);
+
+	// Do nothing while waiting for vblank once the task is done.
+	for (;;)
+		__asm__ volatile("");
+}
+
+void App::_setupInterrupts(void) {
+	setInterruptHandler(&_appInterruptHandler, this, nullptr);
+
+	IRQ_MASK = 0
+		| (1 << IRQ_VSYNC)
+		| (1 << IRQ_SPU)
+		| (1 << IRQ_PIO);
+	enableInterrupts();
+}
+
 void App::_runWorker(
-	bool (App::*func)(void), ui::Screen &next, bool goBack, bool playSound
+	bool (*func)(App &app), ui::Screen &next, bool goBack, bool playSound
 ) {
 	{
 		util::CriticalSection sec;
 
 		_workerStatus.reset(next, goBack);
 		_workerStack.allocate(_WORKER_STACK_SIZE);
+		assert(_workerStack.ptr);
 
-		_workerFunction  = func;
 		auto stackBottom = _workerStack.as<uint8_t>();
 
 		initThread(
-			&_workerThread, util::forcedCast<ArgFunction>(&App::_worker), this,
+			&_workerThread, &_workerMain, this, reinterpret_cast<void *>(func),
 			&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
 		);
 	}
@@ -389,39 +437,7 @@ void App::_runWorker(
 	_ctx.show(_workerStatusScreen, false, playSound);
 }
 
-void App::_worker(void) {
-	if (_workerFunction)
-		(this->*_workerFunction)();
-
-	_workerStatus.setStatus(WORKER_DONE);
-
-	// Do nothing while waiting for vblank once the task is done.
-	for (;;)
-		__asm__ volatile("");
-}
-
-void App::_interruptHandler(void) {
-	if (acknowledgeInterrupt(IRQ_VSYNC)) {
-		_ctx.tick();
-
-		__atomic_signal_fence(__ATOMIC_ACQUIRE);
-
-		if (_workerStatus.status != WORKER_REBOOT)
-			io::clearWatchdog();
-		if (gpu::isIdle() && (_workerStatus.status != WORKER_BUSY_SUSPEND))
-			switchThread(nullptr);
-	}
-
-	if (acknowledgeInterrupt(IRQ_SPU))
-		_ctx.audioStream.handleInterrupt();
-
-	if (acknowledgeInterrupt(IRQ_PIO)) {
-		for (auto dev : _fileIO.ideDevices) {
-			if (dev)
-				dev->handleInterrupt();
-		}
-	}
-}
+/* App main loop */
 
 [[noreturn]] void App::run(const void *resourcePtr, size_t resourceLength) {
 #ifdef ENABLE_LOG_BUFFER
@@ -448,7 +464,8 @@ void App::_interruptHandler(void) {
 #endif
 	_ctx.overlays[2]    = &_screenshotOverlay;
 
-	_runWorker(&App::_startupWorker, _warningScreen);
+	_audioStream.init(&_workerThread);
+	_runWorker(&startupWorker, _warningScreen);
 	_setupInterrupts();
 
 	_splashOverlay.show(_ctx);
@@ -459,7 +476,7 @@ void App::_interruptHandler(void) {
 		_updateOverlays();
 
 		_ctx.draw();
-		switchThreadImmediate(&_workerThread);
+		_audioStream.yield();
 		_ctx.gpuCtx.flip();
 	}
 }

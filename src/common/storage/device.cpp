@@ -20,6 +20,7 @@
 #include "common/storage/atapi.hpp"
 #include "common/storage/device.hpp"
 #include "common/util/log.hpp"
+#include "common/io.hpp"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
 
@@ -98,11 +99,11 @@ int IDEIdentifyBlock::getHighestPIOMode(void) const {
 
 /* IDE data transfers */
 
-static constexpr int _DMA_TIMEOUT = 10000;
-
-void IDEDevice::_readPIO(void *data, size_t length) const {
-	length++;
-	length /= 2;
+void IDEDevice::_readData(void *data, size_t length) const {
+#if 0
+	io::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
+#else
+	length = (length + 1) / 2;
 
 	util::assertAligned<uint16_t>(data);
 
@@ -110,11 +111,14 @@ void IDEDevice::_readPIO(void *data, size_t length) const {
 
 	for (; length > 0; length--)
 		*(ptr++) = SYS573_IDE_CS0_BASE[CS0_DATA];
+#endif
 }
 
-void IDEDevice::_writePIO(const void *data, size_t length) const {
-	length++;
-	length /= 2;
+void IDEDevice::_writeData(const void *data, size_t length) const {
+#if 0
+	io::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
+#else
+	length = (length + 1) / 2;
 
 	util::assertAligned<uint16_t>(data);
 
@@ -122,40 +126,7 @@ void IDEDevice::_writePIO(const void *data, size_t length) const {
 
 	for (; length > 0; length--)
 		SYS573_IDE_CS0_BASE[CS0_DATA] = *(ptr++);
-}
-
-bool IDEDevice::_readDMA(void *data, size_t length) const {
-	util::assertAligned<uint32_t>(data);
-
-	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
-		return false;
-
-	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_PIO) = (length + 3) / 4;
-	DMA_CHCR(DMA_PIO) = 0
-		| DMA_CHCR_READ
-		| DMA_CHCR_MODE_BURST
-		| DMA_CHCR_ENABLE
-		| DMA_CHCR_TRIGGER;
-
-	return waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT);
-}
-
-bool IDEDevice::_writeDMA(const void *data, size_t length) const {
-	util::assertAligned<uint32_t>(data);
-
-	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
-		return false;
-
-	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_PIO) = (length + 3) / 4;
-	DMA_CHCR(DMA_PIO) = 0
-		| DMA_CHCR_WRITE
-		| DMA_CHCR_MODE_BURST
-		| DMA_CHCR_ENABLE
-		| DMA_CHCR_TRIGGER;
-
-	return waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT);
+#endif
 }
 
 /* IDE status and error polling */

@@ -30,6 +30,7 @@
 #include "main/app/modals.hpp"
 #include "main/app/romactions.hpp"
 #include "main/app/tests.hpp"
+#include "main/app/threads.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"
 #include "main/cart/cartio.hpp"
@@ -101,47 +102,42 @@ public:
 /* App class */
 
 class App {
+private:
+	friend void _appInterruptHandler(void *arg0, void *arg1);
+	friend void _workerMain(void *arg0, void *arg1);
+
+	// cartworkers.cpp
+	friend bool cartDetectWorker(App &app);
+	friend bool cartUnlockWorker(App &app);
+	friend bool qrCodeWorker(App &app);
+	friend bool cartDumpWorker(App &app);
+	friend bool cartWriteWorker(App &app);
+	friend bool cartRestoreWorker(App &app);
+	friend bool cartReflashWorker(App &app);
+	friend bool cartEraseWorker(App &app);
+
+	// romworkers.cpp
+	friend bool romChecksumWorker(App &app);
+	friend bool romDumpWorker(App &app);
+	friend bool romRestoreWorker(App &app);
+	friend bool romEraseWorker(App &app);
+	friend bool flashExecutableWriteWorker(App &app);
+	friend bool flashHeaderWriteWorker(App &app);
+
+	// miscworkers.cpp
+	friend bool startupWorker(App &app);
+	friend bool fileInitWorker(App &app);
+	friend bool executableWorker(App &app);
+	friend bool atapiEjectWorker(App &app);
+	friend bool rebootWorker(App &app);
+
+	// modals.cpp
 	friend class WorkerStatusScreen;
 	friend class MessageScreen;
 	friend class ConfirmScreen;
 	friend class FilePickerScreen;
 	friend class FileBrowserScreen;
 
-	friend class WarningScreen;
-	friend class AutobootScreen;
-	friend class ButtonMappingScreen;
-	friend class MainMenuScreen;
-
-	friend class CartInfoScreen;
-	friend class UnlockKeyScreen;
-	friend class KeyEntryScreen;
-
-	friend class CartActionsScreen;
-	friend class QRCodeScreen;
-	friend class HexdumpScreen;
-	friend class ReflashGameScreen;
-	friend class SystemIDEntryScreen;
-
-	friend class StorageInfoScreen;
-	friend class StorageActionsScreen;
-	friend class CardSizeScreen;
-	friend class ChecksumScreen;
-
-	friend class TestMenuScreen;
-	friend class JAMMATestScreen;
-	friend class AudioTestScreen;
-	friend class TestPatternScreen;
-	friend class ColorIntensityScreen;
-	friend class GeometryScreen;
-
-	friend class IDEInfoScreen;
-	friend class RTCTimeScreen;
-	friend class LanguageScreen;
-	friend class ResolutionScreen;
-	friend class AboutScreen;
-
-private:
-	// modals.cpp
 	WorkerStatusScreen _workerStatusScreen;
 	MessageScreen      _messageScreen;
 	ConfirmScreen      _confirmScreen;
@@ -149,17 +145,32 @@ private:
 	FileBrowserScreen  _fileBrowserScreen;
 
 	// main.cpp
+	friend class WarningScreen;
+	friend class AutobootScreen;
+	friend class ButtonMappingScreen;
+	friend class MainMenuScreen;
+
 	WarningScreen       _warningScreen;
 	AutobootScreen      _autobootScreen;
 	ButtonMappingScreen	_buttonMappingScreen;
 	MainMenuScreen      _mainMenuScreen;
 
 	// cartunlock.cpp
+	friend class CartInfoScreen;
+	friend class UnlockKeyScreen;
+	friend class KeyEntryScreen;
+
 	CartInfoScreen  _cartInfoScreen;
 	UnlockKeyScreen _unlockKeyScreen;
 	KeyEntryScreen  _keyEntryScreen;
 
 	// cartactions.cpp
+	friend class CartActionsScreen;
+	friend class QRCodeScreen;
+	friend class HexdumpScreen;
+	friend class ReflashGameScreen;
+	friend class SystemIDEntryScreen;
+
 	CartActionsScreen   _cartActionsScreen;
 	QRCodeScreen        _qrCodeScreen;
 	HexdumpScreen       _hexdumpScreen;
@@ -167,12 +178,24 @@ private:
 	SystemIDEntryScreen _systemIDEntryScreen;
 
 	// romactions.cpp
+	friend class StorageInfoScreen;
+	friend class StorageActionsScreen;
+	friend class CardSizeScreen;
+	friend class ChecksumScreen;
+
 	StorageInfoScreen    _storageInfoScreen;
 	StorageActionsScreen _storageActionsScreen;
 	CardSizeScreen       _cardSizeScreen;
 	ChecksumScreen       _checksumScreen;
 
 	// tests.cpp
+	friend class TestMenuScreen;
+	friend class JAMMATestScreen;
+	friend class AudioTestScreen;
+	friend class TestPatternScreen;
+	friend class ColorIntensityScreen;
+	friend class GeometryScreen;
+
 	TestMenuScreen       _testMenuScreen;
 	JAMMATestScreen      _jammaTestScreen;
 	AudioTestScreen      _audioTestScreen;
@@ -180,6 +203,12 @@ private:
 	GeometryScreen       _geometryScreen;
 
 	// misc.cpp
+	friend class IDEInfoScreen;
+	friend class RTCTimeScreen;
+	friend class LanguageScreen;
+	friend class ResolutionScreen;
+	friend class AboutScreen;
+
 	IDEInfoScreen    _ideInfoScreen;
 	RTCTimeScreen    _rtcTimeScreen;
 	LanguageScreen   _languageScreen;
@@ -195,65 +224,39 @@ private:
 #endif
 	ui::ScreenshotOverlay _screenshotOverlay;
 
-	ui::Context     &_ctx;
-	fs::StringTable _stringTable;
-	FileIOManager   _fileIO;
+	ui::Context        &_ctx;
+	fs::StringTable    _stringTable;
+	FileIOManager      _fileIO;
+	AudioStreamManager _audioStream;
+
+	Thread       _workerThread;
+	util::Data   _workerStack;
+	WorkerStatus _workerStatus;
 
 	cart::CartDump      _cartDump;
 	cart::ROMHeaderDump _romHeaderDump;
 	cart::CartDB        _cartDB;
 	cart::ROMHeaderDB   _romHeaderDB;
 
-	Thread       _workerThread;
-	util::Data   _workerStack;
-	WorkerStatus _workerStatus;
-	bool         (App::*_workerFunction)(void);
-
 	cart::Driver            *_cartDriver;
 	cart::CartParser        *_cartParser;
 	const cart::CartDBEntry *_identified, *_selectedEntry;
 
 	void _unloadCartData(void);
-	void _setupInterrupts(void);
+	void _updateOverlays(void);
+
 	void _loadResources(void);
 	bool _createDataDirectory(void);
 	bool _getNumberedPath(
 		char *output, size_t length, const char *path, int maxIndex = 9999
 	);
 	bool _takeScreenshot(void);
-	void _updateOverlays(void);
+
+	void _setupInterrupts(void);
 	void _runWorker(
-		bool (App::*func)(void), ui::Screen &next, bool goBack = false,
+		bool (*func)(App &app), ui::Screen &next, bool goBack = false,
 		bool playSound = false
 	);
-
-	void _worker(void);
-	void _interruptHandler(void);
-
-	// cartworkers.cpp
-	bool _cartDetectWorker(void);
-	bool _cartUnlockWorker(void);
-	bool _qrCodeWorker(void);
-	bool _cartDumpWorker(void);
-	bool _cartWriteWorker(void);
-	bool _cartRestoreWorker(void);
-	bool _cartReflashWorker(void);
-	bool _cartEraseWorker(void);
-
-	// romworkers.cpp
-	bool _romChecksumWorker(void);
-	bool _romDumpWorker(void);
-	bool _romRestoreWorker(void);
-	bool _romEraseWorker(void);
-	bool _flashExecutableWriteWorker(void);
-	bool _flashHeaderWriteWorker(void);
-
-	// miscworkers.cpp
-	bool _startupWorker(void);
-	bool _fileInitWorker(void);
-	bool _executableWorker(void);
-	bool _atapiEjectWorker(void);
-	bool _rebootWorker(void);
 
 public:
 	App(ui::Context &ctx);
@@ -266,5 +269,5 @@ public:
 #define STR(id)  (APP->_stringTable.get(id ## _h))
 #define STRH(id) (APP->_stringTable.get(id))
 
-#define WSTR(id)  (_stringTable.get(id ## _h))
-#define WSTRH(id) (_stringTable.get(id))
+#define WSTR(id)  (app._stringTable.get(id ## _h))
+#define WSTRH(id) (app._stringTable.get(id))

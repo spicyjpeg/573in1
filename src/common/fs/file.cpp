@@ -14,6 +14,7 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -22,6 +23,9 @@
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
+#include "common/mdec.hpp"
+#include "common/spu.hpp"
+#include "ps1/registers.h"
 
 namespace fs {
 
@@ -63,6 +67,7 @@ size_t Provider::loadData(util::Data &output, const char *path) {
 		return 0;
 
 	assert(file->size <= SIZE_MAX);
+
 	if (!output.allocate(size_t(file->size))) {
 		file->close();
 		delete file;
@@ -83,6 +88,7 @@ size_t Provider::loadData(void *output, size_t length, const char *path) {
 		return 0;
 
 	assert(file->size >= length);
+
 	size_t actualLength = file->read(output, length);
 
 	file->close();
@@ -105,32 +111,71 @@ size_t Provider::saveData(const void *input, size_t length, const char *path) {
 
 size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 	util::Data data;
+	size_t     loadLength = 0;
 
 	if (!loadData(data, path))
 		return 0;
 
-	auto header  = data.as<const gpu::TIMHeader>();
-	auto section = reinterpret_cast<const uint8_t *>(&header[1]);
+	auto header = data.as<const gpu::TIMHeader>();
 
-	if (!output.initFromTIMHeader(header)) {
-		data.destroy();
-		return 0;
+	if (output.initFromTIMHeader(*header)) {
+		auto image = header->getImage();
+		auto clut  = header->getCLUT();
+
+		if (clut)
+			loadLength += gpu::upload(clut->vram, clut->getData(), true);
+
+		loadLength += gpu::upload(image->vram, image->getData(), true);
 	}
-
-	size_t uploadLength = 0;
-
-	if (header->flags & (1 << 3)) {
-		auto clut     = reinterpret_cast<const gpu::TIMSectionHeader *>(section);
-		uploadLength += gpu::upload(clut->vram, &clut[1], true);
-
-		section += clut->length;
-	}
-
-	auto image    = reinterpret_cast<const gpu::TIMSectionHeader *>(section);
-	uploadLength += gpu::upload(image->vram, &image[1], true);
 
 	data.destroy();
-	return uploadLength;
+	return loadLength;
+}
+
+size_t Provider::loadBS(
+	gpu::Image &output, const gpu::RectWH &rect, const char *path
+) {
+	util::Data data;
+	size_t     loadLength = 0;
+
+	if (!loadData(data, path))
+		return 0;
+
+	size_t bsLength = data.as<const mdec::BSHeader>()->getUncompLength();
+
+	mdec::BSDecompressor decompressor;
+	util::Data           buffer;
+
+	if (buffer.allocate(bsLength)) {
+		auto   bsPtr       = buffer.as<uint32_t>();
+		size_t sliceLength = (16 * rect.h) * 2;
+
+		if (!decompressor.decompress(bsPtr, data.ptr, bsLength)) {
+			// Reuse the file's buffer to store vertical slices received from
+			// the MDEC as they are uploaded to VRAM.
+			data.allocate(sliceLength);
+			mdec::feedBS(bsPtr, MDEC_CMD_FLAG_FORMAT_16BPP, false);
+
+			gpu::RectWH slice;
+
+			slice.x = rect.x;
+			slice.y = rect.y;
+			slice.w = 16;
+			slice.h = rect.h;
+
+			for (int i = rect.w; i > 0; i -= 16) {
+				mdec::receive(data.ptr, sliceLength, true);
+
+				loadLength += gpu::upload(slice, data.ptr, true);
+				slice.x    += 16;
+			}
+		}
+
+		buffer.destroy();
+	}
+
+	data.destroy();
+	return loadLength;
 }
 
 size_t Provider::loadVAG(
@@ -139,26 +184,24 @@ size_t Provider::loadVAG(
 	// Sounds should be decompressed and uploaded to the SPU one chunk at a
 	// time, but whatever.
 	util::Data data;
+	size_t     loadLength = 0;
 
 	if (!loadData(data, path))
 		return 0;
 
 	auto header = data.as<const spu::VAGHeader>();
-	auto body   = reinterpret_cast<const uint32_t *>(&header[1]);
 
-	if (!output.initFromVAGHeader(header, offset)) {
-		data.destroy();
-		return 0;
-	}
-
-	auto uploadLength =
-		spu::upload(offset, body, data.length - sizeof(spu::VAGHeader), true);
+	if (output.initFromVAGHeader(*header, offset))
+		loadLength = spu::upload(
+			offset, header->getData(), data.length - sizeof(spu::VAGHeader),
+			true
+		);
 
 	data.destroy();
-	return uploadLength;
+	return loadLength;
 }
 
-struct [[gnu::packed]] BMPHeader {
+class [[gnu::packed]] BMPHeader {
 public:
 	uint16_t magic;
 	uint32_t fileLength;
@@ -186,7 +229,7 @@ public:
 	}
 };
 
-size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
+size_t Provider::saveVRAMBMP(const gpu::RectWH &rect, const char *path) {
 	auto file = openFile(path, WRITE | ALLOW_CREATE);
 
 	if (!file)
@@ -205,11 +248,11 @@ size_t Provider::saveVRAMBMP(gpu::RectWH &rect, const char *path) {
 		gpu::RectWH slice;
 
 		slice.x = rect.x;
+		slice.y = rect.y + rect.h - 1;
 		slice.w = rect.w;
 		slice.h = 1;
 
-		for (int y = rect.y + rect.h - 1; y >= rect.y; y--) {
-			slice.y         = y;
+		for (; slice.y >= rect.y; slice.y--) {
 			auto lineLength = gpu::download(slice, buffer.ptr, true);
 
 			// BMP stores channels in BGR order as opposed to RGB, so the red

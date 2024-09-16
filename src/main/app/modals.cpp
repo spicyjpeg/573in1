@@ -25,6 +25,7 @@
 #include "common/defs.hpp"
 #include "main/app/app.hpp"
 #include "main/app/modals.hpp"
+#include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 
@@ -206,7 +207,7 @@ void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
 
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 
-		APP->_runWorker(&App::_fileInitWorker, *this, false, true);
+		APP->_runWorker(&fileInitWorker, *this, false, true);
 		return;
 	}
 

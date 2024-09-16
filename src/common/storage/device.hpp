@@ -271,10 +271,8 @@ protected:
 		return util::concat2(_get(CS0_CYLINDER_L), _get(CS0_CYLINDER_H));
 	}
 
-	void _readPIO(void *data, size_t length) const;
-	void _writePIO(const void *data, size_t length) const;
-	bool _readDMA(void *data, size_t length) const;
-	bool _writeDMA(const void *data, size_t length) const;
+	void _readData(void *data, size_t length) const;
+	void _writeData(const void *data, size_t length) const;
 
 	DeviceError _setup(const IDEIdentifyBlock &block);
 	DeviceError _waitForIdle(

@@ -101,18 +101,19 @@ set(
 	src/main/app/app.cpp
 	src/main/app/cartactions.cpp
 	src/main/app/cartunlock.cpp
-	src/main/app/cartworkers.cpp
 	src/main/app/main.cpp
 	src/main/app/misc.cpp
-	src/main/app/miscworkers.cpp
 	src/main/app/modals.cpp
 	src/main/app/romactions.cpp
-	src/main/app/romworkers.cpp
 	src/main/app/tests.cpp
+	src/main/app/threads.cpp
 	src/main/cart/cart.cpp
 	src/main/cart/cartdata.cpp
 	src/main/cart/cartio.cpp
 	src/main/cart/zs01.cpp
+	src/main/workers/cartworkers.cpp
+	src/main/workers/miscworkers.cpp
+	src/main/workers/romworkers.cpp
 	src/main/main.cpp
 	src/main/uibase.cpp
 	src/main/uicommon.cpp

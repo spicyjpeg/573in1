@@ -19,12 +19,14 @@
 #include "common/util/templates.hpp"
 #include "main/app/app.hpp"
 #include "main/app/main.hpp"
+#include "main/workers/cartworkers.hpp"
+#include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
 
 /* Main menu screens */
 
 static constexpr int _WARNING_COOLDOWN = 10;
-static constexpr int _AUTOBOOT_DELAY   =  5;
+static constexpr int _AUTOBOOT_DELAY   = 5;
 
 void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_title      = STR("WarningScreen.title");
@@ -63,13 +65,7 @@ void WarningScreen::update(ui::Context &ctx) {
 	_buttons[0] = STR("WarningScreen.ok");
 
 	if (ctx.buttons.pressed(ui::BTN_START))
-#ifdef ENABLE_AUTOBOOT
 		ctx.show(APP->_buttonMappingScreen, false, true);
-#else
-		APP->_runWorker(
-			&App::_ideInitWorker, APP->_buttonMappingScreen, false, true
-		);
-#endif
 }
 
 void AutobootScreen::show(ui::Context &ctx, bool goBack) {
@@ -102,7 +98,7 @@ void AutobootScreen::update(ui::Context &ctx) {
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 			&(APP->_warningScreen);
 
-		APP->_runWorker(&App::_executableWorker, APP->_mainMenuScreen, true);
+		APP->_runWorker(&executableWorker, APP->_mainMenuScreen, true);
 		return;
 	}
 
@@ -214,9 +210,7 @@ void MainMenuScreen::cartInfo(ui::Context &ctx) {
 	if (APP->_cartDriver)
 		ctx.show(APP->_cartInfoScreen, false, true);
 	else
-		APP->_runWorker(
-			&App::_cartDetectWorker, APP->_cartInfoScreen, false, true
-		);
+		APP->_runWorker(&cartDetectWorker, APP->_cartInfoScreen, false, true);
 }
 
 void MainMenuScreen::storageInfo(ui::Context &ctx) {
@@ -236,7 +230,7 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 				&(APP->_fileBrowserScreen);
 
 			APP->_runWorker(
-				&App::_executableWorker, APP->_mainMenuScreen, true, true
+				&executableWorker, APP->_mainMenuScreen, true, true
 			);
 		},
 		STR("MainMenuScreen.runExecutable.filePrompt")
@@ -269,11 +263,11 @@ void MainMenuScreen::ejectCD(ui::Context &ctx) {
 	APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] = this;
 	APP->_messageScreen.previousScreens[MESSAGE_ERROR]   = this;
 
-	APP->_runWorker(&App::_atapiEjectWorker, *this, true, true);
+	APP->_runWorker(&atapiEjectWorker, *this, true, true);
 }
 
 void MainMenuScreen::reboot(ui::Context &ctx) {
-	APP->_runWorker(&App::_rebootWorker, *this, true, true);
+	APP->_runWorker(&rebootWorker, *this, true, true);
 }
 
 void MainMenuScreen::show(ui::Context &ctx, bool goBack) {

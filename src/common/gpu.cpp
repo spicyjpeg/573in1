@@ -355,22 +355,17 @@ void Image::initFromVRAMRect(
 	texpage = gp0_page(rect.x / 64, rect.y / 256, blendMode, colorDepth);
 }
 
-bool Image::initFromTIMHeader(const TIMHeader *header, BlendMode blendMode) {
-	if (header->magic != 0x10)
+bool Image::initFromTIMHeader(const TIMHeader &header, BlendMode blendMode) {
+	if (!header.validateMagic())
 		return false;
 
-	auto ptr = reinterpret_cast<const uint8_t *>(&header[1]);
+	auto image = header.getImage();
+	auto clut  = header.getCLUT();
 
-	if (header->flags & (1 << 3)) {
-		auto clut = reinterpret_cast<const TIMSectionHeader *>(ptr);
-
+	if (clut)
 		palette = gp0_clut(clut->vram.x / 16, clut->vram.y);
-		ptr    += clut->length;
-	}
 
-	auto image = reinterpret_cast<const TIMSectionHeader *>(ptr);
-
-	initFromVRAMRect(image->vram, ColorDepth(header->flags & 3), blendMode);
+	initFromVRAMRect(image->vram, header.getColorDepth(), blendMode);
 	return true;
 }
 

@@ -161,6 +161,15 @@ static inline void setMiscOutput(MiscOutputPin pin, bool value) {
 void init(void);
 void resetIDEDevices(void);
 
+/* System bus DMA */
+
+size_t doDMARead(
+	volatile void *source, void *data, size_t length, bool wait = false
+);
+size_t doDMAWrite(
+	volatile void *dest, const void *data, size_t length, bool wait = false
+);
+
 /* JAMMA and RTC functions */
 
 uint32_t getJAMMAInputs(void);

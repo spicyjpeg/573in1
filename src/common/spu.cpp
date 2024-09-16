@@ -59,7 +59,7 @@ void init(void) {
 	SPU_MASTER_VOL_R = 0;
 	SPU_REVERB_VOL_L = 0;
 	SPU_REVERB_VOL_R = 0;
-	SPU_REVERB_ADDR  = 0xfffe;
+	SPU_REVERB_ADDR  = SPU_RAM_END / 8;
 
 	SPU_FLAG_FM1     = 0;
 	SPU_FLAG_FM2     = 0;
@@ -88,6 +88,8 @@ void init(void) {
 }
 
 Channel getFreeChannel(void) {
+	util::CriticalSection sec;
+
 #if 0
 	// The status flag gets set when a channel stops or loops for the first
 	// time rather than when it actually goes silent (so it will be set early
@@ -111,6 +113,8 @@ Channel getFreeChannel(void) {
 }
 
 ChannelMask getFreeChannels(int count) {
+	util::CriticalSection sec;
+
 	ChannelMask mask = 0;
 
 	for (Channel ch = 0; ch < NUM_CHANNELS; ch++) {
@@ -130,6 +134,9 @@ ChannelMask getFreeChannels(int count) {
 void stopChannels(ChannelMask mask) {
 	mask &= ALL_CHANNELS;
 
+	SPU_FLAG_OFF1 = mask & 0xffff;
+	SPU_FLAG_OFF2 = mask >> 16;
+
 	for (Channel ch = 0; mask; ch++, mask >>= 1) {
 		if (!(mask & 1))
 			continue;
@@ -140,10 +147,8 @@ void stopChannels(ChannelMask mask) {
 		SPU_CH_ADDR(ch)  = DUMMY_BLOCK_OFFSET / 8;
 	}
 
-	SPU_FLAG_OFF1 = mask & 0xffff;
-	SPU_FLAG_OFF2 = mask >> 16;
-	SPU_FLAG_ON1  = mask & 0xffff;
-	SPU_FLAG_ON2  = mask >> 16;
+	SPU_FLAG_ON1 = mask & 0xffff;
+	SPU_FLAG_ON2 = mask >> 16;
 }
 
 size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
@@ -223,16 +228,13 @@ size_t download(uint32_t offset, void *data, size_t length, bool wait) {
 Sound::Sound(void)
 : offset(0), sampleRate(0), length(0) {}
 
-bool Sound::initFromVAGHeader(const VAGHeader *header, uint32_t _offset) {
-	if (header->magic != util::concat4('V', 'A', 'G', 'p'))
-		return false;
-	if (header->channels > 1)
+bool Sound::initFromVAGHeader(const VAGHeader &header, uint32_t _offset) {
+	if (!header.validateMagic())
 		return false;
 
 	offset     = _offset;
-	sampleRate = (__builtin_bswap32(header->sampleRate) << 12) / 44100;
-	length     = __builtin_bswap32(header->length) / 8;
-
+	sampleRate = header.getSPUSampleRate();
+	length     = header.getSPULength();
 	return true;
 }
 
@@ -315,21 +317,20 @@ channels(0) {
 }
 
 bool Stream::initFromVAGHeader(
-	const VAGHeader *header, uint32_t _offset, size_t _numChunks
+	const VAGHeader &header, uint32_t _offset, size_t _numChunks
 ) {
 	if (isPlaying())
 		return false;
-	if (header->magic != util::concat4('V', 'A', 'G', 'i'))
+	if (!header.validateInterleavedMagic())
 		return false;
-	if (!header->interleave)
-		return false;
+
+	resetBuffer();
 
 	offset     = _offset;
-	interleave = header->interleave;
+	interleave = header.interleave;
 	numChunks  = _numChunks;
-	sampleRate = (__builtin_bswap32(header->sampleRate) << 12) / 44100;
-	channels   = header->channels ? header->channels : 2;
-
+	sampleRate = header.getSPUSampleRate();
+	channels   = header.channels ? header.channels : 2;
 	return true;
 }
 
@@ -380,12 +381,13 @@ ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
 void Stream::stop(void) {
 	util::CriticalSection sec;
 
-	if (isPlaying()) {
-		SPU_CTRL    &= ~SPU_CTRL_IRQ_ENABLE;
-		_channelMask = 0;
+	if (!isPlaying())
+		return;
 
-		stopChannels(_channelMask);
-	}
+	SPU_CTRL &= ~SPU_CTRL_IRQ_ENABLE;
+
+	stopChannels(_channelMask);
+	_channelMask = 0;
 
 	flushWriteQueue();
 }
@@ -402,30 +404,30 @@ void Stream::handleInterrupt(void) {
 	_configureIRQ();
 }
 
-size_t Stream::feed(const void *data, size_t count) {
+size_t Stream::feed(const void *data, size_t length) {
 	util::CriticalSection sec;
 
 	auto ptr         = reinterpret_cast<uintptr_t>(data);
 	auto chunkLength = getChunkLength();
-	count            = util::min(count, getFreeChunkCount());
 
-	for (auto i = count; i; i--) {
+	length = util::min(length, getFreeChunkCount() * chunkLength);
+
+	for (int i = length; i >= int(chunkLength); i -= chunkLength) {
 		upload(
 			_getChunkOffset(_tail), reinterpret_cast<const void *>(ptr),
 			chunkLength, true
 		);
 
-		_tail = (_tail + 1) % numChunks;
 		ptr  += chunkLength;
+		_tail = (_tail + 1) % numChunks;
+		_bufferedChunks++;
 	}
-
-	_bufferedChunks += count;
 
 	if (isPlaying())
 		_configureIRQ();
 
 	flushWriteQueue();
-	return count;
+	return length;
 }
 
 void Stream::resetBuffer(void) {
