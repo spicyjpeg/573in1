@@ -45,7 +45,7 @@ enum FileSystemType {
 };
 
 // These are functionally equivalent to the FA_* flags used by FatFs.
-enum FileModeFlag {
+enum FileModeFlag : uint32_t {
 	READ         = 1 << 0,
 	WRITE        = 1 << 1,
 	FORCE_CREATE = 1 << 3, // Create file if missing, truncate if it exists
@@ -54,7 +54,7 @@ enum FileModeFlag {
 
 // These are equivalent to the standard MS-DOS file attributes (as well as PCDRV
 // attributes and the AM_* flags used by FatFs).
-enum FileAttributeFlag {
+enum FileAttributeFlag : uint32_t {
 	READ_ONLY = 1 << 0,
 	HIDDEN    = 1 << 1,
 	SYSTEM    = 1 << 2,

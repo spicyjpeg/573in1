@@ -30,48 +30,48 @@ static constexpr size_t _STREAM_BUFFERED_CHUNKS = 8;
 static constexpr size_t _STREAM_MIN_FEED_CHUNKS = 4;
 
 void _streamMain(void *arg0, void *arg1) {
-	auto obj = reinterpret_cast<AudioStreamManager *>(arg0);
+	auto obj     = reinterpret_cast<AudioStreamManager *>(arg0);
+	auto &stream = obj->_stream;
+	auto &buffer = obj->_buffer;
 
-	if (obj->_status != AUDIO_STREAM_IDLE) {
-		auto &stream = obj->_stream;
-		auto &buffer = obj->_buffer;
+	auto chunkLength = stream.getChunkLength();
 
-		auto chunkLength = stream.getChunkLength();
+	for (;;) {
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-		for (;;) {
-			__atomic_signal_fence(__ATOMIC_ACQUIRE);
+		if (obj->_status == AUDIO_STREAM_STOP) {
+			stream.stop();
+			break;
+		}
 
-			if (obj->_status == AUDIO_STREAM_STOP) {
-				stream.stop();
-				break;
+		// Keep yielding to the worker thread until the stream's FIFO has
+		// enough space for the new chunks.
+		auto numChunks = stream.getFreeChunkCount();
+
+		if (numChunks < _STREAM_MIN_FEED_CHUNKS) {
+			switchThread(obj->_yieldTo);
+			forceThreadSwitch();
+			continue;
+		}
+
+		auto length = obj->_file->read(buffer.ptr, chunkLength * numChunks);
+
+		if (length >= chunkLength) {
+			stream.feed(buffer.ptr, length);
+
+			if (!stream.isPlaying())
+				stream.start();
+		} else if (obj->_status == AUDIO_STREAM_LOOP) {
+			obj->_file->seek(spu::INTERLEAVED_VAG_BODY_OFFSET);
+		} else {
+			// Wait for any leftover data in the FIFO to finish playing,
+			// then stop playback.
+			while (!stream.isUnderrun()) {
+				switchThread(obj->_yieldTo);
+				forceThreadSwitch();
 			}
 
-			// Keep yielding to the worker thread until the stream's FIFO has
-			// enough space for the new chunks.
-			auto numChunks = stream.getFreeChunkCount();
-
-			if (numChunks < _STREAM_MIN_FEED_CHUNKS) {
-				switchThreadImmediate(obj->_yieldTo);
-				continue;
-			}
-
-			auto length = obj->_file->read(buffer.ptr, chunkLength * numChunks);
-
-			if (length >= chunkLength) {
-				stream.feed(buffer.ptr, length);
-
-				if (!stream.isPlaying())
-					stream.start();
-			} else if (obj->_status == AUDIO_STREAM_LOOP) {
-				obj->_file->seek(spu::INTERLEAVED_VAG_BODY_OFFSET);
-			} else {
-				// Wait for any leftover data in the FIFO to finish playing,
-				// then stop playback.
-				while (!stream.isUnderrun())
-					switchThreadImmediate(obj->_yieldTo);
-
-				break;
-			}
+			break;
 		}
 	}
 
@@ -79,8 +79,10 @@ void _streamMain(void *arg0, void *arg1) {
 	obj->_status = AUDIO_STREAM_IDLE;
 	flushWriteQueue();
 
-	for (;;)
-		switchThreadImmediate(obj->_yieldTo);
+	for (;;) {
+		switchThread(obj->_yieldTo);
+		forceThreadSwitch();
+	}
 }
 
 void AudioStreamManager::_closeFile(void) {
@@ -102,15 +104,16 @@ void AudioStreamManager::_startThread(
 	_file   = file;
 	_status = status;
 
-	_stack.allocate(_STREAM_THREAD_STACK_SIZE);
-	assert(_stack.ptr);
+	if (!_stack.ptr) {
+		_stack.allocate(_STREAM_THREAD_STACK_SIZE);
+		assert(_stack.ptr);
+	}
 
-	auto stackBottom = _stack.as<uint8_t>();
+	auto stackPtr = _stack.as<uint8_t>();
+	auto stackTop = &stackPtr[(_STREAM_THREAD_STACK_SIZE - 1) & ~7];
 
-	initThread(
-		&_thread, &_streamMain, this, nullptr,
-		&stackBottom[(_STREAM_THREAD_STACK_SIZE - 1) & ~7]
-	);
+	initThread(&_thread, &_streamMain, this, nullptr, stackTop);
+	LOG_APP("stack: 0x%08x-0x%08x", stackPtr, stackTop);
 }
 
 bool AudioStreamManager::play(fs::File *file, bool loop) {
@@ -127,11 +130,15 @@ bool AudioStreamManager::play(fs::File *file, bool loop) {
 	)
 		return false;
 
-	auto bufferLength = _stream.getChunkLength() * _STREAM_MIN_FEED_CHUNKS;
+	size_t chunkLength     = header.interleave * header.getNumChannels();
+	size_t spuBufferLength = chunkLength * _STREAM_BUFFERED_CHUNKS;
+	size_t ramBufferLength = chunkLength * _STREAM_MIN_FEED_CHUNKS;
 
-	if (!_stream.initFromVAGHeader(header, 0x60000, _STREAM_BUFFERED_CHUNKS))
+	if (!_stream.initFromVAGHeader(
+		header, spu::SPU_RAM_END - spuBufferLength, _STREAM_BUFFERED_CHUNKS
+	))
 		return false;
-	if (!_buffer.allocate(bufferLength))
+	if (!_buffer.allocate(ramBufferLength))
 		return false;
 
 	_startThread(file, loop ? AUDIO_STREAM_LOOP : AUDIO_STREAM_PLAY_ONCE);

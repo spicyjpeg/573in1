@@ -42,8 +42,7 @@ extern Thread *currentThread;
 
 /**
  * @brief Read-only pointer to the thread scheduled to be executed after the
- * currently running one. Use switchThread() or switchThreadImmediate() to set
- * this pointer.
+ * currently running one. Use switchThread() to set this pointer.
  */
 extern Thread *nextThread;
 
@@ -147,7 +146,7 @@ void uninstallExceptionHandler(void);
  * limitations:
  *
  * - it cannot call functions that rely on syscalls such as enableInterrupts(),
- *   switchThreadImmediate() or setInterruptHandler();
+ *   forceThreadSwitch() or setInterruptHandler();
  * - it cannot wait for other interrupts to occur;
  * - it must return quickly, as IRQs fired while the exception handler is
  *   running may otherwise be missed.
@@ -235,29 +234,23 @@ bool waitForDMATransfer(DMAChannel dma, int timeout);
 /**
  * @brief Pauses the thread calling this function and starts/resumes executing
  * the specified one. The switch will not happen immediately, but will only be
- * processed once an interrupt occurs or a syscall is issued. If called from an
- * IRQ handler, it will happen once all IRQ handlers have been executed.
+ * processed once an interrupt occurs or forceThreadSwitch() is invoked. If
+ * called from the IRQ handler, it will be deferred to when the handler returns.
  *
  * @param thread Pointer to new thread or NULL for main thread
  */
 void switchThread(Thread *thread);
 
 /**
- * @brief Pauses the thread calling this function immediately and starts/resumes
- * executing the specified one. Once the other thread switches back, execution
- * will resume from after the call to switchThreadImmediate(). This function
- * must *not* be used in IRQ handlers; use switchThread() (which will behave
- * identically as thread switches are processed right after IRQ handling)
- * instead.
+ * @brief Runs the exception handler. If called after switchThread(), pauses the
+ * thread calling this function immediately and starts/resumes executing the
+ * specified one. Once the other thread switches back, execution will resume
+ * from after the call to forceThreadSwitch(). This function must *not* be used
+ * in IRQ handlers (as thread switches are processed right after IRQ handling).
  *
  * @param thread Pointer to new thread or NULL for main thread
  */
-__attribute__((always_inline)) static inline void switchThreadImmediate(
-	Thread *thread
-) {
-	switchThread(thread);
-
-	// Execute a syscall to force the switch to happen.
+__attribute__((always_inline)) static inline void forceThreadSwitch(void) {
 	__asm__ volatile("syscall 0\n" ::: "memory");
 }
 

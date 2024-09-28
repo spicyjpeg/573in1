@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/util/misc.hpp"
-#include "common/util/string.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
@@ -273,41 +272,5 @@ private:
 
 extern const CartI2CDriver    cartI2C;
 extern const CartDS2401Driver cartDS2401;
-
-/* Debug LCD driver */
-
-static constexpr size_t NUM_LCD_ROWS    = 4;
-static constexpr size_t NUM_LCD_COLUMNS = 20;
-
-class DebugLCD {
-private:
-	inline void _writeByte(uint8_t value, bool isCmd = false) const {
-		_writeNibble(value >> 4, isCmd);
-		_writeNibble(value & 15, isCmd);
-	}
-
-	void _writeNibble(uint8_t value, bool isCmd = false) const;
-	void _setCursor(int x, int y) const;
-
-public:
-	uint8_t width, height;
-	int8_t  cursorX, cursorY;
-	uint8_t buffer[NUM_LCD_ROWS][NUM_LCD_COLUMNS];
-
-	inline void clear(uint8_t fillCh = ' ') {
-		cursorX = -1;
-		cursorY = -1;
-
-		__builtin_memset(buffer, fillCh, sizeof(buffer));
-	}
-
-	void init(int _width, int _height);
-	void flush(void) const;
-
-	void put(int x, int y, util::UTF8CodePoint codePoint);
-	size_t print(int x, int y, const char *format, ...);
-};
-
-extern DebugLCD debugLCD;
 
 }

@@ -25,7 +25,7 @@
 #include "common/util/templates.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
-#include "main/app/main.hpp"
+#include "main/app/mainmenu.hpp"
 #include "main/app/misc.hpp"
 #include "main/app/modals.hpp"
 #include "main/app/romactions.hpp"

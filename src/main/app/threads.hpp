@@ -63,7 +63,8 @@ public:
 	}
 
 	inline void yield(void) {
-		switchThreadImmediate(&_thread);
+		switchThread(isActive() ? &_thread : _yieldTo);
+		forceThreadSwitch();
 	}
 	inline void handleInterrupt(void) {
 		_stream.handleInterrupt();

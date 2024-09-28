@@ -144,7 +144,7 @@ class ZS01Driver : public CartDriver {
 private:
 	uint8_t _encoderState;
 
-	DriverError _transact(ZS01Packet &request, ZS01Packet &response);
+	DriverError _transact(const ZS01Packet &request, ZS01Packet &response);
 
 public:
 	inline ZS01Driver(CartDump &dump)

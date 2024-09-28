@@ -67,6 +67,8 @@ static constexpr int _FPGA_PROGRAM_DELAY   = 5000;
 static constexpr int _FPGA_STARTUP_DELAY   = 50000;
 static constexpr int _FPGA_RESET_REG_DELAY = 500;
 
+static constexpr int _MAX_PROGRAM_ATTEMPTS = 3;
+
 enum BitstreamTagType : uint8_t {
 	_TAG_SOURCE_FILE = 'a',
 	_TAG_PART_NAME   = 'b',
@@ -152,7 +154,7 @@ bool loadDigitalIORawBitstream(const uint8_t *data, size_t length) {
 		| SYS573D_CPLD_INIT_STAT_INIT
 		| SYS573D_CPLD_INIT_STAT_DONE;
 
-	for (int i = 3; i; i--) {
+	for (int i = _MAX_PROGRAM_ATTEMPTS; i; i--) {
 		SYS573D_CPLD_DAC_RESET = 0;
 
 		SYS573D_CPLD_INIT_CTRL = SYS573D_CPLD_INIT_CTRL_UNKNOWN;

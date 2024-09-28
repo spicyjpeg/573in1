@@ -95,6 +95,9 @@ public:
 	inline uint16_t getSPULength(void) const {
 		return __builtin_bswap32(length) / 8;
 	}
+	inline int getNumChannels(void) const {
+		return channels ? channels : 2;
+	}
 	inline const void *getData(void) const {
 		return this + 1;
 	}

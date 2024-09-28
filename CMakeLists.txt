@@ -19,7 +19,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.1
+	VERSION      1.0.2
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
@@ -66,6 +66,10 @@ set(
 	src/common/spu.cpp
 )
 set(
+	exthwSources
+	src/common/exthw/lcd.cpp
+)
+set(
 	fsSources
 	src/common/fs/fat.cpp
 	src/common/fs/file.cpp
@@ -94,6 +98,7 @@ set(
 	${ps1Sources}
 	${vendorSources}
 	${commonSources}
+	${exthwSources}
 	${fsSources}
 	${storageSources}
 	${utilSources}
@@ -101,7 +106,7 @@ set(
 	src/main/app/app.cpp
 	src/main/app/cartactions.cpp
 	src/main/app/cartunlock.cpp
-	src/main/app/main.cpp
+	src/main/app/mainmenu.cpp
 	src/main/app/misc.cpp
 	src/main/app/modals.cpp
 	src/main/app/romactions.cpp

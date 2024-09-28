@@ -268,6 +268,7 @@ DriverError X76F041Driver::readPrivateData(void) {
 		auto error = _x76Command(
 			_X76F041_ACK_POLL, _X76F041_READ | (i >> 8), i & 0xff
 		);
+
 		if (error)
 			return error;
 
@@ -290,6 +291,7 @@ DriverError X76F041Driver::readPrivateData(void) {
 	auto error = _x76Command(
 		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_READ_CONFIG
 	);
+
 	if (error)
 		return error;
 
@@ -307,6 +309,7 @@ DriverError X76F041Driver::writeData(void) {
 		auto error = _x76Command(
 			_X76F041_ACK_POLL, _X76F041_WRITE | (i >> 8), i & 0xff
 		);
+
 		if (error)
 			return error;
 
@@ -322,6 +325,7 @@ DriverError X76F041Driver::writeData(void) {
 	auto error = _x76Command(
 		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_WRITE_CONFIG
 	);
+
 	if (error)
 		return error;
 
@@ -340,6 +344,7 @@ DriverError X76F041Driver::erase(void) {
 	auto error = _x76Command(
 		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_MASS_PROGRAM
 	);
+
 	if (error)
 		return error;
 
@@ -353,6 +358,7 @@ DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 	auto error = _x76Command(
 		_X76F041_ACK_POLL, _X76F041_CONFIG, _X76F041_CFG_SET_DATA_KEY
 	);
+
 	if (error)
 		return error;
 
@@ -383,6 +389,7 @@ enum X76F100Command : uint8_t {
 
 DriverError X76F100Driver::readPrivateData(void) {
 	auto error = _x76Command(_X76F100_ACK_POLL, _X76F100_READ);
+
 	if (error)
 		return error;
 
@@ -402,6 +409,7 @@ DriverError X76F100Driver::writeData(void) {
 		auto error = _x76Command(
 			_X76F100_ACK_POLL, _X76F100_WRITE | (i >> 2)
 		);
+
 		if (error)
 			return error;
 
@@ -426,6 +434,7 @@ DriverError X76F100Driver::erase(void) {
 		auto error = _x76Command(
 			_X76F100_ACK_POLL, _X76F100_WRITE | (i >> 2)
 		);
+
 		if (error)
 			return error;
 
@@ -448,6 +457,7 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 		auto error = _x76Command(
 			_X76F100_ACK_POLL, _X76F100_SET_KEY | (i << 1)
 		);
+
 		if (error)
 			return error;
 
@@ -466,7 +476,9 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 
 /* ZS01 driver */
 
-DriverError ZS01Driver::_transact(ZS01Packet &request, ZS01Packet &response) {
+DriverError ZS01Driver::_transact(
+	const ZS01Packet &request, ZS01Packet &response
+) {
 	delayMicroseconds(_ZS01_PACKET_DELAY);
 	io::cartI2C.start();
 
@@ -514,30 +526,32 @@ DriverError ZS01Driver::_transact(ZS01Packet &request, ZS01Packet &response) {
 }
 
 DriverError ZS01Driver::readCartID(void) {
-	ZS01Packet  request, response;
+	ZS01Packet  packet;
 	DriverError error;
 
-	request.address = ZS01_ADDR_ZS01_ID;
-	request.encodeReadRequest();
+	packet.address = ZS01_ADDR_ZS01_ID;
+	packet.encodeReadRequest();
 
-	error = _transact(request, response);
+	error = _transact(packet, packet);
+
 	if (error)
 		return error;
 
-	response.copyTo(_dump.zsID.data);
+	packet.copyTo(_dump.zsID.data);
 	if (!_dump.zsID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
 	_dump.flags |= DUMP_ZS_ID_OK;
 
-	request.address = ZS01_ADDR_DS2401_ID;
-	request.encodeReadRequest();
+	packet.address = ZS01_ADDR_DS2401_ID;
+	packet.encodeReadRequest();
 
-	error = _transact(request, response);
+	error = _transact(packet, packet);
+
 	if (error)
 		return error;
 
-	response.copyTo(_dump.cartID.data);
+	packet.copyTo(_dump.cartID.data);
 	if (!_dump.cartID.validateDSCRC())
 		return DS2401_ID_ERROR;
 
@@ -546,17 +560,18 @@ DriverError ZS01Driver::readCartID(void) {
 }
 
 DriverError ZS01Driver::readPublicData(void) {
-	ZS01Packet request, response;
+	ZS01Packet packet;
 
 	for (int i = ZS01_ADDR_PUBLIC; i < ZS01_ADDR_PUBLIC_END; i++) {
-		request.address = i;
-		request.encodeReadRequest();
+		packet.address = i;
+		packet.encodeReadRequest();
 
-		DriverError error = _transact(request, response);
+		DriverError error = _transact(packet, packet);
+
 		if (error)
 			return error;
 
-		response.copyTo(&_dump.data[i * sizeof(response.data)]);
+		packet.copyTo(&_dump.data[i * sizeof(packet.data)]);
 	}
 
 	_dump.flags |= DUMP_PUBLIC_DATA_OK;
@@ -564,71 +579,75 @@ DriverError ZS01Driver::readPublicData(void) {
 }
 
 DriverError ZS01Driver::readPrivateData(void) {
-	ZS01Packet request, response;
+	ZS01Packet packet;
 	ZS01Key    key;
 
 	key.unpackFrom(_dump.dataKey);
 
 	for (int i = ZS01_ADDR_PRIVATE; i < ZS01_ADDR_PRIVATE_END; i++) {
-		request.address = i;
-		request.encodeReadRequest(key, _encoderState);
+		packet.address = i;
+		packet.encodeReadRequest(key, _encoderState);
 
-		DriverError error = _transact(request, response);
+		DriverError error = _transact(packet, packet);
+
 		if (error)
 			return error;
 
-		response.copyTo(&_dump.data[i * sizeof(response.data)]);
+		packet.copyTo(&_dump.data[i * sizeof(packet.data)]);
 	}
 
 	_dump.flags |= DUMP_PRIVATE_DATA_OK;
 
-	request.address = ZS01_ADDR_CONFIG;
-	request.encodeReadRequest(key, _encoderState);
+	packet.address = ZS01_ADDR_CONFIG;
+	packet.encodeReadRequest(key, _encoderState);
 
-	DriverError error = _transact(request, response);
+	DriverError error = _transact(packet, packet);
+
 	if (error)
 		return error;
 
-	response.copyTo(_dump.config);
+	packet.copyTo(_dump.config);
 
 	_dump.flags |= DUMP_CONFIG_OK;
 	return NO_ERROR;
 }
 
 DriverError ZS01Driver::writeData(void) {
-	ZS01Packet request, response;
+	ZS01Packet packet;
 	ZS01Key    key;
 
 	key.unpackFrom(_dump.dataKey);
 
 	for (int i = ZS01_ADDR_PUBLIC; i < ZS01_ADDR_PRIVATE_END; i++) {
-		request.address = i;
-		request.copyFrom(&_dump.data[i * sizeof(request.data)]);
-		request.encodeWriteRequest(key, _encoderState);
+		packet.address = i;
+		packet.copyFrom(&_dump.data[i * sizeof(packet.data)]);
+		packet.encodeWriteRequest(key, _encoderState);
 
-		DriverError error = _transact(request, response);
+		DriverError error = _transact(packet, packet);
+
 		if (error)
 			return error;
 	}
 
-	request.address = ZS01_ADDR_CONFIG;
-	request.copyFrom(_dump.config);
-	request.encodeWriteRequest(key, _encoderState);
+	packet.address = ZS01_ADDR_CONFIG;
+	packet.copyFrom(_dump.config);
+	packet.encodeWriteRequest(key, _encoderState);
 
-	return _transact(request, response);
+	return _transact(packet, packet);
 }
 
 DriverError ZS01Driver::erase(void) {
-	ZS01Packet request, response;
+	ZS01Packet packet;
 	ZS01Key    key;
 
 	key.unpackFrom(_dump.dataKey);
 
-	util::clear(request.data);
-	request.address = ZS01_ADDR_ERASE;
-	request.encodeWriteRequest(key, _encoderState);
+	util::clear(packet.data);
+	packet.address = ZS01_ADDR_ERASE;
+	packet.encodeWriteRequest(key, _encoderState);
 
-	DriverError error = _transact(request, response);
+	DriverError error = _transact(packet, packet);
+
 	if (error)
 		return error;
 
@@ -637,16 +656,17 @@ DriverError ZS01Driver::erase(void) {
 }
 
 DriverError ZS01Driver::setDataKey(const uint8_t *key) {
-	ZS01Packet request, response;
+	ZS01Packet packet;
 	ZS01Key    oldKey;
 
 	oldKey.unpackFrom(_dump.dataKey);
 
-	request.address = ZS01_ADDR_DATA_KEY;
-	request.copyFrom(key);
-	request.encodeWriteRequest(oldKey, _encoderState);
+	packet.address = ZS01_ADDR_DATA_KEY;
+	packet.copyFrom(key);
+	packet.encodeWriteRequest(oldKey, _encoderState);
 
-	DriverError error = _transact(request, response);
+	DriverError error = _transact(packet, packet);
+
 	if (error)
 		return error;
 

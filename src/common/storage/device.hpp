@@ -172,7 +172,7 @@ enum DeviceType : uint8_t {
 	ATAPI = 2
 };
 
-enum DeviceFlag {
+enum DeviceFlag : uint8_t {
 	READ_ONLY        = 1 << 0,
 	SUPPORTS_TRIM    = 1 << 1,
 	SUPPORTS_FLUSH   = 1 << 2,

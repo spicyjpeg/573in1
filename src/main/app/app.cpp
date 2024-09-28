@@ -423,15 +423,20 @@ void App::_runWorker(
 		util::CriticalSection sec;
 
 		_workerStatus.reset(next, goBack);
-		_workerStack.allocate(_WORKER_STACK_SIZE);
-		assert(_workerStack.ptr);
 
-		auto stackBottom = _workerStack.as<uint8_t>();
+		if (!_workerStack.ptr) {
+			_workerStack.allocate(_WORKER_STACK_SIZE);
+			assert(_workerStack.ptr);
+		}
+
+		auto stackPtr = _workerStack.as<uint8_t>();
+		auto stackTop = &stackPtr[(_WORKER_STACK_SIZE - 1) & ~7];
 
 		initThread(
 			&_workerThread, &_workerMain, this, reinterpret_cast<void *>(func),
-			&stackBottom[(_WORKER_STACK_SIZE - 1) & ~7]
+			stackTop
 		);
+		LOG_APP("stack: 0x%08x-0x%08x", stackPtr, stackTop);
 	}
 
 	_ctx.show(_workerStatusScreen, false, playSound);

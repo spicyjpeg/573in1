@@ -330,7 +330,7 @@ bool Stream::initFromVAGHeader(
 	interleave = header.interleave;
 	numChunks  = _numChunks;
 	sampleRate = header.getSPUSampleRate();
-	channels   = header.channels ? header.channels : 2;
+	channels   = header.getNumChannels();
 	return true;
 }
 
