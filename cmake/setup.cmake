@@ -1,4 +1,4 @@
-# ps1-bare-metal - (C) 2023 spicyjpeg
+# ps1-bare-metal - (C) 2023-2024 spicyjpeg
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -83,13 +83,46 @@ target_link_options(
 )
 
 # Define a helper function to embed binary data into executables and libraries.
-function(addBinaryFile target name sizeName path)
-	set(_file "${PROJECT_BINARY_DIR}/includes/${target}_${name}.s")
-	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE _path)
+function(addBinaryFile target name path)
+	set(asmFile "${PROJECT_BINARY_DIR}/includes/${target}_${name}.s")
+	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE fullPath)
+
+	# Generate an assembly listing that uses the .incbin directive to embed the
+	# file and add it to the executable's list of source files. This may look
+	# hacky, but it works and lets us easily customize the symbol name (i.e. the
+	# name of the "array" that will contain the file's data).
+	file(
+		CONFIGURE
+		OUTPUT  "${asmFile}"
+		CONTENT [[
+.section .data.${name}, "aw"
+.balign 8
+
+.global ${name}
+.type ${name}, @object
+.size ${name}, (${name}_end - ${name})
+
+${name}:
+	.incbin "${fullPath}"
+${name}_end:
+]]
+		ESCAPE_QUOTES
+		NEWLINE_STYLE LF
+	)
+
+	target_sources(${target} PRIVATE "${asmFile}")
+	set_source_files_properties(
+		"${asmFile}" PROPERTIES OBJECT_DEPENDS "${fullPath}"
+	)
+endfunction()
+
+function(addBinaryFileWithSize target name sizeName path)
+	set(asmFile "${PROJECT_BINARY_DIR}/includes/${target}_${name}.s")
+	cmake_path(ABSOLUTE_PATH path OUTPUT_VARIABLE fullPath)
 
 	file(
 		CONFIGURE
-		OUTPUT  "${_file}"
+		OUTPUT  "${asmFile}"
 		CONTENT [[
 .section .rodata.${name}, "a"
 .balign 8
@@ -99,7 +132,7 @@ function(addBinaryFile target name sizeName path)
 .size ${name}, (${name}_end - ${name})
 
 ${name}:
-	.incbin "${_path}"
+	.incbin "${fullPath}"
 ${name}_end:
 
 .section .rodata.${sizeName}, "a"
@@ -116,6 +149,8 @@ ${sizeName}:
 		NEWLINE_STYLE LF
 	)
 
-	target_sources(${target} PRIVATE "${_file}")
-	set_source_files_properties("${_file}" PROPERTIES OBJECT_DEPENDS "${_path}")
+	target_sources(${target} PRIVATE "${asmFile}")
+	set_source_files_properties(
+		"${asmFile}" PROPERTIES OBJECT_DEPENDS "${fullPath}"
+	)
 endfunction()

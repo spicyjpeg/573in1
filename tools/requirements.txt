@@ -1,6 +1,15 @@
-# Install the dependencies required by the tools by running:
-#   py -m pip install -r tools/requirements.txt   (Windows)
-#   sudo pip install -r tools/requirements.txt    (Linux/macOS)
+# Create a Python virtual environment and install the dependencies listed below
+# by running the following commands:
+#
+# - Windows (using PowerShell):
+#     py -m venv env
+#     env\bin\Activate.ps1
+#     py -m pip install -r tools\requirements.txt
+#
+# - Windows (using Cygwin/MSys2), Linux or macOS:
+#     python3 -m venv env
+#     source env/bin/activate
+#     pip3 install -r tools/requirements.txt
 
 lz4     >= 4.3.2
 numpy   >= 1.19.4

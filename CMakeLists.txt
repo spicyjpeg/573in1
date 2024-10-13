@@ -25,6 +25,8 @@ project(
 )
 
 include(cmake/options.cmake)
+include(cmake/setup.cmake)
+include(cmake/virtualenv.cmake)
 
 ## Source files
 
@@ -246,7 +248,7 @@ function(addBuildVariant name resourceName)
 	)
 
 	addPS1Executable(${name} 80010000 0)
-	addBinaryFile(
+	addBinaryFileWithSize(
 		${name} _resourceArchive _resourceArchiveLength
 		"${PROJECT_BINARY_DIR}/${resourceName}.zip"
 	)

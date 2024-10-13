@@ -16,8 +16,6 @@ cmake_minimum_required(VERSION 3.25)
 
 ## External tools
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-
 find_program(
 	CHDMAN_PATH chdman
 	PATHS

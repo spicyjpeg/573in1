@@ -37,7 +37,12 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get install -y --no-install-recommends ninja-build mame-tools
-        sudo pip3 install -r 573in1/tools/requirements.txt
+
+    - name: Set up Python virtual environment
+      run: |
+        python3 -m venv 573in1/env
+        source 573in1/env/bin/activate
+        pip3 install -r 573in1/tools/requirements.txt
 
     - name: Build GCC toolchain
       if:   ${{ steps.cache.outputs.cache-hit != 'true' }}
