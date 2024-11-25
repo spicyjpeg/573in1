@@ -16,7 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "ps1/cop0gte.h"
+#include "ps1/cop0.h"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 
@@ -55,7 +55,7 @@ void installCustomExceptionHandler(VoidFunction func) {
 	DMA_DICR = DMA_DICR_CH_STAT_BITMASK;
 
 	// Disable interrupts and the GTE at the COP0 side.
-	cop0_setSR(COP0_SR_CU0);
+	cop0_setReg(COP0_SR, COP0_SR_CU0);
 
 	// Overwrite the default breakpoint and exception handlers placed into RAM
 	// by the BIOS.
@@ -70,12 +70,12 @@ void installCustomExceptionHandler(VoidFunction func) {
 
 	// Ensure interrupt masking is set up properly and the GTE is enabled at the
 	// COP0 side.
-	cop0_setSR(COP0_SR_Im2 | COP0_SR_CU0 | COP0_SR_CU2);
+	cop0_setReg(COP0_SR, COP0_SR_Im2 | COP0_SR_CU0 | COP0_SR_CU2);
 }
 
 void uninstallExceptionHandler(void) {
 	// Disable interrupts at the COP0 side.
-	cop0_setSR(COP0_SR_CU0 | COP0_SR_CU2);
+	cop0_setReg(COP0_SR, COP0_SR_CU0 | COP0_SR_CU2);
 
 	// Clear all pending IRQ flags and prevent the interrupt controller from
 	// generating further IRQs.

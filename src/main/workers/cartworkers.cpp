@@ -113,7 +113,7 @@ _cartInitDone:
 		if (!app._fileIO.resource.loadData(bitstream, "data/fpga.bit"))
 			return true;
 
-		bool ready = io::loadDigitalIOBitstream(
+		bool ready = io::digitalIOLoadBitstream(
 			bitstream.as<uint8_t>(), bitstream.length
 		);
 		bitstream.destroy();
@@ -121,7 +121,7 @@ _cartInitDone:
 		if (!ready)
 			return true;
 
-		io::initDigitalIOFPGA();
+		io::digitalIOFPGAInit();
 		auto error = app._cartDriver->readSystemID();
 
 		if (error)

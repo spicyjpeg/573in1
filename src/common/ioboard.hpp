@@ -45,9 +45,9 @@ static inline bool isDigitalIOReady(void) {
 		|| (magic == SYS573D_FPGA_MAGIC_573IN1);
 }
 
-bool loadDigitalIOBitstream(const uint8_t *data, size_t length);
-bool loadDigitalIORawBitstream(const uint8_t *data, size_t length);
-void initDigitalIOFPGA(void);
+bool digitalIOLoadBitstream(const uint8_t *data, size_t length);
+bool digitalIOLoadRawBitstream(const uint8_t *data, size_t length);
+void digitalIOFPGAInit(void);
 
 /* Digital I/O board bus APIs */
 

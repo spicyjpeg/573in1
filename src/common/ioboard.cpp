@@ -95,7 +95,7 @@ static void _writeBitstreamMSB(const uint8_t *data, size_t length) {
 	}
 }
 
-bool loadDigitalIOBitstream(const uint8_t *data, size_t length) {
+bool digitalIOLoadBitstream(const uint8_t *data, size_t length) {
 	// Konami's bitstreams are always stored LSB-first and with no headers,
 	// however Xilinx tools export .bit files which contain MSB-first bitstreams
 	// wrapped in a TLV container. In order to upload the bitstream properly,
@@ -103,7 +103,7 @@ bool loadDigitalIOBitstream(const uint8_t *data, size_t length) {
 	// https://www.fpga-faq.com/FAQ_Pages/0026_Tell_me_about_bit_files.htm and
 	// the "Data Stream Format" section in the XCS40XL datasheet for details.
 	if (data[0] == 0xff)
-		return loadDigitalIORawBitstream(data, length);
+		return digitalIOLoadRawBitstream(data, length);
 
 	auto     dataEnd      = &data[length];
 	uint16_t headerLength = util::concat2(data[1], data[0]);
@@ -118,7 +118,7 @@ bool loadDigitalIOBitstream(const uint8_t *data, size_t length) {
 				tagLength = util::concat4(data[4], data[3], data[2], data[1]);
 				data     += 5;
 
-				return loadDigitalIORawBitstream(data, tagLength);
+				return digitalIOLoadRawBitstream(data, tagLength);
 
 			default:
 				tagLength = util::concat2(data[2], data[1]);
@@ -132,7 +132,7 @@ bool loadDigitalIOBitstream(const uint8_t *data, size_t length) {
 	return false;
 }
 
-bool loadDigitalIORawBitstream(const uint8_t *data, size_t length) {
+bool digitalIOLoadRawBitstream(const uint8_t *data, size_t length) {
 	if (data[0] != 0xff) {
 		LOG_IO("invalid sync byte: 0x%02x", data[0]);
 		return false;
@@ -192,7 +192,7 @@ bool loadDigitalIORawBitstream(const uint8_t *data, size_t length) {
 	return false;
 }
 
-void initDigitalIOFPGA(void) {
+void digitalIOFPGAInit(void) {
 	SYS573D_FPGA_RESET = 0xf000;
 	SYS573D_FPGA_RESET = 0x0000;
 	delayMicroseconds(_FPGA_RESET_REG_DELAY);

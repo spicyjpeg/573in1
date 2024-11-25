@@ -244,7 +244,12 @@ void IDEDevice::_handleError(void) {
 
 /* Device constructor */
 
-static constexpr uint16_t _ATAPI_SIGNATURE = 0xeb14;
+enum IDESignature : uint16_t {
+	_SIG_PARALLEL_ATA   = util::concat2(0x00, 0x00),
+	_SIG_PARALLEL_ATAPI = util::concat2(0x14, 0xeb),
+	_SIG_SERIAL_ATA     = util::concat2(0x3c, 0xc3),
+	_SIG_SERIAL_ATAPI   = util::concat2(0x69, 0x96)
+};
 
 static constexpr int _SRST_SET_DELAY   = 5000;
 static constexpr int _SRST_CLEAR_DELAY = 50000;
@@ -269,14 +274,28 @@ IDEDevice *newIDEDevice(int index) {
 			continue;
 		}
 
-		auto signature = util::concat2(
+		IDEDevice *dev;
+		auto      sig = util::concat2(
 			SYS573_IDE_CS0_BASE[CS0_CYLINDER_L],
 			SYS573_IDE_CS0_BASE[CS0_CYLINDER_H]
 		);
 
-		auto dev   = (signature == _ATAPI_SIGNATURE)
-			? static_cast<IDEDevice *>(new ATAPIDevice(index))
-			: static_cast<IDEDevice *>(new ATADevice(index));
+		switch (sig) {
+			case _SIG_PARALLEL_ATA:
+			case _SIG_SERIAL_ATA:
+				dev = new ATADevice(index);
+				break;
+
+			case _SIG_PARALLEL_ATAPI:
+			case _SIG_SERIAL_ATAPI:
+				dev = new ATAPIDevice(index);
+				break;
+
+			default:
+				LOG_STORAGE("drive %d: invalid type 0x%04x", index, sig);
+				return nullptr;
+		}
+
 		auto error = dev->enumerate();
 
 		if (error) {

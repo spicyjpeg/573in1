@@ -90,10 +90,10 @@ public:
 	}
 
 	inline uint16_t getSPUSampleRate(void) const {
-		return (__builtin_bswap32(sampleRate) << 12) / 44100;
+		return uint16_t((__builtin_bswap32(sampleRate) << 12) / 44100);
 	}
-	inline uint16_t getSPULength(void) const {
-		return __builtin_bswap32(length) / 8;
+	inline size_t getSPULength(void) const {
+		return __builtin_bswap32(length);
 	}
 	inline int getNumChannels(void) const {
 		return channels ? channels : 2;

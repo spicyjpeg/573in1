@@ -18,7 +18,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "ps1/cop0gte.h"
+#include "ps1/cop0.h"
 #include "ps1/registers.h"
 
 typedef struct {
@@ -55,7 +55,7 @@ void _exceptionVector(void);
  * immediately.
  */
 __attribute__((always_inline)) static inline void enableInterrupts(void) {
-	cop0_setSR(cop0_getSR() | COP0_SR_IEc);
+	cop0_setReg(COP0_SR, cop0_getReg(COP0_SR) | COP0_SR_IEc);
 }
 
 /**
@@ -67,9 +67,9 @@ __attribute__((always_inline)) static inline void enableInterrupts(void) {
  * @return True if interrupts were previously enabled, false otherwise
  */
 __attribute__((always_inline)) static inline bool disableInterrupts(void) {
-	uint32_t sr = cop0_getSR();
+	uint32_t sr = cop0_getReg(COP0_SR);
 
-	cop0_setSR(sr & ~COP0_SR_IEc);
+	cop0_setReg(COP0_SR, sr & ~COP0_SR_IEc);
 	return (sr & COP0_SR_IEc);
 }
 

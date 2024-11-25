@@ -142,7 +142,7 @@ UTF8Character parseUTF8Character(const char *ch) {
 
 	auto codePoint = UTF8CodePoint(start & mask);
 
-	for (size_t i = length - 1; i; i--) {
+	for (int i = length - 1; i > 0; i--) {
 		codePoint <<= 6;
 		codePoint  |= *(ch++) & 0x3f;
 	}

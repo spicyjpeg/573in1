@@ -44,12 +44,12 @@ _parseUTF8Character:
 	bltz  codePoint, .LmsbSet
 	andi  codePoint, 0xff
 
-.LmsbNotSet: # if (signExtend(codePoint) >= 0)
+.LmsbNotSet: # if (signExtend(codePoint) >= 0) {
 	# return { codePoint, 1 };
 	jr    $ra
 	li    length, 1
 
-.LmsbSet: # if (signExtend(codePoint) < 0)
+.LmsbSet: # } else {
 	# size_t length = countLeadingOnes(codePoint << 24);
 	sll   temp, codePoint, 24
 	mtc2  temp, GTE_LZCS
@@ -61,14 +61,16 @@ _parseUTF8Character:
 	# codePoint &= (1 << (7 - length)) - 1;
 	srlv  startMask, startMask, length
 	and   codePoint, startMask
+
+	# int i = length - 1;
 	addiu i, length, -2
 
-.LcontinuationLoop: # for (size_t i = length - 1; i--;)
+.LcontinuationLoop: # do {
 	# uint8_t contByte = *(ch++);
 	lbu   contByte, 0(ch)
 	addiu ch, 1
 
-	# if ((contByte & 0xc0) != 0x80) goto returnInvalid;
+	# if ((contByte & 0xc0) != 0x80) return { codePoint, 0 };
 	andi  temp, contByte, (3 << 6)
 	bne   temp, contMask, .LreturnInvalid
 	andi  contByte, (1 << 6) - 1
@@ -78,15 +80,14 @@ _parseUTF8Character:
 	sll   codePoint, 6
 	or    codePoint, contByte
 
-	bnez  i, .LcontinuationLoop
+	bgtz  i, .LcontinuationLoop
 	addiu i, -1
 
-.LreturnValid:
+.LreturnValid: # } while ((--i) > 0);
 	# return { codePoint, length };
 	jr    $ra
 	nop
 
-.LreturnInvalid:
-	# return { codePoint, 0 };
+.LreturnInvalid: # }
 	jr    $ra
 	li    length, 0

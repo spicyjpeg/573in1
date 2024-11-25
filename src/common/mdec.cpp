@@ -26,14 +26,14 @@ namespace mdec {
 
 /* IDCT matrix and quantization table */
 
-#define SF0 0x5a82 // cos(0/16 * pi) * sqrt(2)
-#define SF1 0x7d8a // cos(1/16 * pi) * 2
-#define SF2 0x7641 // cos(2/16 * pi) * 2
-#define SF3 0x6a6d // cos(3/16 * pi) * 2
-#define SF4 0x5a82 // cos(4/16 * pi) * 2
-#define SF5 0x471c // cos(5/16 * pi) * 2
-#define SF6 0x30fb // cos(6/16 * pi) * 2
-#define SF7 0x18f8 // cos(7/16 * pi) * 2
+static constexpr int16_t SF0 = 0x5a82; // cos(0/16 * pi) * sqrt(2)
+static constexpr int16_t SF1 = 0x7d8a; // cos(1/16 * pi) * 2
+static constexpr int16_t SF2 = 0x7641; // cos(2/16 * pi) * 2
+static constexpr int16_t SF3 = 0x6a6d; // cos(3/16 * pi) * 2
+static constexpr int16_t SF4 = 0x5a82; // cos(4/16 * pi) * 2
+static constexpr int16_t SF5 = 0x471c; // cos(5/16 * pi) * 2
+static constexpr int16_t SF6 = 0x30fb; // cos(6/16 * pi) * 2
+static constexpr int16_t SF7 = 0x18f8; // cos(7/16 * pi) * 2
 
 static const int16_t _IDCT_TABLE[]{
 	SF0,  SF0,  SF0,  SF0,  SF0,  SF0,  SF0,  SF0,
