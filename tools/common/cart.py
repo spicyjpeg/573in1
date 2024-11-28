@@ -86,7 +86,7 @@ def parseCartDump(data: bytes) -> CartDump:
 		_CART_DUMP_HEADER_STRUCT.unpack(data[0:_CART_DUMP_HEADER_STRUCT.size])
 
 	if magic != _CART_DUMP_HEADER_MAGIC:
-		raise ValueError(f"invalid or unsupported dump format: 0x{magic:04x}")
+		raise ValueError(f"invalid or unsupported dump format: {magic:#04x}")
 
 	length, _, _ = _CHIP_SIZES[chipType]
 

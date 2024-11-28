@@ -16,8 +16,7 @@
 
 from dataclasses import dataclass
 from enum        import IntEnum
-from struct      import Struct
-from typing      import Any, BinaryIO, ByteString, Generator, TextIO
+from typing      import ByteString
 
 from .util import decodeSigned, encodeSigned
 
@@ -462,9 +461,25 @@ class GTEInstruction(Instruction):
 	def toString(self) -> str:
 		return f"gte::{self.copOpcode.name:2s} {self.param:#05x}".lower()
 
+## Instruction encoders
+
+def encodeLUI(rt: Register, value: int) -> bytes:
+	return ImmInstruction(0, Opcode.LUI, value, rt).toBytes()
+
+def encodeORI(rt: Register, rs: Register, value: int) -> bytes:
+	return ImmInstruction(0, Opcode.ORI, value, rt, rs).toBytes()
+
+def encodeADDIU(rt: Register, rs: Register, value: int) -> bytes:
+	return ImmInstruction(0, Opcode.ADDIU, value, rt, rs).toBytes()
+
+def encodeJR(rs: Register) -> bytes:
+	return RegInstruction(0, Opcode.SUB_INST, SubOpcode.JR, 0, rs = rs).toBytes()
+
 ## Instruction decoder
 
-def parseInstruction(address: int, inst: int) -> Instruction:
+def parseInstruction(address: int, data: ByteString) -> Instruction:
+	inst: int = int.from_bytes(data[0:4], "little")
+
 	imm5:  int = (inst >>  6) & 0x1f
 	imm16: int = (inst >>  0) & 0xffff
 	imm19: int = (inst >>  6) & 0x7ffff
@@ -555,142 +570,3 @@ def parseInstruction(address: int, inst: int) -> Instruction:
 			rs: Register = Register(rsValue)
 
 			return ImmInstruction(address, opcode, imm16, rt, rs)
-
-## Executable analyzer
-
-def parseStructFromFile(file: BinaryIO, _struct: Struct) -> tuple:
-	return _struct.unpack(file.read(_struct.size))
-
-_EXE_HEADER_STRUCT: Struct = Struct("< 8s 8x 4I 16x 2I 20x 1972s")
-_EXE_HEADER_MAGIC:  bytes  = b"PS-X EXE"
-
-_FUNCTION_RETURN: bytes = bytes.fromhex("08 00 e0 03") # jr $ra
-
-class PSEXEAnalyzer:
-	def __init__(self, file: BinaryIO):
-		(
-			magic,
-			entryPoint,
-			initialGP,
-			startAddress,
-			length,
-			stackOffset,
-			stackLength,
-			_
-		) = \
-			parseStructFromFile(file, _EXE_HEADER_STRUCT)
-
-		if magic != _EXE_HEADER_MAGIC:
-			raise RuntimeError("file is not a valid PS1 executable")
-
-		self.entryPoint:   int   = entryPoint
-		self.startAddress: int   = startAddress
-		self.endAddress:   int   = startAddress + length
-		self.body:         bytes = file.read(length)
-
-		#file.close()
-
-	def __getitem__(self, key: int | slice) -> Any:
-		if isinstance(key, slice):
-			return self.body[self._makeSlice(key.start, key.stop, key.step)]
-		else:
-			return self.body[key - self.startAddress]
-
-	def _makeSlice(
-		self, start: int | None = None, stop: int | None = None, step: int = 1
-	) -> slice:
-		_start: int = \
-			0              if (start is None) else (start - self.startAddress)
-		_stop:  int = \
-			len(self.body) if (stop  is None) else (stop  - self.startAddress)
-
-		# Allow for searching/disassembling backwards by swapping the start and
-		# stop parameters.
-		if _start > _stop:
-			#_start -= step
-			#_stop  -= step
-			step = -step
-
-		return slice(_start, _stop, step)
-
-	def disassembleAt(self, address: int) -> Instruction | None:
-		offset: int = address - self.startAddress
-		inst:   int = int.from_bytes(self.body[offset:offset + 4], "little")
-
-		try:
-			return parseInstruction(address, inst)
-		except:
-			return None
-
-	def disassemble(
-		self, start: int | None = None, stop: int | None = None
-	) -> Generator[Instruction | None, None, None]:
-		area:   slice = self._makeSlice(start, stop, 4)
-		offset: int   = area.start
-
-		if (area.start % 4) or (area.stop % 4):
-			raise ValueError("unaligned start and/or end addresses")
-
-		while offset != area.stop:
-			address: int = self.startAddress + offset
-			inst:    int = int.from_bytes(self.body[offset:offset + 4], "little")
-
-			try:
-				yield parseInstruction(address, inst)
-			except:
-				yield None
-
-			offset += area.step
-
-	def dumpDisassembly(
-		self, output: TextIO, start: int | None = None, stop: int | None = None
-	):
-		for inst in self.disassemble(start, stop):
-			if inst is not None:
-				output.write(f"{inst.address:08x}:   {inst.toString()}\n")
-
-	def findBytes(
-		self, data: ByteString, start: int | None = None,
-		stop: int | None = None, alignment: int = 4
-	) -> Generator[int, None, None]:
-		area:   slice = self._makeSlice(start, stop)
-		offset: int   = area.start
-
-		if area.step > 0:
-			step:  int      = len(data)
-			index: function = \
-				lambda offset: self.body.index(data, offset, area.stop)
-		else:
-			step:  int      = -len(data)
-			index: function = \
-				lambda offset: self.body.rindex(data, area.stop, offset)
-
-		while True:
-			try:
-				offset = index(offset)
-			except ValueError:
-				return
-
-			if not (offset % alignment):
-				yield self.startAddress + offset
-
-			offset += step
-
-	def findFunctionReturns(
-		self, start: int | None = None, stop: int | None = None
-	) -> Generator[int, None, None]:
-		for offset in self.findBytes(_FUNCTION_RETURN, start, stop, 4):
-			yield offset + 8
-
-	def findCalls(
-		self, address: int, start: int | None = None, stop: int | None = None
-	) -> Generator[Instruction, None, None]:
-		for inst in self.disassemble(start, stop):
-			if inst is None:
-				continue
-			if inst.opcode != Opcode.JAL:
-				continue
-			if inst.target != address:
-				continue
-
-			yield inst

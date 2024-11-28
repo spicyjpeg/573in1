@@ -59,6 +59,12 @@
 		},
 		{
 			"type":      "binary",
+			"name":      "assets/sounds/startup.mp3",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/startup.mp3",
+			"compLevel": 0
+		},
+		{
+			"type":      "binary",
 			"name":      "assets/sounds/startup.vag",
 			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/startup.vag",
 			"compLevel": 0

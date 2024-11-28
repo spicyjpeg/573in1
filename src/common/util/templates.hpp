@@ -127,9 +127,10 @@ class Data {
 public:
 	void   *ptr;
 	size_t length;
+	bool   destructible;
 
 	inline Data(void)
-	: ptr(nullptr), length(0) {}
+	: ptr(nullptr), length(0), destructible(false) {}
 	inline ~Data(void) {
 		destroy();
 	}
@@ -145,18 +146,23 @@ public:
 	}
 
 	inline void *allocate(size_t _length) {
-		if (ptr)
+		if (ptr && destructible)
 			delete[] as<uint8_t>();
 
-		ptr    = _length ? (new uint8_t[_length]) : nullptr;
-		length = _length;
+		ptr          = _length ? (new uint8_t[_length]) : nullptr;
+		length       = _length;
+		destructible = true;
 
 		return ptr;
 	}
 	inline void destroy(void) {
 		if (ptr) {
-			delete[] as<uint8_t>();
-			ptr = nullptr;
+			if (destructible)
+				delete[] as<uint8_t>();
+
+			ptr          = nullptr;
+			length       = 0;
+			destructible = false;
 		}
 	}
 };
@@ -202,4 +208,17 @@ public:
 	}
 };
 
+}
+
+/* Character concatenation operator */
+
+static constexpr inline uint32_t operator""_c(
+	const char *const literal, size_t length
+) {
+	return util::concat4(
+		(length > 0) ? literal[0] : 0,
+		(length > 1) ? literal[1] : 0,
+		(length > 2) ? literal[2] : 0,
+		(length > 3) ? literal[3] : 0
+	);
 }

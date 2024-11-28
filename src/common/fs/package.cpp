@@ -79,13 +79,13 @@ bool PackageProvider::init(const void *packageData, size_t length) {
 
 	auto header = reinterpret_cast<const PackageIndexHeader *>(packageData);
 
-	// TODO: set a flag to prevent output deallocation
-	_file         = nullptr;
-	_index.ptr    = reinterpret_cast<void *>(uintptr_t(packageData));
-	_index.length = header->indexLength;
+	_file               = nullptr;
+	_index.ptr          = reinterpret_cast<void *>(uintptr_t(packageData));
+	_index.length       = header->indexLength;
+	_index.destructible = false;
 
 	type     = PACKAGE_MEMORY;
-	capacity = 0;
+	capacity = length - header->indexLength;
 
 	LOG_FS("mounted package: 0x%08x", packageData);
 	return true;
@@ -193,9 +193,9 @@ size_t PackageProvider::loadData(util::Data &output, const char *path) {
 			);
 		} else {
 			// Package in RAM, file not compressed (return in-place pointer)
-			// TODO: set a flag to prevent output deallocation
-			output.ptr    = &blob[offset];
-			output.length = uncompLength;
+			output.ptr          = &blob[offset];
+			output.length       = uncompLength;
+			output.destructible = false;
 		}
 	}
 

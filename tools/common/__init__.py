@@ -14,13 +14,14 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 __author__  = "spicyjpeg"
 
 __all__ = (
 	"assets",
 	"cart",
 	"cartdata",
+	"decompile",
 	"games",
 	"mips",
 	"util"

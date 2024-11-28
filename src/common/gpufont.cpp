@@ -47,8 +47,12 @@ CharacterSize FontMetrics::get(util::UTF8CodePoint id) const {
 /* Font class */
 
 void Font::draw(
-	Context &ctx, const char *str, const Rect &rect, const Rect &clipRect,
-	Color color, bool wordWrap
+	Context    &ctx,
+	const char *str,
+	const Rect &rect,
+	const Rect &clipRect,
+	Color      color,
+	bool       wordWrap
 ) const {
 	if (!str || !metrics.ptr)
 		return;
@@ -135,14 +139,21 @@ void Font::draw(
 }
 
 void Font::draw(
-	Context &ctx, const char *str, const Rect &rect, Color color, bool wordWrap
+	Context    &ctx,
+	const char *str,
+	const Rect &rect,
+	Color      color,
+	bool       wordWrap
 ) const {
 	draw(ctx, str, rect, rect, color, wordWrap);
 }
 
 void Font::draw(
-	Context &ctx, const char *str, const RectWH &rect, Color color,
-	bool wordWrap
+	Context      &ctx,
+	const char   *str,
+	const RectWH &rect,
+	Color        color,
+	bool         wordWrap
 ) const {
 	Rect _rect{
 		.x1 = rect.x,
@@ -177,7 +188,10 @@ int Font::getCharacterWidth(util::UTF8CodePoint ch) const {
 }
 
 void Font::getStringBounds(
-	const char *str, Rect &rect, bool wordWrap, bool breakOnSpace
+	const char *str,
+	Rect       &rect,
+	bool       wordWrap,
+	bool       breakOnSpace
 ) const {
 	if (!str || !metrics.ptr)
 		return;
@@ -304,11 +318,17 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 	}
 
 _break:
-	return (width > maxWidth) ? width : maxWidth;
+	if (width > maxWidth)
+		maxWidth = width;
+
+	return maxWidth;
 }
 
 int Font::getStringHeight(
-	const char *str, int width, bool wordWrap, bool breakOnSpace
+	const char *str,
+	int        width,
+	bool       wordWrap,
+	bool       breakOnSpace
 ) const {
 	Rect _rect{
 		.x1 = 0,

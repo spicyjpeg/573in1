@@ -21,6 +21,7 @@
 #include "common/io.hpp"
 #include "common/ioboard.hpp"
 #include "common/mdec.hpp"
+#include "common/pad.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
 #include "main/uibase.hpp"
@@ -37,6 +38,7 @@ int main(int argc, const char **argv) {
 	gpu::init();
 	spu::init();
 	mdec::init();
+	pad::init();
 	io::init();
 	util::initZipCRC32();
 
@@ -47,7 +49,7 @@ int main(int argc, const char **argv) {
 
 	util::logger.setupSyslog(args.baudRate);
 
-	// A pointer to the resource archive is always provided on the command line
+	// A pointer to the resource package is always provided on the command line
 	// by the boot stub.
 	if (!args.resourcePtr || !args.resourceLength) {
 		LOG_APP("required arguments missing");

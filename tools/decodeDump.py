@@ -77,7 +77,7 @@ def createParser() -> ArgumentParser:
 	group.add_argument(
 		"-i", "--input",
 		type    = FileType("rb"),
-		help    = "Read dump (.573 file) or QR string from specified path",
+		help    = "Read dump (.dmp file) or QR string from specified path",
 		metavar = "file"
 	)
 	group.add_argument(
@@ -90,7 +90,7 @@ def createParser() -> ArgumentParser:
 	group.add_argument(
 		"-e", "--export",
 		type    = FileType("wb"),
-		help    = "Export binary dump (.573 file) to specified path",
+		help    = "Export binary dump (.dmp file) to specified path",
 		metavar = "file"
 	)
 

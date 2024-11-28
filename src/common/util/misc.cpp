@@ -124,8 +124,8 @@ bool ExecutableHeader::validateMagic(void) const {
 	);
 #else
 	return true
-		&& (magic[0] == concat4('P', 'S', '-', 'X'))
-		&& (magic[1] == concat4(' ', 'E', 'X', 'E'))
+		&& (magic[0] == "PS-X"_c)
+		&& (magic[1] == " EXE"_c)
 		&& !magic[2]
 		&& !magic[3]
 		&& !(entryPoint % 4)

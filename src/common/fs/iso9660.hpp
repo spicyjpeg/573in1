@@ -44,15 +44,15 @@ using ISOCharD  = uint8_t;
 static constexpr size_t ISO9660_MAX_RECORD_DATA_LENGTH = 512;
 
 enum ISOSUSPEntryType : uint16_t {
-	ISO_SUSP_ATTRIBUTES     = util::concat2('P', 'X'),
-	ISO_SUSP_DEVICE_NUMBER  = util::concat2('P', 'N'),
-	ISO_SUSP_SYMBOLIC_LINK  = util::concat2('S', 'L'),
-	ISO_SUSP_ALTERNATE_NAME = util::concat2('N', 'M'),
-	ISO_SUSP_CHILD_LINK     = util::concat2('C', 'L'),
-	ISO_SUSP_PARENT_LINK    = util::concat2('P', 'L'),
-	ISO_SUSP_RELOCATED_DIR  = util::concat2('R', 'E'),
-	ISO_SUSP_TIMESTAMP      = util::concat2('T', 'F'),
-	ISO_SUSP_SPARSE_FILE    = util::concat2('S', 'F')
+	ISO_SUSP_ATTRIBUTES     = "PX"_c,
+	ISO_SUSP_DEVICE_NUMBER  = "PN"_c,
+	ISO_SUSP_SYMBOLIC_LINK  = "SL"_c,
+	ISO_SUSP_ALTERNATE_NAME = "NM"_c,
+	ISO_SUSP_CHILD_LINK     = "CL"_c,
+	ISO_SUSP_PARENT_LINK    = "PL"_c,
+	ISO_SUSP_RELOCATED_DIR  = "RE"_c,
+	ISO_SUSP_TIMESTAMP      = "TF"_c,
+	ISO_SUSP_SPARSE_FILE    = "SF"_c
 };
 
 enum ISOSUSNameEntryFlag : uint8_t {
@@ -85,7 +85,7 @@ public:
 	uint8_t  _reserved[5]; // 0x9-0xd
 
 	inline bool validateMagic(void) const {
-		return !groupID && !userID && (magic == util::concat2('X', 'A'));
+		return !groupID && !userID && (magic == "XA"_c);
 	}
 };
 
@@ -230,10 +230,10 @@ private:
 	storage::Device *_dev;
 	ISORecord       _root;
 
-	bool _readData(util::Data &output, uint32_t lba, size_t numSectors);
+	bool _readData(util::Data &output, uint32_t lba, size_t numSectors) const;
 	bool _getRecord(
 		ISORecordBuffer &output, const ISORecord &root, const char *path
-	);
+	) const;
 
 public:
 	inline ISO9660Provider(void)

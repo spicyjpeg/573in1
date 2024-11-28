@@ -322,7 +322,7 @@ static constexpr uint32_t _VOLUME_DESC_END_LBA   = 0x20;
 
 bool ISO9660Provider::_readData(
 	util::Data &output, uint32_t lba, size_t numSectors
-) {
+) const {
 	if (!output.allocate(numSectors * _dev->sectorLength))
 		return false;
 	if (_dev->read(output.ptr, lba, numSectors))
@@ -333,7 +333,7 @@ bool ISO9660Provider::_readData(
 
 bool ISO9660Provider::_getRecord(
 	ISORecordBuffer &output, const ISORecord &root, const char *path
-) {
+) const {
 	if (!type)
 		return false;
 

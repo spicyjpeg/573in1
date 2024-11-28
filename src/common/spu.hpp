@@ -83,10 +83,10 @@ public:
 	char     name[16];
 
 	inline bool validateMagic(void) const {
-		return (magic == util::concat4('V', 'A', 'G', 'p')) && (channels <= 1);
+		return (magic == "VAGp"_c) && (channels <= 1);
 	}
 	inline bool validateInterleavedMagic(void) const {
-		return (magic == util::concat4('V', 'A', 'G', 'i')) && interleave;
+		return (magic == "VAGi"_c) && interleave;
 	}
 
 	inline uint16_t getSPUSampleRate(void) const {

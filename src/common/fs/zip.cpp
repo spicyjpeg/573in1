@@ -69,12 +69,12 @@ static bool _zipStatToFileInfo(
 		return false;
 
 #if 0
-	auto ptr = __builtin_strrchr(stat.m_filename, '/');
+	const char *ptr = __builtin_strrchr(stat.m_filename, '/');
 
 	if (ptr)
 		ptr++;
 	else
-		ptr = (char *) stat.m_filename;
+		ptr = stat.m_filename;
 #else
 	auto ptr = stat.m_filename;
 #endif
@@ -229,6 +229,7 @@ size_t ZIPProvider::loadData(util::Data &output, const char *path) {
 		return 0;
 	}
 
+	output.destructible = true;
 	return output.length;
 }
 

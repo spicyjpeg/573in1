@@ -83,26 +83,40 @@ public:
 	}
 
 	void draw(
-		Context &ctx, const char *str, const Rect &rect, const Rect &clipRect,
-		Color color = 0x808080, bool wordWrap = false
+		Context    &ctx,
+		const char *str,
+		const Rect &rect,
+		const Rect &clipRect,
+		Color      color    = 0x808080,
+		bool       wordWrap = false
 	) const;
 	void draw(
-		Context &ctx, const char *str, const Rect &rect, Color color = 0x808080,
-		bool wordWrap = false
+		Context    &ctx,
+		const char *str,
+		const Rect &rect,
+		Color      color    = 0x808080,
+		bool       wordWrap = false
 	) const;
 	void draw(
-		Context &ctx, const char *str, const RectWH &rect,
-		Color color = 0x808080, bool wordWrap = false
+		Context      &ctx,
+		const char   *str,
+		const RectWH &rect,
+		Color        color    = 0x808080,
+		bool         wordWrap = false
 	) const;
 	int getCharacterWidth(util::UTF8CodePoint ch) const;
 	void getStringBounds(
-		const char *str, Rect &rect, bool wordWrap = false,
-		bool breakOnSpace = false
+		const char *str,
+		Rect       &rect,
+		bool       wordWrap     = false,
+		bool       breakOnSpace = false
 	) const;
 	int getStringWidth(const char *str, bool breakOnSpace = false) const;
 	int getStringHeight(
-		const char *str, int width, bool wordWrap = false,
-		bool breakOnSpace = false
+		const char *str,
+		int        width,
+		bool       wordWrap     = false,
+		bool       breakOnSpace = false
 	) const;
 };
 

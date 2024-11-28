@@ -124,12 +124,12 @@ class IdentifierSet:
 					return TraceIDType.TID_82_LITTLE_ENDIAN
 
 				raise ValueError(
-					f"trace ID mismatch, exp=0x{checksum:04x}, "
-					f"big=0x{big:04x}, little=0x{little:04x}"
+					f"trace ID mismatch, exp={checksum:#04x}, "
+					f"big={big:#04x}, little={little:#04x}"
 				)
 
 			case prefix:
-				raise ValueError(f"unknown trace ID prefix: 0x{prefix:02x}")
+				raise ValueError(f"unknown trace ID prefix: {prefix:#02x}")
 
 @dataclass
 class PublicIdentifierSet:
@@ -221,8 +221,7 @@ class BasicCartParser(CartParser):
 
 		if value != checksum:
 			raise ParserError(
-				f"invalid header checksum, exp=0x{value:02x}, "
-				f"got=0x{checksum:02x}"
+				f"invalid header checksum, exp={value:#02x}, got={checksum:#02x}"
 			)
 		if GAME_REGION_REGEX.fullmatch(region) is None:
 			raise ParserError(f"invalid game region: {region}")
@@ -269,8 +268,7 @@ class ExtendedCartParser(CartParser):
 
 		if value != checksum:
 			raise ParserError(
-				f"invalid header checksum, exp=0x{value:04x}, "
-				f"got=0x{checksum:04x}"
+				f"invalid header checksum, exp={value:#04x}, got={checksum:#04x}"
 			)
 		if GAME_CODE_REGEX.fullmatch(code) is None:
 			raise ParserError(f"invalid game code: {code}")
@@ -332,8 +330,7 @@ class ExtendedROMHeaderParser(ROMHeaderParser):
 
 		if value != checksum:
 			raise ParserError(
-				f"invalid header checksum, exp=0x{value:04x}, "
-				f"got=0x{checksum:04x}"
+				f"invalid header checksum, exp={value:#04x}, got={checksum:#04x}"
 			)
 		if GAME_CODE_REGEX.fullmatch(code) is None:
 			raise ParserError(f"invalid game code: {code}")
