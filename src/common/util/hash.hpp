@@ -40,6 +40,28 @@ template<typename T> static constexpr inline Hash hash(
 Hash hash(const char *str, char terminator = 0);
 Hash hash(const uint8_t *data, size_t length);
 
+/* Hash table parser */
+
+template<typename T> static inline const T *getHashTableEntry(
+	const T *table, size_t numBuckets, Hash id
+) {
+#if 0
+	auto index = id % NB;
+#else
+	auto index = id & (numBuckets - 1);
+#endif
+
+	do {
+		auto entry = &table[index];
+		index      = entry->getChained();
+
+		if (entry->getHash() == id)
+			return entry;
+	} while (index);
+
+	return nullptr;
+}
+
 /* CRC calculation */
 
 uint8_t dsCRC8(const uint8_t *data, size_t length);

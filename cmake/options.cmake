@@ -84,7 +84,7 @@ set(
 set(
 	ENABLE_DUMMY_CART_DRIVER OFF
 	CACHE BOOL "Enable support for simulating a dummy security cartridge (if \
-data/test.573 is present in the resource archive)"
+data/dummy.dmp is present in the resource package)"
 )
 set(
 	ENABLE_X76F041_CART_DRIVER ON

@@ -16,78 +16,64 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/fs/package.hpp"
+#include "common/util/hash.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/string.hpp"
-#include "common/util/templates.hpp"
 #include "common/io.hpp"
 #include "ps1/system.h"
 
-extern "C" const uint8_t _resourceArchive[];
-extern "C" const size_t  _resourceArchiveLength;
+extern "C" const uint8_t _resourcePackage[];
+extern "C" const size_t  _resourcePackageLength;
 
 static char _ptrArg[]{ "resource.ptr=xxxxxxxx\0" };
 static char _lengthArg[]{ "resource.length=xxxxxxxx\0" };
-
-class [[gnu::packed]] ZIPFileHeader {
-public:
-	uint32_t magic;
-	uint16_t version, flags, compType;
-	uint16_t fileTime, fileDate;
-	uint32_t crc, compLength, uncompLength;
-	uint16_t nameLength, extraLength;
-
-	inline bool validateMagic(void) const {
-		return (magic == util::concat4('P', 'K', 0x03, 0x04));
-	}
-	inline size_t getHeaderLength(void) const {
-		return sizeof(ZIPFileHeader) + nameLength + extraLength;
-	}
-};
 
 int main(int argc, const char **argv) {
 	disableInterrupts();
 	io::init();
 
-	// Parse the header of the archive's first entry manually. This avoids
-	// pulling in miniz and bloating the binary.
-	// NOTE: this assumes the main executable is always the first file in the
-	// archive.
-	auto zipHeader  = reinterpret_cast<const ZIPFileHeader *>(_resourceArchive);
-	auto ptr        = &_resourceArchive[zipHeader->getHeaderLength()];
-	auto compLength = zipHeader->compLength;
-
-#if 0
-	assert(zipHeader->validateMagic());
-	assert(!zipHeader->compType);
-#endif
+	auto header = \
+		reinterpret_cast<const fs::PackageIndexHeader *>(_resourcePackage);
+	auto entry  = util::getHashTableEntry(
+		reinterpret_cast<const fs::PackageIndexEntry *>(header + 1),
+		header->numBuckets,
+		"binaries/main.psexe"_h
+	);
+	auto ptr    = &_resourcePackage[entry->offset];
 
 	// Decompress only the header to determine where to place the binary in
 	// memory, then rerun the decompressor on the entire executable.
 	util::ExecutableHeader exeHeader;
 
 	util::decompressLZ4(
-		reinterpret_cast<uint8_t *>(&exeHeader), ptr, sizeof(exeHeader),
-		compLength
+		reinterpret_cast<uint8_t *>(&exeHeader),
+		ptr,
+		sizeof(exeHeader),
+		entry->compLength
 	);
 
 	auto offset = exeHeader.textOffset - util::EXECUTABLE_BODY_OFFSET;
-	auto length = exeHeader.textLength + util::EXECUTABLE_BODY_OFFSET;
 
 	util::decompressLZ4(
-		reinterpret_cast<uint8_t *>(offset), ptr, length, compLength
+		reinterpret_cast<uint8_t *>(offset),
+		ptr,
+		entry->uncompLength,
+		entry->compLength
 	);
 	io::clearWatchdog();
 
 	util::ExecutableLoader loader(
-		exeHeader.getEntryPoint(), exeHeader.getInitialGP(),
+		exeHeader.getEntryPoint(),
+		exeHeader.getInitialGP(),
 		exeHeader.getStackPtr()
 	);
 
 	util::hexValueToString(
-		&_ptrArg[13], reinterpret_cast<uint32_t>(_resourceArchive), 8
+		&_ptrArg[13], reinterpret_cast<uint32_t>(_resourcePackage), 8
 	);
 	loader.addArgument(_ptrArg);
-	util::hexValueToString(&_lengthArg[16], _resourceArchiveLength, 8);
+	util::hexValueToString(&_lengthArg[16], _resourcePackageLength, 8);
 	loader.addArgument(_lengthArg);
 
 #ifdef ENABLE_ARGV_PARSER

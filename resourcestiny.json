@@ -3,10 +3,9 @@
 
 	"resources": [
 		{
-			"type":        "binary",
-			"name":        "binaries/main.psexe.lz4",
-			"source":      "${PROJECT_BINARY_DIR}/main.psexe",
-			"compression": "lz4"
+			"type":   "binary",
+			"name":   "binaries/main.psexe",
+			"source": "${PROJECT_BINARY_DIR}/main.psexe"
 		},
 		{
 			"type":   "binary",
@@ -59,46 +58,46 @@
 			"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.json"
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/startup.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/startup.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/startup.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/startup.vag",
+			"compLevel": 0
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/alert.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/alert.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/alert.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/alert.vag",
+			"compLevel": 0
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/move.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/move.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/move.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/move.vag",
+			"compLevel": 0
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/enter.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/enter.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/enter.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/enter.vag",
+			"compLevel": 0
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/exit.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/exit.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/exit.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/exit.vag",
+			"compLevel": 0
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/click.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/click.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/click.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/click.vag",
+			"compLevel": 0
 		},
 		{
-			"type":        "binary",
-			"name":        "assets/sounds/screenshot.vag",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/sounds/screenshot.vag",
-			"compression": "none"
+			"type":      "binary",
+			"name":      "assets/sounds/screenshot.vag",
+			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/screenshot.vag",
+			"compLevel": 0
 		},
 		{
 			"type":   "text",
@@ -106,10 +105,9 @@
 			"source": "${PROJECT_BINARY_DIR}/about.txt"
 		},
 		{
-			"type":        "palette",
-			"name":        "assets/palette.dat",
-			"source":      "${PROJECT_SOURCE_DIR}/assets/palette.json",
-			"compression": "none"
+			"type":   "palette",
+			"name":   "assets/palette.dat",
+			"source": "${PROJECT_SOURCE_DIR}/assets/palette.json"
 		},
 
 		{

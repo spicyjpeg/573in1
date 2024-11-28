@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/hash.hpp"
 #include "common/util/string.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
@@ -26,7 +27,6 @@ namespace gpu {
 
 /* Font metrics class */
 
-static constexpr size_t METRICS_BUCKET_COUNT    = 256;
 static constexpr size_t METRICS_CODE_POINT_BITS = 21;
 
 static constexpr util::UTF8CodePoint FONT_INVALID_CHAR = 0xfffd;
@@ -35,8 +35,9 @@ using CharacterSize = uint32_t;
 
 struct FontMetricsHeader {
 public:
-	uint8_t spaceWidth, tabWidth, lineHeight;
-	int8_t  baselineOffset;
+	uint8_t  spaceWidth, tabWidth, lineHeight;
+	int8_t   baselineOffset;
+	uint16_t numBuckets, numEntries;
 };
 
 class FontMetricsEntry {
@@ -44,7 +45,7 @@ public:
 	uint32_t      codePoint;
 	CharacterSize size;
 
-	inline util::UTF8CodePoint getCodePoint(void) const {
+	inline util::Hash getHash(void) const {
 		return codePoint & ((1 << METRICS_CODE_POINT_BITS) - 1);
 	}
 	inline uint32_t getChained(void) const {
@@ -54,9 +55,6 @@ public:
 
 class FontMetrics : public util::Data {
 public:
-	inline const FontMetricsHeader *getHeader(void) const {
-		return as<const FontMetricsHeader>();
-	}
 	inline CharacterSize operator[](util::UTF8CodePoint id) const {
 		return get(id);
 	}
@@ -75,13 +73,13 @@ public:
 		if (!metrics.ptr)
 			return 0;
 
-		return metrics.getHeader()->spaceWidth;
+		return metrics.as<FontMetricsHeader>()->spaceWidth;
 	}
 	inline int getLineHeight(void) const {
 		if (!metrics.ptr)
 			return 0;
 
-		return metrics.getHeader()->lineHeight;
+		return metrics.as<FontMetricsHeader>()->lineHeight;
 	}
 
 	void draw(

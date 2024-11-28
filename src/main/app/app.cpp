@@ -22,7 +22,7 @@
 #include "common/fs/file.hpp"
 #include "common/fs/iso9660.hpp"
 #include "common/fs/misc.hpp"
-#include "common/fs/zip.hpp"
+#include "common/fs/package.hpp"
 #include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
@@ -179,7 +179,7 @@ bool FileIOManager::loadResourceFile(const char *path) {
 	if (path)
 		_resourceFile = vfs.openFile(path, fs::READ);
 
-	// Fall back to the default in-memory resource archive in case of failure.
+	// Fall back to the default in-memory resource package in case of failure.
 	if (_resourceFile) {
 		if (resource.init(_resourceFile))
 			return true;

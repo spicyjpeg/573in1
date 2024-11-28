@@ -9,7 +9,7 @@
 
 	"properties": {
 		"resources": {
-			"title": "Resource archive entries",
+			"title": "Resource package entries",
 			"type":  "array",
 
 			"uniqueItems": true,
@@ -39,19 +39,12 @@
 					},
 					"name": {
 						"title":       "Entry path",
-						"description": "Full path of the entry within the resource archive.",
+						"description": "Full path of the entry within the resource package.",
 						"type":        "string"
 					},
-					"compression": {
-						"title":       "Compression type",
-						"description": "Must be 'none', 'deflate' or 'lz4'. If unspecified, defaults to 'deflate' unless manually overridden on the command line.",
-						"type":        "string",
-
-						"enum": [ "none", "deflate", "lz4" ]
-					},
-					"compressLevel": {
+					"compLevel": {
 						"title":       "Compression level",
-						"description": "DEFLATE or LZ4 compression level in 0-9 range, ignored for uncompressed files. If unspecified, defaults to 9 unless manually overridden on the command line.",
+						"description": "LZ4 compression level in 1-9 range, or 0 to store the file uncompressed. If unspecified, defaults to 9 unless manually overridden on the command line.",
 						"type":        "integer",
 
 						"minimum": 0,
@@ -81,10 +74,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "pattern": "^text|binary$" },
-							"name":          { "type":    "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "pattern": "^text|binary$" },
+							"name":      { "type":    "string" },
+							"compLevel": {},
 
 							"source": {
 								"title":       "Path to source file",
@@ -100,10 +92,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "const": "tim" },
-							"name":          { "type":  "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "const": "tim" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
 
 							"source": {
 								"title":       "Path to source file",
@@ -181,10 +172,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "pattern": "^metrics|palette|strings|db$" },
-							"name":          { "type":    "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "pattern": "^metrics|palette|strings|db$" },
+							"name":      { "type":    "string" },
+							"compLevel": {},
 
 							"source": {
 								"title":       "Path to source file",
@@ -200,10 +190,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "const": "metrics" },
-							"name":          { "type":  "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "const": "metrics" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
 
 							"metrics": {
 								"title":       "Font metrics",
@@ -217,10 +206,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "const": "palette" },
-							"name":          { "type":  "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "const": "palette" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
 
 							"palette": {
 								"title":       "Color entries",
@@ -234,10 +222,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "const": "strings" },
-							"name":          { "type":  "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "const": "strings" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
 
 							"strings": {
 								"title":       "String table",
@@ -251,10 +238,9 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":          { "const": "db" },
-							"name":          { "type":  "string" },
-							"compression":   {},
-							"compressLevel": {},
+							"type":      { "const": "db" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
 
 							"strings": {
 								"title":       "Game database",

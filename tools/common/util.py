@@ -15,18 +15,23 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import logging, re
-from collections import defaultdict
 from dataclasses import dataclass
 from hashlib     import md5
 from io          import SEEK_END, SEEK_SET
 from typing      import \
-	Any, BinaryIO, ByteString, Generator, Iterable, Iterator, Mapping, \
-	Sequence, TextIO
+	Any, BinaryIO, ByteString, Iterable, Iterator, Sequence, TextIO
 
 ## Value manipulation
 
+def roundUpToMultiple(value: int, length: int) -> int:
+	diff: int = value % length
+
+	return (value - diff + length) if diff else value
+
 def encodeSigned(value: int, bitLength: int) -> int:
-	return value & (1 << bitLength)
+	valueMask: int = (1 << bitLength) - 1
+
+	return value & valueMask
 
 def decodeSigned(value: int, bitLength: int) -> int:
 	signMask:  int = 1 << (bitLength - 1)
@@ -153,35 +158,60 @@ class HashTableEntry:
 	chainIndex: int
 	data:       Any
 
-def generateHashTable(
-	entries: Mapping[int, Any], numBuckets: int
-) -> tuple[list[HashTableEntry | None], list[HashTableEntry]]:
-	chains: defaultdict[int, list[HashTableEntry]] = defaultdict(list)
+class HashTableBuilder:
+	def __init__(self, numBuckets: int = 256):
+		self._numBuckets: int = numBuckets
 
-	for fullHash, data in entries.items():
-		entry: HashTableEntry = HashTableEntry(fullHash, 0, data)
+		self.entries: list[HashTableEntry | None] = [ None ] * numBuckets
 
-		chains[fullHash % numBuckets].append(entry)
+	def addEntry(self, fullHash: int, data: Any) -> int:
+		index: int = fullHash % self._numBuckets
 
-	buckets: list[HashTableEntry | None] = []
-	chained: list[HashTableEntry]        = []
+		entry:  HashTableEntry        = HashTableEntry(fullHash, 0, data)
+		bucket: HashTableEntry | None = self.entries[index]
 
-	for shortHash in range(numBuckets):
-		entries: list[HashTableEntry] = chains[shortHash]
+		# If no bucket exists for the entry's index, create one.
+		if bucket is None:
+			self.entries[index] = entry
+			return index
+		if bucket.fullHash == fullHash:
+			raise KeyError(f"collision detected, hash={fullHash:#08x}")
 
-		if not len(entries): # Empty bucket
-			buckets.append(None)
-			continue
+		# Otherwise, follow the buckets's chain, find the last chained item and
+		# link the new entry to it.
+		while bucket.chainIndex:
+			bucket = self.entries[bucket.chainIndex]
 
-		for index, entry in enumerate(entries):
-			entry.chainIndex = numBuckets + len(chained) + index
+			if bucket.fullHash == fullHash:
+				raise KeyError(f"collision detected, hash={fullHash:#08x}")
 
-		entries[-1].chainIndex = 0 # Terminate chain
+		bucket.chainIndex = len(self.entries)
+		self.entries.append(entry)
 
-		buckets.append(entries[0])
-		chained += entries[1:]
+		return bucket.chainIndex
 
-	return buckets, chained
+class StringBlobBuilder:
+	def __init__(self, alignment: int = 1):
+		self._alignment: int                   = alignment
+		self._offsets:   dict[ByteString, int] = {}
+
+		self.data: bytearray = bytearray()
+
+	def addString(self, string: ByteString) -> int:
+		# If the same string is already in the blob, return its offset without
+		# adding new data.
+		offset: int | None = self._offsets.get(string, None)
+
+		if offset is None:
+			offset = len(self.data)
+
+			self._offsets[string] = offset
+			self.data            += string
+
+			while len(self.data) % self._alignment:
+				self.data.append(0)
+
+		return offset
 
 ## Odd/even interleaved file reader
 

@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include "common/fs/file.hpp"
 #include "common/fs/misc.hpp"
-#include "common/fs/zip.hpp"
+#include "common/fs/package.hpp"
 #include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
@@ -76,11 +76,11 @@ public:
 	const void *resourcePtr;
 	size_t     resourceLength;
 
-	fs::ZIPProvider  resource;
+	fs::PackageProvider resource;
 #ifdef ENABLE_PCDRV
-	fs::HostProvider host;
+	fs::HostProvider    host;
 #endif
-	fs::VFSProvider  vfs;
+	fs::VFSProvider     vfs;
 
 	storage::Device *ideDevices[2];
 	fs::Provider    *ideProviders[2];

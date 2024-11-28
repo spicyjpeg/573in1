@@ -45,7 +45,7 @@ bool cartDetectWorker(App &app) {
 
 #ifdef ENABLE_DUMMY_CART_DRIVER
 	if (!cart::dummyDriverDump.chipType)
-		app._fileIO.resource.loadStruct(cart::dummyDriverDump, "data/test.573");
+		app._fileIO.resource.loadStruct(cart::dummyDriverDump, "data/dummy.dmp");
 
 	if (cart::dummyDriverDump.chipType) {
 		LOG_APP("using dummy cart driver");
@@ -214,11 +214,11 @@ bool cartDumpWorker(App &app) {
 		app._cartParser->getRegion(region)
 	) {
 		snprintf(
-			path, sizeof(path), EXTERNAL_DATA_DIR "/%s%s.573", code, region
+			path, sizeof(path), EXTERNAL_DATA_DIR "/%s%s.dmp", code, region
 		);
 	} else {
 		if (!app._getNumberedPath(
-			path, sizeof(path), EXTERNAL_DATA_DIR "/cart%04d.573"
+			path, sizeof(path), EXTERNAL_DATA_DIR "/cart%04d.dmp"
 		))
 			goto _error;
 	}

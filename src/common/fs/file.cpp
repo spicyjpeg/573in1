@@ -116,7 +116,7 @@ size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 	if (!loadData(data, path))
 		return 0;
 
-	auto header = data.as<const gpu::TIMHeader>();
+	auto header = data.as<gpu::TIMHeader>();
 
 	if (output.initFromTIMHeader(*header)) {
 		auto image = header->getImage();
@@ -141,7 +141,7 @@ size_t Provider::loadBS(
 	if (!loadData(data, path))
 		return 0;
 
-	size_t bsLength = data.as<const mdec::BSHeader>()->getUncompLength();
+	size_t bsLength = data.as<mdec::BSHeader>()->getUncompLength();
 
 	mdec::BSDecompressor decompressor;
 	util::Data           buffer;
@@ -189,7 +189,7 @@ size_t Provider::loadVAG(
 	if (!loadData(data, path))
 		return 0;
 
-	auto header = data.as<const spu::VAGHeader>();
+	auto header = data.as<spu::VAGHeader>();
 
 	if (output.initFromVAGHeader(*header, offset))
 		loadLength = spu::upload(
@@ -285,22 +285,15 @@ size_t Provider::saveVRAMBMP(const gpu::RectWH &rect, const char *path) {
 static const char _ERROR_STRING[]{ "missingno" };
 
 const char *StringTable::get(util::Hash id) const {
-	if (!ptr)
-		return _ERROR_STRING;
+	auto header = as<StringTableHeader>();
+	auto blob   = as<char>();
+	auto entry  = util::getHashTableEntry(
+		reinterpret_cast<const StringTableEntry *>(header + 1),
+		header->numBuckets,
+		id
+	);
 
-	auto blob  = as<const char>();
-	auto table = as<const StringTableEntry>();
-	auto index = id % STRING_TABLE_BUCKET_COUNT;
-
-	do {
-		auto entry = &table[index];
-		index      = entry->chained;
-
-		if (entry->hash == id)
-			return &blob[entry->offset];
-	} while (index);
-
-	return _ERROR_STRING;
+	return entry ? &blob[entry->offset] : _ERROR_STRING;
 }
 
 size_t StringTable::format(

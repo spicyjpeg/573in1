@@ -19,7 +19,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.2
+	VERSION      1.0.3
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
@@ -77,6 +77,7 @@ set(
 	src/common/fs/file.cpp
 	src/common/fs/iso9660.cpp
 	src/common/fs/misc.cpp
+	src/common/fs/package.cpp
 	src/common/fs/zip.cpp
 )
 set(
@@ -204,7 +205,7 @@ function(addPS1Executable name address stackTop)
 endfunction()
 
 # IMPORTANT: these addresses assume the boot executable's size (including code,
-# heap and stack allocations as well as the resource archive, but excluding the
+# heap and stack allocations as well as the resource package, but excluding the
 # executable header) is 576 KB (0x90000 bytes) or less, and that each launcher's
 # size is 12 KB (0x3000 bytes) or less.
 addPS1Executable(main             800a0000 801dfff0 ${mainSources})
@@ -221,7 +222,7 @@ target_link_libraries(bootStub PUBLIC subExecutableFlags)
 target_link_libraries(launcher801fd000 PUBLIC launcher)
 target_link_libraries(launcher803fd000 PUBLIC launcher)
 
-## Boot stubs and resource archives
+## Boot stubs and resource packages
 
 file(GLOB_RECURSE assetList RELATIVE "${PROJECT_SOURCE_DIR}" assets/*)
 
@@ -233,24 +234,25 @@ function(addBuildVariant name resourceName)
 	add_custom_command(
 		COMMAND
 			"${Python3_EXECUTABLE}"
-			"${PROJECT_SOURCE_DIR}/tools/buildResourceArchive.py"
+			"${PROJECT_SOURCE_DIR}/tools/buildResourcePackage.py"
+			-a 64
 			${resourceName}.json
-			${resourceName}.zip
-		OUTPUT  ${resourceName}.zip
+			${resourceName}.pkg
+		OUTPUT  ${resourceName}.pkg
 		DEPENDS
 			${resourceName}.json
 			${assetList}
 			main.psexe
 			launcher801fd000.psexe
 			launcher803fd000.psexe
-		COMMENT "Building ${name} resource archive"
+		COMMENT "Building ${name} resource package"
 		VERBATIM
 	)
 
 	addPS1Executable(${name} 80010000 0)
 	addBinaryFileWithSize(
-		${name} _resourceArchive _resourceArchiveLength
-		"${PROJECT_BINARY_DIR}/${resourceName}.zip"
+		${name} _resourcePackage _resourcePackageLength
+		"${PROJECT_BINARY_DIR}/${resourceName}.pkg"
 	)
 
 	target_link_libraries(${name} PUBLIC bootStub)

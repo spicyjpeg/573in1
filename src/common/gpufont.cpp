@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include "common/util/hash.hpp"
 #include "common/util/string.hpp"
 #include "common/gpu.hpp"
 #include "common/gpufont.hpp"
@@ -28,18 +29,19 @@ CharacterSize FontMetrics::get(util::UTF8CodePoint id) const {
 	if (!ptr)
 		return 0;
 
-	auto table = reinterpret_cast<const FontMetricsEntry *>(getHeader() + 1);
-	auto index = id % METRICS_BUCKET_COUNT;
+	auto header = as<FontMetricsHeader>();
+	auto entry  = util::getHashTableEntry(
+		reinterpret_cast<const FontMetricsEntry *>(header + 1),
+		header->numBuckets,
+		id
+	);
 
-	do {
-		auto entry = &table[index];
-		index      = entry->getChained();
-
-		if (entry->getCodePoint() == id)
-			return entry->size;
-	} while (index);
-
-	return (id == FONT_INVALID_CHAR) ? 0 : get(FONT_INVALID_CHAR);
+	if (entry)
+		return entry->size;
+	else if (id != FONT_INVALID_CHAR)
+		return get(FONT_INVALID_CHAR);
+	else
+		return 0;
 }
 
 /* Font class */
@@ -53,7 +55,7 @@ void Font::draw(
 
 	ctx.setTexturePage(image.texpage);
 
-	auto header = metrics.getHeader();
+	auto header = metrics.as<FontMetricsHeader>();
 
 	int x      = rect.x1;
 	int clipX1 = clipRect.x1;
@@ -153,7 +155,7 @@ void Font::draw(
 }
 
 int Font::getCharacterWidth(util::UTF8CodePoint ch) const {
-	auto header = metrics.getHeader();
+	auto header = metrics.as<FontMetricsHeader>();
 
 	switch (ch) {
 		case 0:
@@ -180,7 +182,7 @@ void Font::getStringBounds(
 	if (!str || !metrics.ptr)
 		return;
 
-	auto header = metrics.getHeader();
+	auto header = metrics.as<FontMetricsHeader>();
 
 	int x = rect.x1, maxX = rect.x1, y = rect.y1;
 
@@ -259,7 +261,7 @@ int Font::getStringWidth(const char *str, bool breakOnSpace) const {
 	if (!str || !metrics.ptr)
 		return 0;
 
-	auto header = metrics.getHeader();
+	auto header = metrics.as<FontMetricsHeader>();
 
 	int width = 0, maxWidth = 0;
 

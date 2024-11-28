@@ -14,14 +14,16 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from itertools import chain
-from struct    import Struct
-from typing    import Any, Generator, Mapping, Sequence
+from dataclasses import dataclass
+from struct      import Struct
+from typing      import Any, Generator, Mapping, Sequence
 
 import numpy
 from numpy import ndarray
 from PIL   import Image
-from .util import colorFromString, generateHashTable, hashData
+from .util import \
+	HashTableBuilder, StringBlobBuilder, colorFromString, hashData, \
+	roundUpToMultiple
 
 ## .TIM image converter
 
@@ -130,17 +132,18 @@ def generateIndexedTIM(
 
 ## Font metrics generator
 
-_METRICS_HEADER_STRUCT: Struct = Struct("< 3B b")
+_METRICS_HEADER_STRUCT: Struct = Struct("< 3B b 2H")
 _METRICS_ENTRY_STRUCT:  Struct = Struct("< 2I")
-_METRICS_BUCKET_COUNT:  int    = 256
 
-def generateFontMetrics(metrics: Mapping[str, Any]) -> bytearray:
+def generateFontMetrics(
+	metrics: Mapping[str, Any], numBuckets: int = 256
+) -> bytearray:
 	spaceWidth:     int = int(metrics["spaceWidth"])
 	tabWidth:       int = int(metrics["tabWidth"])
 	lineHeight:     int = int(metrics["lineHeight"])
 	baselineOffset: int = int(metrics["baselineOffset"])
 
-	entries: dict[int, int] = {}
+	hashTable: HashTableBuilder = HashTableBuilder(numBuckets)
 
 	for ch, entry in metrics["characterSizes"].items():
 		x: int  = int(entry["x"])
@@ -156,7 +159,7 @@ def generateFontMetrics(metrics: Mapping[str, Any]) -> bytearray:
 		if h > lineHeight:
 			raise ValueError("character height exceeds line height")
 
-		entries[ord(ch)] = (0
+		hashTable.addEntry(ord(ch), 0
 			| (x <<  0)
 			| (y <<  8)
 			| (w << 16)
@@ -164,30 +167,26 @@ def generateFontMetrics(metrics: Mapping[str, Any]) -> bytearray:
 			| (i << 30)
 		)
 
-	buckets, chained = generateHashTable(entries, _METRICS_BUCKET_COUNT)
-	table: bytearray = bytearray()
-
-	if (len(buckets) + len(chained)) > 2048:
-		raise RuntimeError("font hash table must have <=2048 entries")
-
-	table += _METRICS_HEADER_STRUCT.pack(
+	metrics: bytearray = bytearray()
+	metrics           += _METRICS_HEADER_STRUCT.pack(
 		spaceWidth,
 		tabWidth,
 		lineHeight,
-		baselineOffset
+		baselineOffset,
+		numBuckets,
+		len(hashTable.entries)
 	)
 
-	for entry in chain(buckets, chained):
+	for entry in hashTable.entries:
 		if entry is None:
-			table += _METRICS_ENTRY_STRUCT.pack(0, 0)
-			continue
+			metrics += bytes(_METRICS_ENTRY_STRUCT.size)
+		else:
+			metrics += _METRICS_ENTRY_STRUCT.pack(
+				entry.fullHash | (entry.chainIndex << 21),
+				entry.data
+			)
 
-		table += _METRICS_ENTRY_STRUCT.pack(
-			entry.fullHash | (entry.chainIndex << 21),
-			entry.data
-		)
-
-	return table
+	return metrics
 
 ## Color palette generator
 
@@ -235,65 +234,108 @@ def generateColorPalette(
 
 ## String table generator
 
-_STRING_TABLE_ENTRY_STRUCT: Struct = Struct("< I 2H")
-_STRING_TABLE_BUCKET_COUNT: int    = 256
-_STRING_TABLE_ALIGNMENT:    int    = 4
+_STRING_TABLE_HEADER_STRUCT: Struct = Struct("< 2H")
+_STRING_TABLE_ENTRY_STRUCT:  Struct = Struct("< I 2H")
+_STRING_TABLE_ALIGNMENT:     int    = 4
 
 def _walkStringTree(
 		strings: Mapping[str, Any], prefix: str = ""
-) -> Generator[tuple[int, bytes | None], None, None]:
+) -> Generator[tuple[int, bytes], None, None]:
 	for key, value in strings.items():
 		fullKey: str = prefix + key
 		keyHash: int = hashData(fullKey.encode("ascii"))
 
-		if value is None:
-			yield keyHash, None
-		elif isinstance(value, str):
-			yield keyHash, value.encode("utf-8")
+		if isinstance(value, str):
+			yield keyHash, value.encode("utf-8") + b"\0"
 		else:
 			yield from _walkStringTree(value, f"{fullKey}.")
 
-def generateStringTable(strings: Mapping[str, Any]) -> bytearray:
-	offsets: dict[bytes, int] = {}
-	entries: dict[int, int]   = {}
-	blob:    bytearray        = bytearray()
+def generateStringTable(
+	strings: Mapping[str, Any], numBuckets: int = 256
+) -> bytearray:
+	hashTable: HashTableBuilder  = HashTableBuilder(numBuckets)
+	blob:      StringBlobBuilder = StringBlobBuilder(_STRING_TABLE_ALIGNMENT)
 
 	for keyHash, string in _walkStringTree(strings):
-		if string is None:
-			entries[keyHash] = 0
-			continue
+		hashTable.addEntry(keyHash, blob.addString(string))
 
-		# Identical strings associated to multiple keys are deduplicated.
-		offset: int | None = offsets.get(string, None)
+	tableLength: int = 0 \
+		+ _STRING_TABLE_HEADER_STRUCT.size \
+		+ _STRING_TABLE_ENTRY_STRUCT.size * len(hashTable.entries)
 
-		if offset is None:
-			offset          = len(blob)
-			offsets[string] = offset
+	tableData: bytearray = bytearray()
+	tableData           += _STRING_TABLE_HEADER_STRUCT.pack(
+		numBuckets, len(hashTable.entries)
+	)
 
-			blob += string
-			blob.append(0)
-
-			while len(blob) % _STRING_TABLE_ALIGNMENT:
-				blob.append(0)
-
-		entries[keyHash] = offset
-
-	buckets, chained = generateHashTable(entries, _STRING_TABLE_BUCKET_COUNT)
-	table: bytearray = bytearray()
-
-	# Relocate the offsets and serialize the table.
-	blobOffset: int = \
-		(len(buckets) + len(chained)) * _STRING_TABLE_ENTRY_STRUCT.size
-
-	for entry in chain(buckets, chained):
+	for entry in hashTable.entries:
 		if entry is None:
-			table += _STRING_TABLE_ENTRY_STRUCT.pack(0, 0, 0)
-			continue
+			tableData += bytes(_STRING_TABLE_ENTRY_STRUCT.size)
+		else:
+			tableData += _STRING_TABLE_ENTRY_STRUCT.pack(
+				entry.fullHash,
+				tableLength + entry.data,
+				entry.chainIndex
+			)
 
-		table += _STRING_TABLE_ENTRY_STRUCT.pack(
-			entry.fullHash,
-			0 if (entry.data is None) else (blobOffset + entry.data),
-			entry.chainIndex
+	return tableData + blob.data
+
+## Package header generator
+
+_PACKAGE_INDEX_HEADER_STRUCT: Struct = Struct("< I 2H")
+_PACKAGE_INDEX_ENTRY_STRUCT:  Struct = Struct("< I 2H Q 2I")
+_PACKAGE_STRING_ALIGNMENT:    int    = 4
+
+@dataclass
+class PackageIndexEntry:
+	offset:       int
+	compLength:   int
+	uncompLength: int
+	nameOffset:   int = 0
+
+def generatePackageIndex(
+	files: Mapping[str, PackageIndexEntry], alignment: int = 2048,
+	numBuckets: int = 256
+) -> bytearray:
+	hashTable: HashTableBuilder  = HashTableBuilder(numBuckets)
+	blob:      StringBlobBuilder = StringBlobBuilder(_PACKAGE_STRING_ALIGNMENT)
+
+	for name, entry in files.items():
+		nameString: bytes             = name.encode("ascii")
+		data:       PackageIndexEntry = PackageIndexEntry(
+			entry.offset,
+			entry.compLength,
+			entry.uncompLength,
+			blob.addString(nameString + b"\0")
 		)
 
-	return table + blob
+		hashTable.addEntry(hashData(nameString), data)
+
+	tableLength: int = 0 \
+		+ _PACKAGE_INDEX_HEADER_STRUCT.size \
+		+ _PACKAGE_INDEX_ENTRY_STRUCT.size * len(hashTable.entries)
+	indexLength: int = tableLength + len(blob.data)
+
+	tableData: bytearray = bytearray()
+	tableData           += _PACKAGE_INDEX_HEADER_STRUCT.pack(
+		indexLength,
+		numBuckets,
+		len(hashTable.entries)
+	)
+
+	fileDataOffset: int = roundUpToMultiple(indexLength, alignment)
+
+	for entry in hashTable.entries:
+		if entry is None:
+			tableData += bytes(_PACKAGE_INDEX_ENTRY_STRUCT.size)
+		else:
+			tableData += _PACKAGE_INDEX_ENTRY_STRUCT.pack(
+				entry.fullHash,
+				tableLength + entry.data.nameOffset,
+				entry.chainIndex,
+				fileDataOffset + entry.data.offset,
+				entry.data.compLength,
+				entry.data.uncompLength
+			)
+
+	return tableData + blob.data

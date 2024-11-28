@@ -32,16 +32,18 @@ static constexpr size_t MAX_PATH_LENGTH = 256;
 
 // The first 4 of these map to the FS_* enum used by FatFs.
 enum FileSystemType {
-	NONE       = 0,
-	FAT12      = 1,
-	FAT16      = 2,
-	FAT32      = 3,
-	EXFAT      = 4,
-	ISO9660    = 5,
-	ZIP_MEMORY = 6,
-	ZIP_FILE   = 7,
-	HOST       = 8,
-	VFS        = 9
+	NONE           =  0,
+	FAT12          =  1,
+	FAT16          =  2,
+	FAT32          =  3,
+	EXFAT          =  4,
+	ISO9660        =  5,
+	PACKAGE_MEMORY =  6,
+	PACKAGE_FILE   =  7,
+	ZIP_MEMORY     =  8,
+	ZIP_FILE       =  9,
+	HOST           = 10,
+	VFS            = 11
 };
 
 // These are functionally equivalent to the FA_* flags used by FatFs.
@@ -158,12 +160,22 @@ public:
 
 /* String table parser */
 
-static constexpr size_t STRING_TABLE_BUCKET_COUNT = 256;
-
-struct StringTableEntry {
+struct StringTableHeader {
 public:
-	uint32_t hash;
-	uint16_t offset, chained;
+	uint16_t numBuckets, numEntries;
+};
+
+class StringTableEntry {
+public:
+	util::Hash id;
+	uint16_t   offset, chained;
+
+	inline util::Hash getHash(void) const {
+		return id;
+	}
+	inline uint16_t getChained(void) const {
+		return chained;
+	}
 };
 
 class StringTable : public util::Data {

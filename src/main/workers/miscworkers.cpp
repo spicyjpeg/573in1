@@ -99,7 +99,7 @@ bool fileInitWorker(App &app) {
 	app._fileIO.mountIDE();
 
 	app._workerStatus.update(2, 3, WSTR("App.fileInitWorker.loadResources"));
-	if (app._fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.zip"))
+	if (app._fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.pkg"))
 		app._loadResources();
 
 	return true;
