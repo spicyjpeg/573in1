@@ -14,10 +14,13 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from struct import Struct
-from typing import Any, BinaryIO, ByteString, Generator, TextIO
+from collections.abc import ByteString, Generator
+from struct          import Struct
+from typing          import Any, BinaryIO, TextIO
 
-from .mips import Instruction, Opcode, Register, encodeJR, parseInstruction
+from .mips import \
+	ImmInstruction, Instruction, Opcode, Register, encodeJAL, encodeJR, \
+	parseInstruction
 
 ## Executable analyzer
 
@@ -140,18 +143,53 @@ class PSEXEAnalyzer:
 	) -> Generator[int, None, None]:
 		inst: bytes = encodeJR(Register.RA)
 
+		# Yield pointers to the end of the return "statement", skipping the
+		# instruction itself as well as its delay slot. In most cases these will
+		# be pointers to the end of a function and thus the beginning of another
+		# one.
 		for offset in self.findBytes(inst, start, stop, 4):
 			yield offset + 8
 
 	def findCalls(
-		self, address: int, start: int | None = None, stop: int | None = None
-	) -> Generator[Instruction, None, None]:
+		self, target: int, start: int | None = None, stop: int | None = None
+	) -> Generator[int, None, None]:
+		inst: bytes = encodeJAL(target)
+
+		yield from self.findBytes(inst, start, stop, 4)
+
+	def findValueLoads(
+		self, value: int, start: int | None = None, stop: int | None = None,
+		maxDisplacement: int = 1
+	) -> Generator[ImmInstruction, None, None]:
+		# 32-bit loads are typically encoded as a LUI followed by either ORI or
+		# ADDIU. Due to ADDIU only supporting signed immediates, the LUI's
+		# immediate may not actually match the upper 16 bits of the value if the
+		# ADDIU is supposed to subtract from it.
 		for inst in self.disassemble(start, stop):
 			if inst is None:
 				continue
-			if inst.opcode != Opcode.JAL:
-				continue
-			if inst.target != address:
-				continue
 
-			yield inst
+			for offset in range(4, (maxDisplacement + 1) * 4, 4):
+				nextInst: Instruction | None = \
+					self.disassembleAt(inst.address + offset)
+
+				match inst, nextInst:
+					case (
+						ImmInstruction(
+							opcode = Opcode.LUI, rt = rt, value = msb
+						),
+						ImmInstruction(
+							opcode = Opcode.ORI, rs = rs, value = lsb
+						)
+					) if (rt == rs) and (((msb << 16) | lsb) == value):
+						yield nextInst
+
+					case (
+						ImmInstruction(
+							opcode = Opcode.LUI,   rt = rt, value = msb
+						),
+						ImmInstruction(
+							opcode = Opcode.ADDIU, rs = rs, value = lsb
+						)
+					) if (rt == rs) and (((msb << 16) + lsb) == value):
+						yield nextInst

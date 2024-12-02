@@ -19,10 +19,10 @@ __version__ = "0.3.4"
 __author__  = "spicyjpeg"
 
 import os
-from argparse import ArgumentParser, Namespace
-from pathlib  import Path
-from shutil   import copyfile
-from typing   import ByteString, Sequence
+from argparse        import ArgumentParser, Namespace
+from collections.abc import ByteString, Sequence
+from pathlib         import Path
+from shutil          import copyfile
 
 ## Flash dump splitting
 

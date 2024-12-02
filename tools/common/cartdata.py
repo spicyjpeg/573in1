@@ -15,10 +15,11 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from dataclasses import dataclass
-from enum        import IntEnum, IntFlag
-from struct      import Struct, unpack
-from typing      import Any, Sequence, Type
+from collections.abc import Sequence
+from dataclasses     import dataclass
+from enum            import IntEnum, IntFlag
+from struct          import Struct, unpack
+from typing          import Any, Type
 
 from .cart  import CartDump, ChipType, ROMHeaderDump
 from .games import GAME_CODE_REGEX, GAME_REGION_REGEX
@@ -504,20 +505,29 @@ _KNOWN_CART_FORMATS: Sequence[tuple[str, Type, DataFlag]] = (
 	), (
 		"basic + TID, SID",
 		BasicCartParser,
-		DataFlag.DATA_HAS_TRACE_ID | DataFlag.DATA_HAS_CART_ID
+		0
+			| DataFlag.DATA_HAS_TRACE_ID
+			| DataFlag.DATA_HAS_CART_ID
 			| DataFlag.DATA_CHECKSUM_INVERTED
 	), (
 		"basic + prefix, TID, SID",
 		BasicCartParser,
-		DataFlag.DATA_HAS_CODE_PREFIX | DataFlag.DATA_HAS_TRACE_ID
-			| DataFlag.DATA_HAS_CART_ID | DataFlag.DATA_CHECKSUM_INVERTED
+		0
+			| DataFlag.DATA_HAS_CODE_PREFIX
+			| DataFlag.DATA_HAS_TRACE_ID
+			| DataFlag.DATA_HAS_CART_ID
+			| DataFlag.DATA_CHECKSUM_INVERTED
 	), (
 		# Used by most pre-ZS01 Bemani games
 		"basic + prefix, all IDs",
 		BasicCartParser,
-		DataFlag.DATA_HAS_CODE_PREFIX | DataFlag.DATA_HAS_TRACE_ID
-			| DataFlag.DATA_HAS_CART_ID | DataFlag.DATA_HAS_INSTALL_ID
-			| DataFlag.DATA_HAS_SYSTEM_ID | DataFlag.DATA_CHECKSUM_INVERTED
+		0
+			| DataFlag.DATA_HAS_CODE_PREFIX
+			| DataFlag.DATA_HAS_TRACE_ID
+			| DataFlag.DATA_HAS_CART_ID
+			| DataFlag.DATA_HAS_INSTALL_ID
+			| DataFlag.DATA_HAS_SYSTEM_ID
+			| DataFlag.DATA_CHECKSUM_INVERTED
 	), (
 		"extended (no IDs)",
 		ExtendedCartParser,
@@ -535,9 +545,13 @@ _KNOWN_CART_FORMATS: Sequence[tuple[str, Type, DataFlag]] = (
 		# Used by GE936/GK936 and all ZS01 Bemani games
 		"extended + all IDs",
 		ExtendedCartParser,
-		DataFlag.DATA_HAS_CODE_PREFIX | DataFlag.DATA_HAS_TRACE_ID
-			| DataFlag.DATA_HAS_CART_ID | DataFlag.DATA_HAS_INSTALL_ID
-			| DataFlag.DATA_HAS_SYSTEM_ID | DataFlag.DATA_HAS_PUBLIC_SECTION
+		0
+			| DataFlag.DATA_HAS_CODE_PREFIX
+			| DataFlag.DATA_HAS_TRACE_ID
+			| DataFlag.DATA_HAS_CART_ID
+			| DataFlag.DATA_HAS_INSTALL_ID
+			| DataFlag.DATA_HAS_SYSTEM_ID
+			| DataFlag.DATA_HAS_PUBLIC_SECTION
 			| DataFlag.DATA_CHECKSUM_INVERTED
 	)
 )
@@ -559,8 +573,10 @@ _KNOWN_ROM_HEADER_FORMATS: Sequence[tuple[str, Type, DataFlag]] = (
 	), (
 		"extended + MD5",
 		ExtendedROMHeaderParser,
-		DataFlag.DATA_HAS_CODE_PREFIX | DataFlag.DATA_HAS_SYSTEM_ID
-			 | DataFlag.DATA_CHECKSUM_INVERTED
+		0
+			| DataFlag.DATA_HAS_CODE_PREFIX
+			| DataFlag.DATA_HAS_SYSTEM_ID
+			| DataFlag.DATA_CHECKSUM_INVERTED
 	)
 )
 

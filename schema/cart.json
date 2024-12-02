@@ -70,23 +70,23 @@
 			"maximum": 16,
 			"default": 16
 		},
-		"mediumIDValue": {
-			"title":       "Medium ID value",
-			"description": "Value of the first byte of the medium ID (MID) stored in the EEPROM, if any (0, 1 or 2). Omit if no medium ID is present. Note that an empty (zerofilled) medium ID is different from one set to 0 due to the presence of a checksum.",
+		"installIDValue": {
+			"title":       "Installation ID value",
+			"description": "Value of the first byte of the installation ID (MID) stored in the EEPROM, if any (0, 1 or 2). Omit if no installation ID is present. Note that an empty (zerofilled) installation ID is different from one set to 0 due to the presence of a checksum.",
 			"type":        "integer",
 
 			"minimum": 0,
 			"maximum": 2,
 			"default": 2
 		},
-		"hasSiliconID": {
-			"title":       "Silicon ID present",
-			"description": "Whether or not the silicon ID (SID), i.e. the ID of the cartridge's DS2401, is stored in the EEPROM. Only valid if the cartridge PCB has a DS2401.",
+		"hasCartID": {
+			"title":       "Cartridge ID present",
+			"description": "Whether or not the cartridge ID (SID), i.e. the ID of the cartridge's DS2401, is stored in the EEPROM. Only valid if the cartridge PCB has a DS2401.",
 			"type":        "boolean"
 		},
-		"hasExternalID": {
-			"title":       "External ID present",
-			"description": "Whether or not the external ID (XID), i.e. the ID of the 573's I/O board, is stored in the EEPROM. Only valid if the game uses an I/O board with a DS2401.",
+		"hasSystemID": {
+			"title":       "System ID present",
+			"description": "Whether or not the system ID (XID), i.e. the ID of the 573's I/O board, is stored in the EEPROM. Only valid if the game uses an I/O board with a DS2401.",
 			"type":        "boolean"
 		},
 
@@ -105,7 +105,7 @@
 			"description": "Whether or not to store the game's specification code in the EEPROM. Only valid for the 'basic' format, as the 'extended' format always includes it.",
 			"type":        "boolean"
 		},
-		"specificationWildcard": {
+		"specWildcard": {
 			"title":       "Use specification wildcard",
 			"description": "Whether to set the specification code in the header to 'G*' instead of the game's actual specification. Only valid for the 'basic' and 'extended' formats.",
 			"type":        "boolean"

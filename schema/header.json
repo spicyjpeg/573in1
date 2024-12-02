@@ -38,7 +38,12 @@
 			"description": "Whether or not the game requires the header to be present and will refuse to run if missing, rather than initializing it. Only valid for RTC RAM headers.",
 			"type":        "boolean"
 		},
-		"specificationWildcard": {
+		"fillWithFF": {
+			"title":       "Fill unused fields with FF bytes",
+			"description": "Whether to fill unused space in the header with 0xFF bytes instead of 0x00.",
+			"type":        "boolean"
+		},
+		"specWildcard": {
 			"title":       "Use specification wildcard",
 			"description": "Whether to set the specification code in the header to 'G*' instead of the game's actual specification.",
 			"type":        "boolean"

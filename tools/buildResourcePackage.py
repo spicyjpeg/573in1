@@ -19,9 +19,10 @@ __version__ = "1.0.3"
 __author__  = "spicyjpeg"
 
 import json
-from argparse import ArgumentParser, FileType, Namespace
-from pathlib  import Path
-from typing   import Any, ByteString, Mapping
+from argparse        import ArgumentParser, FileType, Namespace
+from collections.abc import ByteString, Mapping
+from pathlib         import Path
+from typing          import Any
 
 import lz4.block
 from common.assets import *
@@ -61,8 +62,7 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 				metrics: dict = asset["metrics"]
 			else:
 				with open(
-					sourceDir / asset["source"], "rt",
-					encoding = "utf-8"
+					sourceDir / asset["source"], "rt", encoding = "utf-8"
 				) as file:
 					metrics: dict = json.load(file)
 
@@ -73,8 +73,7 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 				palette: dict = asset["palette"]
 			else:
 				with open(
-					sourceDir / asset["source"], "rt",
-					encoding = "utf-8"
+					sourceDir / asset["source"], "rt", encoding = "utf-8"
 				) as file:
 					palette: dict = json.load(file)
 
@@ -85,8 +84,7 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 				strings: dict = asset["strings"]
 			else:
 				with open(
-					sourceDir / asset["source"], "rt",
-					encoding = "utf-8"
+					sourceDir / asset["source"], "rt", encoding = "utf-8"
 				) as file:
 					strings: dict = json.load(file)
 
@@ -97,8 +95,7 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 				db: dict = asset["db"]
 			else:
 				with open(
-					sourceDir / asset["source"], "rt",
-					encoding = "utf-8"
+					sourceDir / asset["source"], "rt", encoding = "utf-8"
 				) as file:
 					db: dict = json.load(file)
 

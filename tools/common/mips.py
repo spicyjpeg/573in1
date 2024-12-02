@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
-from enum        import IntEnum
-from typing      import ByteString
+from collections.abc import ByteString
+from dataclasses     import dataclass
+from enum            import IntEnum
 
 from .util import decodeSigned, encodeSigned
 
@@ -471,6 +471,9 @@ def encodeORI(rt: Register, rs: Register, value: int) -> bytes:
 
 def encodeADDIU(rt: Register, rs: Register, value: int) -> bytes:
 	return ImmInstruction(0, Opcode.ADDIU, value, rt, rs).toBytes()
+
+def encodeJAL(target: int) -> bytes:
+	return JumpInstruction(target, Opcode.JAL, target).toBytes()
 
 def encodeJR(rs: Register) -> bytes:
 	return RegInstruction(0, Opcode.SUB_INST, SubOpcode.JR, 0, rs = rs).toBytes()

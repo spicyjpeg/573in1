@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
-from enum        import IntEnum, IntFlag
-from struct      import Struct
-from typing      import Mapping
-from zlib        import decompress
+from collections.abc import Mapping
+from dataclasses     import dataclass
+from enum            import IntEnum, IntFlag
+from struct          import Struct
+from zlib            import decompress
 
 from .util import decodeBase41
 

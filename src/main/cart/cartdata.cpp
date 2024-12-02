@@ -571,9 +571,10 @@ static const KnownFormat _KNOWN_ROM_HEADER_FORMATS[]{
 };
 
 bool isValidRegion(const char *region) {
-	// Character 0:    region (A=Asia?, E=Europe, J=Japan, K=Korea, S=?, U=US)
-	// Character 1:    type/variant (A-F=regular, R-W=e-Amusement, X-Z=?)
-	// Characters 2-4: game revision (A-D or Z00-Z99, optional)
+	// Character 0:    region code
+	//                 (A=Asia, E=Europe, J=Japan, K=Korea, S=Singapore?, U=US)
+	// Character 1:    major version code (A-F=regular, R-W=e-Amusement, X-Z=?)
+	// Characters 2-4: minor version code (A-D or Z00-Z99, optional)
 	if (!region[0] || !__builtin_strchr("AEJKSU", region[0]))
 		return false;
 	if (!region[1] || !__builtin_strchr("ABCDEFRSTUVWXYZ", region[1]))

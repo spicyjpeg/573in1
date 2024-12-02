@@ -15,9 +15,10 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from collections import defaultdict
-from dataclasses import dataclass
-from typing      import Any, Generator, Iterable, Mapping, Sequence
+from collections     import defaultdict
+from collections.abc import Generator, Iterable, Mapping, Sequence
+from dataclasses     import dataclass
+from typing          import Any
 
 ## Definitions
 

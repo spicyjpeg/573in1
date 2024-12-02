@@ -12,11 +12,12 @@ should start in PAL or NTSC mode by default). Requires no external dependencies.
 __version__ = "0.1.2"
 __author__  = "spicyjpeg"
 
-from argparse    import ArgumentParser, FileType, Namespace
-from dataclasses import dataclass
-from enum        import IntEnum, IntFlag
-from struct      import Struct
-from typing      import BinaryIO, Generator
+from argparse        import ArgumentParser, FileType, Namespace
+from collections.abc import Generator
+from dataclasses     import dataclass
+from enum            import IntEnum, IntFlag
+from struct          import Struct
+from typing          import BinaryIO
 
 ## Utilities
 

@@ -15,9 +15,10 @@ __version__ = "0.1.0"
 __author__  = "spicyjpeg"
 
 import json, re, sys
-from argparse import ArgumentParser, FileType, Namespace
-from pathlib  import Path
-from typing   import Any, BinaryIO, Iterable
+from argparse        import ArgumentParser, FileType, Namespace
+from collections.abc import Iterable
+from pathlib         import Path
+from typing          import Any, BinaryIO
 
 from pycdlib.dr      import DirectoryRecord
 from pycdlib.inode   import Inode

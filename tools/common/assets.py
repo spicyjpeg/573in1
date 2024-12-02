@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
-from struct      import Struct
-from typing      import Any, Generator, Mapping, Sequence
+from collections.abc import Generator, Mapping, Sequence
+from dataclasses     import dataclass
+from struct          import Struct
+from typing          import Any
 
 import numpy
 from numpy import ndarray

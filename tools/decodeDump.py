@@ -19,8 +19,9 @@ __version__ = "0.4.1"
 __author__  = "spicyjpeg"
 
 import sys
-from argparse import ArgumentParser, FileType, Namespace
-from typing   import Mapping, TextIO
+from argparse        import ArgumentParser, FileType, Namespace
+from collections.abc import Mapping
+from typing          import TextIO
 
 from common.cart import *
 from common.util import serialNumberToString, hexdumpToFile
