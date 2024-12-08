@@ -1,0 +1,5189 @@
+{
+	"$schema": "../schema/gamedb.json",
+
+	"games": [
+		{
+			"specifications": [ "GX" ],
+			"code":           "706",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "darkhleg" ],
+
+			"name": "Dark Horse Legend",
+			"year": 1998,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":       "word",
+					"forceGXSpec": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":       "word",
+					"forceGXSpec": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-ba-c8-cf-c9-b5-be-be",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width":       "word",
+					"forceGXSpec": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "710",
+			"regions":        [ "JAB", "SAA" ],
+			"identifiers":    [ "hndlchmpj", "hndlchmp" ],
+
+			"name": "Handle Champ",
+			"year": 1997,
+
+			"flags": {
+				"requiresRTCHeader": true
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-97",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"scrambled":      true,
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":           "byteInWordOut",
+					"bigEndianOutput": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-97",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "710",
+			"regions":        [ "UAA" ],
+			"identifiers":    [ "strgchmp" ],
+
+			"name": "Steering Champ",
+			"year": 1997,
+
+			"flags": {
+				"requiresRTCHeader": true
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-97",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"scrambled":      true,
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":           "byteInWordOut",
+					"bigEndianOutput": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-97",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "765",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "bassangl" ],
+
+			"name":   "Bass Angler",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-ba-c8-c9-ca-b5-be-be",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "765",
+			"regions":        [ "UAA", "UAB" ],
+			"identifiers":    [ "fbaitbc" ],
+
+			"name":   "Fisherman's Bait: A Bass Challenge",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-ba-c8-c9-ca-aa-be-be",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GX" ],
+			"code":           "802",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "powyakex" ],
+
+			"name": "Jikkyou Powerful Pro Yakyuu EX",
+			"year": 1998,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"headerFlags":    {},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-a7-c7-cf-cd-b5-be-bd",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "811",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "jppyex98" ],
+
+			"name": "Jikkyou Powerful Pro Yakyuu EX '98",
+			"year": 1998,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"headerFlags":    {},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-bc-c7-ce-ce-b5-be-be",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "826",
+			"regions":        [ "AAA", "EAA", "KAA", "UAA" ],
+			"identifiers":    [ "konam80sa", "konam80s", "konam80sk", "konam80su" ],
+
+			"name": "Konami 80's AC Special",
+			"year": 1998,
+
+			"flags": {},
+
+			"rtcHeader": {
+				"yearField": "98-19",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":  {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "c6-ba-3a-8e-ba-cc-d1-d6",
+				"yearField": "98-19",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GC", "GN" ],
+			"code":           "845",
+			"regions":        [ "JAA", "JAB" ],
+			"identifiers":    [ "ddrja", "ddrjb" ],
+
+			"name":   "Dance Dance Revolution",
+			"series": "Dance Dance Revolution",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)",
+
+				"requiresRTCHeader": true
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "39-38",
+
+				"headerFlags":    {
+					"format":         "earlyExtended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "845",
+			"regions":        [ "AAA", "UAA" ],
+			"identifiers":    [ "ddra", "ddru" ],
+
+			"name":   "Dance Dance Revolution",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "cd-f2-a4-48-fb-2a-88-02",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "845",
+			"regions":        [ "EBA" ],
+			"identifiers":    [ "dstage" ],
+
+			"name":   "Dancing Stage: INTERNET R@NKING",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "89-4f-68-62-55-7a-7c-7c",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "865",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "bassang2" ],
+
+			"name":   "Bass Angler 2",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-bc-c7-c9-ca-b5-be-be",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "865",
+			"regions":        [ "UAB" ],
+			"identifiers":    [ "fbait2bc" ],
+
+			"name":   "Fisherman's Bait 2: A Bass Challenge",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "b8-ba-c7-c9-ca-aa-be-bd",
+				"yearField": "19-98",
+
+				"headerFlags":   {
+					"format":   "extended",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width": "word"
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GK" ],
+			"code":           "874",
+			"regions":        [ "KAA" ],
+			"identifiers":    [ "dncfrks" ],
+
+			"name":   "Dance Freaks",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			},
+
+			"bootloaderVersion": "1.6",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "ec-32-ab-8a-a2-ec-5f-6b",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "874",
+			"regions":        [ "AAA", "JAA" ],
+			"identifiers":    [ "dmxa", "dmx" ],
+
+			"name":   "Dance Maniax",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			},
+
+			"bootloaderVersion": "1.6",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "ec-32-ab-8a-a2-ec-5f-6b",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE", "GQ" ],
+			"code":           "876",
+			"regions":        [ "AAA", "EAA", "KAA" ],
+			"identifiers":    [ "hyperbbca", "hyperbbc", "hyperbbck" ],
+
+			"name": "Hyper Bishi Bashi Champ [3-player]",
+			"year": 1998,
+
+			"flags": {
+				"requiresRTCHeader": true
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"scrambled":      true,
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":           "byteInWordOut",
+					"bigEndianOutput": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-98",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "877",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "gchgchmp" ],
+
+			"name": "Gachaga Champ",
+			"year": 1999,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "19-97",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"scrambled":      true,
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":           "byteInWordOut",
+					"bigEndianOutput": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-97",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "7b-ba-73-b5-13-0f-c0-88",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "881",
+			"regions":        [ "UAB" ],
+			"identifiers":    [ "drmnu" ],
+
+			"name":   "DrumMania",
+			"series": "DrumMania",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "76-39-b4-fa",
+				"yearField":      "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "95-11-b5-ba-85-f0-67-30",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "static"
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "883",
+			"regions":        [ "AAA", "EAA", "JAA", "KAA", "UAA" ],
+			"identifiers":    [ "gtrfrk2ma", "gtrfrk2me", "gtrfrk2mja", "gtrfrk2mk", "gtrfrk2mu" ],
+
+			"name":   "GuitarFreaks 2ndMIX",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "7e-3b-24-0d-71-d2-b2-7d",
+				"tidWidth": 14,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "883",
+			"regions":        [ "JAD" ],
+			"identifiers":    [ "gtrfrk2m" ],
+
+			"name":   "GuitarFreaks 2ndMIX Ver 1.01",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "7e-3b-24-0d-71-d2-b2-7d",
+				"tidWidth": 14,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "884",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dsftkd" ],
+
+			"name":   "Dancing Stage featuring TRUE KiSS DESTiNATiON",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "5a-18-94-04",
+				"yearField":      "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "5b-f4-82-dc-4d-dd-0e-30",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "886",
+			"regions":        [ "AAA", "AAC", "EAA", "EAC", "JAA", "JAC", "UAA", "UAC" ],
+			"identifiers":    [ "gtrfrksaa", "gtrfrksab", "gtrfrksea", "gtrfrkseb", "gtrfrksja", "gtrfrksjb", "gtrfrksua", "gtrfrksub" ],
+
+			"name":   "GuitarFreaks",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "31-74-90-5c-66-95-60-83",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "886",
+			"regions":        [ "AAD", "EAD", "JAD", "UAD" ],
+			"identifiers":    [ "gtrfrksa", "gtrfrkse", "gtrfrks", "gtrfrksu" ],
+
+			"name":   "GuitarFreaks Ver 1.01",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "31-74-90-5c-66-95-60-83",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GE", "GN" ],
+			"code":           "887",
+			"regions":        [ "AAA", "AAA" ],
+			"identifiers":    [ "ddr3ma", "ddr3maa" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.3",
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "cd-f2-a4-48-fb-2a-88-02",
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "1a-5c-f1-bc-5c-5d-01-43",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":   "basic",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GX" ],
+			"code":           "889",
+			"regions":        [ "AA", "EA", "JA", "UA" ],
+			"identifiers":    [ "fbaitmca", "fbaitmc", "fbaitmcj", "fbaitmcu" ],
+
+			"name":   "Fisherman's Bait: Marlin Challenge",
+			"series": "Fisherman's Bait",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			},
+
+			"rtcHeader":   {
+				"yearField": "99-19",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "99-19",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "f9-68-8b-83-e8-cd-f4-13",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "892",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrbocd" ],
+
+			"name":   "Dance Dance Revolution Best of Cool Dancers",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "19-c3-89-3e-88-94-eb-e7",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "894",
+			"regions":        [ "AAA", "JAA" ],
+			"identifiers":    [ "", "ddrsbm" ],
+
+			"name":   "Dance Dance Revolution Solo Bass Mix",
+			"series": "Dance Dance Revolution Solo",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "60-4e-d8-a6-93-1a-22-71",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "895",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr2m" ],
+
+			"name":   "Dance Dance Revolution 2ndMIX",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "19-c3-89-3e-88-94-eb-e7",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "896",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr2mc" ],
+
+			"name":   "Dance Dance Revolution 2ndMIX with beatmania IIDX CLUB VERSiON",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width": "word"
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "19-c3-89-3e-88-94-eb-e7",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "905",
+			"regions":        [ "AAA", "JAA" ],
+			"identifiers":    [ "ddrs2000a", "ddrs2000" ],
+
+			"name":   "Dance Dance Revolution Solo 2000",
+			"series": "Dance Dance Revolution Solo",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.3",
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "60-4e-d8-a6-93-1a-22-71",
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "9b-ec-98-f6-84-6e-13-73",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":   "basic",
+					"specType": "actual"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GL" ],
+			"code":           "906",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "gunmania" ],
+
+			"name": "GunMania",
+			"year": 2000,
+
+			"flags": {
+				"ioBoard": "PWB0000073070"
+			},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "25-bc-70-00",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			}
+		},
+		{
+			"specifications": [ "GC", "GX" ],
+			"code":           "908",
+			"regions":        [ "JAA", "KAA" ],
+			"identifiers":    [ "hypbbc2p", "hypbbc2pk" ],
+
+			"name": "Hyper Bishi Bashi Champ [2-player]",
+			"year": 1999,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"scrambled":      true,
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":           "byteInWordOut",
+					"bigEndianOutput": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "e9-34-df-40-7a-d1-a7-ff",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "static"
+				}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "912",
+			"regions":        [ "AAA", "KAA" ],
+			"identifiers":    [ "pcnfrk2m", "pcnfrk2mk" ],
+
+			"name":   "PercussionFreaks 2ndMIX",
+			"series": "DrumMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.5",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "b6-1a-a6-c4",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "95-11-b5-ba-85-f0-67-30",
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "63-26-c7-97-c3-db-91-d2",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "918",
+			"regions":        [ "AAA", "EAA", "KAA", "UAA" ],
+			"identifiers":    [ "fghtmna", "fghtmn", "fghtmnk", "fghtmnu" ],
+
+			"name":   "Fighting Mania",
+			"series": "PunchMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "f3-48-92-14",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "1c-30-9d-ed-19-81-dd-c4",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "921",
+			"regions":        [ "JBB" ],
+			"identifiers":    [ "ddrkara" ],
+
+			"name": "Dance Dance Revolution Karaoke MIX",
+			"year": 1999,
+
+			"flags": {
+				"ioBoard": "GX921-PWB(B)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "ac-d5-1e-d6-37-71-7f-55",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "929",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "gtrfrk2ml1" ],
+
+			"name":   "GuitarFreaks 2ndMIX Link Kit 1",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "7e-3b-24-0d-71-d2-b2-7d",
+				"tidWidth": 14,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "929",
+			"regions":        [ "JBB" ],
+			"identifiers":    [ "gtrfrk2ml2" ],
+
+			"name":   "GuitarFreaks 2ndMIX Link Kit 2",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "7e-3b-24-0d-71-d2-b2-7d",
+				"tidWidth": 14,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "930",
+			"regions":        [ "JA" ],
+			"identifiers":    [ "stepchmp" ],
+
+			"name": "Step Champ",
+			"year": 1999,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "57-33-18-15",
+				"yearField":      "19-99",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "3f-ae-c2-3a-15-ac-9e-46",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE", "GK" ],
+			"code":           "936",
+			"regions":        [ "EAA", "EAA" ],
+			"identifiers":    [ "dsem", "dsemea" ],
+
+			"name":   "Dancing Stage EuroMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.7",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":   "0e-12-ba-d7-c7-f4-06-ab",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"dummyPublicArea": true,
+					"publicMID":       true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "947",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrkara2" ],
+
+			"name": "Dance Dance Revolution Karaoke MIX 2",
+			"year": 2000,
+
+			"flags": {
+				"ioBoard": "GX921-PWB(B)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "86-96-3d-30-8f-67-6f-aa",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "949",
+			"regions":        [ "JAC", "JAZ02" ],
+			"identifiers":    [ "gtrfrk3m", "gtrfrk3mjb" ],
+
+			"name":   "GuitarFreaks 3rdMIX",
+			"series": "GuitarFreaks",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.4F",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "7e-3b-24-0d-71-d2-b2-7d",
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "d4-e6-a9-e1-10-b6-65-db",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A07",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "animechmp" ],
+
+			"name": "Anime Champ",
+			"year": 2000,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"headerFlags":    {},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "52-9a-1c-d3-2d-ae-89-2c",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "A09",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "pnchmn2" ],
+
+			"name":   "PunchMania 2: Hokuto no Ken",
+			"series": "PunchMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "b9-91-77-c2",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "a8-36-02-82-dd-6c-10-04",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A18",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "salarymc" ],
+
+			"name": "Salary Man Champ [2-player]",
+			"year": 2000,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "b6-29-92-78",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "06-29-ac-d1-52-39-52-dc",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {
+					"width":    "byte",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateSID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A22",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr3mp" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX PLUS",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.6",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "19-c3-89-3e-88-94-eb-e7",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "46-79-cf-47-56-90-b9-dd",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A23",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "drmn3m" ],
+
+			"name":   "DrumMania 3rdMIX",
+			"series": "DrumMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.8",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "15-5e-83-d2",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "95-11-b5-ba-85-f0-67-30",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "e6-7f-e0-2e-47-db-cb-f5",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A23",
+			"regions":        [ "AAA", "KAA" ],
+			"identifiers":    [ "pcnfrk3m", "pcnfrk3mk" ],
+
+			"name":   "PercussionFreaks 3rdMIX",
+			"series": "DrumMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.8",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "1e-8a-e8-76",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "95-11-b5-ba-85-f0-67-30",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "e6-7f-e0-2e-47-db-cb-f5",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "A24",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "gtrfrk4m" ],
+
+			"name":   "GuitarFreaks 4thMIX",
+			"series": "GuitarFreaks",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.8",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "15-5e-83-d2",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "7e-3b-24-0d-71-d2-b2-7d",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "e8-e2-2a-c0-c4-07-53-69",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "A25",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn4m", "drmn4mja", "drmn4mjb" ],
+
+			"name":   "DrumMania 4thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "2f-3a-5b-36-c6-24-ce-b2",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC", "GE", "GK" ],
+			"code":           "A25",
+			"regions":        [ "AAA", "AYA", "AZA", "KAA", "KAA" ],
+			"identifiers":    [ "pcnfrk4m", "pcnfrk4maa", "pcnfrk4mab", "pcnfrk4mk", "pcnfrk4mka" ],
+
+			"name":   "PercussionFreaks 4thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "2f-3a-5b-36-c6-24-ce-b2",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC", "GE" ],
+			"code":           "A26",
+			"regions":        [ "AAA", "AAA", "AYA", "AYA", "AZA", "AZA", "JAA", "JAA", "JYA", "JYA", "JZA", "JZA" ],
+			"identifiers":    [ "gtrfrk5ma", "gtrfrk5mac", "gtrfrk5maa", "gtrfrk5mad", "gtrfrk5mab", "gtrfrk5mae", "gtrfrk5m", "gtrfrk5mjc", "gtrfrk5mja", "gtrfrk5mjd", "gtrfrk5mjb", "gtrfrk5mje" ],
+
+			"name":   "GuitarFreaks 5thMIX",
+			"series": "GuitarFreaks",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "4e-30-43-38-06-9c-c8-a9",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A27",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr5m" ],
+
+			"name":   "Dance Dance Revolution 5thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "d9-91-19-92-8e-14-ea-72",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC", "GU" ],
+			"code":           "A33",
+			"regions":        [ "AAA", "AAA", "JAA", "JAA" ],
+			"identifiers":    [ "ddr4ma", "ddr4maa", "ddr4m", "ddr4mja" ],
+
+			"name":   "Dance Dance Revolution 4thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.8",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "cd-f2-a4-48-fb-2a-88-02",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "a1-ae-78-ca-21-8d-9d-3a",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A34",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr4mp" ],
+
+			"name":   "Dance Dance Revolution 4thMIX PLUS",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"installRequiresRTCHeader": true
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "19-c3-89-3e-88-94-eb-e7",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "7d-08-e2-f8-b6-bc-18-75",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "A36",
+			"regions":        [ "EAA" ],
+			"identifiers":    [ "kicknkick" ],
+
+			"name": "Kick & Kick",
+			"year": 2001,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(K)"
+			},
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"signatureField": "66-2d-b6-83",
+				"yearField":      "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type": "static"
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A37",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dsfdr" ],
+
+			"name":   "Dancing Stage Featuring Disney's Rave",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.8",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"installCart": {
+				"pcb": "unknown-x76f041",
+
+				"dataKey":  "19-c3-89-3e-88-94-eb-e7",
+				"tidWidth": 16,
+
+				"headerFlags":   {
+					"format":          "basic",
+					"lowercaseRegion": true
+				},
+				"checksumFlags": {
+					"width": "byteInWordOut"
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "c1-87-d3-24-22-84-ed-b2",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A39",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dmx2m" ],
+
+			"name":   "Dance Maniax 2ndMIX",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "d5-da-f5-4c-57-2a-15-64",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "A40",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "mamboagg" ],
+
+			"name":   "Mambo A Go-Go",
+			"series": "Mambo A Go-Go",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "e0-76-83-05-64-80-4f-d1",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE", "GK" ],
+			"code":           "A44",
+			"regions":        [ "UAA", "UAA" ],
+			"identifiers":    [ "ddrusa", "ddrusaa" ],
+
+			"name":   "Dance Dance Revolution USA",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.8",
+
+			"rtcHeader":   {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-00",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "f1-98-7f-c3-4a-f4-aa-d9",
+				"yearField": "20-00",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GB" ],
+			"code":           "A48",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "gbbchmp" ],
+
+			"name": "Great Bishi Bashi Champ",
+			"year": 2002,
+
+			"flags": {},
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"headerFlags":    {},
+				"checksumFlags":  {},
+				"signatureFlags": {}
+			},
+			"gameCart":    {
+				"pcb": "unknown-x76f041",
+
+				"dataKey": "37-19-06-94-d2-67-1a-bb",
+
+				"headerFlags":   {
+					"format": "basic"
+				},
+				"checksumFlags": {},
+				"idFlags":       {}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B05",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn5m", "drmn5mja", "drmn5mjb" ],
+
+			"name":   "DrumMania 5thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "1c-80-b5-38-e6-71-30-61",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B05",
+			"regions":        [ "AAA", "AYA", "AZA" ],
+			"identifiers":    [ "pcnfrk5m", "pcnfrk5maa", "pcnfrk5mab" ],
+
+			"name":   "PercussionFreaks 5thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "1c-80-b5-38-e6-71-30-61",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC", "GK" ],
+			"code":           "B05",
+			"regions":        [ "KAA", "KAA" ],
+			"identifiers":    [ "pcnfrk5mk", "pcnfrk5mka" ],
+
+			"name":   "PercussionFreaks 5thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "2f-3a-5b-36-c6-24-ce-b2",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B06",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "gtrfrk6m", "gtrfrk6mja", "gtrfrk6mjb" ],
+
+			"name":   "GuitarFreaks 6thMIX",
+			"series": "GuitarFreaks",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "e5-0f-b9-1c-12-55-0d-7b",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B16",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn6m", "drmn6mja", "drmn6mjb" ],
+
+			"name":   "DrumMania 6thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "3c-c7-af-78-d0-23-9e-a2",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B16",
+			"regions":        [ "AAA", "AYA", "AZA" ],
+			"identifiers":    [ "pcnfrk6m", "pcnfrk6maa", "pcnfrk6mab" ],
+
+			"name":   "PercussionFreaks 6thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "3c-c7-af-78-d0-23-9e-a2",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B17",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "gtrfrk7m", "gtrfrk7mja", "gtrfrk7mjb" ],
+
+			"name":   "GuitarFreaks 7thMIX",
+			"series": "GuitarFreaks",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "b4-46-0c-a3-b1-18-e2-2e",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B19",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrmax" ],
+
+			"name":   "DDRMAX: Dance Dance Revolution 6thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "c6-5c-ce-54-1f-55-e3-55",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B20",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrmax2" ],
+
+			"name":   "DDRMAX2: Dance Dance Revolution 7thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "60-9b-0a-21-da-92-f1-d6",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GE", "GN" ],
+			"code":           "B47",
+			"regions":        [ "JAB", "JAB", "JBA", "JBA" ],
+			"identifiers":    [ "mrtlbeat", "mrtlbeatjb", "mrtlbeatja", "mrtlbeatjc" ],
+
+			"name":   "Martial Beat",
+			"series": "Martial Beat",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.9",
+
+			"rtcHeader":   {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-01",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "94-36-49-b3-cb-e6-de-98",
+				"yearField": "20-01",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C07",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "drmn7m" ],
+
+			"name":   "DrumMania 7thMIX power-up ver.",
+			"series": "DrumMania",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "a2-c3-76-a2-c3-b3-dd-86",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C07",
+			"regions":        [ "AAA", "AYA", "AZA" ],
+			"identifiers":    [ "pcnfrk7m", "pcnfrk7maa", "pcnfrk7mab" ],
+
+			"name":   "PercussionFreaks 7thMIX",
+			"series": "DrumMania",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "92-08-60-e6-3d-eb-ea-35",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C08",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "gtrfrk8m" ],
+
+			"name":   "GuitarFreaks 8thMIX power-up ver.",
+			"series": "GuitarFreaks",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "d9-01-4b-22-a1-d7-e6-9b",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC", "GK" ],
+			"code":           "C23",
+			"regions":        [ "EAA", "EAA" ],
+			"identifiers":    [ "dsem2", "dsem2ea" ],
+
+			"name":   "Dancing Stage EuroMIX 2",
+			"series": "Dance Dance Revolution",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "29-68-75-54-14-17-91-38",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C36",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrextrm" ],
+
+			"name":   "Dance Dance Revolution EXTREME",
+			"series": "Dance Dance Revolution",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-02",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "3f-bd-ca-e3-fe-3c-f1-11",
+				"yearField": "20-02",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C38",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "drmn8m", "drmn8mja" ],
+
+			"name":   "DrumMania 8thMIX",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "82-2c-92-e2-e3-a3-8c-7b",
+				"yearField": "20-03",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C38",
+			"regions":        [ "AAA" ],
+			"identifiers":    [ "pcnfrk8m" ],
+
+			"name":   "PercussionFreaks 8thMIX",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "82-2c-92-e2-e3-a3-8c-7b",
+				"yearField": "20-03",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C39",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "gtrfrk9m", "gtrfrk9mja" ],
+
+			"name":   "GuitarFreaks 9thMIX",
+			"series": "GuitarFreaks",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "44-ed-ad-92-82-c2-93-af",
+				"yearField": "20-03",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D09",
+			"regions":        [ "JAB", "JBB" ],
+			"identifiers":    [ "drmn9m", "drmn9mjc" ],
+
+			"name":   "DrumMania 9thMIX",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			},
+
+			"bootloaderVersion": "1.95",
+
+			"rtcHeader":   {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {}
+			},
+			"flashHeader": {
+				"yearField": "20-03",
+
+				"headerFlags":    {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags":  {
+					"width":    "word",
+					"inverted": true
+				},
+				"signatureFlags": {
+					"type":      "md5",
+					"padWithFF": true
+				}
+			},
+			"gameCart":    {
+				"pcb": "unknown-zs01",
+
+				"dataKey":   "ac-f7-e2-95-d3-ad-da-45",
+				"yearField": "20-03",
+				"tidWidth":  16,
+
+				"headerFlags":   {
+					"format":         "extended",
+					"specType":       "actual",
+					"usesPublicArea": true
+				},
+				"checksumFlags": {
+					"width":    "word",
+					"inverted": true
+				},
+				"idFlags":       {
+					"privateTID": "bigEndianSIDHash",
+					"privateSID": true,
+					"privateXID": true,
+
+					"publicMID": true,
+					"publicXID": true
+				}
+			}
+		}
+	]
+}

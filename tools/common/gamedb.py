@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from collections.abc import ByteString, Iterable, Mapping
+from collections.abc import Mapping
 from dataclasses     import dataclass
 from enum            import IntEnum, IntFlag
 from struct          import Struct
@@ -24,19 +24,6 @@ from .util import JSONGroupedObject
 
 ## Utilities
 
-def _toJSONObject(value: Any) -> Any:
-	if hasattr(value, "toJSONObject"):
-		value = value.toJSONObject()
-	elif isinstance(value, ByteString):
-		value = value.hex("-")
-	elif isinstance(value, IntFlag):
-		value = [ flag.name for flag in value ]
-
-	if (value == 0) or (value == False) or (value == ""):
-		return None
-	else:
-		return value
-
 def _makeJSONObject(*groups: Mapping[str, Any]) -> JSONGroupedObject:
 	jsonObj: JSONGroupedObject = JSONGroupedObject()
 
@@ -44,27 +31,8 @@ def _makeJSONObject(*groups: Mapping[str, Any]) -> JSONGroupedObject:
 		dest: dict[str, Any] = {}
 
 		for key, value in group.items():
-			jsonValue: Any = _toJSONObject(value)
-
-			if jsonValue is not None:
-				dest[key] = jsonValue
-
-		if dest:
-			jsonObj.groups.append(dest)
-
-	return jsonObj
-
-def _groupJSONObject(obj: Any, *groups: Iterable[str]) -> JSONGroupedObject:
-	jsonObj: JSONGroupedObject = JSONGroupedObject()
-
-	for group in groups:
-		dest: dict[str, Any] = {}
-
-		for key in group:
-			jsonValue: Any = _toJSONObject(getattr(obj, key, None))
-
-			if jsonValue is not None:
-				dest[key] = jsonValue
+			if value:
+				dest[key] = value
 
 		if dest:
 			jsonObj.groups.append(dest)
@@ -124,26 +92,30 @@ class CartPCBType(IntEnum):
 		}[self]
 
 class HeaderFlag(IntFlag):
-	FORMAT_BITMASK        = 3 << 0
-	FORMAT_SIMPLE         = 0 << 0
-	FORMAT_BASIC          = 1 << 0
-	FORMAT_EXTENDED       = 2 << 0
-	SPEC_TYPE_BITMASK     = 3 << 2
-	SPEC_TYPE_NONE        = 0 << 2
-	SPEC_TYPE_ACTUAL      = 1 << 2
-	SPEC_TYPE_WILDCARD    = 2 << 2
-	HEADER_SCRAMBLED      = 1 << 4
-	HEADER_IN_PUBLIC_AREA = 1 << 5
-	REGION_LOWERCASE      = 1 << 6
+	FORMAT_BITMASK        = 7 << 0
+	FORMAT_NONE           = 0 << 0
+	FORMAT_REGION_ONLY    = 1 << 0
+	FORMAT_BASIC          = 2 << 0
+	FORMAT_EARLY_EXTENDED = 3 << 0
+	FORMAT_EXTENDED       = 4 << 0
+	SPEC_TYPE_BITMASK     = 3 << 3
+	SPEC_TYPE_NONE        = 0 << 3
+	SPEC_TYPE_ACTUAL      = 1 << 3
+	SPEC_TYPE_WILDCARD    = 2 << 3
+	HEADER_SCRAMBLED      = 1 << 5
+	HEADER_IN_PUBLIC_AREA = 1 << 6
+	REGION_LOWERCASE      = 1 << 7
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
 		flags: HeaderFlag = 0
 
 		flags |= {
-			"simple":   HeaderFlag.FORMAT_SIMPLE,
-			"basic":    HeaderFlag.FORMAT_BASIC,
-			"extended": HeaderFlag.FORMAT_EXTENDED
+			None:            HeaderFlag.FORMAT_NONE,
+			"regionOnly":    HeaderFlag.FORMAT_REGION_ONLY,
+			"basic":         HeaderFlag.FORMAT_BASIC,
+			"earlyExtended": HeaderFlag.FORMAT_EARLY_EXTENDED,
+			"extended":      HeaderFlag.FORMAT_EXTENDED
 		}[obj.get("format", None)]
 		flags |= {
 			None:       HeaderFlag.SPEC_TYPE_NONE,
@@ -165,9 +137,11 @@ class HeaderFlag(IntFlag):
 		return _makeJSONObject(
 			{
 				"format": {
-					HeaderFlag.FORMAT_SIMPLE:   "simple",
-					HeaderFlag.FORMAT_BASIC:    "basic",
-					HeaderFlag.FORMAT_EXTENDED: "extended"
+					HeaderFlag.FORMAT_NONE:           None,
+					HeaderFlag.FORMAT_REGION_ONLY:    "regionOnly",
+					HeaderFlag.FORMAT_BASIC:          "basic",
+					HeaderFlag.FORMAT_EARLY_EXTENDED: "earlyExtended",
+					HeaderFlag.FORMAT_EXTENDED:       "extended"
 				}[self & HeaderFlag.FORMAT_BITMASK],
 				"specType": {
 					HeaderFlag.SPEC_TYPE_NONE:     None,
@@ -182,28 +156,32 @@ class HeaderFlag(IntFlag):
 		)
 
 class ChecksumFlag(IntFlag):
-	CHECKSUM_UNIT_BITMASK     = 3 << 0
-	CHECKSUM_UNIT_BYTE        = 0 << 0
-	CHECKSUM_UNIT_WORD_LITTLE = 1 << 0
-	CHECKSUM_UNIT_WORD_BIG    = 2 << 0
-	CHECKSUM_BIG_ENDIAN       = 1 << 2
-	CHECKSUM_INVERTED         = 1 << 3
-	CHECKSUM_FORCE_GX_SPEC    = 1 << 4
+	CHECKSUM_WIDTH_BITMASK     = 3 << 0
+	CHECKSUM_WIDTH_NONE        = 0 << 0
+	CHECKSUM_WIDTH_8           = 1 << 0
+	CHECKSUM_WIDTH_8_IN_16_OUT = 2 << 0
+	CHECKSUM_WIDTH_16          = 3 << 0
+	CHECKSUM_INPUT_BIG_ENDIAN  = 1 << 2
+	CHECKSUM_OUTPUT_BIG_ENDIAN = 1 << 3
+	CHECKSUM_INVERTED          = 1 << 4
+	CHECKSUM_FORCE_GX_SPEC     = 1 << 5
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
 		flags: ChecksumFlag = 0
 
 		flags |= {
-			"byte":             ChecksumFlag.CHECKSUM_UNIT_BYTE,
-			"littleEndianWord": ChecksumFlag.CHECKSUM_UNIT_WORD_LITTLE,
-			"bigEndianWord":    ChecksumFlag.CHECKSUM_UNIT_WORD_BIG
-		}[obj.get("unit", None)]
+			None:            ChecksumFlag.CHECKSUM_WIDTH_NONE,
+			"byte":          ChecksumFlag.CHECKSUM_WIDTH_8,
+			"byteInWordOut": ChecksumFlag.CHECKSUM_WIDTH_8_IN_16_OUT,
+			"word":          ChecksumFlag.CHECKSUM_WIDTH_16
+		}[obj.get("width", None)]
 
 		for key, flag in {
-			"bigEndian":   ChecksumFlag.CHECKSUM_BIG_ENDIAN,
-			"inverted":    ChecksumFlag.CHECKSUM_INVERTED,
-			"forceGXSpec": ChecksumFlag.CHECKSUM_FORCE_GX_SPEC
+			"bigEndianInput":  ChecksumFlag.CHECKSUM_INPUT_BIG_ENDIAN,
+			"bigEndianOutput": ChecksumFlag.CHECKSUM_OUTPUT_BIG_ENDIAN,
+			"inverted":        ChecksumFlag.CHECKSUM_INVERTED,
+			"forceGXSpec":     ChecksumFlag.CHECKSUM_FORCE_GX_SPEC
 		}.items():
 			if obj.get(key, False):
 				flags |= flag
@@ -213,30 +191,34 @@ class ChecksumFlag(IntFlag):
 	def toJSONObject(self) -> JSONGroupedObject:
 		return _makeJSONObject(
 			{
-				"unit": {
-					ChecksumFlag.CHECKSUM_UNIT_BYTE:        "byte",
-					ChecksumFlag.CHECKSUM_UNIT_WORD_LITTLE: "littleEndianWord",
-					ChecksumFlag.CHECKSUM_UNIT_WORD_BIG:    "bigEndianWord"
-				}[self & ChecksumFlag.CHECKSUM_UNIT_BITMASK],
+				"width": {
+					ChecksumFlag.CHECKSUM_WIDTH_NONE:        None,
+					ChecksumFlag.CHECKSUM_WIDTH_8:           "byte",
+					ChecksumFlag.CHECKSUM_WIDTH_8_IN_16_OUT: "byteInWordOut",
+					ChecksumFlag.CHECKSUM_WIDTH_16:          "word"
+				}[self & ChecksumFlag.CHECKSUM_WIDTH_BITMASK],
 
-				"bigEndian":   (ChecksumFlag.CHECKSUM_BIG_ENDIAN    in self),
+				"bigEndianInput":
+					(ChecksumFlag.CHECKSUM_INPUT_BIG_ENDIAN  in self),
+				"bigEndianOutput":
+					(ChecksumFlag.CHECKSUM_OUTPUT_BIG_ENDIAN in self),
 				"inverted":    (ChecksumFlag.CHECKSUM_INVERTED      in self),
 				"forceGXSpec": (ChecksumFlag.CHECKSUM_FORCE_GX_SPEC in self)
 			}
 		)
 
 class IdentifierFlag(IntFlag):
-	PRIVATE_TID_TYPE_BITMASK         = 3 << 0
-	PRIVATE_TID_TYPE_NONE            = 0 << 0
-	PRIVATE_TID_TYPE_STATIC          = 1 << 0
-	PRIVATE_TID_TYPE_SID_HASH_LITTLE = 2 << 0
-	PRIVATE_TID_TYPE_SID_HASH_BIG    = 3 << 0
-	PRIVATE_SID_PRESENT              = 1 << 2
-	PRIVATE_MID_PRESENT              = 1 << 3
-	PRIVATE_XID_PRESENT              = 1 << 4
-	ALLOCATE_DUMMY_PUBLIC_AREA       = 1 << 5
-	PUBLIC_MID_PRESENT               = 1 << 6
-	PUBLIC_XID_PRESENT               = 1 << 7
+	PRIVATE_TID_TYPE_BITMASK     = 3 << 0
+	PRIVATE_TID_TYPE_NONE        = 0 << 0
+	PRIVATE_TID_TYPE_STATIC      = 1 << 0
+	PRIVATE_TID_TYPE_SID_HASH_LE = 2 << 0
+	PRIVATE_TID_TYPE_SID_HASH_BE = 3 << 0
+	PRIVATE_SID_PRESENT          = 1 << 2
+	PRIVATE_MID_PRESENT          = 1 << 3
+	PRIVATE_XID_PRESENT          = 1 << 4
+	ALLOCATE_DUMMY_PUBLIC_AREA   = 1 << 5
+	PUBLIC_MID_PRESENT           = 1 << 6
+	PUBLIC_XID_PRESENT           = 1 << 7
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
@@ -245,8 +227,8 @@ class IdentifierFlag(IntFlag):
 		flags |= {
 			None:                  IdentifierFlag.PRIVATE_TID_TYPE_NONE,
 			"static":              IdentifierFlag.PRIVATE_TID_TYPE_STATIC,
-			"littleEndianSIDHash": IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_LITTLE,
-			"bigEndianSIDHash":    IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_BIG
+			"littleEndianSIDHash": IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_LE,
+			"bigEndianSIDHash":    IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_BE
 		}[obj.get("privateTID", None)]
 
 		for key, flag in {
@@ -266,10 +248,10 @@ class IdentifierFlag(IntFlag):
 		return _makeJSONObject(
 			{
 				"privateTID": {
-					IdentifierFlag.PRIVATE_TID_TYPE_NONE:            None,
-					IdentifierFlag.PRIVATE_TID_TYPE_STATIC:          "static",
-					IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_LITTLE: "littleEndianSIDHash",
-					IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_BIG:    "bigEndianSIDHash"
+					IdentifierFlag.PRIVATE_TID_TYPE_NONE:        None,
+					IdentifierFlag.PRIVATE_TID_TYPE_STATIC:      "static",
+					IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_LE: "littleEndianSIDHash",
+					IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_BE: "bigEndianSIDHash"
 				}[self & IdentifierFlag.PRIVATE_TID_TYPE_BITMASK],
 
 				"privateSID": (IdentifierFlag.PRIVATE_SID_PRESENT in self),
@@ -286,10 +268,10 @@ class IdentifierFlag(IntFlag):
 class SignatureFlag(IntFlag):
 	SIGNATURE_TYPE_BITMASK  = 3 << 0
 	SIGNATURE_TYPE_NONE     = 0 << 0
-	SIGNATURE_TYPE_CHECKSUM = 1 << 0
-	SIGNATURE_TYPE_MD5      = 2 << 0
-	SIGNATURE_DUMMY_01      = 1 << 2
-	SIGNATURE_PAD_WITH_FF   = 1 << 3
+	SIGNATURE_TYPE_STATIC   = 1 << 0
+	SIGNATURE_TYPE_CHECKSUM = 2 << 0
+	SIGNATURE_TYPE_MD5      = 3 << 0
+	SIGNATURE_PAD_WITH_FF   = 1 << 2
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
@@ -297,12 +279,12 @@ class SignatureFlag(IntFlag):
 
 		flags |= {
 			None:       SignatureFlag.SIGNATURE_TYPE_NONE,
+			"static":   SignatureFlag.SIGNATURE_TYPE_STATIC,
 			"checksum": SignatureFlag.SIGNATURE_TYPE_CHECKSUM,
 			"md5":      SignatureFlag.SIGNATURE_TYPE_MD5
 		}[obj.get("type", None)]
 
 		for key, flag in {
-			"dummy01":   SignatureFlag.SIGNATURE_DUMMY_01,
 			"padWithFF": SignatureFlag.SIGNATURE_PAD_WITH_FF
 		}.items():
 			if obj.get(key, False):
@@ -315,11 +297,11 @@ class SignatureFlag(IntFlag):
 			{
 				"type": {
 					SignatureFlag.SIGNATURE_TYPE_NONE:     None,
+					SignatureFlag.SIGNATURE_TYPE_STATIC:   "static",
 					SignatureFlag.SIGNATURE_TYPE_CHECKSUM: "checksum",
 					SignatureFlag.SIGNATURE_TYPE_MD5:      "md5"
 				}[self & SignatureFlag.SIGNATURE_TYPE_BITMASK],
 
-				"dummy01":   (SignatureFlag.SIGNATURE_DUMMY_01    in self),
 				"padWithFF": (SignatureFlag.SIGNATURE_PAD_WITH_FF in self)
 			}
 		)
@@ -380,15 +362,16 @@ class GameFlag(IntFlag):
 
 ## Data structures
 
-_ROM_HEADER_INFO_STRUCT: Struct = Struct("< 2s 3B x")
+_ROM_HEADER_INFO_STRUCT: Struct = Struct("< 4s 2s 3B x")
 _CART_INFO_STRUCT:       Struct = Struct("< 8s 2s 6B")
-_GAME_INFO_STRUCT:       Struct = Struct("< 8s 36s 3s B 2H 6s 6s 16s 16s")
+_GAME_INFO_STRUCT:       Struct = Struct("< 4s 36s 3s B 2H 10s 10s 16s 16s")
 _MAX_SPECIFICATIONS:     int    = 4
 _MAX_REGIONS:            int    = 12
 
 @dataclass
 class ROMHeaderInfo:
-	yearField: bytes
+	signatureField: bytes
+	yearField:      bytes
 
 	headerFlags:    HeaderFlag
 	checksumFlags:  ChecksumFlag
@@ -397,7 +380,8 @@ class ROMHeaderInfo:
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
 		return ROMHeaderInfo(
-			bytes.fromhex(obj["yearField"].replace("-", " ")),
+			bytes.fromhex(obj.get("signatureField", "").replace("-", " ")),
+			bytes.fromhex(obj.get("yearField",      "").replace("-", " ")),
 
 			HeaderFlag   .fromJSONObject(obj.get("headerFlags",    {})),
 			ChecksumFlag .fromJSONObject(obj.get("checksumFlags",  {})),
@@ -405,18 +389,20 @@ class ROMHeaderInfo:
 		)
 
 	def toJSONObject(self) -> JSONGroupedObject:
-		return _groupJSONObject(
-			self, (
-				"yearField"
-			), (
-				"headerFlags",
-				"checksumFlags",
-				"signatureFlags"
-			)
+		return _makeJSONObject(
+			{
+				"signatureField": self.signatureField.hex("-"),
+				"yearField":      self.yearField.hex("-")
+			}, {
+				"headerFlags":    self.headerFlags   .toJSONObject(),
+				"checksumFlags":  self.checksumFlags .toJSONObject(),
+				"signatureFlags": self.signatureFlags.toJSONObject()
+			}
 		)
 
 	def toBinary(self) -> bytes:
 		return _ROM_HEADER_INFO_STRUCT.pack(
+			self.signatureField,
 			self.yearField,
 			self.headerFlags,
 			self.checksumFlags,
@@ -441,8 +427,8 @@ class CartInfo:
 		return CartInfo(
 			CartPCBType.fromJSONObject(obj["pcb"]),
 
-			bytes.fromhex(obj["dataKey"]  .replace("-", " ")),
-			bytes.fromhex(obj["yearField"].replace("-", " ")),
+			bytes.fromhex(obj.get("dataKey",   "").replace("-", " ")),
+			bytes.fromhex(obj.get("yearField", "").replace("-", " ")),
 			int(obj.get("tidWidth", 0)),
 			int(obj.get("midValue", 0)),
 
@@ -452,21 +438,19 @@ class CartInfo:
 		)
 
 	def toJSONObject(self) -> JSONGroupedObject:
-		return _groupJSONObject(
-			self, (
-				"pcb",
-			), (
-				"dataKey",
-				"yearField",
-				"tidWidth",
-				"midValue"
-			), (
-				"headerFlags",
-				"checksumFlags",
-				"idFlags",
-				"tidWidth",
-				"midValue"
-			)
+		return _makeJSONObject(
+			{
+				"pcb": self.pcb.toJSONObject()
+			}, {
+				"dataKey":   self.dataKey  .hex("-"),
+				"yearField": self.yearField.hex("-"),
+				"tidWidth":  self.tidWidth,
+				"midValue":  self.midValue
+			}, {
+				"headerFlags":   self.headerFlags  .toJSONObject(),
+				"checksumFlags": self.checksumFlags.toJSONObject(),
+				"idFlags":       self.idFlags      .toJSONObject()
+			}
 		)
 
 	def toBinary(self) -> bytes:
@@ -517,6 +501,7 @@ class GameInfo:
 			obj["name"],
 			obj.get("series", None),
 			obj["year"],
+
 			GameFlag.fromJSONObject(obj.get("flags", {})),
 
 			obj.get("bootloaderVersion", None),
@@ -528,26 +513,30 @@ class GameInfo:
 		)
 
 	def toJSONObject(self) -> JSONGroupedObject:
-		return _groupJSONObject(
-			self, (
-				"specifications",
-				"code",
-				"regions",
-				"identifiers"
-			), (
-				"name",
-				"series",
-				"year"
-			), (
-				"flags",
-			), (
-				"bootloaderVersion",
-			), (
-				"rtcHeader",
-				"flashHeader",
-				"installCart",
-				"gameCart"
-			)
+		return _makeJSONObject(
+			{
+				"specifications": self.specifications,
+				"code":           self.code,
+				"regions":        self.regions,
+				"identifiers":    self.identifiers
+			}, {
+				"name":   self.name,
+				"series": self.series,
+				"year":   self.year
+			}, {
+				"flags": self.flags.toJSONObject()
+			}, {
+				"bootloaderVersion": self.bootloaderVersion
+			}, {
+				"rtcHeader":
+					self.rtcHeader  .toJSONObject() if self.rtcHeader   else None,
+				"flashHeader":
+					self.flashHeader.toJSONObject() if self.flashHeader else None,
+				"installCart":
+					self.installCart.toJSONObject() if self.installCart else None,
+				"gameCart":
+					self.gameCart   .toJSONObject() if self.gameCart    else None
+			}
 		)
 
 	def toBinary(self, nameOffset: int) -> bytes:
@@ -564,10 +553,7 @@ class GameInfo:
 		# FIXME: identifiers, series and bootloaderVersion are not currently
 		# included in the binary format
 		return _GAME_INFO_STRUCT.pack(
-			b"".join(sorted(
-				spec.encode("ascii").ljust(2, b"\0")
-				for spec in self.specifications
-			)),
+			b"".join(sorted(ord(spec[1]) for spec in self.specifications)),
 			b"".join(sorted(
 				region.encode("ascii").ljust(3, b"\0")
 				for region in self.regions

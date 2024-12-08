@@ -42,7 +42,7 @@ def analyzeGame(game: GameInfo, nvramDir: Path, reanalyze: bool = False):
 			pass
 
 	if (reanalyze or game.rtcHeader   is None) and dump.rtcHeader:
-		game.rtcHeader   = parseROMHeader(dump.rtcHeader)
+		game.rtcHeader   = parseROMHeader(dump.rtcHeader, True)
 	if (reanalyze or game.flashHeader is None) and dump.flashHeader:
 		game.flashHeader = parseROMHeader(dump.flashHeader)
 

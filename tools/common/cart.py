@@ -62,8 +62,8 @@ FLASH_EXECUTABLE_OFFSET: int = 0x24
 
 ## Cartridge dump structure
 
-_CART_DUMP_HEADER_STRUCT: Struct = Struct("< H 2B 8s 8s 8s 8s 8s")
-_CART_DUMP_HEADER_MAGIC:  int    = 0x573d
+_CART_DUMP_HEADER_STRUCT: Struct = Struct("< 8s 2B 8s 8s 8s 8s 8s")
+_CART_DUMP_HEADER_MAGIC:  bytes  = b"573cdump"
 
 _CHIP_SIZES: dict[ChipType, ChipSize] = {
 	ChipType.X76F041: ChipSize( 0, 384, 384, 128),
@@ -115,7 +115,7 @@ class CartDump:
 			_CART_DUMP_HEADER_STRUCT.unpack_from(data, 0)
 
 		if magic != _CART_DUMP_HEADER_MAGIC:
-			raise ValueError(f"invalid or unsupported dump format: {magic:#06x}")
+			raise ValueError("invalid or unsupported dump format")
 
 		offset: int = _CART_DUMP_HEADER_STRUCT.size
 		length: int = _CHIP_SIZES[chipType].getLength()

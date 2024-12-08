@@ -33,11 +33,16 @@ static constexpr util::UTF8CodePoint FONT_INVALID_CHAR = 0xfffd;
 
 using CharacterSize = uint32_t;
 
-struct FontMetricsHeader {
+class FontMetricsHeader {
 public:
+	uint32_t magic[2];
 	uint8_t  spaceWidth, tabWidth, lineHeight;
 	int8_t   baselineOffset;
 	uint16_t numBuckets, numEntries;
+
+	inline bool validateMagic(void) const {
+		return (magic[0] == "573f"_c) && (magic[1] == "metr"_c);
+	}
 };
 
 class FontMetricsEntry {

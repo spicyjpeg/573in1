@@ -26,10 +26,15 @@ namespace fs {
 
 /* Package index parser */
 
-struct PackageIndexHeader {
+class PackageIndexHeader {
 public:
+	uint32_t magic[2];
 	uint32_t indexLength;
 	uint16_t numBuckets, numEntries;
+
+	inline bool validateMagic(void) const {
+		return (magic[0] == "573p"_c) && (magic[1] == "ackg"_c);
+	}
 };
 
 class PackageIndexEntry {

@@ -160,9 +160,14 @@ public:
 
 /* String table parser */
 
-struct StringTableHeader {
+class StringTableHeader {
 public:
+	uint32_t magic[2];
 	uint16_t numBuckets, numEntries;
+
+	inline bool validateMagic(void) const {
+		return (magic[0] == "573s"_c) && (magic[1] == "trng"_c);
+	}
 };
 
 class StringTableEntry {

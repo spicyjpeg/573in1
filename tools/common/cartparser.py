@@ -23,7 +23,8 @@ from typing          import ByteString
 
 from .cart   import *
 from .gamedb import *
-from .util   import checksum8, checksum16, dsCRC8, sidCRC16
+from .util   import \
+	byteSwap, checksum8, checksum8to16, checksum16, dsCRC8, sidCRC16
 
 ## Utilities
 
@@ -44,6 +45,13 @@ def _unscrambleRTCRAM(data: ByteString) -> bytearray:
 		output[i + 1] = data[(i * 2) + 0]
 
 	return output
+
+def _isEmpty(data: ByteString) -> bool:
+	for byte in data:
+		if byte and (byte != 0xff):
+			return False
+
+	return True
 
 def _validateCustomID(data: ByteString) -> bool:
 	if not sum(data):
@@ -74,48 +82,65 @@ def _validateDS2401ID(data: ByteString) -> bool:
 ## Header checksum detection
 
 def detectChecksum(data: ByteString, checksum: int) -> ChecksumFlag:
-	buffer:       bytearray = bytearray(data)
-	bigEndianSum: int       = (0
-		| ((checksum << 8) & 0xff00)
-		| ((checksum >> 8) & 0x00ff)
-	)
+	# Steering/Handle Champ has no checksum in its flash header, despite
+	# otherwise having one in RTC RAM.
+	if not checksum:
+		return ChecksumFlag.CHECKSUM_WIDTH_NONE
 
-	for unit, bigEndian, inverted, forceGXSpec in product(
+	buffer:      bytearray = bytearray(data)
+	altChecksum: int       = byteSwap(checksum, 2)
+
+	for (
+		width,
+		bigEndianInput,
+		bigEndianOutput,
+		inverted,
+		forceGXSpec
+	) in product(
 		(
-			ChecksumFlag.CHECKSUM_UNIT_BYTE,
-			ChecksumFlag.CHECKSUM_UNIT_WORD_LITTLE,
-			ChecksumFlag.CHECKSUM_UNIT_WORD_BIG
+			ChecksumFlag.CHECKSUM_WIDTH_16,
+			ChecksumFlag.CHECKSUM_WIDTH_8_IN_16_OUT,
+			ChecksumFlag.CHECKSUM_WIDTH_8
 		),
-		( 0, ChecksumFlag.CHECKSUM_BIG_ENDIAN ),
+		( 0, ChecksumFlag.CHECKSUM_INPUT_BIG_ENDIAN ),
+		( 0, ChecksumFlag.CHECKSUM_OUTPUT_BIG_ENDIAN ),
 		( 0, ChecksumFlag.CHECKSUM_INVERTED ),
 		( 0, ChecksumFlag.CHECKSUM_FORCE_GX_SPEC )
 	):
-		checksumFlags: ChecksumFlag = \
-			ChecksumFlag(unit | bigEndian | inverted | forceGXSpec)
-		flagList:      str          = \
-			"|".join(flag.name for flag in checksumFlags) or "0"
+		checksumFlags: ChecksumFlag = ChecksumFlag(0
+			| width
+			| bigEndianInput
+			| bigEndianOutput
+			| inverted
+			| forceGXSpec
+		)
+		flagList: str = "|".join(flag.name for flag in checksumFlags) or "0"
 
-		# Dark Horse Legend sets the game code to GE706, but mistakenly computes
+		# Dark Horse Legend sets the game code to GE706 but mistakenly computes
 		# the checksum as if the specification were GX.
-		actual: int = bigEndianSum if bigEndian   else checksum
-		buffer[0:2] = b"GX"        if forceGXSpec else data[0:2]
+		actual: int = altChecksum if bigEndianOutput else checksum
+		buffer[0:2] = b"GX"       if forceGXSpec     else data[0:2]
 
-		match unit:
-			case ChecksumFlag.CHECKSUM_UNIT_BYTE:
+		match width:
+			case ChecksumFlag.CHECKSUM_WIDTH_8:
 				expected: int = checksum8(buffer, bool(inverted))
 
-			case ChecksumFlag.CHECKSUM_UNIT_WORD_LITTLE:
-				expected: int = checksum16(buffer, "little", bool(inverted))
+			case ChecksumFlag.CHECKSUM_WIDTH_8_IN_16_OUT:
+				expected: int = checksum8to16(buffer, bool(inverted))
 
-			case ChecksumFlag.CHECKSUM_UNIT_WORD_BIG:
-				expected: int = checksum16(buffer, "big",    bool(inverted))
+			case ChecksumFlag.CHECKSUM_WIDTH_16:
+				expected: int = checksum16(
+					buffer,
+					"big" if bigEndianInput else "little",
+					bool(inverted)
+				)
+
+		logging.debug(
+			f"    <{flagList}>: expected {expected:#06x}, got {actual:#06x}"
+		)
 
 		if expected == actual:
 			return checksumFlags
-		else:
-			logging.debug(
-				f"    <{flagList}>: expected {expected:#06x}, got {actual:#06x}"
-			)
 
 	raise ParserError("could not find any valid header checksum format")
 
@@ -133,14 +158,15 @@ _CODE_REGEX:          re.Pattern = re.compile(rb"[0-9A-D][0-9][0-9]")
 _REGION_REGEX:        re.Pattern = \
 	re.compile(rb"[AEJKSU][A-FR-WX-Z]([A-D]|Z[0-9][0-9])?", re.IGNORECASE)
 
-_BASIC_HEADER_STRUCT:    Struct = Struct("< 2s 2s B 3x")
-_EXTENDED_HEADER_STRUCT: Struct = Struct("< 2s 6s 2s 4s H")
-_PRIVATE_ID_STRUCT:      Struct = Struct("< 8s 8s 8s 8s")
-_PUBLIC_ID_STRUCT:       Struct = Struct("< 8s 8s")
+_BASIC_HEADER_STRUCT:          Struct = Struct("< 2s 2s B 3x")
+_EARLY_EXTENDED_HEADER_STRUCT: Struct = Struct("< 2s 6s 2s 6s")
+_EXTENDED_HEADER_STRUCT:       Struct = Struct("< 2s 6s 2s 4s H")
+_PRIVATE_ID_STRUCT:            Struct = Struct("< 8s 8s 8s 8s")
+_PUBLIC_ID_STRUCT:             Struct = Struct("< 8s 8s")
 
 @dataclass
 class DetectedHeader:
-	yearField:     int          = 0
+	yearField:     bytes        = b""
 	headerFlags:   HeaderFlag   = HeaderFlag(0)
 	checksumFlags: ChecksumFlag = ChecksumFlag(0)
 
@@ -152,13 +178,19 @@ def detectHeader(
 	privateOffset: int,
 	publicOffset:  int
 ) -> DetectedHeader:
+	# The baseball games leave the 32-byte header area in the flash "empty"
+	# (filled with a random looking sequence of 0x00 and 0xff bytes).
+	if _isEmpty(data):
+		return DetectedHeader(b"", HeaderFlag.FORMAT_NONE)
+
 	unscrambledData: bytearray = _unscrambleRTCRAM(data)
 
 	for formatType, scrambled, usesPublicArea in product(
 		(
-			HeaderFlag.FORMAT_SIMPLE,
+			HeaderFlag.FORMAT_EXTENDED,
+			HeaderFlag.FORMAT_EARLY_EXTENDED,
 			HeaderFlag.FORMAT_BASIC,
-			HeaderFlag.FORMAT_EXTENDED
+			HeaderFlag.FORMAT_REGION_ONLY
 		),
 		( HeaderFlag(0), HeaderFlag.HEADER_SCRAMBLED ),
 		( HeaderFlag(0), HeaderFlag.HEADER_IN_PUBLIC_AREA )
@@ -177,7 +209,7 @@ def detectHeader(
 			continue
 
 		match formatType:
-			case HeaderFlag.FORMAT_SIMPLE:
+			case HeaderFlag.FORMAT_REGION_ONLY:
 				region:        bytes = buffer[offset:offset + 4]
 				specification: bytes = b""
 
@@ -192,6 +224,32 @@ def detectHeader(
 						detectChecksum(buffer[offset:offset + 4], checksum)
 				except ParserError as err:
 					logging.debug(f"  <{flagList}>: {err}")
+					continue
+
+			case HeaderFlag.FORMAT_EARLY_EXTENDED:
+				# Early variant of the "extended" format used only by DDR JAB.
+				# All strings are padded with spaces in place of null bytes, the
+				# year field is ASCII rather than BCD and there is no checksum.
+				(
+					specification,
+					code,
+					header.yearField,
+					region
+				) = \
+					_EARLY_EXTENDED_HEADER_STRUCT.unpack_from(buffer, offset)
+
+				code:   bytes = code  .rstrip(b" ")
+				region: bytes = region.rstrip(b" ")
+
+				header.publicIDOffset  = offset + _EXTENDED_HEADER_STRUCT.size
+				header.privateIDOffset = \
+					header.publicIDOffset + _PUBLIC_ID_STRUCT.size
+
+				if (
+					not _SPECIFICATION_REGEX.match(specification) or
+					not _CODE_REGEX.match(code)
+				):
+					logging.debug(f"  <{flagList}>: invalid game code")
 					continue
 
 			case HeaderFlag.FORMAT_EXTENDED:
@@ -235,6 +293,7 @@ def detectHeader(
 			else:
 				header.headerFlags |= HeaderFlag.SPEC_TYPE_ACTUAL
 
+		logging.debug(f"  <{flagList}>: header valid")
 		return header
 
 	raise ParserError("could not find any valid header data format")
@@ -262,7 +321,8 @@ def detectPrivateIDs(
 	# unprotected, the public area is instead relocated to the chip's last
 	# 128-byte sector (which is then configured to be unprotected). This has to
 	# be taken into account here as the private IDs are *not* moved to the
-	# beginning of the first sector; the space that would otherwise .
+	# beginning of the first sector; the space that would otherwise be taken up
+	# by the header and public IDs is still allocated and left blank.
 	offset: int = privateOffset
 
 	if (dummyAreaOffset >= 0) and (dummyAreaOffset < len(data)):
@@ -281,27 +341,28 @@ def detectPrivateIDs(
 				ids.idFlags |= IdentifierFlag.PRIVATE_TID_TYPE_STATIC
 
 			case 0x82:
-				littleEndianCRC: int = int.from_bytes(tid[1:3], "little")
-				bigEndianCRC:    int = int.from_bytes(tid[1:3], "big")
+				actualLE: int = int.from_bytes(tid[1:3], "little")
+				actualBE: int = int.from_bytes(tid[1:3], "big")
 
 				for width in _TID_WIDTHS:
-					crc: int = sidCRC16(sid[1:7], width)
+					expected: int = sidCRC16(sid[1:7], width)
 
-					if crc == littleEndianCRC:
+					if expected == actualLE:
 						ids.tidWidth = width
 						ids.idFlags |= \
-							IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_LITTLE
+							IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_LE
 						break
-					elif crc == bigEndianCRC:
+					elif expected == actualBE:
 						ids.tidWidth = width
 						ids.idFlags |= \
-							IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_BIG
+							IdentifierFlag.PRIVATE_TID_TYPE_SID_HASH_BE
 						break
 
-				raise ParserError("could not determine trace ID bit width")
+				if not ids.tidWidth:
+					raise ParserError("could not determine TID bit width")
 
 			case _:
-				raise ParserError(f"unknown trace ID prefix: {tid[0]:#04x}")
+				raise ParserError(f"unknown TID prefix: {tid[0]:#04x}")
 
 	if _validateDS2401ID(sid):
 		ids.idFlags |= IdentifierFlag.PRIVATE_SID_PRESENT
@@ -330,14 +391,42 @@ def detectPublicIDs(data: ByteString, publicOffset: int) -> DetectedIdentifiers:
 
 _SIGNATURE_STRUCT: Struct = Struct("< 8s 8s")
 
-def detectSignature(data: ByteString, publicOffset: int) -> SignatureFlag:
+@dataclass
+class DetectedSignature:
+	signatureField: bytes         = b""
 	signatureFlags: SignatureFlag = SignatureFlag(0)
 
-	installSig, dummy = _SIGNATURE_STRUCT.unpack_from(data, publicOffset)
+def detectSignature(data: ByteString, publicOffset: int) -> DetectedSignature:
+	sig: DetectedSignature = DetectedSignature()
 
-	# TODO: implement
+	installSig, padding = _SIGNATURE_STRUCT.unpack_from(data, publicOffset)
 
-	return signatureFlags
+	if installSig != padding:
+		if sum(installSig[4:8]):
+			# Assume any random-looking signature is MD5. This is not foolproof,
+			# but the chance of an MD5 signature ending with four null bytes is
+			# practically zero.
+			sig.signatureFlags |= SignatureFlag.SIGNATURE_TYPE_MD5
+		elif False:
+			# DrumMania 1st-3rdMIX, GuitarFreaks 4thMIX, DS feat. TKD use a
+			# different algorithm to derive the signature. PunchMania, GunMania
+			# and DDR Karaoke Mix may also share the same algorithm.
+			# TODO: reverse engineer the algorithm
+			sig.signatureFlags |= SignatureFlag.SIGNATURE_TYPE_CHECKSUM
+		else:
+			# Salary Man Champ and Step Champ use a fixed signature baked into
+			# the flash image on the installation disc.
+			sig.signatureField  = installSig[0:4]
+			sig.signatureFlags |= SignatureFlag.SIGNATURE_TYPE_STATIC
+
+	paddingSum: int = sum(padding)
+
+	if paddingSum == (0xff * len(padding)):
+		sig.signatureFlags |= SignatureFlag.SIGNATURE_PAD_WITH_FF
+	elif paddingSum:
+		raise ParserError("signature area is padded with neither 0x00 nor 0xff")
+
+	return sig
 
 ## Parsing API
 
@@ -350,11 +439,14 @@ def parseCartHeader(dump: CartDump, pcb: CartPCBType | None = None) -> CartInfo:
 			case ChipType.X76F041, True:
 				pcb = CartPCBType.CART_UNKNOWN_X76F041_DS2401
 
-			case ChipType.ZS01,    True:
+			#case ChipType.ZS01, True:
+			case ChipType.ZS01, _:
 				pcb = CartPCBType.CART_UNKNOWN_ZS01
 
 			case _, _:
-				raise ParserError("unsupported cartridge type")
+				raise ParserError(
+					f"{dump.chipType.name} cartridges are not supported"
+				)
 
 	chipSize: ChipSize       = dump.getChipSize()
 	header:   DetectedHeader = detectHeader(
@@ -398,18 +490,23 @@ def parseCartHeader(dump: CartDump, pcb: CartPCBType | None = None) -> CartInfo:
 		privateIDs.idFlags | publicIDs.idFlags
 	)
 
-def parseROMHeader(dump: ROMHeaderDump) -> ROMHeaderInfo:
+def parseROMHeader(
+	dump: ROMHeaderDump, ignoreSignature: bool = False
+) -> ROMHeaderInfo:
 	header: DetectedHeader = detectHeader(dump.data, -1, FLASH_HEADER_OFFSET)
 
-	if header.publicIDOffset is None:
-		signatureFlags: SignatureFlag = SignatureFlag(0)
+	if ignoreSignature or (header.publicIDOffset is None):
+		sig: DetectedSignature = DetectedSignature()
 	else:
-		signatureFlags: SignatureFlag = \
+		sig: DetectedSignature = \
 			detectSignature(dump.data, header.publicIDOffset)
 
+	# FIXME: games that use the scrambled RTC RAM data format require additional
+	# data past the header in order to boot, unknown how to generate it
 	return ROMHeaderInfo(
+		sig.signatureField,
 		header.yearField,
 		header.headerFlags,
 		header.checksumFlags,
-		signatureFlags
+		sig.signatureFlags
 	)

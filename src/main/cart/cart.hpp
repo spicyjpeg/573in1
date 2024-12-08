@@ -78,9 +78,6 @@ public:
 
 /* Cartridge dump structure */
 
-static constexpr uint16_t CART_DUMP_HEADER_MAGIC       = 0x573d;
-static constexpr uint16_t ROM_HEADER_DUMP_HEADER_MAGIC = 0x573e;
-
 struct ChipSize {
 public:
 	size_t dataLength, publicDataOffset, publicDataLength;
@@ -90,7 +87,7 @@ extern const ChipSize CHIP_SIZES[NUM_CHIP_TYPES];
 
 class CartDump {
 public:
-	uint16_t magic;
+	uint32_t magic[2];
 	ChipType chipType;
 	uint8_t  flags;
 
@@ -100,14 +97,18 @@ public:
 	uint8_t data[512];
 
 	inline CartDump(void)
-	: magic(CART_DUMP_HEADER_MAGIC), chipType(NONE), flags(0) {}
+	: chipType(NONE), flags(0) {
+		magic[0] = "573c"_c;
+		magic[1] = "dump"_c;
+	}
 
 	inline const ChipSize &getChipSize(void) const {
 		return CHIP_SIZES[chipType];
 	}
 	inline bool validateMagic(void) const {
 		return
-			(magic == CART_DUMP_HEADER_MAGIC) &&
+			(magic[0] == "573c"_c) &&
+			(magic[1] == "dump"_c) &&
 			(chipType > 0) &&
 			(chipType < NUM_CHIP_TYPES);
 	}
@@ -149,7 +150,7 @@ public:
 
 class ROMHeaderDump {
 public:
-	uint16_t magic;
+	uint32_t magic[2];
 	uint8_t  _reserved, flags;
 
 	Identifier systemID;
@@ -157,10 +158,13 @@ public:
 	uint8_t data[rom::FLASH_CRC_OFFSET - rom::FLASH_HEADER_OFFSET];
 
 	inline ROMHeaderDump(void)
-	: magic(ROM_HEADER_DUMP_HEADER_MAGIC), _reserved(0), flags(0) {}
+	: _reserved(0), flags(0) {
+		magic[0] = "573r"_c;
+		magic[1] = "dump"_c;
+	}
 
 	inline bool validateMagic(void) const {
-		return (magic == ROM_HEADER_DUMP_HEADER_MAGIC);
+		return (magic[0] == "573r"_c) && (magic[1] == "dump"_c);
 	}
 
 	bool isDataEmpty(void) const;

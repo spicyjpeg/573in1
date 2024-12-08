@@ -133,7 +133,8 @@ def generateIndexedTIM(
 
 ## Font metrics generator
 
-_METRICS_HEADER_STRUCT: Struct = Struct("< 3B b 2H")
+_METRICS_HEADER_STRUCT: Struct = Struct("< 8s 3B b 2H")
+_METRICS_HEADER_MAGIC:  bytes  = b"573fmetr"
 _METRICS_ENTRY_STRUCT:  Struct = Struct("< 2I")
 
 def generateFontMetrics(
@@ -170,6 +171,7 @@ def generateFontMetrics(
 
 	metrics: bytearray = bytearray()
 	metrics           += _METRICS_HEADER_STRUCT.pack(
+		_METRICS_HEADER_MAGIC,
 		spaceWidth,
 		tabWidth,
 		lineHeight,
@@ -235,7 +237,8 @@ def generateColorPalette(
 
 ## String table generator
 
-_STRING_TABLE_HEADER_STRUCT: Struct = Struct("< 2H")
+_STRING_TABLE_HEADER_STRUCT: Struct = Struct("< 8s 2H")
+_STRING_TABLE_HEADER_MAGIC:  bytes  = b"573strng"
 _STRING_TABLE_ENTRY_STRUCT:  Struct = Struct("< I 2H")
 _STRING_TABLE_ALIGNMENT:     int    = 4
 
@@ -266,7 +269,9 @@ def generateStringTable(
 
 	tableData: bytearray = bytearray()
 	tableData           += _STRING_TABLE_HEADER_STRUCT.pack(
-		numBuckets, len(hashTable.entries)
+		_STRING_TABLE_HEADER_MAGIC,
+		numBuckets,
+		len(hashTable.entries)
 	)
 
 	for entry in hashTable.entries:
@@ -283,7 +288,8 @@ def generateStringTable(
 
 ## Package header generator
 
-_PACKAGE_INDEX_HEADER_STRUCT: Struct = Struct("< I 2H")
+_PACKAGE_INDEX_HEADER_STRUCT: Struct = Struct("< 8s I 2H")
+_PACKAGE_INDEX_HEADER_MAGIC:  bytes  = b"573packg"
 _PACKAGE_INDEX_ENTRY_STRUCT:  Struct = Struct("< I 2H Q 2I")
 _PACKAGE_STRING_ALIGNMENT:    int    = 4
 
@@ -319,6 +325,7 @@ def generatePackageIndex(
 
 	tableData: bytearray = bytearray()
 	tableData           += _PACKAGE_INDEX_HEADER_STRUCT.pack(
+		_PACKAGE_INDEX_HEADER_MAGIC,
 		indexLength,
 		numBuckets,
 		len(hashTable.entries)

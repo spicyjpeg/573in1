@@ -31,6 +31,9 @@ def roundUpToMultiple(value: int, length: int) -> int:
 
 	return (value - diff + length) if diff else value
 
+def byteSwap(value: int, byteLength: int) -> int:
+	return int.from_bytes(value.to_bytes(byteLength, "big"), "little")
+
 def encodeSigned(value: int, bitLength: int) -> int:
 	valueMask: int = (1 << bitLength) - 1
 
@@ -124,6 +127,9 @@ def hashData(data: Iterable[int]) -> int:
 
 def checksum8(data: Iterable[int], invert: bool = False) -> int:
 	return (sum(data) & 0xff) ^ (0xff if invert else 0)
+
+def checksum8to16(data: Iterable[int], invert: bool = False) -> int:
+	return (sum(data) & 0xffff) ^ (0xffff if invert else 0)
 
 def checksum16(
 	data: Iterable[int], endianness: str = "little", invert: bool = False
