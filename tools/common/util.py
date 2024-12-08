@@ -125,9 +125,11 @@ def hashData(data: Iterable[int]) -> int:
 def checksum8(data: Iterable[int], invert: bool = False) -> int:
 	return (sum(data) & 0xff) ^ (0xff if invert else 0)
 
-def checksum16(data: Iterable[int], invert: bool = False) -> int:
+def checksum16(
+	data: Iterable[int], endianness: str = "little", invert: bool = False
+) -> int:
 	it:     Iterator = iter(data)
-	values: map[int] = map(lambda x: x[0] | (x[1] << 8), zip(it, it))
+	values: map[int] = map(lambda x: int.from_bytes(x, endianness), zip(it, it))
 
 	return (sum(values) & 0xffff) ^ (0xffff if invert else 0)
 
@@ -139,6 +141,37 @@ def shortenedMD5(data: ByteString) -> bytearray:
 		output[i] = hashed[i] ^ hashed[i + 8]
 
 	return output
+
+## CRC calculation
+
+_CRC8_POLY: int = 0x8c
+
+def dsCRC8(data: ByteString) -> int:
+	crc: int = 0
+
+	for byte in data:
+		for _ in range(8):
+			temp: int = crc ^ byte
+
+			byte >>= 1
+			crc  >>= 1
+
+			if temp & 1:
+				crc ^= _CRC8_POLY
+
+	return crc & 0xff
+
+def sidCRC16(data: ByteString, width: int = 16) -> int:
+	crc: int = 0
+
+	for i, byte in enumerate(data):
+		for j in range(i * 8, (i + 1) * 8):
+			if byte & 1:
+				crc ^= 1 << (j % width)
+
+			byte >>= 1
+
+	return crc & 0xffff
 
 ## Logging
 
@@ -228,7 +261,7 @@ class JSONFormatter:
 
 		lastIndex: int = len(obj) - 1
 
-		for index, ( key, value ) in obj.items():
+		for index, ( key, value ) in enumerate(obj.items()):
 			yield from self.serialize(key)
 			yield self._inlineSep(":")
 			yield from self.serialize(value)
@@ -252,6 +285,9 @@ class JSONFormatter:
 		lastGroupIndex: int = len(groups) - 1
 
 		for groupIndex, obj in enumerate(groups):
+			if not obj:
+				raise ValueError("empty groups are not allowed")
+
 			lastIndex: int = len(obj) - 1
 
 			for index, item in enumerate(obj):
@@ -279,6 +315,9 @@ class JSONFormatter:
 		lastGroupIndex: int = len(groups) - 1
 
 		for groupIndex, obj in enumerate(groups):
+			if not obj:
+				raise ValueError("empty groups are not allowed")
+
 			keys: list[str] = [
 				("".join(self.serialize(key)) + self._inlineSep(":"))
 				for key in obj.keys()
@@ -317,9 +356,9 @@ class JSONFormatter:
 			case JSONGroupedObject() if not groupedOnSingleLine:
 				yield from self._groupedObject(obj.groups)
 
-			case list() | tuple() if ungroupedOnSingleLine:
+			case (list() | tuple()) if ungroupedOnSingleLine:
 				yield from self._singleLineArray(obj)
-			case list() | tuple() if not ungroupedOnSingleLine:
+			case (list() | tuple()) if not ungroupedOnSingleLine:
 				yield from self._groupedArray(( obj, ))
 
 			case Mapping() if ungroupedOnSingleLine:
@@ -355,7 +394,7 @@ class HashTableBuilder:
 			self.entries[index] = entry
 			return index
 		if bucket.fullHash == fullHash:
-			raise KeyError(f"collision detected, hash={fullHash:#010x}")
+			raise KeyError(f"hash collision detected ({fullHash:#010x})")
 
 		# Otherwise, follow the buckets's chain, find the last chained item and
 		# link the new entry to it.
@@ -363,7 +402,7 @@ class HashTableBuilder:
 			bucket = self.entries[bucket.chainIndex]
 
 			if bucket.fullHash == fullHash:
-				raise KeyError(f"collision detected, hash={fullHash:#010x}")
+				raise KeyError(f"hash collision detected, ({fullHash:#010x})")
 
 		bucket.chainIndex = len(self.entries)
 		self.entries.append(entry)

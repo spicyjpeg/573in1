@@ -24,11 +24,11 @@ from .mips import \
 
 ## Executable analyzer
 
-def parseStructFromFile(file: BinaryIO, _struct: Struct) -> tuple:
-	return _struct.unpack(file.read(_struct.size))
-
 _EXE_HEADER_STRUCT: Struct = Struct("< 8s 8x 4I 16x 2I 20x 1972s")
 _EXE_HEADER_MAGIC:  bytes  = b"PS-X EXE"
+
+class AnalysisError(Exception):
+	pass
 
 class PSEXEAnalyzer:
 	def __init__(self, file: BinaryIO):
@@ -40,12 +40,12 @@ class PSEXEAnalyzer:
 			length,
 			stackOffset,
 			stackLength,
-			_
+			region
 		) = \
-			parseStructFromFile(file, _EXE_HEADER_STRUCT)
+			_EXE_HEADER_STRUCT.unpack(file.read(_EXE_HEADER_STRUCT.size))
 
 		if magic != _EXE_HEADER_MAGIC:
-			raise RuntimeError("file is not a valid PS1 executable")
+			raise AnalysisError("file is not a valid PS1 executable")
 
 		self.entryPoint:   int   = entryPoint
 		self.startAddress: int   = startAddress
@@ -61,7 +61,10 @@ class PSEXEAnalyzer:
 			return self.body[key - self.startAddress]
 
 	def _makeSlice(
-		self, start: int | None = None, stop: int | None = None, step: int = 1
+		self,
+		start: int | None = None,
+		stop:  int | None = None,
+		step:  int        = 1
 	) -> slice:
 		_start: int = \
 			0              if (start is None) else (start - self.startAddress)
@@ -86,7 +89,9 @@ class PSEXEAnalyzer:
 			return None
 
 	def disassemble(
-		self, start: int | None = None, stop: int | None = None
+		self,
+		start: int | None = None,
+		stop:  int | None = None
 	) -> Generator[Instruction | None, None, None]:
 		area:   slice = self._makeSlice(start, stop, 4)
 		offset: int   = area.start
@@ -105,15 +110,21 @@ class PSEXEAnalyzer:
 			offset += area.step
 
 	def dumpDisassembly(
-		self, output: TextIO, start: int | None = None, stop: int | None = None
+		self,
+		output: TextIO,
+		start:  int | None = None,
+		stop:   int | None = None
 	):
 		for inst in self.disassemble(start, stop):
 			if inst is not None:
 				output.write(f"{inst.address:08x}:   {inst.toString()}\n")
 
 	def findBytes(
-		self, data: ByteString, start: int | None = None,
-		stop: int | None = None, alignment: int = 4
+		self,
+		data:      ByteString,
+		start:     int | None = None,
+		stop:      int | None = None,
+		alignment: int        = 4
 	) -> Generator[int, None, None]:
 		area:   slice = self._makeSlice(start, stop)
 		offset: int   = area.start
@@ -138,8 +149,31 @@ class PSEXEAnalyzer:
 
 			offset += step
 
+	def findSingleMatch(
+		self,
+		data:      ByteString,
+		start:     int | None = None,
+		stop:      int | None = None,
+		alignment: int        = 4
+	) -> int:
+		matches: Generator[int, None, None] = \
+			self.findBytes(data, start, stop, alignment)
+
+		try:
+			firstMatch: int = next(matches)
+		except StopIteration:
+			raise AnalysisError("no match found")
+
+		try:
+			next(matches)
+			raise AnalysisError("more than one match found")
+		except StopIteration:
+			return firstMatch
+
 	def findFunctionReturns(
-		self, start: int | None = None, stop: int | None = None
+		self,
+		start: int | None = None,
+		stop:  int | None = None
 	) -> Generator[int, None, None]:
 		inst: bytes = encodeJR(Register.RA)
 
@@ -151,15 +185,21 @@ class PSEXEAnalyzer:
 			yield offset + 8
 
 	def findCalls(
-		self, target: int, start: int | None = None, stop: int | None = None
+		self,
+		target: int,
+		start:  int | None = None,
+		stop:   int | None = None
 	) -> Generator[int, None, None]:
 		inst: bytes = encodeJAL(target)
 
 		yield from self.findBytes(inst, start, stop, 4)
 
 	def findValueLoads(
-		self, value: int, start: int | None = None, stop: int | None = None,
-		maxDisplacement: int = 1
+		self,
+		value:       int,
+		start:       int | None = None,
+		stop:        int | None = None,
+		maxDistance: int        = 1
 	) -> Generator[ImmInstruction, None, None]:
 		# 32-bit loads are typically encoded as a LUI followed by either ORI or
 		# ADDIU. Due to ADDIU only supporting signed immediates, the LUI's
@@ -169,7 +209,7 @@ class PSEXEAnalyzer:
 			if inst is None:
 				continue
 
-			for offset in range(4, (maxDisplacement + 1) * 4, 4):
+			for offset in range(4, (maxDistance + 1) * 4, 4):
 				nextInst: Instruction | None = \
 					self.disassembleAt(inst.address + offset)
 

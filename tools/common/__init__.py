@@ -18,11 +18,12 @@ __version__ = "1.0.3"
 __author__  = "spicyjpeg"
 
 __all__ = (
+	"analysis",
 	"assets",
 	"cart",
-	"cartdata",
+	"cartparser",
 	"decompile",
-	"games",
+	"gamedb",
 	"mips",
 	"util"
 )
