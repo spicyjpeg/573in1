@@ -1,0 +1,1581 @@
+{
+	"$schema": "../schema/games.json",
+
+	"games": [
+		{
+			"specifications": [ "GX" ],
+			"code":           "706",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "darkhleg" ],
+
+			"name": "Dark Horse Legend",
+			"year": 1998,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "710",
+			"regions":        [ "JAB", "SAA" ],
+			"identifiers":    [ "hndlchmpj", "hndlchmp" ],
+
+			"name": "Handle Champ",
+			"year": 1997,
+
+			"flags": {
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "710",
+			"regions":        [ "UAA" ],
+			"identifiers":    [ "strgchmp" ],
+
+			"name": "Steering Champ",
+			"year": 1997,
+
+			"flags": {
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "765",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "bassangl" ],
+
+			"name":   "Bass Angler",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "765",
+			"regions":        [ "UAA", "UAB" ],
+			"identifiers":    [ "fbaitbc" ],
+
+			"name":   "Fisherman's Bait: A Bass Challenge",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GX" ],
+			"code":           "802",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "powyakex" ],
+
+			"name": "Jikkyou Powerful Pro Yakyuu EX",
+			"year": 1998,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "811",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "jppyex98" ],
+
+			"name": "Jikkyou Powerful Pro Yakyuu EX '98",
+			"year": 1998,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "826",
+			"regions":        [ "AAA", "EAA", "KAA", "UAA" ],
+			"identifiers":    [ "konam80sa", "konam80s", "konam80sk", "konam80su" ],
+
+			"name": "Konami 80's AC Special",
+			"year": 1998,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "826",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "konam80sj" ],
+
+			"name": "Konami 80's Gallery",
+			"year": 1998,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC", "GN" ],
+			"code":           "845",
+			"regions":        [ "JAA", "JAB" ],
+			"identifiers":    [ "ddrja", "ddrjb" ],
+
+			"name":   "Dance Dance Revolution",
+			"series": "Dance Dance Revolution",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "845",
+			"regions":        [ "AAA", "UAA" ],
+			"identifiers":    [ "ddra", "ddru" ],
+
+			"name":   "Dance Dance Revolution",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "845",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "ddr" ],
+
+			"name":   "Dance Dance Revolution: Internet Ranking Ver.",
+			"series": "Dance Dance Revolution",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "845",
+			"regions":        [ "EAA" ],
+			"identifiers":    [ "dstageea" ],
+
+			"name":   "Dancing Stage",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "845",
+			"regions":        [ "EBA" ],
+			"identifiers":    [ "dstage" ],
+
+			"name":   "Dancing Stage: INTERNET R@NKING",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "865",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "bassang2" ],
+
+			"name":   "Bass Angler 2",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "865",
+			"regions":        [ "UAB" ],
+			"identifiers":    [ "fbait2bc" ],
+
+			"name":   "Fisherman's Bait 2: A Bass Challenge",
+			"series": "Fisherman's Bait",
+			"year":   1998,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GK" ],
+			"code":           "874",
+			"regions":        [ "KAA" ],
+			"identifiers":    [ "dncfrks" ],
+
+			"name":   "Dance Freaks",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "874",
+			"regions":        [ "AAA", "JAA" ],
+			"identifiers":    [ "dmxa", "dmx" ],
+
+			"name":   "Dance Maniax",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GE", "GQ" ],
+			"code":           "876",
+			"regions":        [ "AAA", "EAA", "KAA" ],
+			"identifiers":    [ "hyperbbca", "hyperbbc", "hyperbbck" ],
+
+			"name": "Hyper Bishi Bashi Champ [3-player]",
+			"year": 1998,
+
+			"flags": {
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "877",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "gchgchmp" ],
+
+			"name": "Gachaga Champ",
+			"year": 1999,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "881",
+			"regions":        [ "UAB" ],
+			"identifiers":    [ "drmnu" ],
+
+			"name":   "DrumMania",
+			"series": "DrumMania",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "881",
+			"regions":        [ "JAD" ],
+			"identifiers":    [ "drmnja" ],
+
+			"name":   "DrumMania Update CD",
+			"series": "DrumMania",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "881",
+			"regions":        [ "AAB", "EAB", "KAB" ],
+			"identifiers":    [ "pcnfrksa", "pcnfrks", "pcnfrksk" ],
+
+			"name":   "PercussionFreaks",
+			"series": "DrumMania",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "883",
+			"regions":        [ "AAA", "EAA", "JAA", "KAA", "UAA" ],
+			"identifiers":    [ "gtrfrk2ma", "gtrfrk2me", "gtrfrk2mja", "gtrfrk2mk", "gtrfrk2mu" ],
+
+			"name":   "GuitarFreaks 2ndMIX",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "883",
+			"regions":        [ "JAD" ],
+			"identifiers":    [ "gtrfrk2m" ],
+
+			"name":   "GuitarFreaks 2ndMIX Ver 1.01",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "884",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dsftkd" ],
+
+			"name":   "Dancing Stage featuring TRUE KiSS DESTiNATiON",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "885",
+			"regions":        [ "JAA", "JAB", "JAC" ],
+			"identifiers":    [ "ddr2mlja", "ddr2mljb", "ddr2ml" ],
+
+			"name":   "Dance Dance Revolution 2ndMIX: Dance Dance Revolution LINK VERSION",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "886",
+			"regions":        [ "AAA", "AAC", "EAA", "EAC", "JAA", "JAC", "UAA", "UAC" ],
+			"identifiers":    [ "gtrfrksaa", "gtrfrksab", "gtrfrksea", "gtrfrkseb", "gtrfrksja", "gtrfrksjb", "gtrfrksua", "gtrfrksub" ],
+
+			"name":   "GuitarFreaks",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "886",
+			"regions":        [ "AAD", "EAD", "JAD", "UAD" ],
+			"identifiers":    [ "gtrfrksa", "gtrfrkse", "gtrfrks", "gtrfrksu" ],
+
+			"name":   "GuitarFreaks Ver 1.01",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GE", "GN" ],
+			"code":           "887",
+			"regions":        [ "JAA", "JAA" ],
+			"identifiers":    [ "ddr3m", "ddr3mja" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE", "GN" ],
+			"code":           "887",
+			"regions":        [ "AAA", "AAA" ],
+			"identifiers":    [ "ddr3ma", "ddr3maa" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "887",
+			"regions":        [ "KAA" ],
+			"identifiers":    [ "ddr3mka" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX: Ver.Korea",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "887",
+			"regions":        [ "KAA" ],
+			"identifiers":    [ "ddr3mkc" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX: Ver.Korea",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE", "GN" ],
+			"code":           "887",
+			"regions":        [ "KBA", "KBA" ],
+			"identifiers":    [ "ddr3mk", "ddr3mkb" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX: Ver.Korea2",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GX" ],
+			"code":           "889",
+			"regions":        [ "AA", "EA", "JA", "UA" ],
+			"identifiers":    [ "fbaitmca", "fbaitmc", "fbaitmcj", "fbaitmcu" ],
+
+			"name":   "Fisherman's Bait: Marlin Challenge",
+			"series": "Fisherman's Bait",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GE765-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "892",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrbocd" ],
+
+			"name":   "Dance Dance Revolution Best of Cool Dancers",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "894",
+			"regions":        [ "AAA", "JAA" ],
+			"identifiers":    [ "", "ddrsbm" ],
+
+			"name":   "Dance Dance Revolution Solo Bass Mix",
+			"series": "Dance Dance Revolution Solo",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "895",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr2m" ],
+
+			"name":   "Dance Dance Revolution 2ndMIX",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "896",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr2mc" ],
+
+			"name":   "Dance Dance Revolution 2ndMIX with beatmania IIDX CLUB VERSiON",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "905",
+			"regions":        [ "AAA", "JAA" ],
+			"identifiers":    [ "ddrs2000a", "ddrs2000" ],
+
+			"name":   "Dance Dance Revolution Solo 2000",
+			"series": "Dance Dance Revolution Solo",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GL" ],
+			"code":           "906",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "gunmania" ],
+
+			"name": "GunMania",
+			"year": 2000,
+
+			"flags": {
+				"ioBoard": "PWB0000073070"
+			}
+		},
+		{
+			"specifications": [ "GC", "GX" ],
+			"code":           "908",
+			"regions":        [ "JAA", "KAA" ],
+			"identifiers":    [ "hypbbc2p", "hypbbc2pk" ],
+
+			"name": "Hyper Bishi Bashi Champ [2-player]",
+			"year": 1999,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "910",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dsfdctja" ],
+
+			"name":   "Dancing Stage featuring Dreams Come True",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "910",
+			"regions":        [ "JCA" ],
+			"identifiers":    [ "dsfdct" ],
+
+			"name":   "Dancing Stage featuring Dreams Come True [digital I/O]",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "912",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "drmn2mja" ],
+
+			"name":   "DrumMania 2ndMIX Session Power Up Kit",
+			"series": "DrumMania",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "912",
+			"regions":        [ "AAA", "KAA" ],
+			"identifiers":    [ "pcnfrk2m", "pcnfrk2mk" ],
+
+			"name":   "PercussionFreaks 2ndMIX",
+			"series": "DrumMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "912",
+			"regions":        [ "AAB" ],
+			"identifiers":    [ "pcnfrk2maa" ],
+
+			"name":   "PercussionFreaks 2ndMIX Session Power Up Kit",
+			"series": "DrumMania",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "918",
+			"regions":        [ "AAA", "EAA", "KAA", "UAA" ],
+			"identifiers":    [ "fghtmna", "fghtmn", "fghtmnk", "fghtmnu" ],
+
+			"name":   "Fighting Mania",
+			"series": "PunchMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "918",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "pnchmnja" ],
+
+			"name":   "PunchMania: Hokuto no Ken [alt CD]",
+			"series": "PunchMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "921",
+			"regions":        [ "JBB" ],
+			"identifiers":    [ "ddrkara" ],
+
+			"name": "Dance Dance Revolution Karaoke MIX",
+			"year": 1999,
+
+			"flags": {
+				"ioBoard": "GX921-PWB(B)"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "929",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "gtrfrk2ml1" ],
+
+			"name":   "GuitarFreaks 2ndMIX Link Kit 1",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "929",
+			"regions":        [ "JBB" ],
+			"identifiers":    [ "gtrfrk2ml2" ],
+
+			"name":   "GuitarFreaks 2ndMIX Link Kit 2",
+			"series": "GuitarFreaks",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "930",
+			"regions":        [ "JA" ],
+			"identifiers":    [ "stepchmp" ],
+
+			"name": "Step Champ",
+			"year": 1999,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GE", "GK" ],
+			"code":           "936",
+			"regions":        [ "EAA", "EAA" ],
+			"identifiers":    [ "dsem", "dsemea" ],
+
+			"name":   "Dancing Stage EuroMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "947",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrkara2" ],
+
+			"name": "Dance Dance Revolution Karaoke MIX 2",
+			"year": 2000,
+
+			"flags": {
+				"ioBoard": "GX921-PWB(B)"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "949",
+			"regions":        [ "JAC", "JAZ02" ],
+			"identifiers":    [ "gtrfrk3m", "gtrfrk3mjb" ],
+
+			"name":   "GuitarFreaks 3rdMIX",
+			"series": "GuitarFreaks",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "949",
+			"regions":        [ "JAA", "JAB" ],
+			"identifiers":    [ "", "gtrfrk3mja" ],
+
+			"name":   "GuitarFreaks 3rdMIX",
+			"series": "GuitarFreaks",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "984",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr2mc2" ],
+
+			"name":   "Dance Dance Revolution 2ndMIX AND beatmania IIDX substream CLUB VERSiON 2",
+			"series": "Dance Dance Revolution",
+			"year":   1999,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A07",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "animechmp" ],
+
+			"name": "Anime Champ",
+			"year": 2000,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "A09",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "pnchmn2" ],
+
+			"name":   "PunchMania 2: Hokuto no Ken",
+			"series": "PunchMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "A09",
+			"regions":        [ "JRA" ],
+			"identifiers":    [ "pnchmn2ja" ],
+
+			"name":   "PunchMania 2: Hokuto no Ken e-Amusement",
+			"series": "PunchMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(F)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A15",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "" ],
+
+			"name": "GunMania Zone Plus",
+			"year": 2000,
+
+			"flags": {
+				"ioBoard": "PWB0000073070"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A18",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "salarymc" ],
+
+			"name": "Salary Man Champ [2-player]",
+			"year": 2000,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A22",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr3mp" ],
+
+			"name":   "Dance Dance Revolution 3rdMIX PLUS",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A23",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "drmn3m" ],
+
+			"name":   "DrumMania 3rdMIX",
+			"series": "DrumMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A23",
+			"regions":        [ "AAA", "KAA" ],
+			"identifiers":    [ "pcnfrk3m", "pcnfrk3mk" ],
+
+			"name":   "PercussionFreaks 3rdMIX",
+			"series": "DrumMania",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "A24",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "gtrfrk4m" ],
+
+			"name":   "GuitarFreaks 4thMIX",
+			"series": "GuitarFreaks",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE" ],
+			"code":           "A25",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn4m", "drmn4mja", "drmn4mjb" ],
+
+			"name":   "DrumMania 4thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC", "GE", "GK" ],
+			"code":           "A25",
+			"regions":        [ "AAA", "AYA", "AZA", "KAA", "KAA" ],
+			"identifiers":    [ "pcnfrk4m", "pcnfrk4maa", "pcnfrk4mab", "pcnfrk4mk", "pcnfrk4mka" ],
+
+			"name":   "PercussionFreaks 4thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC", "GE" ],
+			"code":           "A26",
+			"regions":        [ "AAA", "AAA", "AYA", "AYA", "AZA", "AZA", "JAA", "JAA", "JYA", "JYA", "JZA", "JZA" ],
+			"identifiers":    [ "gtrfrk5ma", "gtrfrk5mac", "gtrfrk5maa", "gtrfrk5mad", "gtrfrk5mab", "gtrfrk5mae", "gtrfrk5m", "gtrfrk5mjc", "gtrfrk5mja", "gtrfrk5mjd", "gtrfrk5mjb", "gtrfrk5mje" ],
+
+			"name":   "GuitarFreaks 5thMIX",
+			"series": "GuitarFreaks",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A27",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr5m" ],
+
+			"name":   "Dance Dance Revolution 5thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC", "GU" ],
+			"code":           "A33",
+			"regions":        [ "AAA", "AAA", "JAA", "JAA" ],
+			"identifiers":    [ "ddr4ma", "ddr4maa", "ddr4m", "ddr4mja" ],
+
+			"name":   "Dance Dance Revolution 4thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC", "GU" ],
+			"code":           "A33",
+			"regions":        [ "ABA", "ABA", "JBA", "JBA" ],
+			"identifiers":    [ "ddrs4ma", "ddrs4maa", "ddrs4m", "ddrs4mja" ],
+
+			"name":   "Dance Dance Revolution Solo 4thMIX",
+			"series": "Dance Dance Revolution Solo",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A34",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddr4mp" ],
+
+			"name":   "Dance Dance Revolution 4thMIX PLUS",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"installRequiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A34",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "ddrs4mp" ],
+
+			"name":   "Dance Dance Revolution Solo 4thMIX PLUS",
+			"series": "Dance Dance Revolution Solo",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"installRequiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GN" ],
+			"code":           "A36",
+			"regions":        [ "EAA" ],
+			"identifiers":    [ "kicknkick" ],
+
+			"name": "Kick & Kick",
+			"year": 2001,
+
+			"flags": {
+				"ioBoard": "GX700-PWB(K)"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A37",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dsfdr" ],
+
+			"name":   "Dancing Stage Featuring Disney's Rave",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A38",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dmx2mapp" ],
+
+			"name":   "Dance Maniax 2ndMIX append JPARADISE",
+			"series": "Dance Maniax",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A38",
+			"regions":        [ "JRA" ],
+			"identifiers":    [ "dmx2mappjb" ],
+
+			"name":   "Dance Maniax 2ndMIX append JPARADISE e-Amusement",
+			"series": "Dance Maniax",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A38",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "dmx2mappja" ],
+
+			"name":   "Dance Maniax 2ndMIX append JPARADISE for Dance Maniax",
+			"series": "Dance Maniax",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A39",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "dmx2m" ],
+
+			"name":   "Dance Maniax 2ndMIX",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "A39",
+			"regions":        [ "JRA" ],
+			"identifiers":    [ "dmx2mja" ],
+
+			"name":   "Dance Maniax 2ndMIX e-Amusement",
+			"series": "Dance Maniax",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A",
+
+				"requiresRTCHeader": true
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "A40",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "mamboagg" ],
+
+			"name":   "Mambo A Go-Go",
+			"series": "Mambo A Go-Go",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GQ" ],
+			"code":           "A40",
+			"regions":        [ "JRB" ],
+			"identifiers":    [ "mamboaggja" ],
+
+			"name":   "Mambo A Go-Go e-Amusement",
+			"series": "Mambo A Go-Go",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE", "GK" ],
+			"code":           "A44",
+			"regions":        [ "UAA", "UAA" ],
+			"identifiers":    [ "ddrusa", "ddrusaa" ],
+
+			"name":   "Dance Dance Revolution USA",
+			"series": "Dance Dance Revolution",
+			"year":   2000,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GB" ],
+			"code":           "A48",
+			"regions":        [ "JAB" ],
+			"identifiers":    [ "gbbchmp" ],
+
+			"name": "Great Bishi Bashi Champ",
+			"year": 2002,
+
+			"flags": {}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B05",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn5m", "drmn5mja", "drmn5mjb" ],
+
+			"name":   "DrumMania 5thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B05",
+			"regions":        [ "AAA", "AYA", "AZA" ],
+			"identifiers":    [ "pcnfrk5m", "pcnfrk5maa", "pcnfrk5mab" ],
+
+			"name":   "PercussionFreaks 5thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC", "GK" ],
+			"code":           "B05",
+			"regions":        [ "KAA", "KAA" ],
+			"identifiers":    [ "pcnfrk5mk", "pcnfrk5mka" ],
+
+			"name":   "PercussionFreaks 5thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B06",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "gtrfrk6m", "gtrfrk6mja", "gtrfrk6mjb" ],
+
+			"name":   "GuitarFreaks 6thMIX",
+			"series": "GuitarFreaks",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B16",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn6m", "drmn6mja", "drmn6mjb" ],
+
+			"name":   "DrumMania 6thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B16",
+			"regions":        [ "AAA", "AYA", "AZA" ],
+			"identifiers":    [ "pcnfrk6m", "pcnfrk6maa", "pcnfrk6mab" ],
+
+			"name":   "PercussionFreaks 6thMIX",
+			"series": "DrumMania",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B17",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "gtrfrk7m", "gtrfrk7mja", "gtrfrk7mjb" ],
+
+			"name":   "GuitarFreaks 7thMIX",
+			"series": "GuitarFreaks",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B19",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrmax" ],
+
+			"name":   "DDRMAX: Dance Dance Revolution 6thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2001,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "B20",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrmax2" ],
+
+			"name":   "DDRMAX2: Dance Dance Revolution 7thMIX",
+			"series": "Dance Dance Revolution",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GE", "GN" ],
+			"code":           "B47",
+			"regions":        [ "JAB", "JAB", "JBA", "JBA" ],
+			"identifiers":    [ "mrtlbeat", "mrtlbeatjb", "mrtlbeatja", "mrtlbeatjc" ],
+
+			"name":   "Martial Beat",
+			"series": "Martial Beat",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C07",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "drmn7mja", "drmn7mjb", "drmn7mjc" ],
+
+			"name":   "DrumMania 7thMIX",
+			"series": "DrumMania",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C07",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "drmn7m" ],
+
+			"name":   "DrumMania 7thMIX power-up ver.",
+			"series": "DrumMania",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C07",
+			"regions":        [ "AAA", "AYA", "AZA" ],
+			"identifiers":    [ "pcnfrk7m", "pcnfrk7maa", "pcnfrk7mab" ],
+
+			"name":   "PercussionFreaks 7thMIX",
+			"series": "DrumMania",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C08",
+			"regions":        [ "JAA", "JYA", "JZA" ],
+			"identifiers":    [ "gtrfrk8mja", "gtrfrk8mjb", "gtrfrk8mjc" ],
+
+			"name":   "GuitarFreaks 8thMIX",
+			"series": "GuitarFreaks",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C08",
+			"regions":        [ "JBA" ],
+			"identifiers":    [ "gtrfrk8m" ],
+
+			"name":   "GuitarFreaks 8thMIX power-up ver.",
+			"series": "GuitarFreaks",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC", "GK" ],
+			"code":           "C23",
+			"regions":        [ "EAA", "EAA" ],
+			"identifiers":    [ "dsem2", "dsem2ea" ],
+
+			"name":   "Dancing Stage EuroMIX 2",
+			"series": "Dance Dance Revolution",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C36",
+			"regions":        [ "JAA" ],
+			"identifiers":    [ "ddrextrm" ],
+
+			"name":   "Dance Dance Revolution EXTREME",
+			"series": "Dance Dance Revolution",
+			"year":   2002,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C38",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "drmn8m", "drmn8mja" ],
+
+			"name":   "DrumMania 8thMIX",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C38",
+			"regions":        [ "AAA" ],
+			"identifiers":    [ "pcnfrk8m" ],
+
+			"name":   "PercussionFreaks 8thMIX",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "C39",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "gtrfrk9m", "gtrfrk9mja" ],
+
+			"name":   "GuitarFreaks 9thMIX",
+			"series": "GuitarFreaks",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D09",
+			"regions":        [ "JAB", "JBB" ],
+			"identifiers":    [ "drmn9m", "drmn9mjc" ],
+
+			"name":   "DrumMania 9thMIX",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D09",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "drmn9mjb", "drmn9mje" ],
+
+			"name":   "DrumMania 9thMIX e-Amusement",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D09",
+			"regions":        [ "AAA", "ABA" ],
+			"identifiers":    [ "pcnfrk9maa", "pcnfrk9mac" ],
+
+			"name":   "PercussionFreaks 9thMIX e-Amusement",
+			"series": "DrumMania",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D10",
+			"regions":        [ "JAB", "JBB" ],
+			"identifiers":    [ "gtrfrk10m", "gtrfrk10mjc" ],
+
+			"name":   "GuitarFreaks 10thMIX",
+			"series": "GuitarFreaks",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D10",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "gtrfrk10mjb", "gtrfrk10mje" ],
+
+			"name":   "GuitarFreaks 10thMIX e-Amusement",
+			"series": "GuitarFreaks",
+			"year":   2003,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D39",
+			"regions":        [ "AAA", "ABA", "JAA", "JBA" ],
+			"identifiers":    [ "gtrfrk11maa", "gtrfrk11mac", "gtrfrk11mja", "gtrfrk11mjc" ],
+
+			"name":   "GuitarFreaks 11thMIX e-Amusement",
+			"series": "GuitarFreaks",
+			"year":   2004,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D40",
+			"regions":        [ "JAA", "JBA" ],
+			"identifiers":    [ "drmn10mja", "drmn10mjc" ],
+
+			"name":   "DrumMania 10thMIX e-Amusement",
+			"series": "DrumMania",
+			"year":   2004,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		},
+		{
+			"specifications": [ "GC" ],
+			"code":           "D40",
+			"regions":        [ "AAA", "ABA" ],
+			"identifiers":    [ "pcnfrk10maa", "pcnfrk10mac" ],
+
+			"name":   "PercussionFreaks 10thMIX e-Amusement",
+			"series": "DrumMania",
+			"year":   2004,
+
+			"flags": {
+				"ioBoard": "GX894-PWB(B)A"
+			}
+		}
+	]
+}
