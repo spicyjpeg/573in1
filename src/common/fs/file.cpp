@@ -15,12 +15,9 @@
  */
 
 #include <assert.h>
-#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include "common/fs/file.hpp"
-#include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 #include "common/mdec.hpp"
@@ -278,34 +275,6 @@ size_t Provider::saveVRAMBMP(const gpu::RectWH &rect, const char *path) {
 	delete file;
 
 	return length;
-}
-
-/* String table parser */
-
-static const char _ERROR_STRING[]{ "missingno" };
-
-const char *StringTable::get(util::Hash id) const {
-	auto header = as<StringTableHeader>();
-	auto blob   = as<char>();
-	auto entry  = util::getHashTableEntry(
-		reinterpret_cast<const StringTableEntry *>(header + 1),
-		header->numBuckets,
-		id
-	);
-
-	return entry ? &blob[entry->offset] : _ERROR_STRING;
-}
-
-size_t StringTable::format(
-	char *buffer, size_t length, util::Hash id, ...
-) const {
-	va_list ap;
-
-	va_start(ap, id);
-	size_t outLength = vsnprintf(buffer, length, get(id), ap);
-	va_end(ap);
-
-	return outLength;
 }
 
 }

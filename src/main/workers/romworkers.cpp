@@ -443,7 +443,7 @@ bool flashHeaderWriteWorker(App &app) {
 
 	// Restore the rest of the sector that was erased.
 	{
-		auto ptr = &buffer.as<const uint16_t>()[rom::FLASH_CRC_OFFSET / 2];
+		auto ptr = buffer.as<const uint16_t>() + (rom::FLASH_CRC_OFFSET / 2);
 
 		for (
 			uint32_t offset = rom::FLASH_CRC_OFFSET; offset < sectorLength;

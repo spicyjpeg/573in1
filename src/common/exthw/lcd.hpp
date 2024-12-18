@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 
 namespace exthw {
 
@@ -86,7 +87,7 @@ public:
 		cursorX = -1;
 		cursorY = -1;
 
-		__builtin_memset(buffer, fillCh, sizeof(buffer));
+		util::clear(buffer, fillCh);
 	}
 
 	void init(int _width, int _height);

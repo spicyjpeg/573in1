@@ -85,7 +85,7 @@ public:
 	inline VFSProvider(void) {
 		type = VFS;
 
-		__builtin_memset(_mountPoints, 0, sizeof(_mountPoints));
+		util::clear(_mountPoints);
 	}
 
 	bool mount(const char *prefix, Provider *provider, bool force = false);

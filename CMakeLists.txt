@@ -122,6 +122,7 @@ set(
 	src/main/workers/cartworkers.cpp
 	src/main/workers/miscworkers.cpp
 	src/main/workers/romworkers.cpp
+	src/main/formats.cpp
 	src/main/main.cpp
 	src/main/uibase.cpp
 	src/main/uicommon.cpp

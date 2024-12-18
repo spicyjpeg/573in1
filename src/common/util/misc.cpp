@@ -47,24 +47,25 @@ bool Date::isLeapYear(void) const {
 }
 
 int Date::getDayOfWeek(void) const {
-	// See https://datatracker.ietf.org/doc/html/rfc3339#appendix-B
-	int _year = year, _month = month - 2;
+	// See https://datatracker.ietf.org/doc/html/rfc3339#appendix-B.
+	int actualYear  = year;
+	int actualMonth = month - 2;
 
-	if (_month <= 0) {
-		_month += 12;
-		_year--;
+	if (actualMonth <= 0) {
+		actualMonth += 12;
+		actualYear--;
 	}
 
-	int century = _year / 100;
-	_year      %= 100;
+	int century = actualYear / 100;
+	actualYear %= 100;
 
 	int weekday = 0
 		+ day
-		+ (_month * 26 - 2) / 10
-		+ _year
-		+ _year / 4
-		+ century / 4
-		+ century * 5;
+		+ (actualMonth * 26 - 2) / 10
+		+ actualYear
+		+ actualYear / 4
+		+ century    * 5
+		+ century    / 4;
 
 	return weekday % 7;
 }
@@ -109,10 +110,51 @@ size_t Date::toString(char *output) const {
 	}
 
 	return sprintf(
-		output, "%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute,
+		output,
+		"%04d-%02d-%02d %02d:%02d:%02d",
+		year,
+		month,
+		day,
+		hour,
+		minute,
 		second
 	);
 }
+
+/* Critical section and mutex helpers */
+
+template<typename T> bool MutexFlags<T>::lock(T flags, int timeout) {
+	for (;;) {
+		{
+			ThreadCriticalSection sec;
+			__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+			if (!(_value & flags)) {
+				_value |= flags;
+				flushWriteQueue();
+
+				return true;
+			}
+		}
+
+		if (timeout <= 0)
+			return false;
+
+		delayMicroseconds(10);
+		timeout -= 10;
+	}
+}
+
+template<typename T> void MutexFlags<T>::unlock(T flags) {
+	ThreadCriticalSection sec;
+
+	_value &= ~flags;
+	flushWriteQueue();
+}
+
+template class MutexFlags<uint8_t>;
+template class MutexFlags<uint16_t>;
+template class MutexFlags<uint32_t>;
 
 /* PS1 executable loader */
 

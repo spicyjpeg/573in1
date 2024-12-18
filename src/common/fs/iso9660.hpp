@@ -36,8 +36,8 @@ struct [[gnu::packed]] ISODate {
 
 using ISOUint16 = ISOInt<uint16_t>;
 using ISOUint32 = ISOInt<uint32_t>;
-using ISOCharA  = uint8_t;
-using ISOCharD  = uint8_t;
+using ISOCharA  = char;
+using ISOCharD  = char;
 
 /* ISO9660 data structures (see https://wiki.osdev.org/ISO_9660) */
 
@@ -120,9 +120,9 @@ public:
 		return recordLength - (sizeof(ISORecord) + getNameLength());
 	}
 	inline const ISOCharD *getName(void) const {
-		return &nameLength + 1;
+		return reinterpret_cast<const ISOCharD *>(&nameLength + 1);
 	}
-	inline const uint8_t *getSystemUseData(void) const {
+	inline const void *getSystemUseData(void) const {
 		return getName() + getNameLength();
 	}
 

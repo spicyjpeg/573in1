@@ -150,7 +150,7 @@ bool executableWorker(App &app) {
 		deviceType  = "flash";
 		deviceIndex = region->bank;
 	} else {
-		__builtin_memset(header.magic, 0, sizeof(header.magic));
+		util::clear(header.magic);
 
 		auto file = app._fileIO.vfs.openFile(path, fs::READ);
 

@@ -47,7 +47,7 @@ public:
 	size_t toString(char *output) const;
 };
 
-/* Critical section helper */
+/* Critical section and mutex helpers */
 
 class CriticalSection {
 private:
@@ -73,6 +73,35 @@ public:
 	}
 	inline ~ThreadCriticalSection(void) {
 		enableInterrupts();
+	}
+};
+
+template<typename T> class MutexFlags {
+private:
+	T _value;
+
+public:
+	inline MutexFlags(void)
+	: _value(0) {}
+
+	bool lock(T flags, int timeout = 0);
+	void unlock(T flags);
+};
+
+template<typename T> class MutexLock {
+private:
+	MutexFlags<T> &_mutex;
+	T             _flags;
+
+public:
+	bool locked;
+
+	inline MutexLock(MutexFlags<T> &mutex, T flags, int timeout = 0)
+	: _mutex(mutex), _flags(flags) {
+		locked = _mutex.lock(_flags, timeout);
+	}
+	inline ~MutexLock(void) {
+		_mutex.unlock(_flags);
 	}
 };
 

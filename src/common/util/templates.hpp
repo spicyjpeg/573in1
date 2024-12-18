@@ -33,6 +33,15 @@ template<typename T> static inline uint32_t sum(const T *data, size_t length) {
 	return value;
 }
 
+template<typename T> static inline T bitwiseXOR(const T *data, size_t length) {
+	T value = 0;
+
+	for (; length; length--)
+		value ^= *(data++);
+
+	return value;
+}
+
 template<typename T> static constexpr inline T min(T a, T b) {
 	return (a < b) ? a : b;
 }

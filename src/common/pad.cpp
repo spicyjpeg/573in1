@@ -50,6 +50,34 @@ uint8_t exchangeByte(uint8_t value) {
 	return SIO_DATA(0);
 }
 
+size_t exchangeBytes(
+	const uint8_t *request,
+	uint8_t       *response,
+	size_t        reqLength,
+	size_t        maxRespLength,
+	bool          hasLastACK
+) {
+	size_t respLength = 0;
+
+	while (respLength < maxRespLength) {
+		uint8_t byte = exchangeByte(reqLength ? *(request++) : 0);
+		respLength++;
+
+		if (reqLength)
+			reqLength--;
+		if (response)
+			*(response++) = byte;
+
+		// Devices will not trigger /ACK after the last response byte.
+		if (hasLastACK || (respLength < maxRespLength)) {
+			if (!waitForInterrupt(IRQ_SIO0, _ACK_TIMEOUT))
+				break;
+		}
+	}
+
+	return respLength;
+}
+
 /* Controller port class */
 
 Port ports[2]{
@@ -83,68 +111,182 @@ void Port::stop(void) const {
 	SIO_CTRL(0) = sioFlags;
 }
 
-size_t Port::exchangeBytes(
-	const uint8_t *input, uint8_t *output, size_t length
-) const {
-	size_t remaining = length;
+PortError Port::pollController(void) {
+	PortLock lock(*this, ADDR_CONTROLLER);
 
-	for (; remaining; remaining--) {
-		*(output++) = exchangeByte(*(input++));
+	auto lastType  = controllerType;
+	controllerType = TYPE_NONE;
+	buttons        = 0;
+	leftAnalog.x   = 0;
+	leftAnalog.y   = 0;
+	rightAnalog.x  = 0;
+	rightAnalog.y  = 0;
 
-		// Controllers do not trigger /ACK on the last byte.
-		if (remaining > 1) {
-			if (!waitForInterrupt(IRQ_SIO0, _ACK_TIMEOUT))
-				break;
-		}
-	}
+	if (!lock.locked)
+		return NO_DEVICE;
 
-	return length - remaining;
-}
-
-size_t Port::exchangePacket(
-	uint8_t address, const uint8_t *request, uint8_t *response,
-	size_t reqLength, size_t maxRespLength
-) const {
-	size_t respLength = 0;
-
-	if (start(address)) {
-		while (respLength < maxRespLength) {
-			if (reqLength) {
-				*(response++) = exchangeByte(*(request++));
-				reqLength--;
-			} else {
-				*(response++) = exchangeByte(0);
-			}
-
-			respLength++;
-			if (!waitForInterrupt(IRQ_SIO0, _ACK_TIMEOUT))
-				break;
-		}
-	}
-
-	stop();
-	return respLength;
-}
-
-bool Port::pollPad(void) {
 	const uint8_t request[4]{ CMD_POLL, 0, 0, 0 };
 	uint8_t       response[8];
 
-	if (exchangePacket(
-		ADDR_CONTROLLER, request, response, sizeof(request), sizeof(response)
-	) >= 4) {
-		if (response[1] == PREFIX_PAD) {
-			padType = PadType(response[0] >> 4);
-			buttons = ~util::concat2(response[2], response[3]);
+	size_t respLength = exchangeBytes(
+		request,
+		response,
+		sizeof(request),
+		sizeof(response)
+	);
 
-			return true;
-		}
+	if (respLength < 4)
+		return INVALID_RESPONSE;
+	if (response[1] != PREFIX_CONTROLLER)
+		return UNSUPPORTED_DEVICE;
+
+	controllerType = ControllerType(response[0] >> 4);
+	buttons        = ~util::concat2(response[2], response[3]);
+
+	// The PS1 mouse outputs signed motion deltas while all other controllers
+	// use unsigned values.
+	int offset = (controllerType == TYPE_MOUSE) ? 0 : 128;
+
+	if (respLength >= 6) {
+		rightAnalog.y = response[4] - offset;
+		rightAnalog.x = response[5] - offset;
+	}
+	if (respLength >= 8) {
+		leftAnalog.y = response[6] - offset;
+		leftAnalog.x = response[7] - offset;
 	}
 
-	padType = PAD_NONE;
-	buttons = 0;
+	return (controllerType == lastType) ? NO_ERROR : CONTROLLER_CHANGED;
+}
 
-	return false;
+PortError Port::memoryCardRead(void *data, uint16_t lba) const {
+	PortLock lock(*this, ADDR_MEMORY_CARD);
+
+	if (!lock.locked)
+		return NO_DEVICE;
+
+	uint8_t lbaHigh = (lba >> 8) & 0xff;
+	uint8_t lbaLow  = (lba >> 0) & 0xff;
+
+	const uint8_t request[9]{
+		CMD_READ_SECTOR, 0, 0, lbaHigh, lbaLow, 0, 0, 0, 0
+	};
+	uint8_t response[9];
+
+	if (exchangeBytes(
+		request,
+		response,
+		sizeof(request),
+		sizeof(response),
+		true
+	) < sizeof(response))
+		return INVALID_RESPONSE;
+	if (
+		(response[2] != PREFIX_MEMORY_CARD) ||
+		(response[7] != lbaHigh) ||
+		(response[8] != lbaLow)
+	)
+		return INVALID_RESPONSE;
+
+#if 0
+	if (response[0] & (1 << 3)) {
+		// TODO: the "new card" flag must be cleared by issuing a dummy write
+		return CARD_CHANGED;
+	}
+#endif
+
+	auto ptr = reinterpret_cast<uint8_t *>(data);
+
+	if (exchangeBytes(
+		nullptr,
+		ptr,
+		0,
+		MEMORY_CARD_SECTOR_LENGTH,
+		true
+	) < MEMORY_CARD_SECTOR_LENGTH)
+		return INVALID_RESPONSE;
+
+	uint8_t ackResponse[2];
+
+	if (exchangeBytes(
+		nullptr,
+		ackResponse,
+		0,
+		sizeof(ackResponse)
+	) < sizeof(ackResponse))
+		return INVALID_RESPONSE;
+	if (ackResponse[1] != 'G')
+		return CARD_ERROR;
+
+	uint8_t checksum = 0
+		^ lbaHigh
+		^ lbaLow
+		^ util::bitwiseXOR(ptr, MEMORY_CARD_SECTOR_LENGTH);
+
+	return (checksum == ackResponse[0]) ? NO_ERROR : CHECKSUM_MISMATCH;
+}
+
+PortError Port::memoryCardWrite(const void *data, uint16_t lba) const {
+	PortLock lock(*this, ADDR_MEMORY_CARD);
+
+	if (!lock.locked)
+		return NO_DEVICE;
+
+	uint8_t lbaHigh = (lba >> 8) & 0xff;
+	uint8_t lbaLow  = (lba >> 0) & 0xff;
+
+	const uint8_t request[5]{ CMD_WRITE_SECTOR, 0, 0, lbaHigh, lbaLow };
+	uint8_t       response[5];
+
+	if (exchangeBytes(
+		request,
+		response,
+		sizeof(request),
+		sizeof(response),
+		true
+	) < sizeof(response))
+		return INVALID_RESPONSE;
+	if (response[2] != PREFIX_MEMORY_CARD)
+		return INVALID_RESPONSE;
+
+	auto    ptr      = reinterpret_cast<const uint8_t *>(data);
+	uint8_t checksum = 0
+		^ lbaHigh
+		^ lbaLow
+		^ util::bitwiseXOR(ptr, MEMORY_CARD_SECTOR_LENGTH);
+
+	if (exchangeBytes(
+		ptr,
+		nullptr,
+		MEMORY_CARD_SECTOR_LENGTH,
+		MEMORY_CARD_SECTOR_LENGTH,
+		true
+	) < MEMORY_CARD_SECTOR_LENGTH)
+		return INVALID_RESPONSE;
+
+	uint8_t ackResponse[4];
+
+	if (exchangeBytes(
+		&checksum,
+		response,
+		sizeof(checksum),
+		sizeof(ackResponse)
+	) < sizeof(ackResponse))
+		return INVALID_RESPONSE;
+
+	switch (ackResponse[3]) {
+		case 'G':
+			return NO_ERROR;
+
+		case 'N':
+			return CHECKSUM_MISMATCH;
+
+		case 0xff:
+			return CARD_ERROR;
+
+		default:
+			return INVALID_RESPONSE;
+	}
 }
 
 }

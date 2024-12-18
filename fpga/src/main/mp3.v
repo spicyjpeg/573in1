@@ -239,7 +239,7 @@ module MP3Descrambler (
 		.valueOut(swappedData)
 	);
 
-	// In the default variant, the value is additionally XOR's with a scrambled
+	// In the default variant, the value is additionally XORed with a scrambled
 	// copy of the key counter.
 	wire [15:0] unscrambledData;
 
@@ -436,10 +436,12 @@ module MP3StateMachine #(
 		.reset(reset),
 		.clkEn(1'b1),
 
-		// The I2S LRCK output is low while the left audio sample is being sent
-		// and high while the right sample is being sent.
+		// The sample clock (LRCK from the decoder) is high while the left audio
+		// sample is being sent to the DAC and *not* toggled before the sample's
+		// last BCLK pulse. This differs from the standard I2S LRCK polarity and
+		// timing.
 		.valueIn(mp3SampleClk),
-		.falling(sampleTick)
+		.rising (sampleTick)
 	);
 
 	/* Frame and sample counters */

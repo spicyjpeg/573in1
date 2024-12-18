@@ -22,7 +22,6 @@
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/io.hpp"
-#include "ps1/system.h"
 #include "vendor/diskio.h"
 #include "vendor/ff.h"
 
@@ -263,7 +262,7 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 
 static constexpr int _MUTEX_TIMEOUT = 30000000;
 
-static uint32_t _fatMutex = 0;
+static util::MutexFlags<uint32_t> _fatMutex;
 
 extern "C" DSTATUS disk_status(PDRV_t drive) {
 	auto     dev   = reinterpret_cast<storage::Device *>(drive);
@@ -343,33 +342,16 @@ extern "C" int ff_mutex_create(int id) {
 extern "C" void ff_mutex_delete(int id) {}
 
 extern "C" int ff_mutex_take(int id) {
-	uint32_t mask = 1 << id;
+	bool locked = _fatMutex.lock(1 << id, _MUTEX_TIMEOUT);
 
-	for (int timeout = _MUTEX_TIMEOUT; timeout > 0; timeout -= 10) {
-		{
-			util::ThreadCriticalSection sec;
-			__atomic_signal_fence(__ATOMIC_ACQUIRE);
+	if (!locked)
+		LOG_FS("mutex %d timeout", id);
 
-			auto locked = _fatMutex & mask;
-
-			if (!locked) {
-				_fatMutex |= mask;
-				flushWriteQueue();
-				return true;
-			}
-		}
-
-		delayMicroseconds(10);
-	}
-
-	return false;
+	return locked;
 }
 
 extern "C" void ff_mutex_give(int id) {
-	util::CriticalSection sec;
-
-	_fatMutex &= ~(1 << id);
-	flushWriteQueue();
+	_fatMutex.unlock(1 << id);
 }
 
 }

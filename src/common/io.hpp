@@ -234,6 +234,35 @@ public:
 	uint32_t resetZS01(void) const;
 };
 
+class I2CLock {
+private:
+	const I2CDriver &_driver;
+
+public:
+	inline I2CLock(const I2CDriver &driver)
+	: _driver(driver) {
+		_driver.start();
+	}
+	inline ~I2CLock(void) {
+		_driver.stop();
+	}
+};
+
+class I2CLockWithCS {
+private:
+	const I2CDriver &_driver;
+	int             _csDelay;
+
+public:
+	inline I2CLockWithCS(const I2CDriver &driver, int csDelay = 0)
+	: _driver(driver), _csDelay(csDelay) {
+		_driver.startWithCS(_csDelay);
+	}
+	inline ~I2CLockWithCS(void) {
+		_driver.stopWithCS(_csDelay);
+	}
+};
+
 /* 1-wire driver */
 
 class OneWireDriver {

@@ -96,14 +96,14 @@ uint8_t ButtonState::_getHeld(void) const {
 	uint8_t held   = 0;
 
 #ifdef ENABLE_PS1_CONTROLLER
-	if (pad::ports[0].pollPad() || pad::ports[1].pollPad()) {
+	if (pad::ports[0].pollController() || pad::ports[1].pollController()) {
 		for (int i = 1; i >= 0; i--) {
 			auto &port = pad::ports[i];
 
 			if (
-				(port.padType != pad::PAD_DIGITAL) &&
-				(port.padType != pad::PAD_ANALOG) &&
-				(port.padType != pad::PAD_ANALOG_STICK)
+				(port.controllerType != pad::TYPE_DIGITAL) &&
+				(port.controllerType != pad::TYPE_ANALOG) &&
+				(port.controllerType != pad::TYPE_ANALOG_STICK)
 			)
 				continue;
 

@@ -18,7 +18,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 #include "common/spu.hpp"
@@ -38,12 +37,13 @@ enum FileSystemType {
 	FAT32          =  3,
 	EXFAT          =  4,
 	ISO9660        =  5,
-	PACKAGE_MEMORY =  6,
-	PACKAGE_FILE   =  7,
-	ZIP_MEMORY     =  8,
-	ZIP_FILE       =  9,
-	HOST           = 10,
-	VFS            = 11
+	MEMORY_CARD    =  6,
+	PACKAGE_MEMORY =  7,
+	PACKAGE_FILE   =  8,
+	ZIP_MEMORY     =  9,
+	ZIP_FILE       = 10,
+	HOST           = 11,
+	VFS            = 12
 };
 
 // These are functionally equivalent to the FA_* flags used by FatFs.
@@ -156,41 +156,6 @@ public:
 	size_t loadBS(gpu::Image &output, const gpu::RectWH &rect, const char *path);
 	size_t loadVAG(spu::Sound &output, uint32_t offset, const char *path);
 	size_t saveVRAMBMP(const gpu::RectWH &rect, const char *path);
-};
-
-/* String table parser */
-
-class StringTableHeader {
-public:
-	uint32_t magic[2];
-	uint16_t numBuckets, numEntries;
-
-	inline bool validateMagic(void) const {
-		return (magic[0] == "573s"_c) && (magic[1] == "trng"_c);
-	}
-};
-
-class StringTableEntry {
-public:
-	util::Hash id;
-	uint16_t   offset, chained;
-
-	inline util::Hash getHash(void) const {
-		return id;
-	}
-	inline uint16_t getChained(void) const {
-		return chained;
-	}
-};
-
-class StringTable : public util::Data {
-public:
-	inline const char *operator[](util::Hash id) const {
-		return get(id);
-	}
-
-	const char *get(util::Hash id) const;
-	size_t format(char *buffer, size_t length, util::Hash id, ...) const;
 };
 
 }

@@ -151,7 +151,7 @@ size_t PackageProvider::loadData(util::Data &output, const char *path) {
 			if (!output.allocate(uncompLength + margin))
 				return 0;
 
-			auto compPtr = &output.as<uint8_t>()[margin];
+			auto compPtr = &output.as<uint8_t>() + margin;
 
 			if (
 				(_file->seek(offset) != offset) ||
@@ -220,7 +220,7 @@ size_t PackageProvider::loadData(void *output, size_t length, const char *path) 
 		if (compLength) {
 			// Package on disk, file compressed
 			auto margin  = util::getLZ4InPlaceMargin(compLength);
-			auto compPtr = &reinterpret_cast<uint8_t *>(output)[margin];
+			auto compPtr = reinterpret_cast<uint8_t *>(output) + margin;
 
 			if (_file->read(compPtr, compLength) < compLength)
 				return 0;
