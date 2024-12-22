@@ -91,17 +91,28 @@ enum SignatureFlag : uint8_t {
 	SIGNATURE_PAD_WITH_FF   = 1 << 2
 };
 
+enum IOBoardType : uint8_t {
+	IO_BOARD_NONE         = 0,
+	IO_BOARD_ANALOG       = 1,
+	IO_BOARD_KICK         = 2,
+	IO_BOARD_FISHING_REEL = 3,
+	IO_BOARD_DIGITAL      = 4,
+	IO_BOARD_DDR_KARAOKE  = 5,
+	IO_BOARD_GUNMANIA     = 6
+};
+
+enum PCMCIADeviceType : uint8_t {
+	PCMCIA_NONE          = 0,
+	PCMCIA_NETWORK_PCB   = 1,
+	PCMCIA_FLASH_CARD_8  = 2,
+	PCMCIA_FLASH_CARD_16 = 3,
+	PCMCIA_FLASH_CARD_32 = 4,
+	PCMCIA_FLASH_CARD_64 = 5
+};
+
 enum GameFlag : uint8_t {
-	GAME_IO_BOARD_BITMASK            = 7 << 0,
-	GAME_IO_BOARD_NONE               = 0 << 0,
-	GAME_IO_BOARD_ANALOG             = 1 << 0,
-	GAME_IO_BOARD_KICK               = 2 << 0,
-	GAME_IO_BOARD_FISHING_REEL       = 3 << 0,
-	GAME_IO_BOARD_DIGITAL            = 4 << 0,
-	GAME_IO_BOARD_DDR_KARAOKE        = 5 << 0,
-	GAME_IO_BOARD_GUNMANIA           = 6 << 0,
-	GAME_INSTALL_RTC_HEADER_REQUIRED = 1 << 3,
-	GAME_RTC_HEADER_REQUIRED         = 1 << 4
+	GAME_INSTALL_RTC_HEADER_REQUIRED = 1 << 0,
+	GAME_RTC_HEADER_REQUIRED         = 1 << 1
 };
 
 /* Game database structures */
@@ -130,11 +141,14 @@ struct GameInfo {
 public:
 	char specifications[MAX_SPECIFICATIONS];
 	char regions[MAX_REGIONS][3];
-	char code[3];
+	char code[4];
 
-	uint8_t  flags;
 	uint16_t nameOffset;
 	uint16_t year;
+
+	IOBoardType      ioBoard;
+	PCMCIADeviceType pcmcia[2];
+	uint8_t          flags;
 
 	ROMHeaderInfo rtcHeader, flashHeader;
 	CartInfo      installCart, gameCart;
@@ -145,15 +159,16 @@ public:
 static constexpr size_t NUM_SORT_TABLES = 4;
 
 enum SortOrder : uint8_t {
-	SORT_CODE = 0,
-	SORT_NAME = 1,
-	SORT_YEAR = 2
+	SORT_CODE   = 0,
+	SORT_NAME   = 1,
+	SORT_SERIES = 2,
+	SORT_YEAR   = 3
 };
 
 class GameDBHeader {
 public:
 	uint32_t magic[2];
-	uint16_t sortTableOffsets[NUM_SORT_TABLES];
+	uint16_t numEntries, numSortOrders;
 
 	inline bool validateMagic(void) const {
 		return (magic[0] == "573g"_c) && (magic[1] == "medb"_c);

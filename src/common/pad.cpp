@@ -268,7 +268,7 @@ PortError Port::memoryCardWrite(const void *data, uint16_t lba) const {
 
 	if (exchangeBytes(
 		&checksum,
-		response,
+		ackResponse,
 		sizeof(checksum),
 		sizeof(ackResponse)
 	) < sizeof(ackResponse))

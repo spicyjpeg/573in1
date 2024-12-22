@@ -116,7 +116,7 @@
 			"source": "${PROJECT_SOURCE_DIR}/data/fpga.bit"
 		},
 		{
-			"type":   "db",
+			"type":   "gamedb",
 			"name":   "data/games.db",
 			"source": "${PROJECT_SOURCE_DIR}/data/games.json"
 		},

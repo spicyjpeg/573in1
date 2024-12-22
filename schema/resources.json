@@ -23,7 +23,7 @@
 				"properties": {
 					"type": {
 						"title":       "Entry type",
-						"description": "Must be 'empty', 'text', 'binary', 'tim', 'metrics', 'palette', 'strings' or 'db'.",
+						"description": "Must be 'empty', 'text', 'binary', 'tim', 'metrics', 'palette', 'strings' or 'gamedb'.",
 						"type":        "string",
 
 						"enum": [
@@ -34,7 +34,7 @@
 							"metrics",
 							"palette",
 							"strings",
-							"db"
+							"gamedb"
 						]
 					},
 					"name": {
@@ -172,7 +172,7 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":      { "pattern": "^metrics|palette|strings|db$" },
+							"type":      { "pattern": "^metrics|palette|strings|gamedb$" },
 							"name":      { "type":    "string" },
 							"compLevel": {},
 
@@ -234,18 +234,18 @@
 						}
 					},
 					{
-						"required":             [ "db" ],
+						"required":             [ "gamedb" ],
 						"additionalProperties": false,
 
 						"properties": {
-							"type":      { "const": "db" },
+							"type":      { "const": "gamedb" },
 							"name":      { "type":  "string" },
 							"compLevel": {},
 
 							"strings": {
 								"title":       "Game database",
 								"description": "Game database root object. If not specified, the source attribute must be a path to a JSON file containing this object.",
-								"type":        "object"
+								"$ref":        "gamedb.json"
 							}
 						}
 					}

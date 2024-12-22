@@ -151,7 +151,7 @@ size_t PackageProvider::loadData(util::Data &output, const char *path) {
 			if (!output.allocate(uncompLength + margin))
 				return 0;
 
-			auto compPtr = &output.as<uint8_t>() + margin;
+			auto compPtr = output.as<uint8_t>() + margin;
 
 			if (
 				(_file->seek(offset) != offset) ||

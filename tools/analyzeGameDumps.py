@@ -26,30 +26,49 @@ from typing   import Any
 from common.analysis   import MAMENVRAMDump, getBootloaderVersion
 from common.cartparser import parseCartHeader, parseROMHeader
 from common.decompile  import AnalysisError
-from common.gamedb     import GameInfo
+from common.gamedb     import GameInfo, PCMCIADeviceType
 from common.util       import \
 	JSONFormatter, JSONGroupedArray, JSONGroupedObject, setupLogger
 
 ## Game analysis
 
+_PCMCIA_CARD_TYPES: dict[int | None, PCMCIADeviceType] = {
+	None: PCMCIADeviceType.PCMCIA_NONE,
+	8:    PCMCIADeviceType.PCMCIA_FLASH_CARD_8,
+	16:   PCMCIADeviceType.PCMCIA_FLASH_CARD_16,
+	32:   PCMCIADeviceType.PCMCIA_FLASH_CARD_32,
+	64:   PCMCIADeviceType.PCMCIA_FLASH_CARD_64
+}
+
 def analyzeGame(game: GameInfo, nvramDir: Path, reanalyze: bool = False):
-	dump: MAMENVRAMDump = MAMENVRAMDump(nvramDir)
+	dump: MAMENVRAMDump = MAMENVRAMDump.fromDirectory(nvramDir)
 
-	if (reanalyze or game.bootloaderVersion is None) and dump.bootloader:
-		try:
-			game.bootloaderVersion = getBootloaderVersion(dump.bootloader)
-		except AnalysisError:
-			pass
+	if reanalyze or not game.pcmcia1:
+		game.pcmcia1 = _PCMCIA_CARD_TYPES[dump.pcmcia1Size]
+	if reanalyze or not game.pcmcia2:
+		game.pcmcia2 = _PCMCIA_CARD_TYPES[dump.pcmcia2Size]
 
-	if (reanalyze or game.rtcHeader   is None) and dump.rtcHeader:
-		game.rtcHeader   = parseROMHeader(dump.rtcHeader, True)
-	if (reanalyze or game.flashHeader is None) and dump.flashHeader:
-		game.flashHeader = parseROMHeader(dump.flashHeader)
+	if reanalyze or game.bootloaderVersion is None:
+		game.bootloaderVersion = None
 
-	if (reanalyze or game.installCart is None) and dump.installCart:
-		game.installCart = parseCartHeader(dump.installCart)
-	if (reanalyze or game.gameCart    is None) and dump.gameCart:
-		game.gameCart    = parseCartHeader(dump.gameCart)
+		if dump.bootloader:
+			try:
+				game.bootloaderVersion = getBootloaderVersion(dump.bootloader)
+			except AnalysisError:
+				pass
+
+	if reanalyze or game.rtcHeader   is None:
+		game.rtcHeader   = \
+			parseROMHeader(dump.rtcHeader, True) if dump.rtcHeader   else None
+	if reanalyze or game.flashHeader is None:
+		game.flashHeader = \
+			parseROMHeader(dump.flashHeader)     if dump.flashHeader else None
+	if reanalyze or game.installCart is None:
+		game.installCart = \
+			parseCartHeader(dump.installCart)    if dump.installCart else None
+	if reanalyze or game.gameCart    is None:
+		game.gameCart    = \
+			parseCartHeader(dump.gameCart)       if dump.gameCart    else None
 
 ## Main
 

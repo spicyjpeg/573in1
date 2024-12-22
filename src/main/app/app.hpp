@@ -34,6 +34,7 @@
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"
 #include "main/cart/cartio.hpp"
+#include "main/formats.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
 
@@ -225,9 +226,11 @@ private:
 	ui::ScreenshotOverlay _screenshotOverlay;
 
 	ui::Context        &_ctx;
-	fs::StringTable    _stringTable;
 	FileIOManager      _fileIO;
 	AudioStreamManager _audioStream;
+
+	formats::GameDB      _gameDB;
+	formats::StringTable _stringTable;
 
 	Thread       _workerThread;
 	util::Data   _workerStack;

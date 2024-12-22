@@ -11,35 +11,31 @@
 			"name": "Dark Horse Legend",
 			"year": 1998,
 
-			"flags": {},
-
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":       "word",
 					"forceGXSpec": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":       "word",
 					"forceGXSpec": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -54,8 +50,7 @@
 				"checksumFlags": {
 					"width":       "word",
 					"forceGXSpec": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -74,28 +69,25 @@
 			"rtcHeader":   {
 				"yearField": "19-97",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"scrambled":      true,
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":           "byteInWordOut",
 					"bigEndianOutput": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-97",
 
-				"headerFlags":    {
+				"headerFlags": {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
-				},
-				"checksumFlags":  {},
-				"signatureFlags": {}
+				}
 			}
 		},
 		{
@@ -114,28 +106,25 @@
 			"rtcHeader":   {
 				"yearField": "19-97",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"scrambled":      true,
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":           "byteInWordOut",
 					"bigEndianOutput": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-97",
 
-				"headerFlags":    {
+				"headerFlags": {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
-				},
-				"checksumFlags":  {},
-				"signatureFlags": {}
+				}
 			}
 		},
 		{
@@ -148,35 +137,31 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			},
+			"ioBoard": "GE765-PWB(B)A",
 
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -190,8 +175,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -204,35 +188,31 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			},
+			"ioBoard": "GE765-PWB(B)A",
 
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -246,8 +226,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -259,27 +238,19 @@
 			"name": "Jikkyou Powerful Pro Yakyuu EX",
 			"year": 1998,
 
-			"flags": {},
-
-			"rtcHeader":   {
+			"rtcHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
-			"flashHeader": {
-				"headerFlags":    {},
-				"checksumFlags":  {},
-				"signatureFlags": {}
-			},
-			"gameCart":    {
+			"gameCart":  {
 				"pcb": "unknown-x76f041",
 
 				"dataKey":   "b8-a7-c7-cf-cd-b5-be-bd",
@@ -291,8 +262,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -304,27 +274,19 @@
 			"name": "Jikkyou Powerful Pro Yakyuu EX '98",
 			"year": 1998,
 
-			"flags": {},
-
-			"rtcHeader":   {
+			"rtcHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
-			"flashHeader": {
-				"headerFlags":    {},
-				"checksumFlags":  {},
-				"signatureFlags": {}
-			},
-			"gameCart":    {
+			"gameCart":  {
 				"pcb": "unknown-x76f041",
 
 				"dataKey":   "b8-bc-c7-ce-ce-b5-be-be",
@@ -336,8 +298,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -349,20 +310,17 @@
 			"name": "Konami 80's AC Special",
 			"year": 1998,
 
-			"flags": {},
-
 			"rtcHeader": {
 				"yearField": "98-19",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":  {
 				"pcb": "unknown-x76f041",
@@ -376,8 +334,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -390,36 +347,32 @@
 			"series": "Dance Dance Revolution",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)",
-
+			"ioBoard": "GX700-PWB(F)",
+			"flags":   {
 				"requiresRTCHeader": true
 			},
 
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "39-38",
 
-				"headerFlags":    {
+				"headerFlags": {
 					"format":         "earlyExtended",
 					"specType":       "actual",
 					"usesPublicArea": true
-				},
-				"checksumFlags":  {},
-				"signatureFlags": {}
+				}
 			}
 		},
 		{
@@ -432,37 +385,33 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -475,8 +424,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -489,37 +437,33 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -550,35 +494,31 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			},
+			"ioBoard": "GE765-PWB(B)A",
 
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -592,8 +532,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -606,35 +545,31 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			},
+			"ioBoard": "GE765-PWB(B)A",
 
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -648,8 +583,7 @@
 				},
 				"checksumFlags": {
 					"width": "word"
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -662,9 +596,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			},
 
@@ -673,16 +606,15 @@
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -735,9 +667,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			},
 
@@ -746,16 +677,15 @@
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -814,28 +744,25 @@
 			"rtcHeader":   {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"scrambled":      true,
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":           "byteInWordOut",
 					"bigEndianOutput": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-98",
 
-				"headerFlags":    {
+				"headerFlags": {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
-				},
-				"checksumFlags":  {},
-				"signatureFlags": {}
+				}
 			}
 		},
 		{
@@ -847,33 +774,30 @@
 			"name": "Gachaga Champ",
 			"year": 1999,
 
-			"flags": {},
+			"pcmcia1": "flashCard16MB",
 
 			"rtcHeader":   {
 				"yearField": "19-97",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"scrambled":      true,
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":           "byteInWordOut",
 					"bigEndianOutput": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-97",
 
-				"headerFlags":    {
+				"headerFlags": {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
-				},
-				"checksumFlags":  {},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -886,8 +810,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -900,23 +823,20 @@
 			"series": "DrumMania",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "76-39-b4-fa",
@@ -962,37 +882,34 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard32MB",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1023,23 +940,21 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard32MB",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -1086,23 +1001,20 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "5a-18-94-04",
@@ -1150,35 +1062,31 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1191,8 +1099,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1205,23 +1112,20 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -1250,8 +1154,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1264,39 +1167,36 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.3",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"installCart": {
 				"pcb": "unknown-x76f041",
@@ -1345,23 +1245,20 @@
 			"series": "Fisherman's Bait",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			},
+			"ioBoard": "GE765-PWB(B)A",
 
 			"rtcHeader":   {
 				"yearField": "99-19",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "99-19",
@@ -1390,8 +1287,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1404,35 +1300,32 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard16MB",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1445,8 +1338,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1459,37 +1351,33 @@
 			"series": "Dance Dance Revolution Solo",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1520,35 +1408,31 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1561,8 +1445,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1575,35 +1458,31 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width": "word"
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1616,8 +1495,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1630,39 +1508,35 @@
 			"series": "Dance Dance Revolution Solo",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.3",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"installCart": {
 				"pcb": "unknown-x76f041",
@@ -1710,23 +1584,21 @@
 			"name": "GunMania",
 			"year": 2000,
 
-			"flags": {
-				"ioBoard": "PWB0000073070"
-			},
+			"ioBoard": "PWB0000073070",
+			"pcmcia2": "flashCard32MB",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "25-bc-70-00",
@@ -1755,33 +1627,28 @@
 			"name": "Hyper Bishi Bashi Champ [2-player]",
 			"year": 1999,
 
-			"flags": {},
-
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"scrambled":      true,
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":           "byteInWordOut",
 					"bigEndianOutput": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags": {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
-				},
-				"checksumFlags":  {},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -1810,25 +1677,22 @@
 			"series": "DrumMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.5",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "b6-1a-a6-c4",
@@ -1899,23 +1763,21 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard32MB",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "f3-48-92-14",
@@ -1945,8 +1807,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -1958,37 +1819,33 @@
 			"name": "Dance Dance Revolution Karaoke MIX",
 			"year": 1999,
 
-			"flags": {
-				"ioBoard": "GX921-PWB(B)"
-			},
+			"ioBoard": "GX921-PWB(B)",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -2019,37 +1876,34 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard32MB",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -2080,23 +1934,21 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard32MB",
 
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -2142,21 +1994,18 @@
 			"name": "Step Champ",
 			"year": 1999,
 
-			"flags": {},
-
 			"rtcHeader":   {
 				"yearField": "19-99",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "57-33-18-15",
@@ -2202,39 +2051,35 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.7",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -2271,37 +2116,33 @@
 			"name": "Dance Dance Revolution Karaoke MIX 2",
 			"year": 2000,
 
-			"flags": {
-				"ioBoard": "GX921-PWB(B)"
-			},
+			"ioBoard": "GX921-PWB(B)",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-x76f041",
@@ -2332,25 +2173,23 @@
 			"series": "GuitarFreaks",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard16MB",
 
 			"bootloaderVersion": "1.4F",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -2418,28 +2257,22 @@
 			"name": "Anime Champ",
 			"year": 2000,
 
-			"flags": {},
+			"pcmcia1": "flashCard32MB",
 
-			"rtcHeader":   {
+			"rtcHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
-			"flashHeader": {
-				"headerFlags":    {},
-				"checksumFlags":  {},
-				"signatureFlags": {}
-			},
-			"gameCart":    {
+			"gameCart":  {
 				"pcb": "unknown-x76f041",
 
 				"dataKey": "52-9a-1c-d3-2d-ae-89-2c",
@@ -2466,23 +2299,22 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			},
+			"ioBoard": "GX700-PWB(F)",
+			"pcmcia1": "flashCard32MB",
+			"pcmcia2": "flashCard64MB",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "b9-91-77-c2",
@@ -2512,8 +2344,7 @@
 				"checksumFlags": {
 					"width":    "byte",
 					"inverted": true
-				},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -2525,21 +2356,18 @@
 			"name": "Salary Man Champ [2-player]",
 			"year": 2000,
 
-			"flags": {},
-
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "b6-29-92-78",
@@ -2585,39 +2413,36 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.6",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"installCart": {
 				"pcb": "unknown-x76f041",
@@ -2673,25 +2498,22 @@
 			"series": "DrumMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.8",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "15-5e-83-d2",
@@ -2764,25 +2586,22 @@
 			"series": "DrumMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.8",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "1e-8a-e8-76",
@@ -2855,25 +2674,23 @@
 			"series": "GuitarFreaks",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard16MB",
 
 			"bootloaderVersion": "1.8",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "15-5e-83-d2",
@@ -2946,25 +2763,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -3019,25 +2833,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -3092,25 +2903,23 @@
 			"series": "GuitarFreaks",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard32MB",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -3165,25 +2974,23 @@
 			"series": "Dance Dance Revolution",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -3238,39 +3045,36 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.8",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"installCart": {
 				"pcb": "unknown-x76f041",
@@ -3326,9 +3130,9 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
+			"flags":   {
 				"installRequiresRTCHeader": true
 			},
 
@@ -3337,30 +3141,28 @@
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"installCart": {
 				"pcb": "unknown-x76f041",
@@ -3415,23 +3217,20 @@
 			"name": "Kick & Kick",
 			"year": 2001,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(K)"
-			},
+			"ioBoard": "GX700-PWB(K)",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"signatureField": "66-2d-b6-83",
@@ -3461,25 +3260,22 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.8",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -3551,9 +3347,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			},
 
@@ -3562,16 +3357,15 @@
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
@@ -3624,25 +3418,22 @@
 			"series": "Mambo A Go-Go",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -3697,39 +3488,35 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.8",
 
 			"rtcHeader":   {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-00",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"gameCart":    {
 				"pcb": "unknown-zs01",
@@ -3765,37 +3552,29 @@
 			"name": "Great Bishi Bashi Champ",
 			"year": 2002,
 
-			"flags": {},
+			"pcmcia1": "flashCard32MB",
 
-			"rtcHeader":   {
+			"rtcHeader": {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
-			"flashHeader": {
-				"headerFlags":    {},
-				"checksumFlags":  {},
-				"signatureFlags": {}
-			},
-			"gameCart":    {
+			"gameCart":  {
 				"pcb": "unknown-x76f041",
 
 				"dataKey": "37-19-06-94-d2-67-1a-bb",
 
-				"headerFlags":   {
+				"headerFlags": {
 					"format": "basic"
-				},
-				"checksumFlags": {},
-				"idFlags":       {}
+				}
 			}
 		},
 		{
@@ -3808,25 +3587,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -3881,25 +3657,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -3954,25 +3727,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -4027,25 +3797,23 @@
 			"series": "GuitarFreaks",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard32MB",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -4100,25 +3868,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4173,25 +3938,22 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4246,25 +4008,23 @@
 			"series": "GuitarFreaks",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard32MB",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4319,25 +4079,23 @@
 			"series": "Dance Dance Revolution",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -4392,25 +4150,23 @@
 			"series": "Dance Dance Revolution",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4465,25 +4221,23 @@
 			"series": "Martial Beat",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.9",
 
 			"rtcHeader":   {
 				"yearField": "20-01",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-01",
@@ -4538,25 +4292,22 @@
 			"series": "DrumMania",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4611,25 +4362,22 @@
 			"series": "DrumMania",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4684,25 +4432,23 @@
 			"series": "GuitarFreaks",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard32MB",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4757,25 +4503,23 @@
 			"series": "Dance Dance Revolution",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4830,25 +4574,23 @@
 			"series": "Dance Dance Revolution",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia2": "flashCard32MB",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-02",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-02",
@@ -4903,25 +4645,22 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-03",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-03",
@@ -4976,25 +4715,22 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-03",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-03",
@@ -5049,25 +4785,23 @@
 			"series": "GuitarFreaks",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
+			"pcmcia1": "flashCard32MB",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-03",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-03",
@@ -5122,25 +4856,22 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			},
+			"ioBoard": "GX894-PWB(B)A",
 
 			"bootloaderVersion": "1.95",
 
 			"rtcHeader":   {
 				"yearField": "20-03",
 
-				"headerFlags":    {
+				"headerFlags":   {
 					"format":         "extended",
 					"specType":       "actual",
 					"usesPublicArea": true
 				},
-				"checksumFlags":  {
+				"checksumFlags": {
 					"width":    "word",
 					"inverted": true
-				},
-				"signatureFlags": {}
+				}
 			},
 			"flashHeader": {
 				"yearField": "20-03",

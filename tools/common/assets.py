@@ -17,12 +17,13 @@
 from collections.abc import Generator, Mapping, Sequence
 from dataclasses     import dataclass
 from struct          import Struct
-from typing          import Any
+from typing          import Any, Callable
 
 import numpy
-from numpy import ndarray
-from PIL   import Image
-from .util import \
+from numpy   import ndarray
+from PIL     import Image
+from .gamedb import GAME_INFO_STRUCT, GameInfo
+from .util   import \
 	HashTableBuilder, StringBlobBuilder, colorFromString, hashData, \
 	roundUpToMultiple
 
@@ -263,7 +264,7 @@ def generateStringTable(
 	for keyHash, string in _walkStringTree(strings):
 		hashTable.addEntry(keyHash, blob.addString(string))
 
-	tableLength: int = 0 \
+	blobOffset: int = 0 \
 		+ _STRING_TABLE_HEADER_STRUCT.size \
 		+ _STRING_TABLE_ENTRY_STRUCT.size * len(hashTable.entries)
 
@@ -280,11 +281,61 @@ def generateStringTable(
 		else:
 			tableData += _STRING_TABLE_ENTRY_STRUCT.pack(
 				entry.fullHash,
-				tableLength + entry.data,
+				blobOffset + entry.data,
 				entry.chainIndex
 			)
 
 	return tableData + blob.data
+
+## Game database generator
+
+_GAMEDB_HEADER_STRUCT:    Struct = Struct("< 8s 2H")
+_GAMEDB_HEADER_MAGIC:     bytes  = b"573gmedb"
+_GAMEDB_STRING_ALIGNMENT: int    = 4
+
+_GAMEDB_SORT_ORDERS: Sequence[Callable[[ GameInfo ], tuple]] = (
+	lambda game: ( game.code,         game.name ),            # SORT_CODE
+	lambda game: ( game.name,         game.code ),            # SORT_NAME
+	lambda game: ( game.series or "", game.code, game.name ), # SORT_SERIES
+	lambda game: ( game.year,         game.code, game.name )  # SORT_YEAR
+)
+
+def generateGameDB(gamedb: Mapping[str, Any]) -> bytearray:
+	numEntries:     int = len(gamedb["games"])
+	gameListOffset: int = 0 \
+		+ _GAMEDB_HEADER_STRUCT.size \
+		+ len(_GAMEDB_SORT_ORDERS) * 2 * numEntries
+	blobOffset:     int = 0 \
+		+ gameListOffset \
+		+ GAME_INFO_STRUCT.size * numEntries
+
+	games: list[GameInfo]    = []
+	blob:  StringBlobBuilder = StringBlobBuilder(_GAMEDB_STRING_ALIGNMENT)
+
+	gameListData:  bytearray = bytearray()
+	sortTableData: bytearray = bytearray()
+	sortTableData           += _GAMEDB_HEADER_STRUCT.pack(
+		_GAMEDB_HEADER_MAGIC,
+		numEntries,
+		len(_GAMEDB_SORT_ORDERS)
+	)
+
+	for info in gamedb["games"]:
+		game: GameInfo = GameInfo.fromJSONObject(info)
+		name: bytes    = game.name.encode("utf-8") + b"\0"
+
+		games.append(game)
+		gameListData += game.toBinary(blobOffset + blob.addString(name))
+
+	for sortOrder in _GAMEDB_SORT_ORDERS:
+		indices: list[int] = \
+			sorted(range(numEntries), key = lambda i: sortOrder(games[i]))
+
+		for index in indices:
+			offset: int    = gameListOffset + GAME_INFO_STRUCT.size * index
+			sortTableData += offset.to_bytes(2, "little")
+
+	return sortTableData + gameListData + blob.data
 
 ## Package header generator
 

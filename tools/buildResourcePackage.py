@@ -26,26 +26,40 @@ from typing          import Any
 
 import lz4.block
 from common.assets import *
+from common.util   import normalizeFileName
 from PIL           import Image
 
 ## Asset conversion
+
+def getJSONObject(asset: Mapping[str, Any], sourceDir: Path, key: str) -> dict:
+	if key in asset:
+		return asset[key]
+
+	with open(sourceDir / asset["source"], "rt", encoding = "utf-8") as file:
+		return json.load(file)
 
 def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 	match asset.get("type", "file").strip():
 		case "empty":
 			return bytes(int(asset.get("size", 0)))
 
-		case "text" | "binary":
-			with open(sourceDir / asset["source"], "rb") as file:
-				data: ByteString = file.read()
+		case "text":
+			# The file is read in text mode and then encoded back to binary
+			# manually in order to translate any CRLF line endings to LF only.
+			with open(
+				sourceDir / asset["source"], "rt", encoding = "utf-8"
+			) as file:
+				return file.read().encode("utf-8")
 
-			return data
+		case "binary":
+			with open(sourceDir / asset["source"], "rb") as file:
+				return file.read()
 
 		case "tim":
 			ix: int = int(asset["imagePos"]["x"])
 			iy: int = int(asset["imagePos"]["y"])
-			cx: int = int(asset["clutPos"]["x"])
-			cy: int = int(asset["clutPos"]["y"])
+			cx: int = int(asset["clutPos"] ["x"])
+			cy: int = int(asset["clutPos"] ["y"])
 
 			image: Image.Image = Image.open(sourceDir / asset["source"])
 			image.load()
@@ -58,49 +72,22 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 			return generateIndexedTIM(image, ix, iy, cx, cy)
 
 		case "metrics":
-			if "metrics" in asset:
-				metrics: dict = asset["metrics"]
-			else:
-				with open(
-					sourceDir / asset["source"], "rt", encoding = "utf-8"
-				) as file:
-					metrics: dict = json.load(file)
-
-			return generateFontMetrics(metrics)
+			return generateFontMetrics(
+				getJSONObject(asset, sourceDir, "metrics")
+			)
 
 		case "palette":
-			if "palette" in asset:
-				palette: dict = asset["palette"]
-			else:
-				with open(
-					sourceDir / asset["source"], "rt", encoding = "utf-8"
-				) as file:
-					palette: dict = json.load(file)
-
-			return generateColorPalette(palette)
+			return generateColorPalette(
+				getJSONObject(asset, sourceDir, "palette")
+			)
 
 		case "strings":
-			if "strings" in asset:
-				strings: dict = asset["strings"]
-			else:
-				with open(
-					sourceDir / asset["source"], "rt", encoding = "utf-8"
-				) as file:
-					strings: dict = json.load(file)
+			return generateStringTable(
+				getJSONObject(asset, sourceDir, "strings")
+			)
 
-			return generateStringTable(strings)
-
-		case "db":
-			if "db" in asset:
-				db: dict = asset["db"]
-			else:
-				with open(
-					sourceDir / asset["source"], "rt", encoding = "utf-8"
-				) as file:
-					db: dict = json.load(file)
-
-			# TODO: implement
-			return b""
+		case "gamedb":
+			return generateGameDB(getJSONObject(asset, sourceDir, "gamedb"))
 
 		case _type:
 			raise KeyError(f"unsupported asset type '{_type}'")
@@ -154,6 +141,13 @@ def createParser() -> ArgumentParser:
 		metavar = "dir"
 	)
 	group.add_argument(
+		"-e", "--export",
+		type    = Path,
+		help    = \
+			"Dump generated files (before compression) to specified path",
+		metavar = "dir"
+	)
+	group.add_argument(
 		"configFile",
 		type = FileType("rt", encoding = "utf-8"),
 		help = "Path to JSON configuration file",
@@ -179,11 +173,19 @@ def main():
 	fileData: bytearray                    = bytearray()
 
 	for asset in configFile["resources"]:
-		data:  ByteString        = processAsset(asset, sourceDir)
-		entry: PackageIndexEntry = \
-			PackageIndexEntry(len(fileData), 0, len(data))
+		name: str        = asset["name"]
+		data: ByteString = processAsset(asset, sourceDir)
 
-		compLevel: int | None = asset.get("compLevel", args.compress_level)
+		if data and args.export:
+			args.export.mkdir(parents = True, exist_ok = True)
+
+			with open(args.export / normalizeFileName(name), "wb") as file:
+				file.write(data)
+
+		entry:     PackageIndexEntry = \
+			PackageIndexEntry(len(fileData), 0, len(data))
+		compLevel: int | None        = \
+			asset.get("compLevel", args.compress_level)
 
 		if data and compLevel:
 			data = lz4.block.compress(
@@ -194,8 +196,8 @@ def main():
 			)
 			entry.compLength = len(data)
 
-		entries[asset["name"]] = entry
-		fileData           += data
+		entries[name] = entry
+		fileData     += data
 
 		while len(fileData) % args.align:
 			fileData.append(0)

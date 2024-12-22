@@ -49,9 +49,7 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			}
+			"ioBoard": "GE765-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -63,9 +61,7 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			}
+			"ioBoard": "GE765-PWB(B)A"
 		},
 		{
 			"specifications": [ "GX" ],
@@ -121,9 +117,8 @@
 			"series": "Dance Dance Revolution",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)",
-
+			"ioBoard": "GX700-PWB(F)",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -137,9 +132,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -151,9 +144,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GN" ],
@@ -165,9 +156,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GN" ],
@@ -179,9 +168,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -193,9 +180,7 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			}
+			"ioBoard": "GE765-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -207,9 +192,7 @@
 			"series": "Fisherman's Bait",
 			"year":   1998,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			}
+			"ioBoard": "GE765-PWB(B)A"
 		},
 		{
 			"specifications": [ "GK" ],
@@ -221,9 +204,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -237,9 +219,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -277,9 +258,7 @@
 			"series": "DrumMania",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -291,9 +270,7 @@
 			"series": "DrumMania",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -305,9 +282,7 @@
 			"series": "DrumMania",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -319,9 +294,7 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -333,9 +306,7 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -347,9 +318,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -361,9 +330,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -375,9 +342,7 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -389,9 +354,7 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GE", "GN" ],
@@ -403,9 +366,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE", "GN" ],
@@ -417,9 +378,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GN" ],
@@ -431,9 +390,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -445,9 +402,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE", "GN" ],
@@ -459,9 +414,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GX" ],
@@ -473,9 +426,7 @@
 			"series": "Fisherman's Bait",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GE765-PWB(B)A"
-			}
+			"ioBoard": "GE765-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -487,9 +438,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -501,9 +450,7 @@
 			"series": "Dance Dance Revolution Solo",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GN" ],
@@ -515,9 +462,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -529,9 +474,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -543,9 +486,7 @@
 			"series": "Dance Dance Revolution Solo",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GL" ],
@@ -556,9 +497,7 @@
 			"name": "GunMania",
 			"year": 2000,
 
-			"flags": {
-				"ioBoard": "PWB0000073070"
-			}
+			"ioBoard": "PWB0000073070"
 		},
 		{
 			"specifications": [ "GC", "GX" ],
@@ -581,9 +520,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -595,9 +532,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -609,9 +544,7 @@
 			"series": "DrumMania",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -623,9 +556,7 @@
 			"series": "DrumMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -637,9 +568,7 @@
 			"series": "DrumMania",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -651,9 +580,7 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -665,9 +592,7 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -678,9 +603,7 @@
 			"name": "Dance Dance Revolution Karaoke MIX",
 			"year": 1999,
 
-			"flags": {
-				"ioBoard": "GX921-PWB(B)"
-			}
+			"ioBoard": "GX921-PWB(B)"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -692,9 +615,7 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -706,9 +627,7 @@
 			"series": "GuitarFreaks",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -731,9 +650,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -744,9 +661,7 @@
 			"name": "Dance Dance Revolution Karaoke MIX 2",
 			"year": 2000,
 
-			"flags": {
-				"ioBoard": "GX921-PWB(B)"
-			}
+			"ioBoard": "GX921-PWB(B)"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -758,9 +673,7 @@
 			"series": "GuitarFreaks",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -772,9 +685,7 @@
 			"series": "GuitarFreaks",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -786,9 +697,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   1999,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -811,9 +720,7 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -825,9 +732,7 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(F)"
-			}
+			"ioBoard": "GX700-PWB(F)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -838,9 +743,7 @@
 			"name": "GunMania Zone Plus",
 			"year": 2000,
 
-			"flags": {
-				"ioBoard": "PWB0000073070"
-			}
+			"ioBoard": "PWB0000073070"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -863,9 +766,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -877,9 +778,7 @@
 			"series": "DrumMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -891,9 +790,7 @@
 			"series": "DrumMania",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -905,9 +802,7 @@
 			"series": "GuitarFreaks",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE" ],
@@ -919,9 +814,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC", "GE", "GK" ],
@@ -933,9 +826,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC", "GE" ],
@@ -947,9 +838,7 @@
 			"series": "GuitarFreaks",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -961,9 +850,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC", "GU" ],
@@ -975,9 +862,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC", "GU" ],
@@ -989,9 +874,7 @@
 			"series": "Dance Dance Revolution Solo",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1003,9 +886,8 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"installRequiresRTCHeader": true
 			}
 		},
@@ -1019,9 +901,8 @@
 			"series": "Dance Dance Revolution Solo",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"installRequiresRTCHeader": true
 			}
 		},
@@ -1034,9 +915,7 @@
 			"name": "Kick & Kick",
 			"year": 2001,
 
-			"flags": {
-				"ioBoard": "GX700-PWB(K)"
-			}
+			"ioBoard": "GX700-PWB(K)"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1048,9 +927,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1062,9 +939,8 @@
 			"series": "Dance Maniax",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -1078,9 +954,8 @@
 			"series": "Dance Maniax",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -1094,9 +969,8 @@
 			"series": "Dance Maniax",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -1110,9 +984,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -1126,9 +999,8 @@
 			"series": "Dance Maniax",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A",
-
+			"ioBoard": "GX894-PWB(B)A",
+			"flags":   {
 				"requiresRTCHeader": true
 			}
 		},
@@ -1142,9 +1014,7 @@
 			"series": "Mambo A Go-Go",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -1156,9 +1026,7 @@
 			"series": "Mambo A Go-Go",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE", "GK" ],
@@ -1170,9 +1038,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2000,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GB" ],
@@ -1195,9 +1061,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1209,9 +1073,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC", "GK" ],
@@ -1223,9 +1085,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1237,9 +1097,7 @@
 			"series": "GuitarFreaks",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1251,9 +1109,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1265,9 +1121,7 @@
 			"series": "DrumMania",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1279,9 +1133,7 @@
 			"series": "GuitarFreaks",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1293,9 +1145,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2001,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1307,9 +1157,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GE", "GN" ],
@@ -1321,9 +1169,7 @@
 			"series": "Martial Beat",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1335,9 +1181,7 @@
 			"series": "DrumMania",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1349,9 +1193,7 @@
 			"series": "DrumMania",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1363,9 +1205,7 @@
 			"series": "DrumMania",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1377,9 +1217,7 @@
 			"series": "GuitarFreaks",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1391,9 +1229,7 @@
 			"series": "GuitarFreaks",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC", "GK" ],
@@ -1405,9 +1241,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1419,9 +1253,7 @@
 			"series": "Dance Dance Revolution",
 			"year":   2002,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1433,9 +1265,7 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1447,9 +1277,7 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1461,9 +1289,7 @@
 			"series": "GuitarFreaks",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1475,9 +1301,7 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1489,9 +1313,7 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1503,9 +1325,7 @@
 			"series": "DrumMania",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1517,9 +1337,7 @@
 			"series": "GuitarFreaks",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1531,9 +1349,7 @@
 			"series": "GuitarFreaks",
 			"year":   2003,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1545,9 +1361,7 @@
 			"series": "GuitarFreaks",
 			"year":   2004,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1559,9 +1373,7 @@
 			"series": "DrumMania",
 			"year":   2004,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1573,9 +1385,7 @@
 			"series": "DrumMania",
 			"year":   2004,
 
-			"flags": {
-				"ioBoard": "GX894-PWB(B)A"
-			}
+			"ioBoard": "GX894-PWB(B)A"
 		}
 	]
 }

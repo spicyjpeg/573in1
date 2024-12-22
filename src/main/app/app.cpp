@@ -91,8 +91,8 @@ const char *const IDE_MOUNT_POINTS[]{ "ide0:", "ide1:" };
 
 FileIOManager::FileIOManager(void)
 : _resourceFile(nullptr), resourcePtr(nullptr), resourceLength(0) {
-	__builtin_memset(ideDevices,   0, sizeof(ideDevices));
-	__builtin_memset(ideProviders, 0, sizeof(ideProviders));
+	util::clear(ideDevices);
+	util::clear(ideProviders);
 
 	vfs.mount("resource:", &resource);
 #ifdef ENABLE_PCDRV

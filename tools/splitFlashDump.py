@@ -107,6 +107,8 @@ def main():
 
 	converted: bool = False
 
+	args.output.mkdir(parents = True, exist_ok = True)
+
 	#if os.path.isfile(args.input / "bios.bin"):
 		#copyfile(args.input / "bios.bin", args.output / "700a01.22g")
 		#converted = True

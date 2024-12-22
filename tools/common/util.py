@@ -51,7 +51,9 @@ def decodeSigned(value: int, bitLength: int) -> int:
 # characters (' ', '$', '%', '*') excluded.
 _BASE41_CHARSET: str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-./:"
 
-_COLOR_REGEX: re.Pattern = re.compile(r"^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")
+_NAME_INVALID_REGEX: re.Pattern = re.compile(r"[^0-9A-Z+,-._]", re.IGNORECASE)
+_COLOR_REGEX:        re.Pattern = \
+	re.compile(r"^#?([0-9A-F]{3}|[0-9A-F]{6})$", re.IGNORECASE)
 
 def toPrintableChar(value: int) -> str:
 	if (value < 0x20) or (value > 0x7e):
@@ -88,6 +90,9 @@ def decodeBase41(data: str) -> bytearray:
 		output.append(value & 0xff)
 
 	return output
+
+def normalizeFileName(value: str) -> str:
+	return _NAME_INVALID_REGEX.sub("_", value)
 
 def colorFromString(value: str) -> tuple[int, int, int]:
 	matched: re.Match | None = _COLOR_REGEX.match(value)

@@ -16,6 +16,7 @@
 
 import logging, re
 from collections.abc import Sequence
+from dataclasses     import dataclass
 from pathlib         import Path
 
 from .cart      import *
@@ -25,16 +26,61 @@ from .util      import InterleavedFile
 
 ## MAME NVRAM directory reader
 
+_PCMCIA_CARD_SIZES: Sequence[int] = 8, 16, 32, 64
+
+def _getPCMCIACardSize(path: Path, card: int) -> int | None:
+	for size in _PCMCIA_CARD_SIZES:
+		if (
+			(path / f"pccard{card}_konami_dual_slot3_{size}mb_1l").is_file() and
+			(path / f"pccard{card}_konami_dual_slot4_{size}mb_1l").is_file()
+		):
+			return size * 2
+		if (path / f"pccard{card}_{size}mb_1l").is_file():
+			return size
+
+	return None
+
+def _loadCartDump(path: Path) -> CartDump | None:
+	try:
+		with open(path, "rb") as file:
+			return parseMAMECartDump(file.read())
+	except FileNotFoundError:
+		return None
+
+@dataclass
 class MAMENVRAMDump:
-	def __init__(self, nvramDir: Path):
+	pcmcia1Size: int | None = None
+	pcmcia2Size: int | None = None
+
+	rtcHeader:   ROMHeaderDump | None = None
+	flashHeader: ROMHeaderDump | None = None
+	bootloader:  PSEXEAnalyzer | None = None
+
+	installCart: CartDump | None = None
+	gameCart:    CartDump | None = None
+
+	@staticmethod
+	def fromDirectory(path: Path):
+		try:
+			with open(path / "m48t58", "rb") as file:
+				file.seek(RTC_HEADER_OFFSET)
+
+				rtcHeader: ROMHeaderDump | None = ROMHeaderDump(
+					DumpFlag.DUMP_PUBLIC_DATA_OK,
+					b"",
+					file.read(RTC_HEADER_LENGTH)
+				)
+		except FileNotFoundError:
+			rtcHeader: ROMHeaderDump | None = None
+
 		try:
 			with InterleavedFile(
-				open(nvramDir / "29f016a.31m", "rb"),
-				open(nvramDir / "29f016a.27m", "rb")
+				open(path / "29f016a.31m", "rb"),
+				open(path / "29f016a.27m", "rb")
 			) as file:
 				file.seek(FLASH_HEADER_OFFSET)
 
-				self.flashHeader: ROMHeaderDump | None = ROMHeaderDump(
+				flashHeader: ROMHeaderDump | None = ROMHeaderDump(
 					DumpFlag.DUMP_PUBLIC_DATA_OK,
 					b"",
 					file.read(FLASH_HEADER_LENGTH)
@@ -44,41 +90,27 @@ class MAMENVRAMDump:
 				file.seek(FLASH_EXECUTABLE_OFFSET)
 
 				try:
-					self.bootloader: PSEXEAnalyzer | None = PSEXEAnalyzer(file)
+					bootloader: PSEXEAnalyzer | None = PSEXEAnalyzer(file)
 				except AnalysisError:
-					self.bootloader: PSEXEAnalyzer | None = None
+					bootloader: PSEXEAnalyzer | None = None
 		except FileNotFoundError:
-			self.flashHeader: ROMHeaderDump | None = None
-			self.bootloader:  PSEXEAnalyzer | None = None
+			flashHeader: ROMHeaderDump | None = None
+			bootloader:  PSEXEAnalyzer | None = None
 
-		try:
-			with open(nvramDir / "m48t58", "rb") as file:
-				file.seek(RTC_HEADER_OFFSET)
-
-				self.rtcHeader: ROMHeaderDump | None = ROMHeaderDump(
-					DumpFlag.DUMP_PUBLIC_DATA_OK,
-					b"",
-					file.read(RTC_HEADER_LENGTH)
-				)
-		except FileNotFoundError:
-			self.rtcHeader: ROMHeaderDump | None = None
-
-		self.installCart: CartDump | None = \
-			self._loadCartDump(nvramDir / "cassette_install_eeprom")
-		self.gameCart:    CartDump | None = \
-			self._loadCartDump(nvramDir / "cassette_game_eeprom")
-
-	def _loadCartDump(self, path: Path) -> CartDump | None:
-		try:
-			with open(path, "rb") as file:
-				return parseMAMECartDump(file.read())
-		except FileNotFoundError:
-			return None
+		return MAMENVRAMDump(
+			_getPCMCIACardSize(path, 1),
+			_getPCMCIACardSize(path, 2),
+			rtcHeader,
+			flashHeader,
+			bootloader,
+			_loadCartDump(path / "cassette_install_eeprom"),
+			_loadCartDump(path / "cassette_game_eeprom")
+		)
 
 ## Bootloader executable analysis
 
 _BOOT_VERSION_REGEX: re.Pattern = \
-	re.compile(rb"\0BOOT VER[. ]*(1\.[0-9A-Z]+)\0")
+	re.compile(rb"\0BOOT VER\.? *(1\.[0-9A-Z]+)\0")
 
 def getBootloaderVersion(exe: PSEXEAnalyzer) -> str:
 	for matched in _BOOT_VERSION_REGEX.finditer(exe.body):

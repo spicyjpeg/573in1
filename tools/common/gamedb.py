@@ -24,7 +24,7 @@ from .util import JSONGroupedObject
 
 ## Utilities
 
-def _makeJSONObject(*groups: Mapping[str, Any]) -> JSONGroupedObject:
+def _makeJSONObject(*groups: Mapping[str, Any]) -> JSONGroupedObject | None:
 	jsonObj: JSONGroupedObject = JSONGroupedObject()
 
 	for group in groups:
@@ -37,7 +37,7 @@ def _makeJSONObject(*groups: Mapping[str, Any]) -> JSONGroupedObject:
 		if dest:
 			jsonObj.groups.append(dest)
 
-	return jsonObj
+	return jsonObj if jsonObj.groups else None
 
 ## Flags
 
@@ -108,7 +108,7 @@ class HeaderFlag(IntFlag):
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
-		flags: HeaderFlag = 0
+		flags: HeaderFlag = HeaderFlag(0)
 
 		flags |= {
 			None:            HeaderFlag.FORMAT_NONE,
@@ -168,7 +168,7 @@ class ChecksumFlag(IntFlag):
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
-		flags: ChecksumFlag = 0
+		flags: ChecksumFlag = ChecksumFlag(0)
 
 		flags |= {
 			None:            ChecksumFlag.CHECKSUM_WIDTH_NONE,
@@ -222,7 +222,7 @@ class IdentifierFlag(IntFlag):
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
-		flags: IdentifierFlag = 0
+		flags: IdentifierFlag = IdentifierFlag(0)
 
 		flags |= {
 			None:                  IdentifierFlag.PRIVATE_TID_TYPE_NONE,
@@ -275,7 +275,7 @@ class SignatureFlag(IntFlag):
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
-		flags: SignatureFlag = 0
+		flags: SignatureFlag = SignatureFlag(0)
 
 		flags |= {
 			None:       SignatureFlag.SIGNATURE_TYPE_NONE,
@@ -306,31 +306,74 @@ class SignatureFlag(IntFlag):
 			}
 		)
 
+class IOBoardType(IntEnum):
+	IO_BOARD_NONE         = 0
+	IO_BOARD_ANALOG       = 1
+	IO_BOARD_KICK         = 2
+	IO_BOARD_FISHING_REEL = 3
+	IO_BOARD_DIGITAL      = 4
+	IO_BOARD_DDR_KARAOKE  = 5
+	IO_BOARD_GUNMANIA     = 6
+
+	@staticmethod
+	def fromJSONObject(obj: str | None) -> Self:
+		return {
+			None:            IOBoardType.IO_BOARD_NONE,
+			"GX700-PWB(F)":  IOBoardType.IO_BOARD_ANALOG,
+			"GX700-PWB(K)":  IOBoardType.IO_BOARD_KICK,
+			"GE765-PWB(B)A": IOBoardType.IO_BOARD_FISHING_REEL,
+			"GX894-PWB(B)A": IOBoardType.IO_BOARD_DIGITAL,
+			"GX921-PWB(B)":  IOBoardType.IO_BOARD_DDR_KARAOKE,
+			"PWB0000073070": IOBoardType.IO_BOARD_GUNMANIA
+		}[obj]
+
+	def toJSONObject(self) -> str | None:
+		return {
+			IOBoardType.IO_BOARD_NONE:         None,
+			IOBoardType.IO_BOARD_ANALOG:       "GX700-PWB(F)",
+			IOBoardType.IO_BOARD_KICK:         "GX700-PWB(K)",
+			IOBoardType.IO_BOARD_FISHING_REEL: "GE765-PWB(B)A",
+			IOBoardType.IO_BOARD_DIGITAL:      "GX894-PWB(B)A",
+			IOBoardType.IO_BOARD_DDR_KARAOKE:  "GX921-PWB(B)",
+			IOBoardType.IO_BOARD_GUNMANIA:     "PWB0000073070"
+		}[self]
+
+class PCMCIADeviceType(IntEnum):
+	PCMCIA_NONE          = 0
+	PCMCIA_NETWORK_PCB   = 1
+	PCMCIA_FLASH_CARD_8  = 2
+	PCMCIA_FLASH_CARD_16 = 3
+	PCMCIA_FLASH_CARD_32 = 4
+	PCMCIA_FLASH_CARD_64 = 5
+
+	@staticmethod
+	def fromJSONObject(obj: str | None) -> Self:
+		return {
+			None:            PCMCIADeviceType.PCMCIA_NONE,
+			"PWB0000100991": PCMCIADeviceType.PCMCIA_NETWORK_PCB,
+			"flashCard8MB":  PCMCIADeviceType.PCMCIA_FLASH_CARD_8,
+			"flashCard16MB": PCMCIADeviceType.PCMCIA_FLASH_CARD_16,
+			"flashCard32MB": PCMCIADeviceType.PCMCIA_FLASH_CARD_32,
+			"flashCard64MB": PCMCIADeviceType.PCMCIA_FLASH_CARD_64
+		}[obj]
+
+	def toJSONObject(self) -> str | None:
+		return {
+			PCMCIADeviceType.PCMCIA_NONE:          None,
+			PCMCIADeviceType.PCMCIA_NETWORK_PCB:   "PWB0000100991",
+			PCMCIADeviceType.PCMCIA_FLASH_CARD_8:  "flashCard8MB",
+			PCMCIADeviceType.PCMCIA_FLASH_CARD_16: "flashCard16MB",
+			PCMCIADeviceType.PCMCIA_FLASH_CARD_32: "flashCard32MB",
+			PCMCIADeviceType.PCMCIA_FLASH_CARD_64: "flashCard64MB"
+		}[self]
+
 class GameFlag(IntFlag):
-	GAME_IO_BOARD_BITMASK            = 7 << 0
-	GAME_IO_BOARD_NONE               = 0 << 0
-	GAME_IO_BOARD_ANALOG             = 1 << 0
-	GAME_IO_BOARD_KICK               = 2 << 0
-	GAME_IO_BOARD_FISHING_REEL       = 3 << 0
-	GAME_IO_BOARD_DIGITAL            = 4 << 0
-	GAME_IO_BOARD_DDR_KARAOKE        = 5 << 0
-	GAME_IO_BOARD_GUNMANIA           = 6 << 0
-	GAME_INSTALL_RTC_HEADER_REQUIRED = 1 << 3
-	GAME_RTC_HEADER_REQUIRED         = 1 << 4
+	GAME_INSTALL_RTC_HEADER_REQUIRED = 1 << 0
+	GAME_RTC_HEADER_REQUIRED         = 1 << 1
 
 	@staticmethod
 	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
-		flags: GameFlag = 0
-
-		flags |= {
-			None:            GameFlag.GAME_IO_BOARD_NONE,
-			"GX700-PWB(F)":  GameFlag.GAME_IO_BOARD_ANALOG,
-			"GX700-PWB(K)":  GameFlag.GAME_IO_BOARD_KICK,
-			"GE765-PWB(B)A": GameFlag.GAME_IO_BOARD_FISHING_REEL,
-			"GX894-PWB(B)A": GameFlag.GAME_IO_BOARD_DIGITAL,
-			"GX921-PWB(B)":  GameFlag.GAME_IO_BOARD_DDR_KARAOKE,
-			"PWB0000073070": GameFlag.GAME_IO_BOARD_GUNMANIA
-		}[obj.get("ioBoard", None)]
+		flags: GameFlag = GameFlag(0)
 
 		for key, flag in {
 			"installRequiresRTCHeader": GameFlag.GAME_INSTALL_RTC_HEADER_REQUIRED,
@@ -344,16 +387,6 @@ class GameFlag(IntFlag):
 	def toJSONObject(self) -> JSONGroupedObject:
 		return _makeJSONObject(
 			{
-				"ioBoard": {
-					GameFlag.GAME_IO_BOARD_NONE:         None,
-					GameFlag.GAME_IO_BOARD_ANALOG:       "GX700-PWB(F)",
-					GameFlag.GAME_IO_BOARD_KICK:         "GX700-PWB(K)",
-					GameFlag.GAME_IO_BOARD_FISHING_REEL: "GE765-PWB(B)A",
-					GameFlag.GAME_IO_BOARD_DIGITAL:      "GX894-PWB(B)A",
-					GameFlag.GAME_IO_BOARD_DDR_KARAOKE:  "GX921-PWB(B)",
-					GameFlag.GAME_IO_BOARD_GUNMANIA:     "PWB0000073070"
-				}[self & GameFlag.GAME_IO_BOARD_BITMASK]
-			}, {
 				"installRequiresRTCHeader":
 					(GameFlag.GAME_INSTALL_RTC_HEADER_REQUIRED in self),
 				"requiresRTCHeader": (GameFlag.GAME_RTC_HEADER_REQUIRED in self)
@@ -362,11 +395,12 @@ class GameFlag(IntFlag):
 
 ## Data structures
 
-_ROM_HEADER_INFO_STRUCT: Struct = Struct("< 4s 2s 3B x")
-_CART_INFO_STRUCT:       Struct = Struct("< 8s 2s 6B")
-_GAME_INFO_STRUCT:       Struct = Struct("< 4s 36s 3s B 2H 10s 10s 16s 16s")
-_MAX_SPECIFICATIONS:     int    = 4
-_MAX_REGIONS:            int    = 12
+ROM_HEADER_INFO_STRUCT: Struct = Struct("< 4s 2s 3B x")
+CART_INFO_STRUCT:       Struct = Struct("< 8s 2s 6B")
+GAME_INFO_STRUCT:       Struct = Struct("< 4s 36s 4s 2H 4B 10s 10s 16s 16s")
+
+_MAX_SPECIFICATIONS: int = 4
+_MAX_REGIONS:        int = 12
 
 @dataclass
 class ROMHeaderInfo:
@@ -401,7 +435,7 @@ class ROMHeaderInfo:
 		)
 
 	def toBinary(self) -> bytes:
-		return _ROM_HEADER_INFO_STRUCT.pack(
+		return ROM_HEADER_INFO_STRUCT.pack(
 			self.signatureField,
 			self.yearField,
 			self.headerFlags,
@@ -454,7 +488,7 @@ class CartInfo:
 		)
 
 	def toBinary(self) -> bytes:
-		return _CART_INFO_STRUCT.pack(
+		return CART_INFO_STRUCT.pack(
 			self.dataKey,
 			self.yearField,
 			self.pcb,
@@ -476,7 +510,10 @@ class GameInfo:
 	series: str | None
 	year:   int
 
-	flags: GameFlag
+	ioBoard: IOBoardType
+	pcmcia1: PCMCIADeviceType
+	pcmcia2: PCMCIADeviceType
+	flags:   GameFlag
 
 	bootloaderVersion: str | None = None
 
@@ -502,7 +539,10 @@ class GameInfo:
 			obj.get("series", None),
 			obj["year"],
 
-			GameFlag.fromJSONObject(obj.get("flags", {})),
+			IOBoardType     .fromJSONObject(obj.get("ioBoard", None)),
+			PCMCIADeviceType.fromJSONObject(obj.get("pcmcia1", None)),
+			PCMCIADeviceType.fromJSONObject(obj.get("pcmcia2", None)),
+			GameFlag        .fromJSONObject(obj.get("flags",   {})),
 
 			obj.get("bootloaderVersion", None),
 
@@ -524,7 +564,10 @@ class GameInfo:
 				"series": self.series,
 				"year":   self.year
 			}, {
-				"flags": self.flags.toJSONObject()
+				"ioBoard": self.ioBoard.toJSONObject(),
+				"pcmcia1": self.pcmcia1.toJSONObject(),
+				"pcmcia2": self.pcmcia2.toJSONObject(),
+				"flags":   self.flags  .toJSONObject()
 			}, {
 				"bootloaderVersion": self.bootloaderVersion
 			}, {
@@ -552,18 +595,21 @@ class GameInfo:
 
 		# FIXME: identifiers, series and bootloaderVersion are not currently
 		# included in the binary format
-		return _GAME_INFO_STRUCT.pack(
-			b"".join(sorted(ord(spec[1]) for spec in self.specifications)),
+		return GAME_INFO_STRUCT.pack(
+			bytes(sorted(ord(spec[1]) for spec in self.specifications)),
 			b"".join(sorted(
 				region.encode("ascii").ljust(3, b"\0")
 				for region in self.regions
 			)),
 			self.code.encode("ascii"),
-			self.flags,
 			nameOffset,
 			self.year,
-			self.rtcHeader  .toBinary(),
-			self.flashHeader.toBinary(),
-			self.installCart.toBinary(),
-			self.gameCart   .toBinary()
+			self.ioBoard,
+			self.pcmcia1,
+			self.pcmcia2,
+			self.flags,
+			self.rtcHeader  .toBinary() if self.rtcHeader   else b"",
+			self.flashHeader.toBinary() if self.flashHeader else b"",
+			self.installCart.toBinary() if self.installCart else b"",
+			self.gameCart   .toBinary() if self.gameCart    else b""
 		)
