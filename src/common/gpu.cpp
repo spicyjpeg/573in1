@@ -32,6 +32,18 @@ namespace gpu {
 static constexpr int _DMA_CHUNK_SIZE = 1;
 static constexpr int _DMA_TIMEOUT    = 10000;
 
+void init(void) {
+	DMA_DPCR |= 0
+		| (DMA_DPCR_ENABLE << (DMA_GPU * 4))
+		| (DMA_DPCR_ENABLE << (DMA_OTC * 4));
+
+	TIMER_CTRL(0) = TIMER_CTRL_EXT_CLOCK;
+	TIMER_CTRL(1) = TIMER_CTRL_EXT_CLOCK;
+
+	GPU_GP1 = gp1_resetGPU();
+	GPU_GP1 = gp1_resetFIFO();
+}
+
 size_t upload(const RectWH &rect, const void *data, bool wait) {
 	size_t length = (rect.w * rect.h) / 2;
 

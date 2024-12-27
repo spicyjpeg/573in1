@@ -16,7 +16,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "common/io.hpp"
@@ -416,22 +415,6 @@ static const ShellInfo _KONAMI_SHELLS[]{
 		)
 	}
 };
-
-bool SonyKernelHeader::validateMagic(void) const {
-	return (
-		util::hash(magic, sizeof(magic)) == "Sony Computer Entertainment Inc."_h
-	);
-}
-
-bool OpenBIOSHeader::validateMagic(void) const {
-	return (util::hash(magic, sizeof(magic)) == "OpenBIOS"_h);
-}
-
-bool ShellInfo::validateHash(void) const {
-	return (util::hash(
-		reinterpret_cast<const uint8_t *>(header), sizeof(util::ExecutableHeader)
-	) == headerHash);
-}
 
 bool getShellInfo(ShellInfo &output) {
 	for (auto &shell : _KONAMI_SHELLS) {

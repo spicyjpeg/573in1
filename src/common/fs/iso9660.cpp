@@ -385,7 +385,8 @@ bool ISO9660Provider::_getRecord(
 }
 
 bool ISO9660Provider::init(storage::Device &dev) {
-	_dev = &dev;
+	if (type)
+		return false;
 
 	// Locate and parse the primary volume descriptor.
 	size_t numPVDSectors = util::min(
@@ -425,6 +426,7 @@ bool ISO9660Provider::init(storage::Device &dev) {
 
 		type     = ISO9660;
 		capacity = uint64_t(pvd->volumeLength.le) * _dev->sectorLength;
+		_dev     = &dev;
 
 		LOG_FS("mounted ISO: %s", volumeLabel);
 		return true;

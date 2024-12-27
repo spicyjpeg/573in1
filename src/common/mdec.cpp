@@ -67,6 +67,10 @@ static constexpr int _DMA_CHUNK_SIZE_OUT = 32;
 static constexpr int _DMA_TIMEOUT        = 100000;
 
 void init(void) {
+	DMA_DPCR |= 0
+		| (DMA_DPCR_ENABLE << (DMA_MDEC_IN  * 4))
+		| (DMA_DPCR_ENABLE << (DMA_MDEC_OUT * 4));
+
 	MDEC1 = MDEC_CTRL_RESET;
 	MDEC1 = MDEC_CTRL_DMA_OUT | MDEC_CTRL_DMA_IN;
 

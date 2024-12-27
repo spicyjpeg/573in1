@@ -91,6 +91,8 @@ template<typename T> static constexpr inline size_t countOf(T &array) {
 	return sizeof(array) / sizeof(array[0]);
 }
 
+/* Concatenation and BCD conversion */
+
 static constexpr inline uint16_t concat2(uint8_t low, uint8_t high) {
 	return low | (high << 8);
 }
@@ -128,6 +130,20 @@ static constexpr inline uint64_t concat8(
 		| (uint64_t(c) << 16) | (uint64_t(d) << 24)
 		| (uint64_t(e) << 32) | (uint64_t(f) << 40)
 		| (uint64_t(g) << 48) | (uint64_t(h) << 56);
+}
+
+static constexpr inline uint8_t encodeBCD(uint8_t value) {
+	// output = units + tens * 16
+	//        = units + tens * 10 + tens * 6
+	//        = value             + tens * 6
+	return value + (value / 10) * 6;
+}
+
+static constexpr inline uint8_t decodeBCD(uint8_t value) {
+	// output = low + high * 10
+	//        = low + high * 16 - high * 6
+	//        = value           - high * 6
+	return value - (value >> 4) * 6;
 }
 
 /* Simple "smart" pointer */

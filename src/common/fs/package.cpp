@@ -129,6 +129,7 @@ bool PackageProvider::getFileInfo(FileInfo &output, const char *path) {
 	__builtin_strncpy(output.name, ptr, sizeof(output.name));
 	output.size       = entry->uncompLength;
 	output.attributes = READ_ONLY | ARCHIVE;
+
 	return true;
 }
 

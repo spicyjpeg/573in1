@@ -258,6 +258,17 @@ File *FATProvider::openFile(const char *path, uint32_t flags) {
 	return file;
 }
 
+bool FATProvider::deleteFile(const char *path) {
+	auto error = f_unlink(&_fs, path);
+
+	if (error) {
+		LOG_FS("%s: %s", _FATFS_ERROR_NAMES[error], path);
+		return false;
+	}
+
+	return true;
+}
+
 /* FatFs library API glue */
 
 static constexpr int _MUTEX_TIMEOUT = 30000000;

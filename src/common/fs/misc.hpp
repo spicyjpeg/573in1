@@ -61,6 +61,7 @@ public:
 	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
+	bool deleteFile(const char *path);
 };
 
 /* Virtual filesystem driver */
@@ -98,6 +99,7 @@ public:
 	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
+	bool deleteFile(const char *path);
 	size_t loadData(util::Data &output, const char *path);
 	size_t loadData(void *output, size_t length, const char *path);
 	size_t saveData(const void *input, size_t length, const char *path);

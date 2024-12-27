@@ -148,6 +148,7 @@ public:
 	virtual bool createDirectory(const char *path) { return false; }
 
 	virtual File *openFile(const char *path, uint32_t flags) { return nullptr; }
+	virtual bool deleteFile(const char *path) { return false; }
 	virtual size_t loadData(util::Data &output, const char *path);
 	virtual size_t loadData(void *output, size_t length, const char *path);
 	virtual size_t saveData(const void *input, size_t length, const char *path);

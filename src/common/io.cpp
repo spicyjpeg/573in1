@@ -46,6 +46,7 @@ void init(void) {
 		| (23 << 16) // Number of address lines
 		| ( 4 << 24) // DMA read/write delay
 		| BIU_CTRL_DMA_DELAY;
+	DMA_DPCR     |= DMA_DPCR_ENABLE << (DMA_PIO * 4);
 
 #if 0
 	// Revision D of the main board has footprints for either eight 8-bit RAM
@@ -158,12 +159,12 @@ void getRTCTime(util::Date &output) {
 
 	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_READ;
 
-	output.year   = (year   & 15) + 10 * ((year   >> 4) & 15); // 0-99
-	output.month  = (month  & 15) + 10 * ((month  >> 4) &  1); // 1-12
-	output.day    = (day    & 15) + 10 * ((day    >> 4) &  3); // 1-31
-	output.hour   = (hour   & 15) + 10 * ((hour   >> 4) &  3); // 0-23
-	output.minute = (minute & 15) + 10 * ((minute >> 4) &  7); // 0-59
-	output.second = (second & 15) + 10 * ((second >> 4) &  7); // 0-59
+	output.year   = util::decodeBCD(year);   // 0-99
+	output.month  = util::decodeBCD(month);  // 1-12
+	output.day    = util::decodeBCD(day);    // 1-31
+	output.hour   = util::decodeBCD(hour);   // 0-23
+	output.minute = util::decodeBCD(minute); // 0-59
+	output.second = util::decodeBCD(second); // 0-59
 
 	output.year += (output.year < 70) ? 2000 : 1900;
 }
@@ -171,15 +172,13 @@ void getRTCTime(util::Date &output) {
 void setRTCTime(const util::Date &value, bool stop) {
 	assert((value.year >= 1970) && (value.year <= 2069));
 
-	int _year   = value.year % 100;
 	int weekday = value.getDayOfWeek() + 1;
-
-	int year    = (_year        % 10) | (((_year        / 10) & 15) << 4);
-	int month   = (value.month  % 10) | (((value.month  / 10) &  1) << 4);
-	int day     = (value.day    % 10) | (((value.day    / 10) &  3) << 4);
-	int hour    = (value.hour   % 10) | (((value.hour   / 10) &  3) << 4);
-	int minute  = (value.minute % 10) | (((value.minute / 10) &  7) << 4);
-	int second  = (value.second % 10) | (((value.second / 10) &  7) << 4);
+	int year    = util::encodeBCD(value.year % 100);
+	int month   = util::encodeBCD(value.month);
+	int day     = util::encodeBCD(value.day);
+	int hour    = util::encodeBCD(value.hour);
+	int minute  = util::encodeBCD(value.minute);
+	int second  = util::encodeBCD(value.second);
 
 	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_WRITE;
 

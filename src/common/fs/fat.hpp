@@ -72,6 +72,7 @@ public:
 	bool createDirectory(const char *path);
 
 	File *openFile(const char *path, uint32_t flags);
+	bool deleteFile(const char *path);
 };
 
 }

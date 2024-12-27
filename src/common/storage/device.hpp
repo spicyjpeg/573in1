@@ -23,6 +23,48 @@
 
 namespace storage {
 
+/* CD-ROM definitions */
+
+static constexpr uint32_t CDROM_TOC_PREGAP = 150;
+
+class MSF {
+public:
+	uint8_t minute, second, frame;
+
+	inline void fromLBA(uint32_t lba) {
+		lba += CDROM_TOC_PREGAP;
+
+		minute = lba / 4500;
+		second = (lba / 75) % 60;
+		frame  = lba % 75;
+	}
+	inline uint32_t toLBA(void) const {
+		return -CDROM_TOC_PREGAP
+			+ minute * 4500
+			+ second * 75
+			+ frame;
+	}
+};
+
+class BCDMSF {
+public:
+	uint8_t minute, second, frame;
+
+	inline void fromLBA(uint32_t lba) {
+		lba += CDROM_TOC_PREGAP;
+
+		minute = util::encodeBCD(lba / 4500);
+		second = util::encodeBCD((lba / 75) % 60);
+		frame  = util::encodeBCD(lba % 75);
+	}
+	inline uint32_t toLBA(void) const {
+		return -CDROM_TOC_PREGAP
+			+ util::decodeBCD(minute) * 4500
+			+ util::decodeBCD(second) * 75
+			+ util::decodeBCD(frame);
+	}
+};
+
 /* IDE register definitions */
 
 enum IDECS0Register {

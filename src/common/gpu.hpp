@@ -48,14 +48,6 @@ public:
 
 /* Basic API */
 
-static inline void init(void) {
-	GPU_GP1 = gp1_resetGPU();
-	GPU_GP1 = gp1_resetFIFO();
-
-	TIMER_CTRL(0) = TIMER_CTRL_EXT_CLOCK;
-	TIMER_CTRL(1) = TIMER_CTRL_EXT_CLOCK;
-}
-
 static inline bool isIdle(void) {
 	return (
 		!(DMA_CHCR(DMA_GPU) & DMA_CHCR_ENABLE) && (GPU_GP1 & GP1_STAT_CMD_READY)
@@ -66,6 +58,7 @@ static inline void enableDisplay(bool enable) {
 	GPU_GP1 = gp1_dispBlank(!enable);
 }
 
+void init(void);
 size_t upload(const RectWH &rect, const void *data, bool wait = false);
 size_t download(const RectWH &rect, void *data, bool wait = false);
 

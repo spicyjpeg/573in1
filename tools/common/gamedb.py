@@ -18,7 +18,7 @@ from collections.abc import Mapping
 from dataclasses     import dataclass
 from enum            import IntEnum, IntFlag
 from struct          import Struct
-from typing          import Any, Self
+from typing          import Any
 
 from .util import JSONGroupedObject
 
@@ -57,7 +57,7 @@ class CartPCBType(IntEnum):
 	CART_PWB0000088954          = 13
 
 	@staticmethod
-	def fromJSONObject(obj: str) -> Self:
+	def fromJSONObject(obj: str):
 		return {
 			"unknown-x76f041":        CartPCBType.CART_UNKNOWN_X76F041,
 			"unknown-x76f041-ds2401": CartPCBType.CART_UNKNOWN_X76F041_DS2401,
@@ -107,7 +107,7 @@ class HeaderFlag(IntFlag):
 	REGION_LOWERCASE      = 1 << 7
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		flags: HeaderFlag = HeaderFlag(0)
 
 		flags |= {
@@ -167,7 +167,7 @@ class ChecksumFlag(IntFlag):
 	CHECKSUM_FORCE_GX_SPEC     = 1 << 5
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		flags: ChecksumFlag = ChecksumFlag(0)
 
 		flags |= {
@@ -221,7 +221,7 @@ class IdentifierFlag(IntFlag):
 	PUBLIC_XID_PRESENT           = 1 << 7
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		flags: IdentifierFlag = IdentifierFlag(0)
 
 		flags |= {
@@ -274,7 +274,7 @@ class SignatureFlag(IntFlag):
 	SIGNATURE_PAD_WITH_FF   = 1 << 2
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		flags: SignatureFlag = SignatureFlag(0)
 
 		flags |= {
@@ -316,7 +316,7 @@ class IOBoardType(IntEnum):
 	IO_BOARD_GUNMANIA     = 6
 
 	@staticmethod
-	def fromJSONObject(obj: str | None) -> Self:
+	def fromJSONObject(obj: str | None):
 		return {
 			None:            IOBoardType.IO_BOARD_NONE,
 			"GX700-PWB(F)":  IOBoardType.IO_BOARD_ANALOG,
@@ -347,7 +347,7 @@ class PCMCIADeviceType(IntEnum):
 	PCMCIA_FLASH_CARD_64 = 5
 
 	@staticmethod
-	def fromJSONObject(obj: str | None) -> Self:
+	def fromJSONObject(obj: str | None):
 		return {
 			None:            PCMCIADeviceType.PCMCIA_NONE,
 			"PWB0000100991": PCMCIADeviceType.PCMCIA_NETWORK_PCB,
@@ -372,7 +372,7 @@ class GameFlag(IntFlag):
 	GAME_RTC_HEADER_REQUIRED         = 1 << 1
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		flags: GameFlag = GameFlag(0)
 
 		for key, flag in {
@@ -412,7 +412,7 @@ class ROMHeaderInfo:
 	signatureFlags: SignatureFlag
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		return ROMHeaderInfo(
 			bytes.fromhex(obj.get("signatureField", "").replace("-", " ")),
 			bytes.fromhex(obj.get("yearField",      "").replace("-", " ")),
@@ -457,7 +457,7 @@ class CartInfo:
 	idFlags:       IdentifierFlag
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		return CartInfo(
 			CartPCBType.fromJSONObject(obj["pcb"]),
 
@@ -523,7 +523,7 @@ class GameInfo:
 	gameCart:    CartInfo      | None = None
 
 	@staticmethod
-	def fromJSONObject(obj: Mapping[str, Any]) -> Self:
+	def fromJSONObject(obj: Mapping[str, Any]):
 		rtcHeader:   Mapping[str, Any] | None = obj.get("rtcHeader",   None)
 		flashHeader: Mapping[str, Any] | None = obj.get("flashHeader", None)
 		installCart: Mapping[str, Any] | None = obj.get("installCart", None)

@@ -182,6 +182,17 @@ File *HostProvider::openFile(const char *path, uint32_t flags) {
 	return file;
 }
 
+bool HostProvider::deleteFile(const char *path) {
+	int error = pcdrvUnlink(path);
+
+	if (error < 0) {
+		LOG_FS("PCDRV error %d: %s", error, path);
+		return false;
+	}
+
+	return true;
+}
+
 /* Virtual filesystem driver */
 
 VFSMountPoint *VFSProvider::_getMounted(const char *path) {
@@ -309,6 +320,15 @@ File *VFSProvider::openFile(const char *path, uint32_t flags) {
 		return nullptr;
 
 	return mp->provider->openFile(&path[mp->pathOffset], flags);
+}
+
+bool VFSProvider::deleteFile(const char *path) {
+	auto mp = _getMounted(path);
+
+	if (!mp)
+		return false;
+
+	return mp->provider->deleteFile(&path[mp->pathOffset]);
 }
 
 size_t VFSProvider::loadData(util::Data &output, const char *path) {

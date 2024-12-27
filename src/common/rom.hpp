@@ -21,6 +21,7 @@
 #include "common/util/hash.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 #include "ps1/registers.h"
 
 namespace rom {
@@ -117,20 +118,28 @@ public:
 	uint32_t flags;
 	uint8_t  magic[32], _pad[4], version[36];
 
-	bool validateMagic(void) const;
+	inline bool validateMagic(void) const {
+		return (
+			util::hash(magic, sizeof(magic)) ==
+			"Sony Computer Entertainment Inc."_h
+		);
+	}
+
+
 };
 
 class OpenBIOSHeader {
 public:
-	uint8_t  magic[8];
+	uint32_t magic[2];
 	uint32_t idNameLength, idDescLength, idType;
 	uint8_t  idData[24];
 
+	inline bool validateMagic(void) const {
+		return (magic[0] == "Open"_c) && (magic[1] == "BIOS"_c);
+	}
 	inline size_t getBuildID(char *output) const {
 		return util::hexToString(output, &idData[idNameLength], idDescLength);
 	}
-
-	bool validateMagic(void) const;
 };
 
 class ShellInfo {
@@ -140,7 +149,12 @@ public:
 
 	const util::ExecutableHeader *header;
 
-	bool validateHash(void) const;
+	inline bool validateHash(void) const {
+		return (util::hash(
+			reinterpret_cast<const uint8_t *>(header),
+			sizeof(util::ExecutableHeader)
+		) == headerHash);
+	}
 };
 
 static const auto &sonyKernelHeader =

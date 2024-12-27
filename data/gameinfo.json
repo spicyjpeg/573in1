@@ -9,9 +9,7 @@
 			"identifiers":    [ "darkhleg" ],
 
 			"name": "Dark Horse Legend",
-			"year": 1998,
-
-			"flags": {}
+			"year": 1998
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -70,9 +68,7 @@
 			"identifiers":    [ "powyakex" ],
 
 			"name": "Jikkyou Powerful Pro Yakyuu EX",
-			"year": 1998,
-
-			"flags": {}
+			"year": 1998
 		},
 		{
 			"specifications": [ "GC" ],
@@ -81,9 +77,7 @@
 			"identifiers":    [ "jppyex98" ],
 
 			"name": "Jikkyou Powerful Pro Yakyuu EX '98",
-			"year": 1998,
-
-			"flags": {}
+			"year": 1998
 		},
 		{
 			"specifications": [ "GC" ],
@@ -92,9 +86,7 @@
 			"identifiers":    [ "konam80sa", "konam80s", "konam80sk", "konam80su" ],
 
 			"name": "Konami 80's AC Special",
-			"year": 1998,
-
-			"flags": {}
+			"year": 1998
 		},
 		{
 			"specifications": [ "GC" ],
@@ -103,9 +95,7 @@
 			"identifiers":    [ "konam80sj" ],
 
 			"name": "Konami 80's Gallery",
-			"year": 1998,
-
-			"flags": {}
+			"year": 1998
 		},
 		{
 			"specifications": [ "GC", "GN" ],
@@ -244,9 +234,7 @@
 			"identifiers":    [ "gchgchmp" ],
 
 			"name": "Gachaga Champ",
-			"year": 1999,
-
-			"flags": {}
+			"year": 1999
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -506,9 +494,7 @@
 			"identifiers":    [ "hypbbc2p", "hypbbc2pk" ],
 
 			"name": "Hyper Bishi Bashi Champ [2-player]",
-			"year": 1999,
-
-			"flags": {}
+			"year": 1999
 		},
 		{
 			"specifications": [ "GC" ],
@@ -580,7 +566,11 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"ioBoard": "GX700-PWB(F)"
+			"ioBoard": "GX700-PWB(F)",
+
+			"gameCart": {
+				"pcb": "GX700-PWB(J)"
+			}
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -592,7 +582,11 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"ioBoard": "GX700-PWB(F)"
+			"ioBoard": "GX700-PWB(F)",
+
+			"gameCart": {
+				"pcb": "GX700-PWB(J)"
+			}
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -636,9 +630,7 @@
 			"identifiers":    [ "stepchmp" ],
 
 			"name": "Step Champ",
-			"year": 1999,
-
-			"flags": {}
+			"year": 1999
 		},
 		{
 			"specifications": [ "GE", "GK" ],
@@ -706,9 +698,7 @@
 			"identifiers":    [ "animechmp" ],
 
 			"name": "Anime Champ",
-			"year": 2000,
-
-			"flags": {}
+			"year": 2000
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -720,7 +710,11 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"ioBoard": "GX700-PWB(F)"
+			"ioBoard": "GX700-PWB(F)",
+
+			"gameCart": {
+				"pcb": "GX700-PWB(J)"
+			}
 		},
 		{
 			"specifications": [ "GQ" ],
@@ -732,7 +726,11 @@
 			"series": "PunchMania",
 			"year":   2000,
 
-			"ioBoard": "GX700-PWB(F)"
+			"ioBoard": "GX700-PWB(F)",
+
+			"gameCart": {
+				"pcb": "GX700-PWB(J)"
+			}
 		},
 		{
 			"specifications": [ "GC" ],
@@ -754,7 +752,9 @@
 			"name": "Salary Man Champ [2-player]",
 			"year": 2000,
 
-			"flags": {}
+			"gameCart": {
+				"pcb": "PWB0000088954"
+			}
 		},
 		{
 			"specifications": [ "GC" ],
@@ -1047,9 +1047,7 @@
 			"identifiers":    [ "gbbchmp" ],
 
 			"name": "Great Bishi Bashi Champ",
-			"year": 2002,
-
-			"flags": {}
+			"year": 2002
 		},
 		{
 			"specifications": [ "GC" ],
