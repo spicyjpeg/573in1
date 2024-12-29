@@ -273,6 +273,10 @@ static inline const char *getErrorString(DeviceError error) {
 	return DEVICE_ERROR_NAMES[error];
 }
 
+template<typename X> static inline bool isBufferAligned(X *ptr) {
+	return !(reinterpret_cast<uintptr_t>(ptr) % alignof(uint32_t));
+}
+
 /* Base IDE (ATA/ATAPI) block device class */
 
 class IDEDevice : public Device {

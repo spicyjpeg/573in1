@@ -227,54 +227,50 @@ bool ISO9660File::_loadSector(uint32_t lba) {
 }
 
 size_t ISO9660File::read(void *output, size_t length) {
-	auto offset   = uint32_t(_offset);
-	auto fileSize = size_t(size);
+	auto ptr    = reinterpret_cast<uintptr_t>(output);
+	auto offset = uint32_t(_offset);
 
 	// Do not read any data past the end of the file.
-	if (!length || (offset >= fileSize))
-		return 0;
-	if (offset > (fileSize - length))
-		length = fileSize - offset;
+	length = util::min<size_t>(length, size_t(size) - offset);
 
-	auto ptr       = reinterpret_cast<uintptr_t>(output);
-	auto remaining = length;
+	for (auto remaining = length; remaining > 0;) {
+		auto sectorOffset = offset / _dev->sectorLength;
+		auto ptrOffset    = offset % _dev->sectorLength;
 
-	while (remaining > 0) {
-		auto     currentPtr   = reinterpret_cast<void *>(ptr);
-		uint32_t lba          = offset / _dev->sectorLength + _startLBA;
-		size_t   sectorOffset = offset % _dev->sectorLength;
+		auto   lba    = _startLBA + sectorOffset;
+		auto   buffer = reinterpret_cast<void *>(ptr);
+		size_t readLength;
 
-		// If the output pointer is on a sector boundary and satisfies the IDE
-		// driver's alignment requirements, read as many full sectors as
-		// possible without going through the sector buffer.
-		if (!sectorOffset && !(ptr % 4)) {
-			auto numSectors = remaining  / _dev->sectorLength;
-			auto spanLength = numSectors * _dev->sectorLength;
+		if (
+			!ptrOffset &&
+			(remaining >= _dev->sectorLength) &&
+			storage::isBufferAligned(buffer)
+		) {
+			// If the read offset is on a sector boundary, at least one sector's
+			// worth of data needs to be read and the pointer satisfies any DMA
+			// alignment requirements, read as many full sectors as possible
+			// directly into the output buffer.
+			auto numSectors = remaining / _dev->sectorLength;
+			auto remainder  = remaining % _dev->sectorLength;
+			readLength      = remaining - remainder;
 
-			if (numSectors > 0) {
-				if (_dev->read(currentPtr, lba, numSectors))
-					return false;
+			if (_dev->read(buffer, lba, numSectors))
+				return 0;
+		} else {
+			// In all other cases, read one sector at a time into the sector
+			// buffer and copy the requested data over.
+			readLength =
+				util::min<size_t>(remaining, _dev->sectorLength - ptrOffset);
 
-				offset    += spanLength;
-				ptr       += spanLength;
-				remaining -= spanLength;
-				continue;
-			}
+			if (!_loadSector(lba))
+				return 0;
+
+			__builtin_memcpy(buffer, &_sectorBuffer[ptrOffset], readLength);
 		}
 
-		// In all other cases, read one sector at a time into the buffer and
-		// copy it over.
-		auto chunkLength =
-			util::min(remaining, _dev->sectorLength - sectorOffset);
-
-		if (!_loadSector(lba))
-			return false;
-
-		__builtin_memcpy(currentPtr, &_sectorBuffer[sectorOffset], chunkLength);
-
-		offset    += chunkLength;
-		ptr       += chunkLength;
-		remaining -= chunkLength;
+		ptr       += readLength;
+		offset    += readLength;
+		remaining -= readLength;
 	}
 
 	_offset += length;
@@ -504,7 +500,14 @@ File *ISO9660Provider::openFile(const char *path, uint32_t flags) {
 	if (record.flags & ISO_RECORD_DIRECTORY)
 		return nullptr;
 
-	return new ISO9660File(_dev, record);
+	auto file = new ISO9660File();
+
+	file->_dev         = _dev;
+	file->_startLBA    = record.lba.le;
+	file->_offset      = 0;
+	file->_bufferedLBA = 0;
+	file->size         = record.length.le;
+	return file;
 }
 
 }

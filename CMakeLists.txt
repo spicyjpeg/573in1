@@ -76,6 +76,8 @@ set(
 	src/common/fs/fat.cpp
 	src/common/fs/file.cpp
 	src/common/fs/iso9660.cpp
+	src/common/fs/memorycard.cpp
+	src/common/fs/memorycardfs.cpp
 	src/common/fs/misc.cpp
 	src/common/fs/package.cpp
 	src/common/fs/zip.cpp

@@ -201,11 +201,6 @@ private:
 	bool _loadSector(uint32_t lba);
 
 public:
-	inline ISO9660File(storage::Device *dev, const ISORecord &record)
-	: _dev(dev), _startLBA(record.lba.le), _offset(0), _bufferedLBA(0) {
-		size = record.length.le;
-	}
-
 	size_t read(void *output, size_t length);
 	uint64_t seek(uint64_t offset);
 	uint64_t tell(void) const;
