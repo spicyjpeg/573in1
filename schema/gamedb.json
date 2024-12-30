@@ -1,8 +1,8 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id":     "schema/games.json",
+	"$id":     "schema/gamedb.json",
 
-	"title": "Root",
+	"title": "Game database",
 	"type":  "object",
 
 	"required": [ "games" ],
@@ -12,7 +12,6 @@
 			"title": "Game list",
 			"type":  "array",
 
-			"minItems":    1,
 			"uniqueItems": true,
 
 			"items": {
@@ -23,22 +22,16 @@
 					"specifications",
 					"code",
 					"regions",
+					"identifiers",
 					"name",
-					"year",
-					"identifiers"
+					"year"
 				],
 				"additionalProperties": false,
 
 				"properties": {
-					"wip": {
-						"title":       "Work-in-progress flag",
-						"description": "Should be set to true if this game entry is missing information or has not yet been confirmed to be correct.",
-						"type":        "boolean"
-					},
-
 					"specifications": {
 						"title":       "Game specification list",
-						"description": "List of known specification codes used by this game (GX, GE, GN and so on).",
+						"description": "List of known specification codes (GX, GE, GN, etc.) used by this game.",
 						"type":        "array",
 
 						"items": {
@@ -51,19 +44,19 @@
 					},
 					"code": {
 						"title":       "Game code",
-						"description": "The 3-digit code that uniquely identifies this game (700-999 or A00-A99 ~ D00-D99).",
+						"description": "The 3-digit code that uniquely identifies this game (700-999 or A00-D99).",
 						"type":        "string",
 
 						"pattern": "^[0-9A-D][0-9][0-9]$",
 						"default": "700"
 					},
 					"regions": {
-						"title":       "Game region and version list",
-						"description": "List of known region and version codes used by this game. If different versions of the game have different names, specifications or hardware, each variant should be a separate entry in the game list with the same code.",
+						"title":       "Game region list",
+						"description": "List of known region/version codes (JA, UAA, etc.) used by this game. If different versions of the game have different names, specifications or hardware, each variant should be a separate entry in the game list with the same code.",
 						"type":        "array",
 
 						"items": {
-							"title": "Game region and version",
+							"title": "Game region",
 							"type":  "string",
 
 							"pattern": "^[AEJKSU][A-FR-WX-Z]([A-D]|Z[0-9][0-9])?$",
@@ -72,7 +65,7 @@
 					},
 					"identifiers": {
 						"title":       "MAME game identifier list",
-						"description": "The names used by MAME to identify this game, one for each region/version listed in the regions field. Use an empty string for versions not currently emulated by MAME.",
+						"description": "The names used by MAME to identify this game, one for each region/version in the region list. Use an empty string for versions not currently emulated by MAME.",
 						"type":        "array",
 
 						"items": {
@@ -111,9 +104,9 @@
 						"type":        "integer",
 
 						"minimum": 1997,
-						"maximum": 2004,
 						"default": 2000
 					},
+
 					"ioBoard": {
 						"title":       "I/O board PCB type",
 						"description": "The I/O expansion board required by this game. Omit if the game does not need any.",
@@ -128,36 +121,80 @@
 							"PWB0000073070"
 						]
 					},
+					"pcmcia1": {
+						"title":       "PCMCIA slot 1 device type",
+						"description": "The device this game requires to be inserted into PCMCIA slot 1 (either a flash card or a network PCB). Omit if the game does not use slot 1.",
+						"type":        "string",
+
+						"enum": [
+							"PWB0000100991",
+							"flashCard8MB",
+							"flashCard16MB",
+							"flashCard32MB",
+							"flashCard64MB"
+						]
+					},
+					"pcmcia2": {
+						"title":       "PCMCIA slot 2 device type",
+						"description": "The device this game requires to be inserted into PCMCIA slot 2 (either a flash card or a network PCB). Omit if the game does not use slot 2.",
+						"type":        "string",
+
+						"enum": [
+							"PWB0000100991",
+							"flashCard8MB",
+							"flashCard16MB",
+							"flashCard32MB",
+							"flashCard64MB"
+						]
+					},
+					"flags": {
+						"title": "Additional game properties",
+						"type":  "object",
+
+						"additionalProperties": false,
+
+						"properties": {
+							"installRequiresRTCHeader": {
+								"title":       "RTC RAM header required by installer",
+								"description": "Whether or not the game's installer requires the RTC RAM header described in this entry to be present and will refuse to install the game if missing.",
+								"type":        "boolean"
+							},
+							"requiresRTCHeader": {
+								"title":       "RTC RAM header required by game",
+								"description": "Whether or not the game requires the RTC RAM header described in this entry to be present and will refuse to run if missing (rather than clearing RTC RAM and generating the header).",
+								"type":        "boolean"
+							}
+						}
+					},
 
 					"bootloaderVersion": {
 						"title":       "Bemani bootloader version",
-						"description": "Version number of the Bemani bootloader used by this game. Omit if the game has no bootloader.",
+						"description": "Version number of the Bemani bootloader used by this game. Omit if the game has no separate bootloader.",
 						"type":        "string",
 
-						"pattern": "^1\\.[0-9]+$",
+						"pattern": "^1\\.[0-9A-Z]+$",
 						"default": "1.0"
 					},
 
 					"rtcHeader": {
 						"title":       "RTC RAM header",
-						"description": "Object describing the header written by the game to the first 32 bytes of RTC RAM. Omit if the game does not write a header to RTC RAM.",
-						"$ref":        "header.json"
+						"description": "Object describing the header written by the game to the first 16 bytes of RTC RAM. Omit if the game does not write a header to RTC RAM.",
+						"$ref":        "rominfo.json"
 					},
 					"flashHeader": {
 						"title":       "Internal flash header",
-						"description": "Object describing the header written by the game to the first 32 bytes of the internal flash memory. Omit if the game does not write a header to the flash.",
-						"$ref":        "header.json"
+						"description": "Object describing the header written by the game to the first 32 bytes of the internal flash memory. Omit if the game does not write a header to flash.",
+						"$ref":        "rominfo.json"
 					},
-
 					"installCart": {
 						"title":       "Installation cartridge",
 						"description": "Object describing the game's installation security cartridge. Omit if the game needs no such cartridge.",
-						"$ref":        "cart.json"
+						"$ref":        "cartinfo.json"
 					},
 					"gameCart": {
 						"title":       "Game cartridge",
 						"description": "Object describing the game's main security cartridge. Omit if the game needs no such cartridge.",
-						"$ref":        "cart.json"
+						"$ref":        "cartinfo.json"
 					}
 				}
 			}

@@ -2,14 +2,14 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id":     "schema/resources.json",
 
-	"title": "Root",
+	"title": "Resource package description",
 	"type":  "object",
 
 	"required": [ "resources" ],
 
 	"properties": {
 		"resources": {
-			"title": "Resource package entries",
+			"title": "Resource list",
 			"type":  "array",
 
 			"uniqueItems": true,
@@ -23,7 +23,7 @@
 				"properties": {
 					"type": {
 						"title":       "Entry type",
-						"description": "Must be 'empty', 'text', 'binary', 'tim', 'metrics', 'palette', 'strings' or 'gamedb'.",
+						"description": "Must be one of the following:\n- `empty` (zero-length or zerofilled file)\n- `text` (converted to UTF-8 with LF line endings)\n- `binary`\n- `tim`\n- `metrics`\n- `palette`\n- `strings`\n- `gamedb`",
 						"type":        "string",
 
 						"enum": [
@@ -44,7 +44,7 @@
 					},
 					"compLevel": {
 						"title":       "Compression level",
-						"description": "LZ4 compression level in 1-9 range, or 0 to store the file uncompressed. If unspecified, defaults to 9 unless manually overridden on the command line.",
+						"description": "LZ4 compression level in 1-9 range, or 0 to store the file uncompressed. If unspecified, defaults to 9 unless manually overridden on the package builder's command line.",
 						"type":        "integer",
 
 						"minimum": 0,
@@ -80,7 +80,7 @@
 
 							"source": {
 								"title":       "Path to source file",
-								"description": "Path to the source text or binary file, relative to the configuration file's directory by default.",
+								"description": "Path to the source file, relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
 								"type":        "string",
 
 								"format": "uri-reference"
@@ -88,7 +88,11 @@
 						}
 					},
 					{
-						"required":             [ "source", "imagePos", "clutPos" ],
+						"required": [
+							"source",
+							"imagePos",
+							"clutPos"
+						],
 						"additionalProperties": false,
 
 						"properties": {
@@ -98,7 +102,7 @@
 
 							"source": {
 								"title":       "Path to source file",
-								"description": "Path to the source image file, relative to the configuration file's directory by default.",
+								"description": "Path to the source image file, relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
 								"type":        "string",
 
 								"format": "uri-reference"
@@ -178,7 +182,7 @@
 
 							"source": {
 								"title":       "Path to source file",
-								"description": "Path to the JSON file containing font metrics, palette entries, strings or the game list (if such data is not part of the entry object), relative to the configuration file's directory by default.",
+								"description": "Path to the JSON file containing font metrics, palette entries, strings or the game list (if such data is not part of the entry object), relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
 								"type":        "string",
 
 								"format": "uri-reference"

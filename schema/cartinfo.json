@@ -1,0 +1,208 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/cartinfo.json",
+
+	"title": "Security cartridge description",
+	"type":  "object",
+
+	"additionalProperties": false,
+
+	"properties": {
+		"pcb": {
+			"title":       "Cartridge PCB type",
+			"description": "Name of the PCB used by this security cartridge. The cartridge's EEPROM type and presence of a DS2401 are inferred from this field. If the exact PCB type is not known, specify `unknown-x76f041`, `unknown-x76f041-ds2401` or `unknown-zs01`.",
+			"type":        "string",
+
+			"enum": [
+				"unknown-x76f041",
+				"unknown-x76f041-ds2401",
+				"unknown-zs01",
+				"GX700-PWB(D)",
+				"GX700-PWB(E)",
+				"GX700-PWB(J)",
+				"GX883-PWB(D)",
+				"GX894-PWB(D)",
+				"GX896-PWB(A)A",
+				"GE949-PWB(D)A",
+				"GE949-PWB(D)B",
+				"PWB0000068819",
+				"PWB0000088954"
+			]
+		},
+
+		"dataKey": {
+			"title":       "EEPROM data key",
+			"description": "The 8-byte password this cartridge's EEPROM is locked with. Must be specified as 8 hexadecimal values separated by dashes.",
+			"type":        "string",
+
+			"pattern": "^([0-9a-f]{2}-){7}[0-9a-f]{2}$",
+			"default": "00-00-00-00-00-00-00-00"
+		},
+		"yearField": {
+			"title":       "Year field",
+			"description": "The value of the 2-byte year field stored in the header. Usually either zero or the year the game came out encoded as BCD. Must be specified as 2 hexadecimal values separated by a dash.",
+			"type":        "string",
+
+			"pattern": "^[0-9a-f]{2}-[0-9a-f]{2}$",
+			"default": "20-00"
+		},
+		"tidWidth": {
+			"title":       "Trace ID bit width",
+			"description": "Number of bits used in the CRC algorithm that derives the TID from the SID, typically either 14 or 16. Only valid if the TID type is `littleEndianSIDHash` or `bigEndianSIDHash`.",
+			"type":        "integer",
+
+			"minimum":  1,
+			"maximum": 16,
+			"default": 16
+		},
+		"midValue": {
+			"title":       "Installation ID value",
+			"description": "Value of the first byte of the installation ID (MID), typically 0, 1 or 2. Omit if no MID is present in either the public or private ID areas. Note that a value of 0 is different from no MID being present.",
+			"type":        "integer",
+
+			"minimum":   0,
+			"maximum": 255,
+			"default":   2
+		},
+
+		"headerFlags": {
+			"title": "Game header properties",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"format": {
+					"title":       "Header data format",
+					"description": "Which of the currently known layouts the header's data is arranged in. Must be one of the following:\n- `regionOnly` (used only by early cartridges)\n- `basic` (used only by early cartridges)\n- `earlyExtended`\n- `extended`",
+					"type":        "string",
+
+					"enum": [
+						"regionOnly",
+						"basic",
+						"earlyExtended",
+						"extended"
+					]
+				},
+				"specType": {
+					"title":       "Specification code type",
+					"description": "Whether and how the game's specification code is stored in the header. Must be one of the following:\n- `actual` (the full code is stored - GC, GE, etc.)\n- `wildcard` (the second character is replaced with an asterisk - G*)\nOmit if no specification is present in the header.",
+					"type":        "string",
+
+					"enum": [
+						"actual",
+						"wildcard"
+					]
+				},
+
+				"scrambled": {
+					"title":       "Scramble header data",
+					"description": "Whether to scramble the header by interpreting it as a series of 16-bit big endian words and converting them to 32-bit little endian. This algorithm is used by some early games to scramble all data in RTC RAM.",
+					"type":        "boolean"
+				},
+				"usesPublicArea": {
+					"title":       "Header in public data area",
+					"description": "Whether the header, along with any public IDs, is stored in the chip-specific unprivileged section of the cartridge's EEPROM (readable without the game's data key) rather than in the private area.",
+					"type":        "boolean"
+				},
+				"lowercaseRegion": {
+					"title":       "Force lowercase region code",
+					"description": "Whether to store the region/version code in lowercase. Lowercase regions are used by some installation cartridges.",
+					"type":        "boolean"
+				}
+			}
+		},
+		"checksumFlags": {
+			"title": "Game header checksum properties",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"width": {
+					"title":       "Checksum width and type",
+					"description": "Bit width of each input item and the resulting checksum value. Must be one of the following:\n- `byte` (interpret data as bytes, output an 8-bit sum)\n- `byteInWordOut` (interpret data as bytes, output a 16-bit sum)\n- `word` (interpret data as 16-bit words, output a 16-bit sum)",
+					"type":        "string",
+
+					"enum": [
+						"byte",
+						"byteInWordOut",
+						"word"
+					]
+				},
+
+				"bigEndianInput": {
+					"title":       "Interpret input words as big endian",
+					"description": "If true, each input word will be byte-swapped prior to computing the checksum. Only valid if the checksum width is set to `word`.",
+					"type":        "boolean"
+				},
+				"bigEndianOutput": {
+					"title":       "Store checksum in big endian format",
+					"description": "If true, the checksum will be byte-swapped before being written into the header. Only valid if the checksum width is set to `byteInWordOut` or `word`.",
+					"type":        "boolean"
+				},
+				"inverted": {
+					"title":       "Invert header checksum",
+					"description": "If true, all bits of the checksum will be negated before writing it into the header.",
+					"type":        "boolean"
+				},
+				"forceGXSpec": {
+					"title":       "Force GX specification when computing checksum",
+					"description": "If true, the header's specification code will be temporarily overridden and set to GX while the checksum is calculated. Required by Dark Horse Legend, which mistakenly sets the specification to GE.",
+					"type":        "boolean"
+				}
+			}
+		},
+		"idFlags": {
+			"title": "Cartridge ID properties",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"privateTID": {
+					"title":       "Private trace ID type",
+					"description": "Method used to generate the trace ID (TID) stored in the cartridge EEPROM's private area. Must be one of the following:\n- `static` (arbitrary value assigned at manufacture time)\n- `littleEndianSIDHash` (hash derived from the cartridge's DS2401 ID)\n- `bigEndianSIDHash` (hash derived from the cartridge's DS2401 ID)\nOmit if no trace ID is present.",
+					"type":        "string",
+
+					"enum": [
+						"static",
+						"littleEndianSIDHash",
+						"bigEndianSIDHash"
+					]
+				},
+				"privateSID": {
+					"title":       "Private cartridge ID present",
+					"description": "Whether a copy of the cartridge's DS2401 ID (SID) is stored in the cartridge EEPROM's private area. Only valid for cartridges with a DS2401.",
+					"type":        "boolean"
+				},
+				"privateMID": {
+					"title":       "Private installation ID present",
+					"description": "Whether a copy of the installation ID (MID) is stored in the cartridge EEPROM's private area. Only valid if `midValue` is set on the header.",
+					"type":        "boolean"
+				},
+				"privateXID": {
+					"title":       "Private I/O board ID present",
+					"description": "Whether a copy of the I/O board's DS2401 ID (XID) is stored in the cartridge EEPROM's private area. Only valid for games that use an I/O board with a DS2401.",
+					"type":        "boolean"
+				},
+
+				"dummyPublicArea": {
+					"title":       "Allocate dummy space for public header in private area",
+					"description": "If true, a blank 32-byte region is reserved at the beginning of the cartridge's private area for IDs that are actually stored in the public area. Only valid if `usesPublicArea` is set on the header. Required by some late Bemani games with X76F041 cartridges.",
+					"type":        "boolean"
+				},
+				"publicMID": {
+					"title":       "Public installation ID present",
+					"description": "Whether a copy of the installation ID (MID) is stored in the cartridge EEPROM's public area. Only valid if `midValue` and `usesPublicArea` are set on the header.",
+					"type":        "boolean"
+				},
+				"publicXID": {
+					"title":       "Public I/O board ID present",
+					"description": "Whether a copy of the I/O board's DS2401 ID (XID) is stored in the cartridge EEPROM's public area. Only valid for games that use an I/O board with a DS2401, if `usesPublicArea` is set on the header.",
+					"type":        "boolean"
+				}
+			}
+		}
+	}
+}

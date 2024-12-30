@@ -1,0 +1,143 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id":     "schema/rominfo.json",
+
+	"title": "Flash or RTC RAM game header description",
+	"type":  "object",
+
+	"additionalProperties": false,
+
+	"properties": {
+		"signatureField": {
+			"title":       "Signature field",
+			"description": "The first 4 bytes of the game's static signature. Must be specified as 4 hexadecimal values separated by dashes. Only valid if the signature type is set to `static`.",
+			"type":        "string",
+
+			"pattern": "^([0-9a-f]{2}-){3}[0-9a-f]{2}$",
+			"default": "20-00"
+		},
+		"yearField": {
+			"title":       "Year field",
+			"description": "The value of the 2-byte year field stored in the header. Usually either zero or the year the game came out encoded as BCD. Must be specified as 2 hexadecimal values separated by a dash.",
+			"type":        "string",
+
+			"pattern": "^[0-9a-f]{2}-[0-9a-f]{2}$",
+			"default": "20-00"
+		},
+
+		"headerFlags": {
+			"title": "Game header properties",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"format": {
+					"title":       "Header data format",
+					"description": "Which of the currently known layouts the header's data is arranged in. Must be one of the following:\n- `regionOnly` (used only by early cartridges)\n- `basic` (used only by early cartridges)\n- `earlyExtended`\n- `extended`",
+					"type":        "string",
+
+					"enum": [
+						"regionOnly",
+						"basic",
+						"earlyExtended",
+						"extended"
+					]
+				},
+				"specType": {
+					"title":       "Specification code type",
+					"description": "Whether and how the game's specification code is stored in the header. Must be one of the following:\n- `actual` (the full code is stored - GC, GE, etc.)\n- `wildcard` (the second character is replaced with an asterisk - G*)\nOmit if no specification is present in the header.",
+					"type":        "string",
+
+					"enum": [
+						"actual",
+						"wildcard"
+					]
+				},
+
+				"scrambled": {
+					"title":       "Scramble header data",
+					"description": "Whether to scramble the header by interpreting it as a series of 16-bit big endian words and converting them to 32-bit little endian. This algorithm is used by some early games to scramble all data in RTC RAM.",
+					"type":        "boolean"
+				},
+				"usesPublicArea": {
+					"title":       "Header in public data area",
+					"description": "Whether the header, along with any public IDs, is stored in the chip-specific unprivileged section of the cartridge's EEPROM (readable without the game's data key) rather than in the private area.",
+					"type":        "boolean"
+				},
+				"lowercaseRegion": {
+					"title":       "Force lowercase region code",
+					"description": "Whether to store the region/version code in lowercase. Lowercase regions are used by some installation cartridges.",
+					"type":        "boolean"
+				}
+			}
+		},
+		"checksumFlags": {
+			"title": "Game header checksum properties",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"width": {
+					"title":       "Checksum width and type",
+					"description": "Bit width of each input item and the resulting checksum value. Must be one of the following:\n- `byte` (interpret data as bytes, output an 8-bit sum)\n- `byteInWordOut` (interpret data as bytes, output a 16-bit sum)\n- `word` (interpret data as 16-bit words, output a 16-bit sum)",
+					"type":        "string",
+
+					"enum": [
+						"byte",
+						"byteInWordOut",
+						"word"
+					]
+				},
+
+				"bigEndianInput": {
+					"title":       "Interpret input words as big endian",
+					"description": "If true, each input word will be byte-swapped prior to computing the checksum. Only valid if the checksum width is set to `word`.",
+					"type":        "boolean"
+				},
+				"bigEndianOutput": {
+					"title":       "Store checksum in big endian format",
+					"description": "If true, the checksum will be byte-swapped before being written into the header. Only valid if the checksum width is set to `byteInWordOut` or `word`.",
+					"type":        "boolean"
+				},
+				"inverted": {
+					"title":       "Invert header checksum",
+					"description": "If true, all bits of the checksum will be negated before writing it into the header.",
+					"type":        "boolean"
+				},
+				"forceGXSpec": {
+					"title":       "Force GX specification when computing checksum",
+					"description": "If true, the header's specification code will be temporarily overridden and set to GX while the checksum is calculated. Required by Dark Horse Legend, which mistakenly sets the specification to GE.",
+					"type":        "boolean"
+				}
+			}
+		},
+		"signatureFlags": {
+			"title": "Installation signature properties",
+			"type":  "object",
+
+			"additionalProperties": false,
+
+			"properties": {
+				"type": {
+					"title":       "Installation signature type",
+					"description": "Method used to generate the installation signature stored in the header. Must be one of the following:\n- `static` (fixed value identical across all installations of the game)\n- `checksum` (4-byte hash derived from the I/O board's ID)\n- `md5` (MD5 hash derived from the I/O board's ID)\nOmit if no signature is present.",
+					"type":        "string",
+
+					"enum": [
+						"static",
+						"checksum",
+						"md5"
+					]
+				},
+
+				"padWithFF": {
+					"title":       "Pad signature area with 0xff bytes",
+					"description": "Whether to fill unused space in the signature area with 0xff bytes instead of 0x00.",
+					"type":        "boolean"
+				}
+			}
+		}
+	}
+}

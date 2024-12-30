@@ -2,7 +2,7 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id":     "schema/cdrom.json",
 
-	"title": "Root",
+	"title": "CD-ROM image description",
 	"type":  "object",
 
 	"required": [ "entries" ],
@@ -68,7 +68,7 @@
 				"properties": {
 					"type": {
 						"title":       "Entry type",
-						"description": "Must be 'empty' (empty or zerofilled file), 'file', 'directory', 'fileAlias' or 'directoryAlias' (hard link to another entry).",
+						"description": "Must be one of the following:\n- `empty` (zero-length or zerofilled file)\n- `file`\n- `directory`\n- `fileAlias` (hard link to a file)\n- `directoryAlias` (hard link to a directory)",
 						"type":        "string",
 
 						"enum": [
