@@ -77,7 +77,7 @@ set(
 	src/common/fs/file.cpp
 	src/common/fs/iso9660.cpp
 	src/common/fs/memorycard.cpp
-	src/common/fs/memorycardfs.cpp
+	src/common/fs/memorycardbase.cpp
 	src/common/fs/misc.cpp
 	src/common/fs/package.cpp
 	src/common/fs/zip.cpp
@@ -86,7 +86,8 @@ set(
 	storageSources
 	src/common/storage/ata.cpp
 	src/common/storage/atapi.cpp
-	src/common/storage/device.cpp
+	src/common/storage/idebase.cpp
+	src/common/storage/memorycard.cpp
 )
 set(
 	utilSources

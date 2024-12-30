@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/storage/device.hpp"
+#include "common/storage/idebase.hpp"
 #include "common/util/templates.hpp"
 
 namespace storage {

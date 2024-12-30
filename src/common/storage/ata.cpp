@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include "common/storage/ata.hpp"
 #include "common/storage/device.hpp"
+#include "common/storage/idebase.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 
@@ -143,11 +144,14 @@ DeviceError ATADevice::enumerate(void) {
 		flags   |= SUPPORTS_EXT_LBA;
 		capacity = block.getSectorCountExt();
 	} else {
+		flags   &= ~SUPPORTS_EXT_LBA;
 		capacity = block.getSectorCount();
 	}
 
 	if (block.commandSetFlags[1] & (1 << 12))
 		flags |= SUPPORTS_FLUSH;
+	else
+		flags &= ~SUPPORTS_FLUSH;
 
 	LOG_STORAGE("drive %d is ATA", _getDriveIndex());
 	return _setup(block);

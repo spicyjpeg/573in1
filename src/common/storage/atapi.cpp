@@ -89,6 +89,9 @@ static DeviceError _senseDataToError(const ATAPISenseData &data) {
 		case SENSE_KEY_DATA_PROTECT:
 			return DISC_ERROR;
 
+		case SENSE_KEY_ILLEGAL_REQUEST:
+			return COMMAND_ERROR;
+
 		case SENSE_KEY_UNIT_ATTENTION:
 			return (asc == ASC_RESET_OCCURRED)
 				? NOT_YET_READY
@@ -243,7 +246,7 @@ DeviceError ATAPIDevice::enumerate(void) {
 
 	// TODO: actually fetch the capacity from the drive
 	type         = ATAPI;
-	flags        = READ_ONLY;
+	flags       |= READ_ONLY;
 	capacity     = 0;
 	sectorLength = _SECTOR_LENGTH;
 
@@ -252,6 +255,8 @@ DeviceError ATAPIDevice::enumerate(void) {
 		== IDE_IDENTIFY_DEV_PACKET_LENGTH_16
 	)
 		flags |= REQUIRES_EXT_PACKET;
+	else
+		flags &= ~REQUIRES_EXT_PACKET;
 
 	LOG_STORAGE("drive %d is ATAPI", _getDriveIndex());
 	return _setup(block);

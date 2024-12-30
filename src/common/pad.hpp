@@ -23,8 +23,6 @@ namespace pad {
 
 /* Definitions */
 
-static constexpr size_t MEMORY_CARD_SECTOR_LENGTH = 128;
-
 enum Address : uint8_t {
 	ADDR_CONTROLLER   = 0x01,
 	ADDR_PS2_IR       = 0x21,
@@ -137,10 +135,7 @@ enum PortError {
 	NO_DEVICE          = 1,
 	UNSUPPORTED_DEVICE = 2,
 	INVALID_RESPONSE   = 3,
-	CHECKSUM_MISMATCH  = 4,
-	CARD_ERROR         = 5,
-	CONTROLLER_CHANGED = 6,
-	CARD_CHANGED       = 7
+	DEVICE_CHANGED     = 4
 };
 
 struct AnalogState {
@@ -163,8 +158,6 @@ public:
 	void stop(void) const;
 
 	PortError pollController(void);
-	PortError memoryCardRead(void *data, uint16_t lba) const;
-	PortError memoryCardWrite(const void *data, uint16_t lba) const;
 };
 
 class PortLock {
