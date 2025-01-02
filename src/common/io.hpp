@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -109,11 +109,6 @@ static inline bool getCartInsertionStatus(void) {
 	return (SIO_STAT(1) / SIO_STAT_DSR) & 1;
 }
 
-static inline bool getCartSerialStatus(void) {
-	SIO_CTRL(1) |= SIO_CTRL_RTS;
-	return (SIO_STAT(1) / SIO_STAT_CTS) & 1;
-}
-
 /* Bitbanged I/O */
 
 extern uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
@@ -176,7 +171,34 @@ void getRTCTime(util::Date &output);
 void setRTCTime(const util::Date &value, bool stop = false);
 bool isRTCBatteryLow(void);
 
-/* I2C driver */
+/* Hardware serial port drivers */
+
+class UARTDriver {
+public:
+	virtual int init(int baud) const { return 0; }
+	virtual bool isConnected(void) const { return true; }
+
+	virtual uint8_t readByte(void) const { return 0; }
+	virtual void writeByte(uint8_t value) const {}
+	virtual bool isRXAvailable(void) const { return false; }
+	virtual bool isTXFull(void) const { return false; }
+
+	size_t readBytes(uint8_t *data, size_t length, int timeout = 0) const;
+	void writeBytes(const uint8_t *data, size_t length) const;
+};
+
+class CartUARTDriver : public UARTDriver {
+public:
+	int init(int baud) const;
+	bool isConnected(void) const;
+
+	uint8_t readByte(void) const;
+	void writeByte(uint8_t value) const;
+	bool isRXAvailable(void) const;
+	bool isTXFull(void) const;
+};
+
+/* Bitbanged I2C driver */
 
 class I2CDriver {
 private:
@@ -263,7 +285,7 @@ public:
 	}
 };
 
-/* 1-wire driver */
+/* Bitbanged 1-wire driver */
 
 class OneWireDriver {
 private:
@@ -299,6 +321,7 @@ private:
 	void _set(bool value) const;
 };
 
+extern const CartUARTDriver   cartSerial;
 extern const CartI2CDriver    cartI2C;
 extern const CartDS2401Driver cartDS2401;
 

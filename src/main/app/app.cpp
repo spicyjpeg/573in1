@@ -24,6 +24,7 @@
 #include "common/fs/misc.hpp"
 #include "common/fs/package.hpp"
 #include "common/storage/device.hpp"
+#include "common/storage/idebase.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"

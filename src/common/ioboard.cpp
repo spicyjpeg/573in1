@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -217,6 +217,71 @@ void digitalIOFPGAInit(void) {
 
 /* Digital I/O board bus APIs */
 
+static constexpr int _MIN_BAUD_RATE  = 4800;
+static constexpr int _NUM_BAUD_RATES = 8;
+
+int DigitalIOUARTDriver::init(int baud) const {
+	// Find the closest available baud rate to the one requested.
+	int baudIndex = -1;
+
+	for (int i = 0; i < _NUM_BAUD_RATES; i++) {
+		int lowerBound = _MIN_BAUD_RATE << i;
+		int upperBound = lowerBound     << 1;
+
+		if ((baud >= lowerBound) && (baud < upperBound)) {
+			baudIndex = i;
+			break;
+		}
+	}
+
+	if (baudIndex < 0)
+		return 0;
+	if (SYS573D_FPGA_MAGIC != SYS573D_FPGA_MAGIC_573IN1)
+		return 0;
+
+	const uint16_t mask = 0
+		| SYS573D_FPGA_UART_CTRL_TX_IDLE
+		| SYS573D_FPGA_UART_CTRL_RX_IDLE;
+
+	// In order to prevent glitches, wait for the UART to go idle and disable it
+	// before changing the baud rate.
+	while ((SYS573D_FPGA_UART_CTRL & mask) != mask)
+		__asm__ volatile("");
+
+	SYS573D_FPGA_UART_CTRL = 0
+		| (baudIndex << 1)
+		| SYS573D_FPGA_UART_CTRL_RTS;
+	delayMicroseconds(_FPGA_RESET_REG_DELAY);
+
+	SYS573D_FPGA_UART_CTRL = 0
+		| SYS573D_FPGA_UART_CTRL_ENABLE
+		| (baudIndex << 1)
+		| SYS573D_FPGA_UART_CTRL_RTS;
+	return _MIN_BAUD_RATE << baudIndex;
+}
+
+uint8_t DigitalIOUARTDriver::readByte(void) const {
+	while (!(SYS573D_FPGA_UART_CTRL & SYS573D_FPGA_UART_CTRL_RX_FULL))
+		__asm__ volatile("");
+
+	return SYS573D_FPGA_UART_DATA & 0xff;
+}
+
+void DigitalIOUARTDriver::writeByte(uint8_t value) const {
+	while (SYS573D_FPGA_UART_CTRL & SYS573D_FPGA_UART_CTRL_TX_FULL)
+		__asm__ volatile("");
+
+	SYS573D_FPGA_UART_DATA = value;
+}
+
+bool DigitalIOUARTDriver::isRXAvailable(void) const {
+	return (SYS573D_FPGA_UART_CTRL / SYS573D_FPGA_UART_CTRL_RX_FULL) & 1;
+}
+
+bool DigitalIOUARTDriver::isTXFull(void) const {
+	return (SYS573D_FPGA_UART_CTRL / SYS573D_FPGA_UART_CTRL_TX_FULL) & 1;
+}
+
 bool DigitalIOI2CDriver::_getSDA(void) const {
 	return (SYS573D_FPGA_MP3_I2C / SYS573D_FPGA_MP3_I2C_SDA) & 1;
 }
@@ -270,6 +335,7 @@ void DigitalIODS2433Driver::_set(bool value) const {
 	SYS573D_FPGA_DS_BUS = _digitalIODSBusReg;
 }
 
+const DigitalIOUARTDriver   digitalIOSerial;
 const DigitalIOI2CDriver    digitalIOI2C;
 const DigitalIODS2401Driver digitalIODS2401;
 const DigitalIODS2433Driver digitalIODS2433;

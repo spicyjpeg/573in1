@@ -6,9 +6,7 @@
                       #####'   ##   #####.  | | \|  ######
 
                      - Konami System 573 maintenance tool -
-
-Version ${PROJECT_VERSION}
-(C) 2022-2024 spicyjpeg
+                                 Version {PROJECT_VERSION}
 
 [ Usage ]
 
@@ -28,7 +26,7 @@ is not guaranteed to work and improper usage can PERMANENTLY BRICK your System
 
 [ License ]
 
-Copyright (C) 2022-2024 spicyjpeg
+Copyright (C) 2022-2025 spicyjpeg
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

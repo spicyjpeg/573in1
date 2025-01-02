@@ -177,7 +177,7 @@ DeviceError IDEDevice::_waitForIdle(bool drdy, int timeout, bool ignoreError) {
 	if (!timeout)
 		timeout = _COMMAND_TIMEOUT;
 
-	for (; timeout > 0; timeout -= 10) {
+	for (; timeout >= 0; timeout -= 10) {
 		auto status = _get(CS0_STATUS);
 
 		// Only check for errors *after* BSY is cleared.
@@ -203,7 +203,7 @@ DeviceError IDEDevice::_waitForDRQ(int timeout, bool ignoreError) {
 	if (!timeout)
 		timeout = _DRQ_TIMEOUT;
 
-	for (; timeout > 0; timeout -= 10) {
+	for (; timeout >= 0; timeout -= 10) {
 		auto status = _get(CS0_STATUS);
 
 		// Check for errors *before* DRQ is set but *after* BSY is cleared.
@@ -269,7 +269,7 @@ IDEDevice *newIDEDevice(int index) {
 	else
 		SYS573_IDE_CS0_BASE[CS0_DEVICE_SEL] = CS0_DEVICE_SEL_PRIMARY;
 
-	for (int timeout = _DETECT_TIMEOUT; timeout > 0; timeout -= 10) {
+	for (int timeout = _DETECT_TIMEOUT; timeout >= 0; timeout -= 10) {
 		if (SYS573_IDE_CS0_BASE[CS0_STATUS] & CS0_STATUS_BSY) {
 			delayMicroseconds(10);
 			continue;

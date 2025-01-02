@@ -203,4 +203,19 @@ DeviceError MemoryCardDevice::write(
 	}
 }
 
+/* Device constructor */
+
+MemoryCardDevice *newMemoryCardDevice(int index) {
+	auto dev   = new MemoryCardDevice(index);
+	auto error = dev->enumerate();
+
+	if (error) {
+		LOG_STORAGE("card %d: %s", index, getErrorString(error));
+		delete dev;
+		return nullptr;
+	}
+
+	return dev;
+}
+
 }

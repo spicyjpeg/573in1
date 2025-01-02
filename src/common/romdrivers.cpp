@@ -116,7 +116,7 @@ DriverError AM29F016Driver::_flush(
 
 	uint8_t status, diff;
 
-	for (; timeout > 0; timeout--) {
+	for (; timeout >= 0; timeout--) {
 		status = (*ptr >> shift) & 0xff;
 		diff   = status ^ byte;
 
@@ -259,7 +259,7 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 
 	*ptr = INTEL_GET_STATUS;
 
-	for (; timeout > 0; timeout--) {
+	for (; timeout >= 0; timeout--) {
 		status = (*ptr >> shift) & 0xff;
 
 		if (!(status & INTEL_STATUS_WSMS))

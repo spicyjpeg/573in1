@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -203,7 +203,81 @@ bool isRTCBatteryLow(void) {
 	return (SYS573_RTC_DAY / SYS573_RTC_DAY_LOW_BATTERY) & 1;
 }
 
-/* I2C driver */
+/* Hardware serial port drivers */
+
+size_t UARTDriver::readBytes(uint8_t *data, size_t length, int timeout) const {
+	auto remaining = length;
+
+	for (; timeout >= 0; timeout -= 10) {
+		while (isRXAvailable()) {
+			*(data++) = readByte();
+
+			if (!(--remaining))
+				break;
+		}
+
+		delayMicroseconds(10);
+	}
+
+	return length - remaining;
+}
+
+void UARTDriver::writeBytes(const uint8_t *data, size_t length) const {
+	for (; length; length--)
+		writeByte(*(data++));
+}
+
+int CartUARTDriver::init(int baud) const {
+	SIO_CTRL(1) = SIO_CTRL_RESET;
+
+	int divider = F_CPU / baud;
+
+	SIO_MODE(1) = 0
+		| SIO_MODE_BAUD_DIV1
+		| SIO_MODE_DATA_8
+		| SIO_MODE_STOP_1;
+	SIO_BAUD(1) = divider;
+	SIO_CTRL(1) = 0
+		| SIO_CTRL_TX_ENABLE
+		| SIO_CTRL_RX_ENABLE
+		| SIO_CTRL_RTS;
+
+	return F_CPU / divider;
+}
+
+uint8_t CartUARTDriver::readByte(void) const {
+	while (!(SIO_STAT(1) & SIO_STAT_RX_NOT_EMPTY))
+		__asm__ volatile("");
+
+	return SIO_DATA(1);
+}
+
+void CartUARTDriver::writeByte(uint8_t value) const {
+	// The serial interface will buffer but not send any data if the CTS input
+	// is not asserted, so we are going to abort if CTS is not set to avoid
+	// waiting forever.
+	while (
+		(SIO_STAT(1) & (SIO_STAT_TX_NOT_FULL | SIO_STAT_CTS)) == SIO_STAT_CTS
+	)
+		__asm__ volatile("");
+
+	if (SIO_STAT(1) & SIO_STAT_CTS)
+		SIO_DATA(1) = value;
+}
+
+bool CartUARTDriver::isConnected(void) const {
+	return (SIO_STAT(1) / SIO_STAT_CTS) & 1;
+}
+
+bool CartUARTDriver::isRXAvailable(void) const {
+	return (SIO_STAT(1) / SIO_STAT_RX_NOT_EMPTY) & 1;
+}
+
+bool CartUARTDriver::isTXFull(void) const {
+	return ((SIO_STAT(1) / SIO_STAT_TX_NOT_FULL) & 1) ^ 1;
+}
+
+/* Bitbanged I2C driver */
 
 static constexpr int _I2C_BUS_DELAY   = 50;
 static constexpr int _I2C_RESET_DELAY = 500;
@@ -359,7 +433,7 @@ uint32_t I2CDriver::resetZS01(void) const {
 	return value;
 }
 
-/* 1-wire driver */
+/* Bitbanged 1-wire driver */
 
 static constexpr int _DS_RESET_LOW_TIME     = 480;
 static constexpr int _DS_RESET_SAMPLE_DELAY = 70;
@@ -440,6 +514,7 @@ void CartDS2401Driver::_set(bool value) const {
 	setCartOutput(CART_OUTPUT_DS2401, value ^ 1);
 }
 
+const CartUARTDriver   cartSerial;
 const CartI2CDriver    cartI2C;
 const CartDS2401Driver cartDS2401;
 

@@ -124,7 +124,7 @@ bool acknowledgeInterrupt(IRQChannel irq) {
 }
 
 bool waitForInterrupt(IRQChannel irq, int timeout) {
-	for (; timeout > 0; timeout -= 10) {
+	for (; timeout >= 0; timeout -= 10) {
 		if (acknowledgeInterrupt(irq))
 			return true;
 
@@ -135,7 +135,7 @@ bool waitForInterrupt(IRQChannel irq, int timeout) {
 }
 
 bool waitForDMATransfer(DMAChannel dma, int timeout) {
-	for (; timeout > 0; timeout -= 10) {
+	for (; timeout >= 0; timeout -= 10) {
 		if (!(DMA_CHCR(dma) & DMA_CHCR_ENABLE))
 			return true;
 

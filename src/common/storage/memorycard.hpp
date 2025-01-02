@@ -44,4 +44,6 @@ public:
 	DeviceError write(const void *data, uint64_t lba, size_t count);
 };
 
+MemoryCardDevice *newMemoryCardDevice(int index);
+
 }

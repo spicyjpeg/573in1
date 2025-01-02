@@ -1,7 +1,6 @@
 - 573in1: Konami System 573 maintenance tool -
 
-Version ${PROJECT_VERSION} 
-(C) 2022-2024 spicyjpeg 
+Version ${PROJECT_VERSION}
 
 Full documentation, source code and more available here: 
     <${PROJECT_HOMEPAGE_URL}> 
@@ -27,14 +26,14 @@ Testing:
 Special thanks: 
     987123879113 
     Gabrimax 
-    Hyphen/4434 
+    Hyphen (YubiParts) 
     Martin Korth (nocash) 
     Nicolas Noble 
     Everyone on the Rhythm Game Cabs and PSX.Dev Discord servers 
 
 [ License ]
 
-Copyright (C) 2022-2024 spicyjpeg
+Copyright (C) 2022-2025 spicyjpeg
 
 573in1 is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software
@@ -55,7 +54,7 @@ This tool embeds several third-party libraries and projects:
 --- FatFs 
 --- <https://elm-chan.org/fsw/ff/00index_e.html> 
 
-Copyright (C) 2022, ChaN, all rights reserved.
+Copyright (C) 2024, ChaN, all rights reserved.
 
 FatFs module is an open source software. Redistribution and use of FatFs in
 source and binary forms, with or without modification, are permitted provided

@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -51,6 +51,16 @@ void digitalIOFPGAInit(void);
 
 /* Digital I/O board bus APIs */
 
+class DigitalIOUARTDriver : public UARTDriver {
+public:
+	int init(int baud) const;
+
+	uint8_t readByte(void) const;
+	void writeByte(uint8_t value) const;
+	bool isRXAvailable(void) const;
+	bool isTXFull(void) const;
+};
+
 class DigitalIOI2CDriver : public I2CDriver {
 private:
 	bool _getSDA(void) const;
@@ -70,6 +80,7 @@ private:
 	void _set(bool value) const;
 };
 
+extern const DigitalIOUARTDriver   digitalIOSerial;
 extern const DigitalIOI2CDriver    digitalIOI2C;
 extern const DigitalIODS2401Driver digitalIODS2401;
 extern const DigitalIODS2433Driver digitalIODS2433;

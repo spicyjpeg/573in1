@@ -81,10 +81,17 @@ size_t exchangeBytes(
 /* Controller port class */
 
 Port ports[2]{
-	(SIO_CTRL_TX_ENABLE | SIO_CTRL_RX_ENABLE | SIO_CTRL_DSR_IRQ_ENABLE
-		| SIO_CTRL_CS_PORT_1),
-	(SIO_CTRL_TX_ENABLE | SIO_CTRL_RX_ENABLE | SIO_CTRL_DSR_IRQ_ENABLE
-		| SIO_CTRL_CS_PORT_2)
+	(0
+		| SIO_CTRL_TX_ENABLE
+		| SIO_CTRL_RX_ENABLE
+		| SIO_CTRL_DSR_IRQ_ENABLE
+		| SIO_CTRL_CS_PORT_1
+	), (0
+		| SIO_CTRL_TX_ENABLE
+		| SIO_CTRL_RX_ENABLE
+		| SIO_CTRL_DSR_IRQ_ENABLE
+		| SIO_CTRL_CS_PORT_2
+	)
 };
 
 bool Port::start(uint8_t address) const {

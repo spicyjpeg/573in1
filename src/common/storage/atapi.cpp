@@ -169,7 +169,8 @@ DeviceError ATAPIDevice::_issuePacket(
 	// Keep resending the command as long as the drive reports it is in progress
 	// of becoming ready (i.e. spinning up).
 	for (
-		int timeout = _ATAPI_READY_TIMEOUT; timeout > 0;
+		int timeout = _ATAPI_READY_TIMEOUT;
+		timeout >= 0;
 		timeout -= _ATAPI_POLL_DELAY
 	) {
 		_select(0);

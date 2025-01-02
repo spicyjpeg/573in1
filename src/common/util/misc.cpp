@@ -137,7 +137,7 @@ template<typename T> bool MutexFlags<T>::lock(T flags, int timeout) {
 			}
 		}
 
-		if (timeout <= 0)
+		if (timeout < 0)
 			return false;
 
 		delayMicroseconds(10);
