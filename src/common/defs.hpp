@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -40,18 +40,25 @@
 #define CH_RIGHT_ARROW_ALT "\u2192"
 #define CH_INVALID_CHAR    "\ufffd"
 
-#define CH_CIRCLE_BUTTON   "\u25cb"
-#define CH_X_BUTTON        "\u2715"
-#define CH_TRIANGLE_BUTTON "\u25b3"
-#define CH_SQUARE_BUTTON   "\u25a1"
-#define CH_LEFT_BUTTON     "\u25c1"
-#define CH_RIGHT_BUTTON    "\u25b7"
-#define CH_START_BUTTON    "\u25ad"
-#define CH_CLOSED_LOCK     "\U0001f512"
-#define CH_OPEN_LOCK       "\U0001f513"
-#define CH_CDROM_ICON      "\U0001f4bf"
-#define CH_HDD_ICON        "\U0001f4bd"
-#define CH_HOST_ICON       "\U0001f50c"
-#define CH_DIR_ICON        "\U0001f4c1"
-#define CH_PARENT_DIR_ICON "\U0001f4c2"
-#define CH_FILE_ICON       "\U0001f4c4"
+#define CH_PS1_CIRCLE_BUTTON   "\u25cb"
+#define CH_PS1_X_BUTTON        "\u2715"
+#define CH_PS1_TRIANGLE_BUTTON "\u25b3"
+#define CH_PS1_SQUARE_BUTTON   "\u25a1"
+#define CH_PS1_SELECT_BUTTON   "\u25ac"
+#define CH_PS1_START_BUTTON    "\u25ba"
+
+#define CH_LEFT_BUTTON  "\u25c1"
+#define CH_RIGHT_BUTTON "\u25b7"
+#define CH_START_BUTTON "\u25ad"
+
+#define CH_CLOSED_LOCK "\U0001f512"
+#define CH_OPEN_LOCK   "\U0001f513"
+
+#define CH_CDROM_ICON         "\U0001f4bf"
+#define CH_HDD_ICON           "\U0001f4bd"
+#define CH_MEMORY_CARD_ICON   "\U0001f4be"
+#define CH_POCKETSTATION_ICON "\U0001f4f1"
+#define CH_HOST_ICON          "\U0001f50c"
+#define CH_DIR_ICON           "\U0001f4c1"
+#define CH_PARENT_DIR_ICON    "\U0001f4c2"
+#define CH_FILE_ICON          "\U0001f4c4"

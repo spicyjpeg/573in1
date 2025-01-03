@@ -70,6 +70,7 @@ set(
 set(
 	exthwSources
 	src/common/exthw/lcd.cpp
+	src/common/exthw/nfc.cpp
 )
 set(
 	fsSources

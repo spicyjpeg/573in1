@@ -24,8 +24,8 @@
 #include "ps1/system.h"
 
 /*
- * This is a simple driver for a character LCD module, wired to the EXT-OUT
- * connector on the 573 main board as follows:
+ * This is a simple driver for a standard character LCD module, wired to the
+ * EXT-OUT (CN4) header on the 573 main board as follows:
  *
  * | EXT-OUT pin | LCD pin      |
  * | ----------: | :----------- |
@@ -40,6 +40,8 @@
  *
  * The `V0` (bias voltage) pin shall be connected to ground through an
  * appropriate resistor or potentiometer in order to set the display's contrast.
+ * The backlight is not controlled by this driver and can be left unconnected or
+ * hardwired to power.
  */
 
 namespace exthw {

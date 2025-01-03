@@ -282,14 +282,24 @@ void TextOverlay::draw(Context &ctx, bool active) const {
 	if (leftText) {
 		rect.x = 8;
 		rect.w = ctx.gpuCtx.width - 16;
-		ctx.font.draw(ctx.gpuCtx, leftText, rect, ctx.colors[COLOR_TEXT2]);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			leftText,
+			rect,
+			ctx.colors[COLOR_TEXT2]
+		);
 	}
 	if (rightText) {
 		int width = ctx.font.getStringWidth(rightText);
 
 		rect.x = ctx.gpuCtx.width - (8 + width);
 		rect.w = width;
-		ctx.font.draw(ctx.gpuCtx, rightText, rect, ctx.colors[COLOR_TEXT2]);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			rightText,
+			rect,
+			ctx.colors[COLOR_TEXT2]
+		);
 	}
 }
 
@@ -302,7 +312,8 @@ void SplashOverlay::draw(Context &ctx, bool active) const {
 	// Backdrop
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 	ctx.gpuCtx.drawBackdrop(
-		gp0_rgb(brightness, brightness, brightness), GP0_BLEND_SUBTRACT
+		gp0_rgb(brightness, brightness, brightness),
+		GP0_BLEND_SUBTRACT
 	);
 
 	if (brightness < 0xff)
@@ -337,7 +348,10 @@ void LogOverlay::draw(Context &ctx, bool active) const {
 
 	// Backdrop
 	_newLayer(
-		ctx, 0, offset - ctx.gpuCtx.height, ctx.gpuCtx.width,
+		ctx,
+		0,
+		offset - ctx.gpuCtx.height,
+		ctx.gpuCtx.width,
 		ctx.gpuCtx.height
 	);
 	ctx.gpuCtx.drawBackdrop(ctx.colors[COLOR_BACKDROP], GP0_BLEND_SUBTRACT);
@@ -355,7 +369,10 @@ void LogOverlay::draw(Context &ctx, bool active) const {
 
 	for (int i = (screenHeight / lineHeight) - 1; i >= 0; i--) {
 		ctx.font.draw(
-			ctx.gpuCtx, _buffer.getLine(i), rect, ctx.colors[COLOR_TEXT1]
+			ctx.gpuCtx,
+			_buffer.getLine(i),
+			rect,
+			ctx.colors[COLOR_TEXT1]
 		);
 
 		rect.y1  = rect.y2;
@@ -378,7 +395,8 @@ void ScreenshotOverlay::draw(Context &ctx, bool active) const {
 
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 	ctx.gpuCtx.drawBackdrop(
-		gp0_rgb(brightness, brightness, brightness), GP0_BLEND_ADD
+		gp0_rgb(brightness, brightness, brightness),
+		GP0_BLEND_ADD
 	);
 }
 
@@ -423,7 +441,8 @@ void BackdropScreen::draw(Context &ctx, bool active) const {
 
 	_newLayer(ctx, 0, 0, ctx.gpuCtx.width, ctx.gpuCtx.height);
 	ctx.gpuCtx.drawBackdrop(
-		gp0_rgb(brightness, brightness, brightness), GP0_BLEND_ADD
+		gp0_rgb(brightness, brightness, brightness),
+		GP0_BLEND_ADD
 	);
 }
 
@@ -443,28 +462,47 @@ void ModalScreen::draw(Context &ctx, bool active) const {
 		int windowHeight = TITLE_BAR_HEIGHT + _height;
 
 		_newLayer(
-			ctx, (ctx.gpuCtx.width  - _width) / 2,
-			(ctx.gpuCtx.height - windowHeight) / 2, _width + SHADOW_OFFSET,
+			ctx,
+			(ctx.gpuCtx.width  - _width)       / 2,
+			(ctx.gpuCtx.height - windowHeight) / 2,
+			_width       + SHADOW_OFFSET,
 			windowHeight + SHADOW_OFFSET
 		);
 		_setBlendMode(ctx, GP0_BLEND_SEMITRANS, true);
 
 		// Window
 		ctx.gpuCtx.drawGradientRectD(
-			0, 0, _width, windowHeight, ctx.colors[COLOR_WINDOW1],
-			ctx.colors[COLOR_WINDOW2], ctx.colors[COLOR_WINDOW3]
+			0,
+			0,
+			_width,
+			windowHeight,
+			ctx.colors[COLOR_WINDOW1],
+			ctx.colors[COLOR_WINDOW2],
+			ctx.colors[COLOR_WINDOW3]
 		);
 		ctx.gpuCtx.drawGradientRectH(
-			0, 0, _titleBarAnim.getValue(ctx.time), TITLE_BAR_HEIGHT,
-			ctx.colors[COLOR_ACCENT1], ctx.colors[COLOR_ACCENT2]
+			0,
+			0,
+			_titleBarAnim.getValue(ctx.time),
+			TITLE_BAR_HEIGHT,
+			ctx.colors[COLOR_ACCENT1],
+			ctx.colors[COLOR_ACCENT2]
 		);
 		ctx.gpuCtx.drawRect(
-			_width, SHADOW_OFFSET, SHADOW_OFFSET, windowHeight,
-			ctx.colors[COLOR_SHADOW], true
+			_width,
+			SHADOW_OFFSET,
+			SHADOW_OFFSET,
+			windowHeight,
+			ctx.colors[COLOR_SHADOW],
+			true
 		);
 		ctx.gpuCtx.drawRect(
-			SHADOW_OFFSET, windowHeight, _width - SHADOW_OFFSET, SHADOW_OFFSET,
-			ctx.colors[COLOR_SHADOW], true
+			SHADOW_OFFSET,
+			windowHeight,
+			_width - SHADOW_OFFSET,
+			SHADOW_OFFSET,
+			ctx.colors[COLOR_SHADOW],
+			true
 		);
 
 		// Text
@@ -474,11 +512,22 @@ void ModalScreen::draw(Context &ctx, bool active) const {
 		rect.y1 = TITLE_BAR_PADDING;
 		rect.x2 = _width - TITLE_BAR_PADDING;
 		rect.y2 = TITLE_BAR_PADDING + ctx.font.getLineHeight();
-		ctx.font.draw(ctx.gpuCtx, _title, rect, ctx.colors[COLOR_TITLE]);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			_title,
+			rect,
+			ctx.colors[COLOR_TITLE]
+		);
 
 		rect.y1 = TITLE_BAR_HEIGHT + MODAL_PADDING;
 		rect.y2 = _height - MODAL_PADDING;
-		ctx.font.draw(ctx.gpuCtx, _body, rect, ctx.colors[COLOR_TEXT1], true);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			_body,
+			rect,
+			ctx.colors[COLOR_TEXT1],
+			true
+		);
 	}
 }
 

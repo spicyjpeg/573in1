@@ -86,16 +86,7 @@ private:
 	util::Tween<int, util::QuadOutEasing> _progressBarAnim;
 
 protected:
-	inline void _setProgress(Context &ctx, int part, int total) {
-		if (!total)
-			total = 1;
-
-		int totalWidth = _width - MODAL_PADDING * 2;
-		int partWidth  = (totalWidth * part) / total;
-
-		if (_progressBarAnim.getTargetValue() != partWidth)
-			_progressBarAnim.setValue(ctx.time, partWidth, SPEED_FASTEST);
-	}
+	void _setProgress(Context &ctx, int part, int total);
 
 public:
 	ProgressScreen(void);

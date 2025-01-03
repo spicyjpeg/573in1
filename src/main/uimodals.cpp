@@ -59,32 +59,51 @@ void MessageBoxScreen::draw(Context &ctx, bool active) const {
 
 		if (_locked) {
 			ctx.gpuCtx.drawRect(
-				buttonX, buttonY, rect.w, BUTTON_HEIGHT,
-				ctx.colors[COLOR_SHADOW], true
+				buttonX,
+				buttonY,
+				rect.w,
+				BUTTON_HEIGHT,
+				ctx.colors[COLOR_SHADOW],
+				true
 			);
 
 			ctx.font.draw(
-				ctx.gpuCtx, _buttons[i], rect, ctx.colors[COLOR_TEXT2]
+				ctx.gpuCtx,
+				_buttons[i],
+				rect,
+				ctx.colors[COLOR_TEXT2]
 			);
 		} else {
 			if (i == activeButton) {
 				ctx.gpuCtx.drawRect(
-					buttonX, buttonY, rect.w, BUTTON_HEIGHT,
+					buttonX,
+					buttonY,
+					rect.w,
+					BUTTON_HEIGHT,
 					ctx.colors[COLOR_HIGHLIGHT2]
 				);
 				ctx.gpuCtx.drawRect(
-					buttonX, buttonY, _buttonAnim.getValue(ctx.time),
-					BUTTON_HEIGHT, ctx.colors[COLOR_HIGHLIGHT1]
+					buttonX,
+					buttonY,
+					_buttonAnim.getValue(ctx.time),
+					BUTTON_HEIGHT,
+					ctx.colors[COLOR_HIGHLIGHT1]
 				);
 			} else {
 				ctx.gpuCtx.drawRect(
-					buttonX, buttonY, rect.w, BUTTON_HEIGHT,
+					buttonX,
+					buttonY,
+					rect.w,
+					BUTTON_HEIGHT,
 					ctx.colors[COLOR_WINDOW3]
 				);
 			}
 
 			ctx.font.draw(
-				ctx.gpuCtx, _buttons[i], rect, ctx.colors[COLOR_TITLE]
+				ctx.gpuCtx,
+				_buttons[i],
+				rect,
+				ctx.colors[COLOR_TITLE]
 			);
 		}
 
@@ -152,13 +171,17 @@ void HexEntryScreen::draw(Context &ctx, bool active) const {
 	if (!active)
 		return;
 
-	int boxY     = TITLE_BAR_HEIGHT + _height -
-		(BUTTON_HEIGHT + MODAL_PADDING) * 2;
+	int boxY     =
+		TITLE_BAR_HEIGHT + _height - (BUTTON_HEIGHT + MODAL_PADDING) * 2;
 	int boxWidth = _width - MODAL_PADDING * 2;
 
 	// Text box
 	ctx.gpuCtx.drawRect(
-		MODAL_PADDING, boxY, boxWidth, BUTTON_HEIGHT, ctx.colors[COLOR_BOX1]
+		MODAL_PADDING,
+		boxY,
+		boxWidth,
+		BUTTON_HEIGHT,
+		ctx.colors[COLOR_BOX1]
 	);
 
 	char      string[128];
@@ -173,8 +196,11 @@ void HexEntryScreen::draw(Context &ctx, bool active) const {
 	if (_activeButton < _buttonIndexOffset)
 		ctx.gpuCtx.drawGradientRectV(
 			stringOffset + _cursorAnim.getValue(ctx.time),
-			boxY + BUTTON_HEIGHT / 2, _charWidth, BUTTON_HEIGHT / 2,
-			ctx.colors[COLOR_BOX1], ctx.colors[COLOR_HIGHLIGHT1]
+			boxY + BUTTON_HEIGHT / 2,
+			_charWidth,
+			BUTTON_HEIGHT / 2,
+			ctx.colors[COLOR_BOX1],
+			ctx.colors[COLOR_HIGHLIGHT1]
 		);
 
 	// Current string
@@ -182,7 +208,12 @@ void HexEntryScreen::draw(Context &ctx, bool active) const {
 	rect.y1 = boxY + BUTTON_PADDING;
 	rect.x2 = _width - MODAL_PADDING;
 	rect.y2 = boxY + BUTTON_PADDING + ctx.font.getLineHeight();
-	ctx.font.draw(ctx.gpuCtx, string, rect, ctx.colors[COLOR_TITLE]);
+	ctx.font.draw(
+		ctx.gpuCtx,
+		string,
+		rect,
+		ctx.colors[COLOR_TITLE]
+	);
 
 	// Highlighted field
 	if (_activeButton < _buttonIndexOffset) {
@@ -190,7 +221,12 @@ void HexEntryScreen::draw(Context &ctx, bool active) const {
 		ptr[1]   = 0;
 
 		rect.x1 = stringOffset + _cursorAnim.getTargetValue();
-		ctx.font.draw(ctx.gpuCtx, ptr, rect, ctx.colors[COLOR_SUBTITLE]);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			ptr,
+			rect,
+			ctx.colors[COLOR_SUBTITLE]
+		);
 	}
 }
 
@@ -314,13 +350,17 @@ void DateEntryScreen::draw(Context &ctx, bool active) const {
 	if (!active)
 		return;
 
-	int boxY     = TITLE_BAR_HEIGHT + _height -
-		(BUTTON_HEIGHT + MODAL_PADDING) * 2;
+	int boxY     =
+		TITLE_BAR_HEIGHT + _height - (BUTTON_HEIGHT + MODAL_PADDING) * 2;
 	int boxWidth = _width - MODAL_PADDING * 2;
 
 	// Text box
 	ctx.gpuCtx.drawRect(
-		MODAL_PADDING, boxY, boxWidth, BUTTON_HEIGHT, ctx.colors[COLOR_BOX1]
+		MODAL_PADDING,
+		boxY,
+		boxWidth,
+		BUTTON_HEIGHT,
+		ctx.colors[COLOR_BOX1]
 	);
 
 	char      string[24];
@@ -342,8 +382,10 @@ void DateEntryScreen::draw(Context &ctx, bool active) const {
 	if (_activeButton < _buttonIndexOffset)
 		ctx.gpuCtx.drawGradientRectV(
 			stringOffset + _cursorAnim.getValue(ctx.time),
-			boxY + BUTTON_HEIGHT / 2, _charWidth * fieldLength,
-			BUTTON_HEIGHT / 2,ctx.colors[COLOR_BOX1],
+			boxY + BUTTON_HEIGHT / 2,
+			_charWidth * fieldLength,
+			BUTTON_HEIGHT / 2,
+			ctx.colors[COLOR_BOX1],
 			ctx.colors[COLOR_HIGHLIGHT1]
 		);
 
@@ -352,7 +394,12 @@ void DateEntryScreen::draw(Context &ctx, bool active) const {
 	rect.y1 = boxY + BUTTON_PADDING;
 	rect.x2 = _width - MODAL_PADDING;
 	rect.y2 = boxY + BUTTON_PADDING + ctx.font.getLineHeight();
-	ctx.font.draw(ctx.gpuCtx, string, rect, ctx.colors[COLOR_TITLE]);
+	ctx.font.draw(
+		ctx.gpuCtx,
+		string,
+		rect,
+		ctx.colors[COLOR_TITLE]
+	);
 
 	// Highlighted field
 	if (_activeButton < _buttonIndexOffset) {
@@ -360,7 +407,12 @@ void DateEntryScreen::draw(Context &ctx, bool active) const {
 		ptr[fieldLength] = 0;
 
 		rect.x1 = stringOffset + _cursorAnim.getTargetValue();
-		ctx.font.draw(ctx.gpuCtx, ptr, rect, ctx.colors[COLOR_SUBTITLE]);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			ptr,
+			rect,
+			ctx.colors[COLOR_SUBTITLE]
+		);
 	}
 }
 
@@ -422,13 +474,26 @@ void DateEntryScreen::update(Context &ctx) {
 		// Update the cursor's position if necessary.
 		if (oldActive != _activeButton)
 			_cursorAnim.setValue(
-				ctx.time, _fieldOffsets[_activeButton], SPEED_FASTEST
+				ctx.time,
+				_fieldOffsets[_activeButton],
+				SPEED_FASTEST
 			);
 	}
 }
 
 ProgressScreen::ProgressScreen(void)
 : ModalScreen(MODAL_WIDTH, MODAL_HEIGHT_REDUCED) {}
+
+void ProgressScreen::_setProgress(Context &ctx, int part, int total) {
+	if (!total)
+		total = 1;
+
+	int totalWidth = _width - MODAL_PADDING * 2;
+	int partWidth  = (totalWidth * part) / total;
+
+	if (_progressBarAnim.getTargetValue() != partWidth)
+		_progressBarAnim.setValue(ctx.time, partWidth, SPEED_FASTEST);
+}
 
 void ProgressScreen::show(Context &ctx, bool goBack) {
 	ModalScreen::show(ctx, goBack);
@@ -445,17 +510,25 @@ void ProgressScreen::draw(Context &ctx, bool active) const {
 	int fullBarWidth = _width - MODAL_PADDING * 2;
 
 	int barX = (_width - fullBarWidth) / 2;
-	int barY = TITLE_BAR_HEIGHT + _height -
-		(PROGRESS_BAR_HEIGHT + MODAL_PADDING);
+	int barY =
+		TITLE_BAR_HEIGHT + _height - (PROGRESS_BAR_HEIGHT + MODAL_PADDING);
 
 	_setBlendMode(ctx, GP0_BLEND_SEMITRANS, true);
 
 	ctx.gpuCtx.drawRect(
-		barX, barY, fullBarWidth, PROGRESS_BAR_HEIGHT, ctx.colors[COLOR_WINDOW3]
+		barX,
+		barY,
+		fullBarWidth,
+		PROGRESS_BAR_HEIGHT,
+		ctx.colors[COLOR_WINDOW3]
 	);
 	ctx.gpuCtx.drawGradientRectH(
-		barX, barY, _progressBarAnim.getValue(ctx.time), PROGRESS_BAR_HEIGHT,
-		ctx.colors[COLOR_PROGRESS2], ctx.colors[COLOR_PROGRESS1]
+		barX,
+		barY,
+		_progressBarAnim.getValue(ctx.time),
+		PROGRESS_BAR_HEIGHT,
+		ctx.colors[COLOR_PROGRESS2],
+		ctx.colors[COLOR_PROGRESS1]
 	);
 }
 
