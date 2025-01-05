@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -17,14 +17,12 @@
 #pragma once
 
 #include <stddef.h>
-#include "common/fs/file.hpp"
-#include "common/fs/misc.hpp"
-#include "common/fs/package.hpp"
-#include "common/storage/device.hpp"
+#include <stdint.h>
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "main/app/cartactions.hpp"
 #include "main/app/cartunlock.hpp"
+#include "main/app/fileio.hpp"
 #include "main/app/mainmenu.hpp"
 #include "main/app/misc.hpp"
 #include "main/app/modals.hpp"
@@ -38,69 +36,13 @@
 #include "main/uibase.hpp"
 #include "ps1/system.h"
 
-/* Worker status class */
-
-enum WorkerStatusType {
-	WORKER_IDLE         = 0,
-	WORKER_REBOOT       = 1,
-	WORKER_BUSY         = 2,
-	WORKER_BUSY_SUSPEND = 3, // Prevent main thread from running
-	WORKER_DONE         = 4  // Go to next screen
-};
-
-// This class is used by the worker thread to report its current status back to
-// the main thread and the WorkerStatusScreen.
-class WorkerStatus {
-public:
-	WorkerStatusType status;
-	int              progress, progressTotal;
-
-	const char *message;
-	ui::Screen *nextScreen;
-	bool       nextGoBack;
-
-	void reset(ui::Screen &next, bool goBack = false);
-	void update(int part, int total, const char *text = nullptr);
-	ui::Screen &setNextScreen(ui::Screen &next, bool goBack = false);
-	WorkerStatusType setStatus(WorkerStatusType value);
-};
-
-/* Filesystem manager class */
-
-extern const char *const IDE_MOUNT_POINTS[];
-
-class FileIOManager {
-private:
-	fs::File *_resourceFile;
-
-public:
-	const void *resourcePtr;
-	size_t     resourceLength;
-
-	fs::PackageProvider resource;
-#ifdef ENABLE_PCDRV
-	fs::HostProvider    host;
-#endif
-	fs::VFSProvider     vfs;
-
-	storage::Device *ideDevices[2];
-	fs::Provider    *ideProviders[2];
-
-	inline ~FileIOManager(void) {
-		closeResourceFile();
-		unmountIDE();
-	}
-
-	FileIOManager(void);
-
-	void initIDE(void);
-	void mountIDE(void);
-	void unmountIDE(void);
-	bool loadResourceFile(const char *path);
-	void closeResourceFile(void);
-};
-
 /* App class */
+
+enum WorkerFlag : uint32_t {
+	WORKER_BUSY         = 1 << 0,
+	WORKER_REBOOT       = 1 << 1,
+	WORKER_SUSPEND_MAIN = 1 << 2
+};
 
 class App {
 private:
@@ -232,9 +174,9 @@ private:
 	formats::GameDB      _gameDB;
 	formats::StringTable _stringTable;
 
-	Thread       _workerThread;
-	util::Data   _workerStack;
-	WorkerStatus _workerStatus;
+	Thread     _workerThread;
+	util::Data _workerStack;
+	uint32_t   _workerFlags;
 
 	cart::CartDump      _cartDump;
 	cart::ROMHeaderDump _romHeaderDump;
@@ -250,16 +192,10 @@ private:
 
 	void _loadResources(void);
 	bool _createDataDirectory(void);
-	bool _getNumberedPath(
-		char *output, size_t length, const char *path, int maxIndex = 9999
-	);
 	bool _takeScreenshot(void);
 
 	void _setupInterrupts(void);
-	void _runWorker(
-		bool (*func)(App &app), ui::Screen &next, bool goBack = false,
-		bool playSound = false
-	);
+	void _runWorker(bool (*func)(App &app), bool playSound = false);
 
 public:
 	App(ui::Context &ctx);

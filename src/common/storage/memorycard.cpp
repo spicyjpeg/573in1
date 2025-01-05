@@ -59,7 +59,7 @@ DeviceError MemoryCardDevice::poll(void) {
 }
 
 DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
-	pad::PortLock lock(_getPort(), pad::ADDR_MEMORY_CARD);
+	pad::PortLock lock(pad::ports[getDeviceIndex()], pad::ADDR_MEMORY_CARD);
 
 	if (!lock.locked)
 		return NO_DRIVE;
@@ -136,7 +136,7 @@ DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
 DeviceError MemoryCardDevice::write(
 	const void *data, uint64_t lba, size_t count
 ) {
-	pad::PortLock lock(_getPort(), pad::ADDR_MEMORY_CARD);
+	pad::PortLock lock(pad::ports[getDeviceIndex()], pad::ADDR_MEMORY_CARD);
 
 	if (!lock.locked)
 		return NO_DRIVE;

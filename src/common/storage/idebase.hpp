@@ -172,10 +172,6 @@ private:
 protected:
 	uint8_t _lastStatusReg, _lastErrorReg, _lastCountReg;
 
-	inline int _getDriveIndex(void) const {
-		return (flags / IS_SECONDARY) & 1;
-	}
-
 	inline void _set(IDECS0Register reg, uint8_t value) const {
 		SYS573_IDE_CS0_BASE[reg] = value;
 	}

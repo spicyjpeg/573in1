@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,13 +18,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/fs/fat.hpp"
-#include "common/fs/file.hpp"
-#include "common/fs/iso9660.hpp"
-#include "common/fs/misc.hpp"
-#include "common/fs/package.hpp"
-#include "common/storage/device.hpp"
-#include "common/storage/idebase.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
@@ -33,176 +26,12 @@
 #include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
+#include "main/app/fileio.hpp"
 #include "main/app/threads.hpp"
 #include "main/cart/cart.hpp"
 #include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
-
-/* Worker status class */
-
-void WorkerStatus::reset(ui::Screen &next, bool goBack) {
-	status        = WORKER_IDLE;
-	progress      = 0;
-	progressTotal = 1;
-	message       = nullptr;
-	nextScreen    = &next;
-	nextGoBack    = goBack;
-
-	flushWriteQueue();
-}
-
-void WorkerStatus::update(int part, int total, const char *text) {
-	util::CriticalSection sec;
-
-	status        = WORKER_BUSY;
-	progress      = part;
-	progressTotal = total;
-
-	if (text)
-		message = text;
-
-	flushWriteQueue();
-}
-
-ui::Screen &WorkerStatus::setNextScreen(ui::Screen &next, bool goBack) {
-	util::CriticalSection sec;
-
-	auto oldNext = nextScreen;
-	nextScreen   = &next;
-	nextGoBack   = goBack;
-
-	flushWriteQueue();
-	return *oldNext;
-}
-
-WorkerStatusType WorkerStatus::setStatus(WorkerStatusType value) {
-	util::CriticalSection sec;
-
-	auto oldStatus = status;
-	status         = value;
-
-	flushWriteQueue();
-	return oldStatus;
-}
-
-/* Filesystem manager class */
-
-const char *const IDE_MOUNT_POINTS[]{ "ide0:", "ide1:" };
-
-FileIOManager::FileIOManager(void)
-: _resourceFile(nullptr), resourcePtr(nullptr), resourceLength(0) {
-	util::clear(ideDevices);
-	util::clear(ideProviders);
-
-	vfs.mount("resource:", &resource);
-#ifdef ENABLE_PCDRV
-	vfs.mount("host:",     &host);
-#endif
-}
-
-void FileIOManager::initIDE(void) {
-	io::resetIDEDevices();
-
-	for (size_t i = 0; i < util::countOf(ideDevices); i++) {
-		auto dev = ideDevices[i];
-
-		if (dev)
-			delete dev;
-
-		ideDevices[i] = storage::newIDEDevice(i);
-	}
-}
-
-void FileIOManager::mountIDE(void) {
-	unmountIDE();
-
-	for (size_t i = 0; i < util::countOf(ideProviders); i++) {
-		auto dev = ideDevices[i];
-
-		if (!dev)
-			continue;
-		if (!(dev->type))
-			continue;
-
-		// Note that calling vfs.mount() multiple times will *not* update any
-		// already mounted device, so if two hard drives or CD-ROMs are present
-		// the hdd:/cdrom: prefix will be assigned to the first one.
-		// TODO: actually detect the filesystem rather than assuming FAT or
-		// ISO9660 depending on drive type
-		if (dev->type == storage::ATAPI) {
-			auto iso = new fs::ISO9660Provider();
-
-			if (!iso->init(*dev)) {
-				delete iso;
-				continue;
-			}
-
-			ideProviders[i] = iso;
-			vfs.mount("cdrom:", iso);
-		} else {
-			auto fat = new fs::FATProvider();
-
-			if (!fat->init(*dev, i)) {
-				delete fat;
-				continue;
-			}
-
-			ideProviders[i] = fat;
-			vfs.mount("hdd:", fat);
-		}
-
-		vfs.mount(IDE_MOUNT_POINTS[i], ideProviders[i], true);
-	}
-}
-
-void FileIOManager::unmountIDE(void) {
-	for (size_t i = 0; i < util::countOf(ideProviders); i++) {
-		auto provider = ideProviders[i];
-
-		if (!provider)
-			continue;
-
-		provider->close();
-		vfs.unmount(provider);
-
-		delete provider;
-		ideProviders[i] = nullptr;
-	}
-
-	vfs.unmount("cdrom:");
-	vfs.unmount("hdd:");
-}
-
-bool FileIOManager::loadResourceFile(const char *path) {
-	closeResourceFile();
-
-	if (path)
-		_resourceFile = vfs.openFile(path, fs::READ);
-
-	// Fall back to the default in-memory resource package in case of failure.
-	if (_resourceFile) {
-		if (resource.init(_resourceFile))
-			return true;
-
-		_resourceFile->close();
-		delete _resourceFile;
-		_resourceFile = nullptr;
-	}
-
-	resource.init(resourcePtr, resourceLength);
-	return false;
-}
-
-void FileIOManager::closeResourceFile(void) {
-	resource.close();
-
-	if (_resourceFile) {
-		_resourceFile->close();
-		delete _resourceFile;
-		_resourceFile = nullptr;
-	}
-}
 
 /* App class */
 
@@ -259,7 +88,7 @@ void App::_updateOverlays(void) {
 
 	__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-	if ((_workerStatus.status != WORKER_BUSY) || (_ctx.time > timeout))
+	if (!(_workerFlags & WORKER_BUSY) || (_ctx.time > timeout))
 		_splashOverlay.hide(_ctx);
 
 #ifdef ENABLE_LOG_BUFFER
@@ -281,82 +110,61 @@ void App::_updateOverlays(void) {
 /* App filesystem functions */
 
 static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
-	"assets/sounds/startup.vag",   // ui::SOUND_STARTUP
-	"assets/sounds/about.vag",     // ui::SOUND_ABOUT_SCREEN
-	"assets/sounds/alert.vag",     // ui::SOUND_ALERT
-	"assets/sounds/move.vag",      // ui::SOUND_MOVE
-	"assets/sounds/enter.vag",     // ui::SOUND_ENTER
-	"assets/sounds/exit.vag",      // ui::SOUND_EXIT
-	"assets/sounds/click.vag",     // ui::SOUND_CLICK
-	"assets/sounds/screenshot.vag" // ui::SOUND_SCREENSHOT
+	"res:/assets/sounds/startup.vag",   // ui::SOUND_STARTUP
+	"res:/assets/sounds/about.vag",     // ui::SOUND_ABOUT_SCREEN
+	"res:/assets/sounds/alert.vag",     // ui::SOUND_ALERT
+	"res:/assets/sounds/move.vag",      // ui::SOUND_MOVE
+	"res:/assets/sounds/enter.vag",     // ui::SOUND_ENTER
+	"res:/assets/sounds/exit.vag",      // ui::SOUND_EXIT
+	"res:/assets/sounds/click.vag",     // ui::SOUND_CLICK
+	"res:/assets/sounds/screenshot.vag" // ui::SOUND_SCREENSHOT
 };
 
 void App::_loadResources(void) {
-	auto &res = _fileIO.resource;
-
-	res.loadStruct(_ctx.colors,       "assets/palette.dat");
-	res.loadTIM(_background.tile,     "assets/textures/background.tim");
-	res.loadTIM(_ctx.font.image,      "assets/textures/font.tim");
-	res.loadData(_ctx.font.metrics,   "assets/textures/font.metrics");
-	res.loadTIM(_splashOverlay.image, "assets/textures/splash.tim");
-	res.loadData(_stringTable,        "assets/lang/en.lang");
+	_fileIO.loadStruct(_ctx.colors,       "res:/assets/palette.dat");
+	_fileIO.loadTIM(_background.tile,     "res:/assets/textures/background.tim");
+	_fileIO.loadTIM(_ctx.font.image,      "res:/assets/textures/font.tim");
+	_fileIO.loadData(_ctx.font.metrics,   "res:/assets/textures/font.metrics");
+	_fileIO.loadTIM(_splashOverlay.image, "res:/assets/textures/splash.tim");
+	_fileIO.loadData(_stringTable,        "res:/assets/lang/en.lang");
 
 	uint32_t spuOffset = spu::DUMMY_BLOCK_END;
 
 	for (int i = 0; i < ui::NUM_UI_SOUNDS; i++)
-		spuOffset += res.loadVAG(_ctx.sounds[i], spuOffset, _UI_SOUND_PATHS[i]);
+		spuOffset += _fileIO.loadVAG(
+			_ctx.sounds[i],
+			spuOffset,
+			_UI_SOUND_PATHS[i]
+		);
 }
 
 bool App::_createDataDirectory(void) {
 	fs::FileInfo info;
 
-	if (!_fileIO.vfs.getFileInfo(info, EXTERNAL_DATA_DIR))
-		return _fileIO.vfs.createDirectory(EXTERNAL_DATA_DIR);
+	if (!_fileIO.getFileInfo(info, EXTERNAL_DATA_DIR))
+		return _fileIO.createDirectory(EXTERNAL_DATA_DIR);
 	if (info.attributes & fs::DIRECTORY)
 		return true;
 
 	return false;
 }
 
-bool App::_getNumberedPath(
-	char *output, size_t length, const char *path, int maxIndex
-) {
-	fs::FileInfo info;
-
-	// Perform a binary search in order to quickly find the first unused path.
-	int low  = 0;
-	int high = maxIndex;
-
-	while (low <= high) {
-		int index = low + (high - low) / 2;
-
-		snprintf(output, length, path, index);
-
-		if (_fileIO.vfs.getFileInfo(info, output))
-			low = index + 1;
-		else
-			high = index - 1;
-	}
-
-	if (low > maxIndex)
-		return false;
-
-	snprintf(output, length, path, low);
-	return true;
-}
-
 bool App::_takeScreenshot(void) {
-	char path[fs::MAX_PATH_LENGTH];
+	char        path[fs::MAX_PATH_LENGTH];
+	gpu::RectWH clip;
 
 	if (!_createDataDirectory())
 		return false;
-	if (!_getNumberedPath(path, sizeof(path), EXTERNAL_DATA_DIR "/shot%04d.bmp"))
+	if (!_fileIO.getNumberedPath(
+		path,
+		sizeof(path),
+		EXTERNAL_DATA_DIR "/shot%04d.bmp"
+	))
 		return false;
 
-	gpu::RectWH clip;
-
 	_ctx.gpuCtx.getVRAMClipRect(clip);
-	if (!_fileIO.vfs.saveVRAMBMP(clip, path))
+
+	if (!_fileIO.saveVRAMBMP(clip, path))
 		return false;
 
 	LOG_APP("%s saved", path);
@@ -373,12 +181,9 @@ void _appInterruptHandler(void *arg0, void *arg1) {
 
 		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-		if (app->_workerStatus.status != WORKER_REBOOT)
+		if (!(app->_workerFlags & WORKER_REBOOT))
 			io::clearWatchdog();
-		if (
-			gpu::isIdle() &&
-			(app->_workerStatus.status != WORKER_BUSY_SUSPEND)
-		)
+		if (!(app->_workerFlags & WORKER_SUSPEND_MAIN) && gpu::isIdle())
 			switchThread(nullptr);
 	}
 
@@ -386,9 +191,9 @@ void _appInterruptHandler(void *arg0, void *arg1) {
 		app->_audioStream.handleInterrupt();
 
 	if (acknowledgeInterrupt(IRQ_PIO)) {
-		for (auto dev : app->_fileIO.ideDevices) {
-			if (dev)
-				dev->handleInterrupt();
+		for (auto &mp : app->_fileIO.mountPoints) {
+			if (mp.dev)
+				mp.dev->handleInterrupt();
 		}
 	}
 }
@@ -400,7 +205,8 @@ void _workerMain(void *arg0, void *arg1) {
 	if (func)
 		func(*app);
 
-	app->_workerStatus.setStatus(WORKER_DONE);
+	app->_workerFlags &= ~(WORKER_BUSY | WORKER_SUSPEND_MAIN);
+	flushWriteQueue();
 
 	// Do nothing while waiting for vblank once the task is done.
 	for (;;)
@@ -417,13 +223,11 @@ void App::_setupInterrupts(void) {
 	enableInterrupts();
 }
 
-void App::_runWorker(
-	bool (*func)(App &app), ui::Screen &next, bool goBack, bool playSound
-) {
+void App::_runWorker(bool (*func)(App &app), bool playSound) {
 	{
 		util::CriticalSection sec;
 
-		_workerStatus.reset(next, goBack);
+		_workerFlags = WORKER_BUSY;
 
 		if (!_workerStack.ptr) {
 			_workerStack.allocate(_WORKER_STACK_SIZE);
@@ -433,8 +237,12 @@ void App::_runWorker(
 		auto stackPtr = _workerStack.as<uint8_t>();
 		auto stackTop = &stackPtr[(_WORKER_STACK_SIZE - 1) & ~7];
 
+		flushWriteQueue();
 		initThread(
-			&_workerThread, &_workerMain, this, reinterpret_cast<void *>(func),
+			&_workerThread,
+			&_workerMain,
+			this,
+			reinterpret_cast<void *>(func),
 			stackTop
 		);
 		LOG_APP("stack: 0x%08x-0x%08x", stackPtr, stackTop);
@@ -471,7 +279,7 @@ void App::_runWorker(
 	_ctx.overlays[2]    = &_screenshotOverlay;
 
 	_audioStream.init(&_workerThread);
-	_runWorker(&startupWorker, _warningScreen);
+	_runWorker(&startupWorker);
 	_setupInterrupts();
 
 	_splashOverlay.show(_ctx);

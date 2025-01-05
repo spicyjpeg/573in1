@@ -17,7 +17,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "common/fs/file.hpp"
-#include "common/fs/misc.hpp"
+#include "common/fs/vfs.hpp"
 #include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
@@ -28,26 +28,24 @@
 #include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
+#include "ps1/system.h"
 
 /* Modal screens */
 
-void WorkerStatusScreen::show(ui::Context &ctx, bool goBack) {
-	_title = STR("WorkerStatusScreen.title");
+void WorkerStatusScreen::setMessage(const char *format, ...) {
+	va_list ap;
 
-	ProgressScreen::show(ctx, goBack);
+	va_start(ap, format);
+	vsnprintf(_bodyText, sizeof(_bodyText), format, ap);
+	va_end(ap);
+	flushWriteQueue();
 }
 
-void WorkerStatusScreen::update(ui::Context &ctx) {
-	auto &worker = APP->_workerStatus;
+void WorkerStatusScreen::show(ui::Context &ctx, bool goBack) {
+	_title = STR("WorkerStatusScreen.title");
+	_body  = _bodyText;
 
-	if (worker.status == WORKER_DONE) {
-		worker.setStatus(WORKER_IDLE);
-		ctx.show(*worker.nextScreen, worker.nextGoBack);
-		return;
-	}
-
-	_setProgress(ctx, worker.progress, worker.progressTotal);
-	_body = worker.message;
+	ProgressScreen::show(ctx, goBack);
 }
 
 static const util::Hash _MESSAGE_TITLES[]{
@@ -124,64 +122,83 @@ void ConfirmScreen::update(ui::Context &ctx) {
 
 /* File picker screen */
 
-struct DeviceType {
-public:
-	const char *format;
-	util::Hash error;
-};
-
-static const DeviceType _DEVICE_TYPES[]{
-	{
-		// storage::NONE
-		.format = CH_HOST_ICON " %s",
-		.error  = "FilePickerScreen.hostError"_h
-	}, {
-		// storage::ATA
-		.format = CH_HDD_ICON " %s: %s",
-		.error  = "FilePickerScreen.ataError"_h
-	}, {
-		// storage::ATAPI
-		.format = CH_CDROM_ICON " %s: %s",
-		.error  = "FilePickerScreen.atapiError"_h
-	}
+static const util::Hash _DEVICE_ERROR_STRINGS[]{
+	"FilePickerScreen.host.error"_h,      // storage::NONE
+	"FilePickerScreen.ata.error"_h,       // storage::ATA
+	"FilePickerScreen.atapi.error"_h,     // storage::ATAPI
+	"FilePickerScreen.memoryCard.error"_h // storage::MEMORY_CARD
 };
 
 void FilePickerScreen::_addDevice(
-	storage::Device *dev, fs::Provider *provider, const char *prefix
+	ui::Context &ctx, const fs::VFSMountPoint &mp
 ) {
-	// Note that devices are added (and thus displayed in the list) even if
-	// their filesystem is unrecognized and no file provider is available.
-	if (!dev && !provider)
-		return;
-	if (_listLength >= int(MAX_FILE_PICKER_DEVICES))
-		return;
+	auto       &entry = _entries[_listLength++];
+	const char *label;
 
-	auto &entry = _entries[_listLength++];
+	if (mp.provider) {
+		switch (mp.provider->type) {
+			case fs::HOST:
+				entry.prefix = "host:";
 
-	entry.dev      = dev;
-	entry.provider = provider;
-	entry.prefix   = prefix;
+				__builtin_strncpy(
+					entry.name,
+					STR("FilePickerScreen.host.name"),
+					sizeof(entry.name)
+				);
+				return;
+
+			default:
+				break;
+		}
+
+		label = mp.provider->volumeLabel;
+	} else {
+		label = "";
+	}
+
+	if (mp.dev) {
+		util::Hash name;
+
+		switch (mp.dev->type) {
+			case storage::ATA:
+			case storage::ATAPI:
+				entry.prefix = IDE_MOUNT_POINTS[mp.dev->getDeviceIndex()];
+				name         = (mp.dev->type == storage::ATA)
+					? "FilePickerScreen.ata.name"_h
+					: "FilePickerScreen.atapi.name"_h;
+
+				snprintf(
+					entry.name,
+					sizeof(entry.name),
+					STRH(name),
+					mp.dev->model,
+					label
+				);
+				return;
+
+			case storage::MEMORY_CARD:
+				entry.prefix = MC_MOUNT_POINTS[mp.dev->getDeviceIndex()];
+
+				snprintf(
+					entry.name,
+					sizeof(entry.name),
+					STR("FilePickerScreen.memoryCard.name"),
+					mp.dev->getDeviceIndex() + 1,
+					label
+				);
+				return;
+
+			default:
+				break;
+		}
+	}
+
+	// Delete the entry if it wasn't actually generated.
+	_listLength--;
 }
 
 const char *FilePickerScreen::_getItemName(ui::Context &ctx, int index) const {
-	static char name[fs::MAX_NAME_LENGTH]; // TODO: get rid of this ugly crap
-
-	auto &entry = _entries[index];
-	auto label  = entry.provider
-		? entry.provider->volumeLabel
-		: STR("FilePickerScreen.noFS");
-
-	if (entry.dev)
-		snprintf(
-			name, sizeof(name), _DEVICE_TYPES[entry.dev->type].format,
-			entry.dev->model, label
-		);
-	else
-		snprintf(
-			name, sizeof(name), _DEVICE_TYPES[storage::NONE].format, label
-		);
-
-	return name;
+	return _entries[index].name;
 }
 
 void FilePickerScreen::setMessage(
@@ -199,15 +216,15 @@ void FilePickerScreen::setMessage(
 void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
 	// Check if any drive has reported a disc change and reload all filesystems
 	// if necessary.
-	for (auto dev : APP->_fileIO.ideDevices) {
-		if (!dev)
+	for (auto &mp : APP->_fileIO.mountPoints) {
+		if (!mp.dev)
 			continue;
-		if (!dev->poll())
+		if (!mp.dev->poll())
 			continue;
 
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 
-		APP->_runWorker(&fileInitWorker, *this, false, true);
+		APP->_runWorker(&fileInitWorker, true);
 		return;
 	}
 
@@ -221,15 +238,8 @@ void FilePickerScreen::show(ui::Context &ctx, bool goBack) {
 
 	_listLength = 0;
 
-#ifdef ENABLE_PCDRV
-	_addDevice(nullptr, &(APP->_fileIO.host), "host:");
-#endif
-
-	for (size_t i = 0; i < util::countOf(APP->_fileIO.ideDevices); i++)
-		_addDevice(
-			APP->_fileIO.ideDevices[i], APP->_fileIO.ideProviders[i],
-			IDE_MOUNT_POINTS[i]
-		);
+	for (auto &mp : APP->_fileIO.mountPoints)
+		_addDevice(ctx, mp);
 
 	ListScreen::show(ctx, goBack);
 }
@@ -240,7 +250,8 @@ void FilePickerScreen::update(ui::Context &ctx) {
 	if (!_listLength) {
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = previousScreen;
 		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, STR("FilePickerScreen.noDeviceError")
+			MESSAGE_ERROR,
+			STR("FilePickerScreen.noDeviceError")
 		);
 		ctx.show(APP->_messageScreen, false, true);
 		return;
@@ -251,7 +262,9 @@ void FilePickerScreen::update(ui::Context &ctx) {
 			ctx.show(*previousScreen, true, true);
 		} else {
 			auto &entry = _entries[_activeItem];
-			auto type   = entry.dev ? entry.dev->type : storage::NONE;
+			auto type   = entry.mp->dev
+				? entry.mp->dev->type
+				: storage::NONE;
 
 			int count =
 				APP->_fileBrowserScreen.loadDirectory(ctx, entry.prefix);
@@ -264,7 +277,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 				if (!count)
 					error = "FilePickerScreen.noFilesError"_h;
 				else
-					error = _DEVICE_TYPES[type].error;
+					error = _DEVICE_ERROR_STRINGS[type];
 
 				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 				APP->_messageScreen.setMessage(MESSAGE_ERROR, STRH(error));
@@ -297,7 +310,9 @@ void FileBrowserScreen::_setPathToChild(const char *entry) {
 	}
 
 	__builtin_strncpy(
-		&selectedPath[length], entry, sizeof(selectedPath) - length
+		&selectedPath[length],
+		entry,
+		sizeof(selectedPath) - length
 	);
 }
 
@@ -344,7 +359,7 @@ int FileBrowserScreen::loadDirectory(
 
 	// Count the number of files and subfolders in the current directory, so
 	// that we can allocate enough space for them.
-	auto directory = APP->_fileIO.vfs.openDirectory(path);
+	auto directory = APP->_fileIO.openDirectory(path);
 
 	if (!directory)
 		return -1;
@@ -379,14 +394,15 @@ int FileBrowserScreen::loadDirectory(
 		directories = _directories.allocate<fs::FileInfo>(_numDirectories);
 
 	// Iterate over all entries again to populate the newly allocated arrays.
-	directory = APP->_fileIO.vfs.openDirectory(path);
+	directory = APP->_fileIO.openDirectory(path);
 
 	if (!directory)
 		return -1;
 
 	while (directory->getEntry(info)) {
 		auto ptr = (info.attributes & fs::DIRECTORY)
-			? (directories++) : (files++);
+			? (directories++)
+			: (files++);
 
 		__builtin_memcpy(ptr, &info, sizeof(fs::FileInfo));
 	}
@@ -433,7 +449,8 @@ void FileBrowserScreen::update(ui::Context &ctx) {
 
 					APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 					APP->_messageScreen.setMessage(
-						MESSAGE_ERROR, STR("FileBrowserScreen.subdirError"),
+						MESSAGE_ERROR,
+						STR("FileBrowserScreen.subdirError"),
 						selectedPath
 					);
 					ctx.show(APP->_messageScreen, false, true);

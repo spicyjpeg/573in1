@@ -81,7 +81,7 @@ void CartActionsScreen::qrDump(ui::Context &ctx) {
 	if (APP->_qrCodeScreen.valid)
 		ctx.show(APP->_qrCodeScreen, false, true);
 	else
-		APP->_runWorker(&qrCodeWorker, APP->_qrCodeScreen, false, true);
+		APP->_runWorker(&qrCodeWorker, true);
 }
 
 void CartActionsScreen::hddDump(ui::Context &ctx) {
@@ -89,7 +89,7 @@ void CartActionsScreen::hddDump(ui::Context &ctx) {
 		&(APP->_cartInfoScreen);
 	APP->_messageScreen.previousScreens[MESSAGE_ERROR]   = this;
 
-	APP->_runWorker(&cartDumpWorker, APP->_messageScreen, false, true);
+	APP->_runWorker(&cartDumpWorker, true);
 }
 
 void CartActionsScreen::hexdump(ui::Context &ctx) {
@@ -111,9 +111,7 @@ void CartActionsScreen::hddRestore(ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 				&(APP->_fileBrowserScreen);
 
-			APP->_runWorker(
-				cartRestoreWorker, APP->_cartInfoScreen, true, true
-			);
+			APP->_runWorker(cartRestoreWorker, true);
 		},
 		STR("CartActionsScreen.hddRestore.confirm")
 	);
@@ -132,7 +130,7 @@ void CartActionsScreen::erase(ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 				&(APP->_cartActionsScreen);
 
-			APP->_runWorker(&cartEraseWorker, APP->_cartInfoScreen, true, true);
+			APP->_runWorker(&cartEraseWorker, true);
 		},
 		STR("CartActionsScreen.erase.confirm")
 	);
@@ -151,9 +149,7 @@ void CartActionsScreen::resetSystemID(ui::Context &ctx) {
 				APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 					&(APP->_cartActionsScreen);
 
-				APP->_runWorker(
-					&cartWriteWorker, APP->_cartInfoScreen, true, true
-				);
+				APP->_runWorker(&cartWriteWorker, true);
 			},
 			STR("CartActionsScreen.resetSystemID.confirm")
 		);
@@ -182,9 +178,7 @@ void CartActionsScreen::matchSystemID(ui::Context &ctx) {
 				APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 					&(APP->_cartActionsScreen);
 
-				APP->_runWorker(
-					&cartWriteWorker, APP->_cartInfoScreen, true, true
-				);
+				APP->_runWorker(&cartWriteWorker, true);
 			},
 			STR("CartActionsScreen.matchSystemID.confirm")
 		);
@@ -312,9 +306,7 @@ void ReflashGameScreen::update(ui::Context &ctx) {
 					APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 						&(APP->_reflashGameScreen);
 
-					APP->_runWorker(
-						&cartReflashWorker, APP->_cartInfoScreen, true, true
-					);
+					APP->_runWorker(&cartReflashWorker, true);
 				},
 				STR("CartActionsScreen.reflash.confirm")
 			);
@@ -356,9 +348,7 @@ void SystemIDEntryScreen::update(ui::Context &ctx) {
 						APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 							&(APP->_systemIDEntryScreen);
 
-						APP->_runWorker(
-							&cartWriteWorker, APP->_cartInfoScreen, true, true
-						);
+						APP->_runWorker(&cartWriteWorker, true);
 					},
 					STR("CartActionsScreen.editSystemID.confirm")
 				);

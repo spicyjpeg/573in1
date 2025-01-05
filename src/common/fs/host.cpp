@@ -17,15 +17,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/fs/file.hpp"
-#include "common/fs/misc.hpp"
-#include "common/util/hash.hpp"
+#include "common/fs/host.hpp"
 #include "common/util/log.hpp"
-#include "common/util/templates.hpp"
 #include "ps1/pcdrv.h"
 
 namespace fs {
 
-/* PCDRV utilities */
+/* Utilities */
 
 static void _dirEntryToFileInfo(FileInfo &output, const PCDRVDirEntry &entry) {
 	__builtin_strncpy(output.name, entry.name, sizeof(output.name));
@@ -191,173 +189,6 @@ bool HostProvider::deleteFile(const char *path) {
 	}
 
 	return true;
-}
-
-/* Virtual filesystem driver */
-
-VFSMountPoint *VFSProvider::_getMounted(const char *path) {
-	auto hash = util::hash(path, VFS_PREFIX_SEPARATOR);
-
-	for (auto &mp : _mountPoints) {
-		if (mp.prefix == hash)
-			return &mp;
-	}
-
-	LOG_FS("unknown device: %s", path);
-	return nullptr;
-}
-
-bool VFSProvider::mount(const char *prefix, Provider *provider, bool force) {
-	auto hash = util::hash(prefix, VFS_PREFIX_SEPARATOR);
-
-	VFSMountPoint *freeMP = nullptr;
-
-	for (auto &mp : _mountPoints) {
-		if (!mp.prefix) {
-			freeMP = &mp;
-		} else if (mp.prefix == hash) {
-			if (force) {
-				freeMP = &mp;
-				break;
-			}
-
-			LOG_FS("%s was already mapped", prefix);
-			return false;
-		}
-	}
-
-	if (!freeMP) {
-		LOG_FS("no mount points left for %s", prefix);
-		return false;
-	}
-
-	freeMP->prefix     = hash;
-	freeMP->pathOffset =
-		(__builtin_strchr(prefix, VFS_PREFIX_SEPARATOR) - prefix) + 1;
-	freeMP->provider   = provider;
-
-	LOG_FS("mapped %s", prefix);
-	return true;
-}
-
-bool VFSProvider::unmount(const char *prefix) {
-	auto hash = util::hash(prefix, VFS_PREFIX_SEPARATOR);
-
-	for (auto &mp : _mountPoints) {
-		if (mp.prefix != hash)
-			continue;
-
-		mp.prefix     = 0;
-		mp.pathOffset = 0;
-		mp.provider   = nullptr;
-
-		LOG_FS("unmapped %s", prefix);
-		return true;
-	}
-
-	LOG_FS("%s was not mapped", prefix);
-	return false;
-}
-
-bool VFSProvider::unmount(Provider *provider) {
-	for (auto &mp : _mountPoints) {
-		if (mp.provider != provider)
-			continue;
-
-		mp.prefix     = 0;
-		mp.pathOffset = 0;
-		mp.provider   = nullptr;
-
-		return true;
-	}
-
-	LOG_FS("FS was not mapped");
-	return false;
-}
-
-bool VFSProvider::getFileInfo(FileInfo &output, const char *path) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return false;
-
-	return mp->provider->getFileInfo(output, &path[mp->pathOffset]);
-}
-
-bool VFSProvider::getFileFragments(
-	FileFragmentTable &output, const char *path
-) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return false;
-
-	return mp->provider->getFileFragments(output, &path[mp->pathOffset]);
-}
-
-Directory *VFSProvider::openDirectory(const char *path) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return nullptr;
-
-	return mp->provider->openDirectory(&path[mp->pathOffset]);
-}
-
-bool VFSProvider::createDirectory(const char *path) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return false;
-
-	return mp->provider->createDirectory(&path[mp->pathOffset]);
-}
-
-File *VFSProvider::openFile(const char *path, uint32_t flags) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return nullptr;
-
-	return mp->provider->openFile(&path[mp->pathOffset], flags);
-}
-
-bool VFSProvider::deleteFile(const char *path) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return false;
-
-	return mp->provider->deleteFile(&path[mp->pathOffset]);
-}
-
-size_t VFSProvider::loadData(util::Data &output, const char *path) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return 0;
-
-	return mp->provider->loadData(output, &path[mp->pathOffset]);
-}
-
-size_t VFSProvider::loadData(void *output, size_t length, const char *path) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return 0;
-
-	return mp->provider->loadData(output, length, &path[mp->pathOffset]);
-}
-
-size_t VFSProvider::saveData(
-	const void *input, size_t length, const char *path
-) {
-	auto mp = _getMounted(path);
-
-	if (!mp)
-		return 0;
-
-	return mp->provider->saveData(input, length, &path[mp->pathOffset]);
 }
 
 }

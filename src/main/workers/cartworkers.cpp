@@ -31,21 +31,20 @@
 
 static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
 	nullptr,
-	"data/x76f041.db",
-	"data/x76f100.db",
-	"data/zs01.db"
+	"res:/data/x76f041.db",
+	"res:/data/x76f100.db",
+	"res:/data/zs01.db"
 };
 
 bool cartDetectWorker(App &app) {
-	app._workerStatus.setNextScreen(app._cartInfoScreen);
-	app._workerStatus.update(0, 3, WSTR("App.cartDetectWorker.readCart"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartDetectWorker.readCart"));
 
 	app._unloadCartData();
 	app._qrCodeScreen.valid = false;
 
 #ifdef ENABLE_DUMMY_CART_DRIVER
 	if (!cart::dummyDriverDump.chipType)
-		app._fileIO.resource.loadStruct(cart::dummyDriverDump, "data/dummy.dmp");
+		app._fileIO.loadStruct(cart::dummyDriverDump, "res:/data/dummy.dmp");
 
 	if (cart::dummyDriverDump.chipType) {
 		LOG_APP("using dummy cart driver");
@@ -71,12 +70,13 @@ bool cartDetectWorker(App &app) {
 		else if (!app._cartDump.isReadableDataEmpty())
 			app._cartParser = cart::newCartParser(app._cartDump);
 
-		app._workerStatus.update(1, 3, WSTR("App.cartDetectWorker.identifyGame"));
+		app._workerStatusScreen.setMessage(WSTR("App.cartDetectWorker.identifyGame"));
 
 		if (!app._cartDB.ptr) {
-			if (!app._fileIO.resource.loadData(
-				app._cartDB, _CARTDB_PATHS[app._cartDump.chipType])
-			) {
+			if (!app._fileIO.loadData(
+				app._cartDB,
+				_CARTDB_PATHS[app._cartDump.chipType]
+			)) {
 				LOG_APP("%s not found", _CARTDB_PATHS[app._cartDump.chipType]);
 				goto _cartInitDone;
 			}
@@ -95,12 +95,14 @@ bool cartDetectWorker(App &app) {
 		// ambiguity between different formats).
 		delete app._cartParser;
 		app._cartParser = cart::newCartParser(
-			app._cartDump, app._identified->formatType, app._identified->flags
+			app._cartDump,
+			app._identified->formatType,
+			app._identified->flags
 		);
 	}
 
 _cartInitDone:
-	app._workerStatus.update(2, 3, WSTR("App.cartDetectWorker.readDigitalIO"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartDetectWorker.readDigitalIO"));
 
 	if (
 #ifdef ENABLE_DUMMY_CART_DRIVER
@@ -110,16 +112,17 @@ _cartInitDone:
 	) {
 		util::Data bitstream;
 
-		if (!app._fileIO.resource.loadData(bitstream, "data/fpga.bit"))
-			return true;
+		if (!app._fileIO.loadData(bitstream, "data/fpga.bit"))
+			goto _done;
 
 		bool ready = io::digitalIOLoadBitstream(
-			bitstream.as<uint8_t>(), bitstream.length
+			bitstream.as<uint8_t>(),
+			bitstream.length
 		);
 		bitstream.destroy();
 
 		if (!ready)
-			return true;
+			goto _done;
 
 		io::digitalIOFPGAInit();
 		auto error = app._cartDriver->readSystemID();
@@ -128,6 +131,8 @@ _cartInitDone:
 			LOG_APP("XID error [%s]", cart::getErrorString(error));
 	}
 
+_done:
+	app._ctx.show(app._cartInfoScreen);
 	return true;
 }
 
@@ -139,8 +144,7 @@ static const util::Hash _UNLOCK_ERRORS[cart::NUM_CHIP_TYPES]{
 };
 
 bool cartUnlockWorker(App &app) {
-	app._workerStatus.setNextScreen(app._cartInfoScreen, true);
-	app._workerStatus.update(0, 2, WSTR("App.cartUnlockWorker.read"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartUnlockWorker.read"));
 
 	app._qrCodeScreen.valid = false;
 
@@ -148,10 +152,11 @@ bool cartUnlockWorker(App &app) {
 
 	if (error) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTRH(_UNLOCK_ERRORS[app._cartDump.chipType]),
+			MESSAGE_ERROR,
+			WSTRH(_UNLOCK_ERRORS[app._cartDump.chipType]),
 			cart::getErrorString(error)
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
@@ -161,9 +166,9 @@ bool cartUnlockWorker(App &app) {
 	app._cartParser = cart::newCartParser(app._cartDump);
 
 	if (!app._cartParser)
-		return true;
+		goto _done;
 
-	app._workerStatus.update(1, 2, WSTR("App.cartUnlockWorker.identifyGame"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartUnlockWorker.identifyGame"));
 
 	char code[8], region[8];
 
@@ -177,31 +182,37 @@ bool cartUnlockWorker(App &app) {
 			LOG_APP("identify failed, using key as hint");
 			app._identified = app._selectedEntry;
 		} else {
-			return true;
+			goto _done;
 		}
 	}
 
 	delete app._cartParser;
 	app._cartParser = cart::newCartParser(
-		app._cartDump, app._identified->formatType, app._identified->flags
+		app._cartDump,
+		app._identified->formatType,
+		app._identified->flags
 	);
+
+_done:
+	app._ctx.show(app._cartInfoScreen, true);
 	return true;
 }
 
 bool qrCodeWorker(App &app) {
 	char qrString[cart::MAX_QR_STRING_LENGTH];
 
-	app._workerStatus.update(0, 2, WSTR("App.qrCodeWorker.compress"));
+	app._workerStatusScreen.setMessage(WSTR("App.qrCodeWorker.compress"));
 	app._cartDump.toQRString(qrString);
 
-	app._workerStatus.update(1, 2, WSTR("App.qrCodeWorker.generate"));
+	app._workerStatusScreen.setMessage(WSTR("App.qrCodeWorker.generate"));
 	app._qrCodeScreen.generateCode(qrString);
 
+	app._ctx.show(app._qrCodeScreen);
 	return true;
 }
 
 bool cartDumpWorker(App &app) {
-	app._workerStatus.update(0, 1, WSTR("App.cartDumpWorker.save"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartDumpWorker.save"));
 
 	char   path[fs::MAX_PATH_LENGTH], code[8], region[8];
 	size_t length = app._cartDump.getDumpLength();
@@ -210,38 +221,51 @@ bool cartDumpWorker(App &app) {
 		goto _error;
 
 	if (
-		app._identified && app._cartParser->getCode(code) &&
+		app._identified &&
+		app._cartParser->getCode(code) &&
 		app._cartParser->getRegion(region)
 	) {
 		snprintf(
-			path, sizeof(path), EXTERNAL_DATA_DIR "/%s%s.dmp", code, region
+			path,
+			sizeof(path),
+			EXTERNAL_DATA_DIR "/%s%s.dmp",
+			code,
+			region
 		);
 	} else {
-		if (!app._getNumberedPath(
-			path, sizeof(path), EXTERNAL_DATA_DIR "/cart%04d.dmp"
+		if (!app._fileIO.getNumberedPath(
+			path,
+			sizeof(path),
+			EXTERNAL_DATA_DIR "/cart%04d.dmp"
 		))
 			goto _error;
 	}
 
 	LOG_APP("saving %s, length=%d", path, length);
 
-	if (app._fileIO.vfs.saveData(&app._cartDump, length, path) != length)
+	if (app._fileIO.saveData(&app._cartDump, length, path) != length)
 		goto _error;
 
 	app._messageScreen.setMessage(
-		MESSAGE_SUCCESS, WSTR("App.cartDumpWorker.success"), path
+		MESSAGE_SUCCESS,
+		WSTR("App.cartDumpWorker.success"),
+		path
 	);
+	app._ctx.show(app._messageScreen);
 	return true;
 
 _error:
 	app._messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.cartDumpWorker.error"), path
+		MESSAGE_ERROR,
+		WSTR("App.cartDumpWorker.error"),
+		path
 	);
+	app._ctx.show(app._messageScreen);
 	return false;
 }
 
 bool cartWriteWorker(App &app) {
-	app._workerStatus.update(0, 1, WSTR("App.cartWriteWorker.write"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartWriteWorker.write"));
 
 	uint8_t key[8];
 	auto    error = app._cartDriver->writeData();
@@ -253,10 +277,11 @@ bool cartWriteWorker(App &app) {
 
 	if (error) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.cartWriteWorker.error"),
+			MESSAGE_ERROR,
+			WSTR("App.cartWriteWorker.error"),
 			cart::getErrorString(error)
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
@@ -265,10 +290,10 @@ bool cartWriteWorker(App &app) {
 }
 
 bool cartRestoreWorker(App &app) {
-	app._workerStatus.update(0, 3, WSTR("App.cartRestoreWorker.init"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartRestoreWorker.init"));
 
 	const char *path = app._fileBrowserScreen.selectedPath;
-	auto       file  = app._fileIO.vfs.openFile(path, fs::READ);
+	auto       file  = app._fileIO.openFile(path, fs::READ);
 
 	cart::CartDump newDump;
 
@@ -288,14 +313,16 @@ bool cartRestoreWorker(App &app) {
 
 	if (app._cartDump.chipType != newDump.chipType) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.cartRestoreWorker.typeError"), path
+			MESSAGE_ERROR,
+			WSTR("App.cartRestoreWorker.typeError"),
+			path
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
 	{
-		app._workerStatus.update(1, 3, WSTR("App.cartRestoreWorker.setDataKey"));
+		app._workerStatusScreen.setMessage(WSTR("App.cartRestoreWorker.setDataKey"));
 		auto error = app._cartDriver->setDataKey(newDump.dataKey);
 
 		if (error) {
@@ -308,7 +335,7 @@ bool cartRestoreWorker(App &app) {
 			if (newDump.flags & cart::DUMP_CONFIG_OK)
 				app._cartDump.copyConfigFrom(newDump.config);
 
-			app._workerStatus.update(2, 3, WSTR("App.cartRestoreWorker.write"));
+			app._workerStatusScreen.setMessage(WSTR("App.cartRestoreWorker.write"));
 			error = app._cartDriver->writeData();
 		}
 
@@ -316,10 +343,11 @@ bool cartRestoreWorker(App &app) {
 
 		if (error) {
 			app._messageScreen.setMessage(
-				MESSAGE_ERROR, WSTR("App.cartRestoreWorker.writeError"),
+				MESSAGE_ERROR,
+				WSTR("App.cartRestoreWorker.writeError"),
 				cart::getErrorString(error)
 			);
-			app._workerStatus.setNextScreen(app._messageScreen);
+			app._ctx.show(app._messageScreen);
 			return false;
 		}
 	}
@@ -328,9 +356,11 @@ bool cartRestoreWorker(App &app) {
 
 _fileError:
 	app._messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.cartRestoreWorker.fileError"), path
+		MESSAGE_ERROR,
+		WSTR("App.cartRestoreWorker.fileError"),
+		path
 	);
-	app._workerStatus.setNextScreen(app._messageScreen);
+	app._ctx.show(app._messageScreen);
 	return false;
 }
 
@@ -341,13 +371,14 @@ bool cartReflashWorker(App &app) {
 		!(app._cartDump.flags & cart::DUMP_CART_ID_OK)
 	) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.cartReflashWorker.idError")
+			MESSAGE_ERROR,
+			WSTR("App.cartReflashWorker.idError")
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
-	app._workerStatus.update(0, 3, WSTR("App.cartReflashWorker.init"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartReflashWorker.init"));
 
 	// TODO: preserve 0x81 traceid if possible
 #if 0
@@ -361,7 +392,9 @@ bool cartReflashWorker(App &app) {
 		delete app._cartParser;
 
 	app._cartParser = cart::newCartParser(
-		app._cartDump, app._selectedEntry->formatType, app._selectedEntry->flags
+		app._cartDump,
+		app._selectedEntry->formatType,
+		app._selectedEntry->flags
 	);
 	auto pri = app._cartParser->getIdentifiers();
 	auto pub = app._cartParser->getPublicIdentifiers();
@@ -377,7 +410,8 @@ bool cartReflashWorker(App &app) {
 		if (app._selectedEntry->flags & cart::DATA_HAS_TRACE_ID)
 			pri->updateTraceID(
 				app._selectedEntry->traceIDType,
-				app._selectedEntry->traceIDParam, &app._cartDump.cartID
+				app._selectedEntry->traceIDParam,
+				&app._cartDump.cartID
 			);
 		if (app._selectedEntry->flags & cart::DATA_HAS_INSTALL_ID) {
 			// The private installation ID seems to be unused on carts with a
@@ -394,13 +428,13 @@ bool cartReflashWorker(App &app) {
 	app._cartParser->setYear(app._selectedEntry->year);
 	app._cartParser->flush();
 
-	app._workerStatus.update(1, 3, WSTR("App.cartReflashWorker.setDataKey"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartReflashWorker.setDataKey"));
 	auto error = app._cartDriver->setDataKey(app._selectedEntry->dataKey);
 
 	if (error) {
 		LOG_APP("key error [%s]", cart::getErrorString(error));
 	} else {
-		app._workerStatus.update(2, 3, WSTR("App.cartReflashWorker.write"));
+		app._workerStatusScreen.setMessage(WSTR("App.cartReflashWorker.write"));
 		error = app._cartDriver->writeData();
 	}
 
@@ -408,10 +442,11 @@ bool cartReflashWorker(App &app) {
 
 	if (error) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.cartReflashWorker.writeError"),
+			MESSAGE_ERROR,
+			WSTR("App.cartReflashWorker.writeError"),
 			cart::getErrorString(error)
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
@@ -419,7 +454,7 @@ bool cartReflashWorker(App &app) {
 }
 
 bool cartEraseWorker(App &app) {
-	app._workerStatus.update(0, 1, WSTR("App.cartEraseWorker.erase"));
+	app._workerStatusScreen.setMessage(WSTR("App.cartEraseWorker.erase"));
 
 	auto error = app._cartDriver->erase();
 
@@ -427,10 +462,11 @@ bool cartEraseWorker(App &app) {
 
 	if (error) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.cartEraseWorker.error"),
+			MESSAGE_ERROR,
+			WSTR("App.cartEraseWorker.error"),
 			cart::getErrorString(error)
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 

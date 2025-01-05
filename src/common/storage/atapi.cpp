@@ -241,7 +241,7 @@ DeviceError ATAPIDevice::enumerate(void) {
 		(block.deviceFlags & IDE_IDENTIFY_DEV_ATAPI_TYPE_BITMASK)
 		!= IDE_IDENTIFY_DEV_ATAPI_TYPE_CDROM
 	) {
-		LOG_STORAGE("ignoring non-CD-ROM drive %d", _getDriveIndex());
+		LOG_STORAGE("ignoring non-CD-ROM drive %d", getDeviceIndex());
 		return UNSUPPORTED_OP;
 	}
 
@@ -259,7 +259,7 @@ DeviceError ATAPIDevice::enumerate(void) {
 	else
 		flags &= ~REQUIRES_EXT_PACKET;
 
-	LOG_STORAGE("drive %d is ATAPI", _getDriveIndex());
+	LOG_STORAGE("drive %d is ATAPI", getDeviceIndex());
 	return _setup(block);
 }
 

@@ -153,7 +153,7 @@ DeviceError ATADevice::enumerate(void) {
 	else
 		flags &= ~SUPPORTS_FLUSH;
 
-	LOG_STORAGE("drive %d is ATA", _getDriveIndex());
+	LOG_STORAGE("drive %d is ATA", getDeviceIndex());
 	return _setup(block);
 }
 

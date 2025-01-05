@@ -114,6 +114,10 @@ public:
 		serialNumber[0] = 0;
 	}
 
+	inline int getDeviceIndex(void) const {
+		return (flags / IS_SECONDARY) & 1;
+	}
+
 	virtual DeviceError enumerate(void) { return UNSUPPORTED_OP; }
 	virtual DeviceError poll(void) { return UNSUPPORTED_OP; }
 	virtual void handleInterrupt(void) {}

@@ -96,28 +96,24 @@ uint8_t ButtonState::_getHeld(void) const {
 	uint8_t held   = 0;
 
 #ifdef ENABLE_PS1_CONTROLLER
-	if (pad::ports[0].pollController() || pad::ports[1].pollController()) {
-		for (int i = 1; i >= 0; i--) {
-			auto &port = pad::ports[i];
+	for (auto &port : pad::ports) {
+		if (port.pollController())
+			continue;
+		if (
+			(port.controllerType != pad::TYPE_DIGITAL) &&
+			(port.controllerType != pad::TYPE_ANALOG) &&
+			(port.controllerType != pad::TYPE_ANALOG_STICK)
+		)
+			continue;
 
-			if (
-				(port.controllerType != pad::TYPE_DIGITAL) &&
-				(port.controllerType != pad::TYPE_ANALOG) &&
-				(port.controllerType != pad::TYPE_ANALOG_STICK)
-			)
-				continue;
-
-			if (port.buttons & (pad::BTN_LEFT | pad::BTN_UP))
-				held |= 1 << BTN_LEFT;
-			if (port.buttons & (pad::BTN_RIGHT | pad::BTN_DOWN))
-				held |= 1 << BTN_RIGHT;
-			if (port.buttons & (pad::BTN_CIRCLE | pad::BTN_CROSS))
-				held |= 1 << BTN_START;
-			if (port.buttons & pad::BTN_SELECT)
-				held |= 1 << BTN_DEBUG;
-		}
-
-		return held; // Ignore JAMMA inputs
+		if (port.buttons & (pad::BTN_LEFT | pad::BTN_UP))
+			held |= 1 << BTN_LEFT;
+		if (port.buttons & (pad::BTN_RIGHT | pad::BTN_DOWN))
+			held |= 1 << BTN_RIGHT;
+		if (port.buttons & (pad::BTN_CIRCLE | pad::BTN_CROSS))
+			held |= 1 << BTN_START;
+		if (port.buttons & pad::BTN_SELECT)
+			held |= 1 << BTN_DEBUG;
 	}
 #endif
 

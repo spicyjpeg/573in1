@@ -19,79 +19,58 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/fs/file.hpp"
+#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
-#include "ps1/pcdrv.h"
 
 namespace fs {
-
-/* PCDRV driver */
-
-class HostFile : public File {
-	friend class HostProvider;
-
-private:
-	int _fd;
-
-public:
-	size_t read(void *output, size_t length);
-	size_t write(const void *input, size_t length);
-	uint64_t seek(uint64_t offset);
-	uint64_t tell(void) const;
-	void close(void);
-};
-
-class HostDirectory : public Directory {
-	friend class HostProvider;
-
-private:
-	int           _fd;
-	PCDRVDirEntry _entry;
-
-public:
-	bool getEntry(FileInfo &output);
-};
-
-class HostProvider : public Provider {
-public:
-	bool init(void);
-
-	bool getFileInfo(FileInfo &output, const char *path);
-	Directory *openDirectory(const char *path);
-	bool createDirectory(const char *path);
-
-	File *openFile(const char *path, uint32_t flags);
-	bool deleteFile(const char *path);
-};
 
 /* Virtual filesystem driver */
 
 static constexpr char   VFS_PREFIX_SEPARATOR = ':';
 static constexpr size_t MAX_VFS_MOUNT_POINTS = 8;
+static constexpr size_t MAX_VFS_ALIASES      = 8;
 
 struct VFSMountPoint {
 public:
-	util::Hash prefix;
-	size_t     pathOffset;
-	Provider   *provider;
+	util::Hash      prefix;
+	size_t          pathOffset;
+	storage::Device *dev;
+	Provider        *provider;
+};
+
+struct VFSAlias {
+public:
+	util::Hash    prefix;
+	size_t        pathOffset;
+	VFSMountPoint *target;
 };
 
 class VFSProvider : public Provider {
-private:
-	VFSMountPoint _mountPoints[MAX_VFS_MOUNT_POINTS];
-
-	VFSMountPoint *_getMounted(const char *path);
-
 public:
+	VFSMountPoint mountPoints[MAX_VFS_MOUNT_POINTS];
+	VFSAlias      aliases[MAX_VFS_ALIASES];
+
 	inline VFSProvider(void) {
 		type = VFS;
 
-		util::clear(_mountPoints);
+		util::clear(mountPoints);
+		util::clear(aliases);
 	}
 
-	bool mount(const char *prefix, Provider *provider, bool force = false);
-	bool unmount(const char *prefix);
-	bool unmount(Provider *provider);
+	inline bool deleteMountPoint(const char *path) {
+		return deleteMountPoint(getMountPoint(path));
+	}
+	inline bool addAlias(
+		const char *prefix, const char *path, bool force = false
+	) {
+		return addAlias(prefix, getMountPoint(path), force);
+	}
+
+	VFSMountPoint *newMountPoint(const char *prefix, bool force = false);
+	bool deleteMountPoint(VFSMountPoint *mp);
+	bool addAlias(const char *prefix, VFSMountPoint *target, bool force = false);
+	VFSMountPoint *getMountPoint(const char *path);
 
 	bool getFileInfo(FileInfo &output, const char *path);
 	bool getFileFragments(FileFragmentTable &output, const char *path);

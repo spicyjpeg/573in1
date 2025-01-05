@@ -160,7 +160,7 @@ DeviceError IDEDevice::_setup(const IDEIdentifyBlock &block) {
 	if (error)
 		return error;
 
-	LOG_STORAGE("drive %d ready, mode=PIO%d", _getDriveIndex(), mode);
+	LOG_STORAGE("drive %d ready, mode=PIO%d", getDeviceIndex(), mode);
 
 	// Make sure any pending ATAPI sense data is cleared.
 	do {
@@ -232,8 +232,11 @@ void IDEDevice::_handleError(void) {
 	_lastCountReg  = _get(CS0_COUNT);
 
 	LOG_STORAGE(
-		"%d, st=0x%02x, err=0x%02x, cnt=0x%02x", _getDriveIndex(),
-		_lastStatusReg, _lastErrorReg, _lastCountReg
+		"%d, st=0x%02x, err=0x%02x, cnt=0x%02x",
+		getDeviceIndex(),
+		_lastStatusReg,
+		_lastErrorReg,
+		_lastCountReg
 	);
 
 	// Issuing a device reset command to an ATAPI drive would result in the

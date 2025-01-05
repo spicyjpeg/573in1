@@ -19,7 +19,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/storage/device.hpp"
-#include "common/pad.hpp"
 
 namespace storage {
 
@@ -28,10 +27,6 @@ namespace storage {
 class MemoryCardDevice : public Device {
 private:
 	uint8_t _lastStatus;
-
-	inline pad::Port &_getPort(void) const {
-		return pad::ports[(flags / IS_SECONDARY) & 1];
-	}
 
 public:
 	inline MemoryCardDevice(int index)

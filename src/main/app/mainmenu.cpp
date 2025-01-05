@@ -98,7 +98,7 @@ void AutobootScreen::update(ui::Context &ctx) {
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 			&(APP->_warningScreen);
 
-		APP->_runWorker(&executableWorker, APP->_mainMenuScreen, true);
+		APP->_runWorker(&executableWorker);
 		return;
 	}
 
@@ -210,7 +210,7 @@ void MainMenuScreen::cartInfo(ui::Context &ctx) {
 	if (APP->_cartDriver)
 		ctx.show(APP->_cartInfoScreen, false, true);
 	else
-		APP->_runWorker(&cartDetectWorker, APP->_cartInfoScreen, false, true);
+		APP->_runWorker(&cartDetectWorker, true);
 }
 
 void MainMenuScreen::storageInfo(ui::Context &ctx) {
@@ -229,9 +229,7 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 				&(APP->_fileBrowserScreen);
 
-			APP->_runWorker(
-				&executableWorker, APP->_mainMenuScreen, true, true
-			);
+			APP->_runWorker(&executableWorker, true);
 		},
 		STR("MainMenuScreen.runExecutable.filePrompt")
 	);
@@ -263,11 +261,11 @@ void MainMenuScreen::ejectCD(ui::Context &ctx) {
 	APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] = this;
 	APP->_messageScreen.previousScreens[MESSAGE_ERROR]   = this;
 
-	APP->_runWorker(&atapiEjectWorker, *this, true, true);
+	APP->_runWorker(&atapiEjectWorker, true);
 }
 
 void MainMenuScreen::reboot(ui::Context &ctx) {
-	APP->_runWorker(&rebootWorker, *this, true, true);
+	APP->_runWorker(&rebootWorker, true);
 }
 
 void MainMenuScreen::show(ui::Context &ctx, bool goBack) {

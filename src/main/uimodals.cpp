@@ -485,20 +485,21 @@ ProgressScreen::ProgressScreen(void)
 : ModalScreen(MODAL_WIDTH, MODAL_HEIGHT_REDUCED) {}
 
 void ProgressScreen::_setProgress(Context &ctx, int part, int total) {
-	if (!total)
-		total = 1;
+	if (total > 0) {
+		int fullBarWidth  = _width - MODAL_PADDING * 2;
+		int progressWidth = (fullBarWidth * part) / total;
 
-	int totalWidth = _width - MODAL_PADDING * 2;
-	int partWidth  = (totalWidth * part) / total;
-
-	if (_progressBarAnim.getTargetValue() != partWidth)
-		_progressBarAnim.setValue(ctx.time, partWidth, SPEED_FASTEST);
+		if (_progressBarAnim.getTargetValue() != progressWidth)
+			_progressBarAnim.setValue(ctx.time, progressWidth, SPEED_FASTEST);
+	} else {
+		_progressBarAnim.setValue(-1);
+	}
 }
 
 void ProgressScreen::show(Context &ctx, bool goBack) {
 	ModalScreen::show(ctx, goBack);
 
-	_progressBarAnim.setValue(0);
+	_progressBarAnim.setValue(-1);
 }
 
 void ProgressScreen::draw(Context &ctx, bool active) const {
@@ -507,7 +508,11 @@ void ProgressScreen::draw(Context &ctx, bool active) const {
 	if (!active)
 		return;
 
-	int fullBarWidth = _width - MODAL_PADDING * 2;
+	int fullBarWidth  = _width - MODAL_PADDING * 2;
+	int progressWidth = _progressBarAnim.getValue(ctx.time);
+
+	if (progressWidth < 0)
+		return;
 
 	int barX = (_width - fullBarWidth) / 2;
 	int barY =
@@ -525,7 +530,7 @@ void ProgressScreen::draw(Context &ctx, bool active) const {
 	ctx.gpuCtx.drawGradientRectH(
 		barX,
 		barY,
-		_progressBarAnim.getValue(ctx.time),
+		progressWidth,
 		PROGRESS_BAR_HEIGHT,
 		ctx.colors[COLOR_PROGRESS2],
 		ctx.colors[COLOR_PROGRESS1]

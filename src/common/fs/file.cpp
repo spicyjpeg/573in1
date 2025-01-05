@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "common/fs/file.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
@@ -104,6 +105,36 @@ size_t Provider::saveData(const void *input, size_t length, const char *path) {
 	file->close();
 	delete file;
 	return actualLength;
+}
+
+bool Provider::getNumberedPath(
+	char       *output,
+	size_t     length,
+	const char *path,
+	int        maxIndex
+) {
+	fs::FileInfo info;
+
+	// Perform a binary search in order to quickly find the first unused path.
+	int low  = 0;
+	int high = maxIndex;
+
+	while (low <= high) {
+		int index = low + (high - low) / 2;
+
+		snprintf(output, length, path, index);
+
+		if (getFileInfo(info, output))
+			low = index + 1;
+		else
+			high = index - 1;
+	}
+
+	if (low > maxIndex)
+		return false;
+
+	snprintf(output, length, path, low);
+	return true;
 }
 
 size_t Provider::loadTIM(gpu::Image &output, const char *path) {

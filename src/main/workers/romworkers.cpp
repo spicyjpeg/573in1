@@ -92,13 +92,15 @@ bool romChecksumWorker(App &app) {
 			entry.crcOffset
 		);
 
+		app._workerStatusScreen.setMessage(WSTRH(entry.crcPrompt));
+
 		// Flash cards can be 16, 32 or 64 MB, so copies of the current CRC are
 		// saved after the first 16, then 32, 48 and finally 64 MB are read.
 		for (size_t i = 0; i < numChunks; i += _DUMP_CHUNKS_PER_CRC) {
 			size_t end = util::min(i + _DUMP_CHUNKS_PER_CRC, numChunks);
 
 			for (size_t j = i; j < end; j++) {
-				app._workerStatus.update(j, numChunks, WSTRH(entry.crcPrompt));
+				app._workerStatusScreen.setProgress(app._ctx, j, numChunks);
 
 				crc     = entry.region.zipCRC32(offset, chunkLength, crc);
 				offset += chunkLength;
@@ -109,11 +111,12 @@ bool romChecksumWorker(App &app) {
 	}
 
 	app._checksumScreen.valid = true;
+	app._ctx.show(app._checksumScreen);
 	return true;
 }
 
 bool romDumpWorker(App &app) {
-	app._workerStatus.update(0, 1, WSTR("App.romDumpWorker.init"));
+	app._workerStatusScreen.setMessage(WSTR("App.romDumpWorker.init"));
 
 	// Store all dumps in a subdirectory named "dumpNNNN" within the main data
 	// folder.
@@ -121,11 +124,13 @@ bool romDumpWorker(App &app) {
 
 	if (!app._createDataDirectory())
 		goto _initError;
-	if (!app._getNumberedPath(
-		dirPath, sizeof(dirPath), EXTERNAL_DATA_DIR "/dump%04d"
+	if (!app._fileIO.getNumberedPath(
+		dirPath,
+		sizeof(dirPath),
+		EXTERNAL_DATA_DIR "/dump%04d"
 	))
 		goto _initError;
-	if (!app._fileIO.vfs.createDirectory(dirPath))
+	if (!app._fileIO.createDirectory(dirPath))
 		goto _initError;
 
 	LOG_APP("saving dumps to %s", dirPath);
@@ -144,11 +149,11 @@ bool romDumpWorker(App &app) {
 		size_t chunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH);
 		size_t numChunks   = regionLength / chunkLength;
 
+		app._workerStatusScreen.setMessage(WSTRH(entry.dumpPrompt));
 		snprintf(filePath, sizeof(filePath), entry.path, dirPath);
 
-		auto file = app._fileIO.vfs.openFile(
-			filePath, fs::WRITE | fs::ALLOW_CREATE
-		);
+		auto file =
+			app._fileIO.openFile(filePath, fs::WRITE | fs::ALLOW_CREATE);
 
 		if (!file)
 			goto _fileError;
@@ -159,7 +164,8 @@ bool romDumpWorker(App &app) {
 		buffer.allocate(chunkLength);
 
 		for (size_t i = 0; i < numChunks; i++) {
-			app._workerStatus.update(i, numChunks, WSTRH(entry.dumpPrompt));
+			app._workerStatusScreen.setProgress(app._ctx, i, numChunks);
+
 			entry.region.read(buffer.ptr, offset, chunkLength);
 
 			if (file->write(buffer.ptr, chunkLength) < chunkLength) {
@@ -181,33 +187,45 @@ bool romDumpWorker(App &app) {
 	}
 
 	app._messageScreen.setMessage(
-		MESSAGE_SUCCESS, WSTR("App.romDumpWorker.success"), dirPath
+		MESSAGE_SUCCESS,
+		WSTR("App.romDumpWorker.success"),
+		dirPath
 	);
+	app._ctx.show(app._messageScreen);
 	return true;
 
 _initError:
 	app._messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.romDumpWorker.initError"), dirPath
+		MESSAGE_ERROR,
+		WSTR("App.romDumpWorker.initError"),
+		dirPath
 	);
+	app._ctx.show(app._messageScreen);
 	return false;
 
 _fileError:
 	app._messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.romDumpWorker.fileError"), filePath
+		MESSAGE_ERROR,
+		WSTR("App.romDumpWorker.fileError"),
+		filePath
 	);
+	app._ctx.show(app._messageScreen);
 	return false;
 }
 
 bool romRestoreWorker(App &app) {
-	app._workerStatus.update(0, 1, WSTR("App.romRestoreWorker.init"));
+	app._workerStatusScreen.setMessage(WSTR("App.romRestoreWorker.init"));
 
 	const char *path = app._fileBrowserScreen.selectedPath;
-	auto       file  = app._fileIO.vfs.openFile(path, fs::READ);
+	auto       file  = app._fileIO.openFile(path, fs::READ);
 
 	if (!file) {
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.romRestoreWorker.fileError"), path
+			MESSAGE_ERROR,
+			WSTR("App.romRestoreWorker.fileError"),
+			path
 		);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
@@ -222,6 +240,8 @@ bool romRestoreWorker(App &app) {
 	auto numChips       = (regionLength + chipLength - 1) / chipLength;
 	auto maxChunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH / numChips);
 
+	app._workerStatusScreen.setMessage(WSTR("App.romRestoreWorker.write"));
+
 	LOG_APP("%d chips, buf=%d", numChips, maxChunkLength);
 
 	util::Data buffers, chunkLengths;
@@ -233,7 +253,7 @@ bool romRestoreWorker(App &app) {
 	// Parallelize writing by buffering a chunk for each chip into RAM, then
 	// writing all chunks to the respective chips at the same time.
 	for (size_t i = 0; i < chipLength; i += maxChunkLength) {
-		app._workerStatus.update(i, chipLength, WSTR("App.romRestoreWorker.write"));
+		app._workerStatusScreen.setProgress(app._ctx, i, chipLength);
 
 		auto   bufferPtr   = buffers.as<uint8_t>();
 		auto   lengthPtr   = chunkLengths.as<size_t>();
@@ -241,8 +261,11 @@ bool romRestoreWorker(App &app) {
 		size_t totalLength = 0;
 
 		for (
-			size_t j = numChips; j > 0; j--, bufferPtr += maxChunkLength,
-			offset += chipLength
+			size_t j = numChips;
+			j > 0;
+			j--,
+			bufferPtr += maxChunkLength,
+			offset    += chipLength
 		) {
 			file->seek(offset);
 			auto length = file->read(bufferPtr, maxChunkLength);
@@ -264,16 +287,22 @@ bool romRestoreWorker(App &app) {
 		offset    = i;
 
 		for (
-			size_t j = 0; j < maxChunkLength; j += 2, bufferPtr += 2,
-			offset += 2
+			size_t j = 0;
+			j < maxChunkLength;
+			j         += 2,
+			bufferPtr += 2,
+			offset    += 2
 		) {
 			auto chunkOffset = offset;
 			auto chunkPtr    = bufferPtr;
 			lengthPtr        = chunkLengths.as<size_t>();
 
 			for (
-				size_t k = numChips; k > 0;
-				k--, chunkPtr += maxChunkLength, chunkOffset += chipLength
+				size_t k = numChips;
+				k > 0;
+				k--,
+				chunkPtr    += maxChunkLength,
+				chunkOffset += chipLength
 			) {
 				if (j >= *(lengthPtr++))
 					continue;
@@ -288,8 +317,12 @@ bool romRestoreWorker(App &app) {
 			lengthPtr   = chunkLengths.as<size_t>();
 
 			for (
-				size_t k = numChips; k > 0; k--, chunkPtr += maxChunkLength,
-				chunkOffset += chipLength, bytesWritten += 2
+				size_t k = numChips;
+				k > 0;
+				k--,
+				chunkPtr     += maxChunkLength,
+				chunkOffset  += chipLength,
+				bytesWritten += 2
 			) {
 				if (j >= *(lengthPtr++))
 					continue;
@@ -307,9 +340,12 @@ bool romRestoreWorker(App &app) {
 				delete driver;
 
 				app._messageScreen.setMessage(
-					MESSAGE_ERROR, WSTR("App.romRestoreWorker.flashError"),
-					rom::getErrorString(error), bytesWritten
+					MESSAGE_ERROR,
+					WSTR("App.romRestoreWorker.flashError"),
+					rom::getErrorString(error),
+					bytesWritten
 				);
+				app._ctx.show(app._messageScreen);
 				return false;
 			}
 		}
@@ -328,6 +364,7 @@ bool romRestoreWorker(App &app) {
 	delete driver;
 
 	app._messageScreen.setMessage(MESSAGE_SUCCESS, WSTRH(message), bytesWritten);
+	app._ctx.show(app._messageScreen);
 	return true;
 }
 
@@ -345,17 +382,21 @@ bool romEraseWorker(App &app) {
 		delete driver;
 
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.romEraseWorker.unsupported")
+			MESSAGE_ERROR,
+			WSTR("App.romEraseWorker.unsupported")
 		);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
 	app._checksumScreen.valid = false;
 
+	app._workerStatusScreen.setMessage(WSTR("App.romEraseWorker.erase"));
+
 	// Parallelize erasing by sending the same sector erase command to all chips
 	// at the same time.
 	for (size_t i = 0; i < chipLength; i += sectorLength) {
-		app._workerStatus.update(i, chipLength, WSTR("App.romEraseWorker.erase"));
+		app._workerStatusScreen.setProgress(app._ctx, i, chipLength);
 
 		for (size_t j = 0; j < regionLength; j += chipLength)
 			driver->eraseSector(i + j);
@@ -369,9 +410,12 @@ bool romEraseWorker(App &app) {
 			delete driver;
 
 			app._messageScreen.setMessage(
-				MESSAGE_ERROR, WSTR("App.romEraseWorker.flashError"),
-				rom::getErrorString(error), sectorsErased
+				MESSAGE_ERROR,
+				WSTR("App.romEraseWorker.flashError"),
+				rom::getErrorString(error),
+				sectorsErased
 			);
+			app._ctx.show(app._messageScreen);
 			return false;
 		}
 	}
@@ -379,8 +423,11 @@ bool romEraseWorker(App &app) {
 	delete driver;
 
 	app._messageScreen.setMessage(
-		MESSAGE_SUCCESS, WSTR("App.romEraseWorker.success"), sectorsErased
+		MESSAGE_SUCCESS,
+		WSTR("App.romEraseWorker.success"),
+		sectorsErased
 	);
+	app._ctx.show(app._messageScreen);
 	return true;
 }
 
@@ -399,14 +446,15 @@ bool flashHeaderWriteWorker(App &app) {
 		delete driver;
 
 		app._messageScreen.setMessage(
-			MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.unsupported")
+			MESSAGE_ERROR,
+			WSTR("App.flashHeaderWriteWorker.unsupported")
 		);
-		app._workerStatus.setNextScreen(app._messageScreen);
+		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
 	app._checksumScreen.valid = false;
-	app._workerStatus.update(0, 2, WSTR("App.flashHeaderWriteWorker.erase"));
+	app._workerStatusScreen.setMessage(WSTR("App.flashHeaderWriteWorker.erase"));
 
 	// The flash can only be erased with sector granularity, so all data in the
 	// first sector other than the header must be backed up and rewritten.
@@ -421,7 +469,7 @@ bool flashHeaderWriteWorker(App &app) {
 	if (error)
 		goto _flashError;
 
-	app._workerStatus.update(1, 2, WSTR("App.flashHeaderWriteWorker.write"));
+	app._workerStatusScreen.setMessage(WSTR("App.flashHeaderWriteWorker.write"));
 
 	// Write the new header (if any).
 	if (!app._romHeaderDump.isDataEmpty()) {
@@ -429,7 +477,8 @@ bool flashHeaderWriteWorker(App &app) {
 
 		for (
 			uint32_t offset = rom::FLASH_HEADER_OFFSET;
-			offset < rom::FLASH_CRC_OFFSET; offset += 2
+			offset < rom::FLASH_CRC_OFFSET;
+			offset += 2
 		) {
 			auto value = *(ptr++);
 
@@ -446,7 +495,8 @@ bool flashHeaderWriteWorker(App &app) {
 		auto ptr = buffer.as<const uint16_t>() + (rom::FLASH_CRC_OFFSET / 2);
 
 		for (
-			uint32_t offset = rom::FLASH_CRC_OFFSET; offset < sectorLength;
+			uint32_t offset = rom::FLASH_CRC_OFFSET;
+			offset < sectorLength;
 			offset += 2
 		) {
 			auto value = *(ptr++);
@@ -461,6 +511,8 @@ bool flashHeaderWriteWorker(App &app) {
 
 	buffer.destroy();
 	delete driver;
+
+	app._ctx.show(app._storageInfoScreen, true);
 	return true;
 
 _flashError:
@@ -468,9 +520,10 @@ _flashError:
 	delete driver;
 
 	app._messageScreen.setMessage(
-		MESSAGE_ERROR, WSTR("App.flashHeaderWriteWorker.flashError"),
+		MESSAGE_ERROR,
+		WSTR("App.flashHeaderWriteWorker.flashError"),
 		rom::getErrorString(error)
 	);
-	app._workerStatus.setNextScreen(app._messageScreen);
+	app._ctx.show(app._messageScreen);
 	return false;
 }

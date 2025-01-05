@@ -17,7 +17,7 @@
 #pragma once
 
 #include "common/fs/file.hpp"
-#include "common/storage/device.hpp"
+#include "common/fs/vfs.hpp"
 #include "common/util/templates.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
@@ -26,9 +26,17 @@
 /* Modal screens */
 
 class WorkerStatusScreen : public ui::ProgressScreen {
+private:
+	char _bodyText[512];
+
 public:
+	void setProgress(ui::Context &ctx, int part = 0, int total = 0) {
+		_setProgress(ctx, part, total);
+	}
+
+	void setMessage(const char *format, ...);
+
 	void show(ui::Context &ctx, bool goBack = false);
-	void update(ui::Context &ctx);
 };
 
 static constexpr size_t NUM_MESSAGE_TYPES = 3;
@@ -71,13 +79,11 @@ public:
 
 /* File picker screen */
 
-static constexpr size_t MAX_FILE_PICKER_DEVICES = 4;
-
 struct FilePickerEntry {
 public:
-	storage::Device *dev;
-	fs::Provider    *provider;
-	const char      *prefix;
+	char              name[64];
+	const char        *prefix;
+	fs::VFSMountPoint *mp;
 };
 
 class FilePickerScreen : public ui::ListScreen {
@@ -87,11 +93,9 @@ private:
 	char _promptText[512];
 	void (*_callback)(ui::Context &ctx);
 
-	FilePickerEntry _entries[MAX_FILE_PICKER_DEVICES];
+	FilePickerEntry _entries[fs::MAX_VFS_MOUNT_POINTS];
 
-	void _addDevice(
-		storage::Device *dev, fs::Provider *provider, const char *prefix
-	);
+	void _addDevice(ui::Context &ctx, const fs::VFSMountPoint &mp);
 
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;

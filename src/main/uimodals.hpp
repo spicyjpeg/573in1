@@ -86,7 +86,7 @@ private:
 	util::Tween<int, util::QuadOutEasing> _progressBarAnim;
 
 protected:
-	void _setProgress(Context &ctx, int part, int total);
+	void _setProgress(Context &ctx, int part = 0, int total = 0);
 
 public:
 	ProgressScreen(void);

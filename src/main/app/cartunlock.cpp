@@ -331,9 +331,7 @@ void UnlockKeyScreen::update(ui::Context &ctx) {
 					APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 						&(APP->_unlockKeyScreen);
 
-					APP->_runWorker(
-						&cartUnlockWorker, APP->_cartInfoScreen, false, true
-					);
+					APP->_runWorker(&cartUnlockWorker, true);
 				},
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
 			);
@@ -380,9 +378,7 @@ void KeyEntryScreen::update(ui::Context &ctx) {
 					APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 						&(APP->_keyEntryScreen);
 
-					APP->_runWorker(
-						&cartUnlockWorker, APP->_cartInfoScreen, false, true
-					);
+					APP->_runWorker(&cartUnlockWorker, true);
 				},
 				STRH(_UNLOCK_WARNINGS[dump.chipType])
 			);

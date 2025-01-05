@@ -313,17 +313,27 @@
 	},
 
 	"FilePickerScreen": {
-		"title":      "▸ Seleziona unità IDE",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
-
-		"host": "🔌 Filesystem host (PCDRV)",
-		"noFS": "nessun disco o FS non supportato",
-
+		"title":         "▸ Seleziona unità",
+		"itemPrompt":    "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 		"noDeviceError": "Non è stato rilevato alcun dispositivo sul bus IDE. Assicurati che le unità siano alimentate e abbiano i jumper (primario o secondario) appropriati.\n\nPremi il pulsante Test per mostrare i log di debug.",
-		"hostError":     "Impossibile inizializzare l'interfaccia PCDRV. Assicurati che il filesystem PCDRV sia attivato e configurato appropriatamente nel debugger o nell'emulatore.\n\nPremi il pulsante Test per mostrare i log di debug.",
-		"ataError":      "Impossibile inizializzare l'unità o accedere al suo filesystem. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nPremi il pulsante Test per mostrare i log di debug.",
-		"atapiError":    "Impossibile inizializzare l'unità CD-ROM o accedere al suo filesystem. Assicurati che un disco sia inserito e formattato come ISO9660. Il lettore ottico potrebbe anche essere incompatibile con il driver ATAPI usato da 573in1.\n\nPremi il pulsante Test per mostrare i log di debug.",
-		"noFilesError":  "Il filesystem dell'unità selezionata è vuoto e non contiene file o subdirectory."
+		"noFilesError":  "Il filesystem dell'unità selezionata è vuoto e non contiene file o subdirectory.",
+
+		"host": {
+			"name":  "🔌 Filesystem host (PCDRV)",
+			"error": "Impossibile inizializzare l'interfaccia PCDRV. Assicurati che il filesystem PCDRV sia attivato e configurato appropriatamente nel debugger o nell'emulatore.\n\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"ata": {
+			"name":  "💽 %s: %s",
+			"error": "Impossibile inizializzare l'unità o accedere al suo filesystem. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"atapi": {
+			"name":  "💿 %s: %s",
+			"error": "Impossibile inizializzare l'unità o accedere al filesystem del disco. Assicurati che un disco sia inserito e formattato come ISO9660. Il lettore ottico potrebbe anche essere incompatibile con il driver ATAPI usato da 573in1.\n\nPremi il pulsante Test per mostrare i log di debug."
+		},
+		"memoryCard": {
+			"name":  "💾 Slot %d: %s",
+			"error": "Impossibile inizializzare l'unità o accedere al suo filesystem. Assicurati che la memory card sia inserita correttamente e che sia stata formattata almeno una volta.\n\nPremi il pulsante Test per mostrare i log di debug."
+		}
 	},
 
 	"GeometryScreen": {

@@ -1,4 +1,4 @@
-# 573in1 - Copyright (C) 2022-2024 spicyjpeg
+# 573in1 - Copyright (C) 2022-2025 spicyjpeg
 #
 # 573in1 is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -19,7 +19,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.3
+	VERSION      1.0.4
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
@@ -76,11 +76,12 @@ set(
 	fsSources
 	src/common/fs/fat.cpp
 	src/common/fs/file.cpp
+	src/common/fs/host.cpp
 	src/common/fs/iso9660.cpp
 	src/common/fs/memorycard.cpp
 	src/common/fs/memorycardbase.cpp
-	src/common/fs/misc.cpp
 	src/common/fs/package.cpp
+	src/common/fs/vfs.cpp
 	src/common/fs/zip.cpp
 )
 set(
@@ -113,6 +114,7 @@ set(
 	src/main/app/app.cpp
 	src/main/app/cartactions.cpp
 	src/main/app/cartunlock.cpp
+	src/main/app/fileio.cpp
 	src/main/app/mainmenu.cpp
 	src/main/app/misc.cpp
 	src/main/app/modals.cpp

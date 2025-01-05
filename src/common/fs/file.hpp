@@ -153,6 +153,13 @@ public:
 	virtual size_t loadData(void *output, size_t length, const char *path);
 	virtual size_t saveData(const void *input, size_t length, const char *path);
 
+	bool getNumberedPath(
+		char       *output,
+		size_t     length,
+		const char *path,
+		int        maxIndex = 9999
+	);
+
 	size_t loadTIM(gpu::Image &output, const char *path);
 	size_t loadBS(gpu::Image &output, const gpu::RectWH &rect, const char *path);
 	size_t loadVAG(spu::Sound &output, uint32_t offset, const char *path);

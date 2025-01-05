@@ -66,11 +66,12 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
 	for (int i = 0; i < 2; i++) {
-		auto &header  = _IDE_INFO_HEADERS[i];
-		auto dev      = APP->_fileIO.ideDevices[i];
-		auto provider = APP->_fileIO.ideProviders[i];
+		auto &header = _IDE_INFO_HEADERS[i];
+		auto mp      = APP->_fileIO.getMountPoint(IDE_MOUNT_POINTS[i]);
 
 		// Device information
+		auto dev = mp->dev;
+
 		_PRINT(STRH(header.device));
 
 		if (dev) {
@@ -105,6 +106,8 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINTLN();
 
 		// Filesystem information
+		auto provider = mp->provider;
+
 		if (!provider)
 			continue;
 
@@ -188,10 +191,10 @@ public:
 static const Language _LANGUAGES[]{
 	{
 		.name = "LanguageScreen.en"_h,
-		.path = "assets/lang/en.lang"
+		.path = "res:/assets/lang/en.lang"
 	}, {
 		.name = "LanguageScreen.it"_h,
-		.path = "assets/lang/it.lang"
+		.path = "res:/assets/lang/it.lang"
 	}
 };
 
@@ -214,8 +217,9 @@ void LanguageScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (!ctx.buttons.held(ui::BTN_LEFT) && !ctx.buttons.held(ui::BTN_RIGHT))
-			APP->_fileIO.resource.loadData(
-				APP->_stringTable, _LANGUAGES[_activeItem].path
+			APP->_fileIO.loadData(
+				APP->_stringTable,
+				_LANGUAGES[_activeItem].path
 			);
 
 		ctx.show(APP->_mainMenuScreen, true, true);
@@ -317,7 +321,7 @@ void AboutScreen::show(ui::Context &ctx, bool goBack) {
 	_title  = STR("AboutScreen.title");
 	_prompt = STR("AboutScreen.prompt");
 
-	APP->_fileIO.resource.loadData(_text, "assets/about.txt");
+	APP->_fileIO.loadData(_text, "res:/assets/about.txt");
 
 	auto ptr = reinterpret_cast<char *>(_text.ptr);
 	_body    = ptr;
