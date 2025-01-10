@@ -1,5 +1,5 @@
 /*
- * ps1-bare-metal - (C) 2023 spicyjpeg
+ * ps1-bare-metal - (C) 2023-2025 spicyjpeg
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -55,22 +55,22 @@ void _exceptionVector(void);
  * immediately.
  */
 __attribute__((always_inline)) static inline void enableInterrupts(void) {
-	cop0_setReg(COP0_SR, cop0_getReg(COP0_SR) | COP0_SR_IEc);
+	cop0_setReg(COP0_STATUS, cop0_getReg(COP0_STATUS) | COP0_STATUS_IEc);
 }
 
 /**
  * @brief Disables all interrupts at the COP0 side (without altering the
  * IRQ_MASK register). This function is not atomic, but can be used safely as
- * long as no other code is manipulating the COP0 SR register while interrupts
- * are enabled.
+ * long as no other code is manipulating the COP0 status register while
+ * interrupts are enabled.
  *
  * @return True if interrupts were previously enabled, false otherwise
  */
 __attribute__((always_inline)) static inline bool disableInterrupts(void) {
-	uint32_t sr = cop0_getReg(COP0_SR);
+	uint32_t status = cop0_getReg(COP0_STATUS);
 
-	cop0_setReg(COP0_SR, sr & ~COP0_SR_IEc);
-	return (sr & COP0_SR_IEc);
+	cop0_setReg(COP0_STATUS, status & ~COP0_STATUS_IEc);
+	return (status & COP0_STATUS_IEc);
 }
 
 /**
@@ -161,8 +161,8 @@ void uninstallExceptionHandler(void);
 void setInterruptHandler(ArgFunction func, void *arg0, void *arg1);
 
 /**
- * @brief Temporarily disables interrupts, then calls the BIOS function to clear
- * the instruction cache.
+ * @brief Clears the CPU's instruction cache. This function should be called
+ * whenever any new executable code is loaded into main RAM.
  */
 void flushCache(void);
 

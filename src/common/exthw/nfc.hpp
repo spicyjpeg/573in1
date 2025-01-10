@@ -204,7 +204,7 @@ private:
 		const PN532PacketHeader &request,
 		PN532Packet<N>          &response
 	) {
-		_transact(request, response, sizeof(response));
+		return _transact(request, response, sizeof(response));
 	}
 
 	bool _transact(

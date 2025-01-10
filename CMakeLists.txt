@@ -32,13 +32,15 @@ include(cmake/virtualenv.cmake)
 
 set(
 	ps1Sources
+	src/libc/clz.s
 	#src/libc/crt0.c
 	src/libc/cxxsupport.cpp
 	src/libc/malloc.c
-	src/libc/memset.s
 	src/libc/misc.c
-	src/libc/misc.s
+	src/libc/setjmp.s
 	src/libc/string.c
+	src/libc/string.s
+	src/ps1/cache.s
 	src/ps1/pcdrv.s
 	src/ps1/system.c
 	src/ps1/system.s

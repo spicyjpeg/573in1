@@ -59,7 +59,7 @@ enum JAMMAInput : uint32_t {
 	JAMMA_RAM_LAYOUT = 1 << 22,
 	JAMMA_P2_BUTTON6 = 1 << 23,
 
-	// SYS573_MISC_IN
+	// SYS573_MISC_IN2
 	JAMMA_COIN1      = 1 << 24,
 	JAMMA_COIN2      = 1 << 25,
 	JAMMA_PCMCIA_CD1 = 1 << 26,
@@ -102,7 +102,7 @@ static inline bool isDualBankRAM(void) {
 }
 
 static inline bool getDIPSwitch(int bit) {
-	return !((SYS573_DIP_CART >> bit) & 1);
+	return !((SYS573_MISC_IN1 >> bit) & 1);
 }
 
 static inline bool getCartInsertionStatus(void) {
@@ -114,7 +114,7 @@ static inline bool getCartInsertionStatus(void) {
 extern uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
 
 static inline bool getCartInput(CartInputPin pin) {
-	return (SYS573_DIP_CART >> (8 + pin)) & 1;
+	return (SYS573_MISC_IN1 >> (8 + pin)) & 1;
 }
 
 static inline void setCartOutput(CartOutputPin pin, bool value) {

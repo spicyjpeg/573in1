@@ -143,9 +143,9 @@ uint32_t getJAMMAInputs(void) {
 	uint32_t inputs;
 
 	inputs  =  SYS573_JAMMA_MAIN;
-	inputs |= (SYS573_JAMMA_EXT1 & 0x0f00) << 8;
+	inputs |= (SYS573_JAMMA_EXT1 & 0x0f00) <<  8;
 	inputs |= (SYS573_JAMMA_EXT2 & 0x0f00) << 12;
-	inputs |= (SYS573_MISC_IN    & 0x1f00) << 16;
+	inputs |= (SYS573_MISC_IN2   & 0x1f00) << 16;
 
 	return inputs ^ 0x1fffffff;
 }
@@ -485,7 +485,7 @@ void OneWireDriver::writeByte(uint8_t value) const {
 /* Security cartridge bus APIs */
 
 bool CartI2CDriver::_getSDA(void) const {
-	return (SYS573_MISC_IN / SYS573_MISC_IN_CART_SDA) & 1;
+	return (SYS573_MISC_IN2 / SYS573_MISC_IN2_CART_SDA) & 1;
 }
 
 void CartI2CDriver::_setSDA(bool value) const {

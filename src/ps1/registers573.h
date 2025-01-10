@@ -1,5 +1,5 @@
 /*
- * ps1-bare-metal - (C) 2023 spicyjpeg
+ * ps1-bare-metal - (C) 2023-2025 spicyjpeg
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -33,20 +33,37 @@ typedef enum {
 } Sys573MiscOutputFlag;
 
 typedef enum {
-	SYS573_MISC_IN_ADC_DO     = 1 <<  0,
-	SYS573_MISC_IN_ADC_SARS   = 1 <<  1,
-	SYS573_MISC_IN_CART_SDA   = 1 <<  2,
-	SYS573_MISC_IN_JVS_SENSE  = 1 <<  3,
-	SYS573_MISC_IN_JVS_IRDY   = 1 <<  4,
-	SYS573_MISC_IN_JVS_DRDY   = 1 <<  5,
-	SYS573_MISC_IN_CART_IRDY  = 1 <<  6,
-	SYS573_MISC_IN_CART_DRDY  = 1 <<  7,
-	SYS573_MISC_IN_COIN1      = 1 <<  8,
-	SYS573_MISC_IN_COIN2      = 1 <<  9,
-	SYS573_MISC_IN_PCMCIA_CD1 = 1 << 10,
-	SYS573_MISC_IN_PCMCIA_CD2 = 1 << 11,
-	SYS573_MISC_IN_SERVICE    = 1 << 12
-} Sys573MiscInputFlag;
+	SYS573_MISC_IN1_DIP_BITMASK       =  15 << 0,
+	SYS573_MISC_IN1_DIP1              =   1 << 0,
+	SYS573_MISC_IN1_DIP2              =   1 << 1,
+	SYS573_MISC_IN1_DIP3              =   1 << 2,
+	SYS573_MISC_IN1_DIP4              =   1 << 3,
+	SYS573_MISC_IN1_JVS_STAT_BITMASK  =   3 << 4,
+	SYS573_MISC_IN1_JVS_STAT_IDLE     =   0 << 4,
+	SYS573_MISC_IN1_JVS_STAT_BUSY     =   1 << 4,
+	SYS573_MISC_IN1_JVS_STAT_DATA_REQ =   2 << 4,
+	SYS573_MISC_IN1_JVS_ERR_BITMASK   =   3 << 6,
+	SYS573_MISC_IN1_JVS_ERR_CHECKSUM  =   1 << 6,
+	SYS573_MISC_IN1_JVS_ERR_SYNC      =   2 << 6,
+	SYS573_MISC_IN1_JVS_ERR_NONE      =   3 << 6,
+	SYS573_MISC_IN1_CART_IN_BITMASK   = 255 << 8
+} Sys573MiscInput1Flag;
+
+typedef enum {
+	SYS573_MISC_IN2_ADC_DO     = 1 <<  0,
+	SYS573_MISC_IN2_ADC_SARS   = 1 <<  1,
+	SYS573_MISC_IN2_CART_SDA   = 1 <<  2,
+	SYS573_MISC_IN2_JVS_SENSE  = 1 <<  3,
+	SYS573_MISC_IN2_JVS_IRDY   = 1 <<  4,
+	SYS573_MISC_IN2_JVS_DRDY   = 1 <<  5,
+	SYS573_MISC_IN2_CART_IRDY  = 1 <<  6,
+	SYS573_MISC_IN2_CART_DRDY  = 1 <<  7,
+	SYS573_MISC_IN2_COIN1      = 1 <<  8,
+	SYS573_MISC_IN2_COIN2      = 1 <<  9,
+	SYS573_MISC_IN2_PCMCIA_CD1 = 1 << 10,
+	SYS573_MISC_IN2_PCMCIA_CD2 = 1 << 11,
+	SYS573_MISC_IN2_SERVICE    = 1 << 12
+} Sys573MiscInput2Flag;
 
 typedef enum {
 	SYS573_BANK_FLASH   =  0,
@@ -55,8 +72,8 @@ typedef enum {
 } Sys573Bank;
 
 #define SYS573_MISC_OUT     _MMIO16(DEV0_BASE | 0x400000)
-#define SYS573_DIP_CART     _MMIO16(DEV0_BASE | 0x400004)
-#define SYS573_MISC_IN      _MMIO16(DEV0_BASE | 0x400006)
+#define SYS573_MISC_IN1     _MMIO16(DEV0_BASE | 0x400004)
+#define SYS573_MISC_IN2     _MMIO16(DEV0_BASE | 0x400006)
 #define SYS573_JAMMA_MAIN   _MMIO16(DEV0_BASE | 0x400008)
 #define SYS573_JVS_RX_DATA  _MMIO16(DEV0_BASE | 0x40000a)
 #define SYS573_JAMMA_EXT1   _MMIO16(DEV0_BASE | 0x40000c)
@@ -114,14 +131,98 @@ typedef enum {
 #define SYS573_RTC_MONTH   _MMIO16(DEV0_BASE | 0x623ffc)
 #define SYS573_RTC_YEAR    _MMIO16(DEV0_BASE | 0x623ffe)
 
-/* System 573 analog I/O board */
+/* PC16552 UART definitions (used by multiple I/O boards) */
+
+typedef enum {
+	PC16552_IER_ERDAI  = 1 << 0,
+	PC16552_IER_ETHREI = 1 << 1,
+	PC16552_IER_ELSI   = 1 << 2,
+	PC16552_IER_EMSI   = 1 << 3
+} PC16552IERFlag;
+
+typedef enum {
+	PC16552_IIR_PENDING           = 1 << 0,
+	PC16552_IIR_TYPE_BITMASK      = 7 << 1,
+	PC16552_IIR_TYPE_MODEM_STATUS = 0 << 1,
+	PC16552_IIR_TYPE_TX_EMPTY     = 1 << 1,
+	PC16552_IIR_TYPE_RX_DATA      = 2 << 1,
+	PC16552_IIR_TYPE_LINE_STATUS  = 3 << 1,
+	PC16552_IIR_TYPE_TIMEOUT      = 6 << 1,
+	PC16552_IIR_FIFO_ENABLE       = 1 << 6
+} PC16552IIRFlag;
+
+typedef enum {
+	PC16552_FCR_FIFO_ENABLE        = 1 << 0,
+	PC16552_FCR_RX_RESET           = 1 << 1,
+	PC16552_FCR_TX_RESET           = 1 << 2,
+	PC16552_FCR_DMA_MODE_SEL       = 1 << 3,
+	PC16552_FCR_RDAI_LEVEL_BITMASK = 3 << 6,
+	PC16552_FCR_RDAI_LEVEL_1       = 0 << 6,
+	PC16552_FCR_RDAI_LEVEL_4       = 1 << 6,
+	PC16552_FCR_RDAI_LEVEL_8       = 2 << 6,
+	PC16552_FCR_RDAI_LEVEL_14      = 3 << 6
+} PC16552FCRFlag;
+
+typedef enum {
+	PC16552_AFR_DUAL_WRITE      = 1 << 0,
+	PC16552_AFR_MF_MODE_BITMASK = 3 << 1,
+	PC16552_AFR_MF_MODE_OUT2    = 0 << 1,
+	PC16552_AFR_MF_MODE_BAUDOUT = 1 << 1,
+	PC16552_AFR_MF_MODE_RXRDY   = 2 << 1
+} PC16552AFRFlag;
+
+typedef enum {
+	PC16552_LCR_WLS_BITMASK  = 3 << 1,
+	PC16552_LCR_WLS_5        = 0 << 1,
+	PC16552_LCR_WLS_6        = 1 << 1,
+	PC16552_LCR_WLS_7        = 2 << 1,
+	PC16552_LCR_WLS_8        = 3 << 1,
+	PC16552_LCR_STB          = 1 << 2,
+	PC16552_LCR_PEN          = 1 << 3,
+	PC16552_LCR_EPS          = 1 << 4,
+	PC16552_LCR_STICK_PARITY = 1 << 5,
+	PC16552_LCR_BREAK        = 1 << 6,
+	PC16552_LCR_DLAB         = 1 << 7
+} PC16552LCRFlag;
+
+typedef enum {
+	PC16552_MCR_DTR      = 1 << 0,
+	PC16552_MCR_RTS      = 1 << 1,
+	PC16552_MCR_OUT1     = 1 << 2,
+	PC16552_MCR_OUT2     = 1 << 3,
+	PC16552_MCR_LOOPBACK = 1 << 4
+} PC16552MCRFlag;
+
+typedef enum {
+	PC16552_LSR_DR       = 1 << 0,
+	PC16552_LSR_OE       = 1 << 1,
+	PC16552_LSR_PE       = 1 << 2,
+	PC16552_LSR_FE       = 1 << 3,
+	PC16552_LSR_BI       = 1 << 4,
+	PC16552_LSR_THRE     = 1 << 5,
+	PC16552_LSR_TEMT     = 1 << 6,
+	PC16552_LSR_FIFO_ERR = 1 << 7
+} PC16552LSRFlag;
+
+typedef enum {
+	PC16552_MSR_DCTS = 1 << 0,
+	PC16552_MSR_DDSR = 1 << 1,
+	PC16552_MSR_TERI = 1 << 2,
+	PC16552_MSR_DDCD = 1 << 3,
+	PC16552_MSR_CTS  = 1 << 4,
+	PC16552_MSR_DSR  = 1 << 5,
+	PC16552_MSR_RI   = 1 << 6,
+	PC16552_MSR_DCD  = 1 << 7
+} PC16552MSRFlag;
+
+/* Analog I/O board (GX700-PWB(F)) */
 
 #define SYS573A_LIGHTS_A _MMIO16(DEV0_BASE | 0x640080)
 #define SYS573A_LIGHTS_B _MMIO16(DEV0_BASE | 0x640088)
 #define SYS573A_LIGHTS_C _MMIO16(DEV0_BASE | 0x640090)
 #define SYS573A_LIGHTS_D _MMIO16(DEV0_BASE | 0x640098)
 
-/* System 573 digital I/O board */
+/* Digital I/O board (GX894-PWB(B)A) */
 
 typedef enum {
 	SYS573D_FPGA_MAGIC_KONAMI = 0x1234,
@@ -261,3 +362,79 @@ typedef enum {
 #define SYS573D_CPLD_LIGHTS_CL _MMIO16(DEV0_BASE | 0x6400fa)
 #define SYS573D_CPLD_LIGHTS_CH _MMIO16(DEV0_BASE | 0x6400fc)
 #define SYS573D_CPLD_LIGHTS_BL _MMIO16(DEV0_BASE | 0x6400fe)
+
+/* Kick & Kick I/O board (GX700-PWB(K)) */
+
+typedef enum {
+	SYS573KK_MISC_IN_DS2401          = 1 <<  8,
+	SYS573KK_MISC_IN_KICK_XH_BITMASK = 3 << 10,
+	SYS573KK_MISC_IN_KICK_FRONT4     = 1 << 12,
+	SYS573KK_MISC_IN_KICK_FRONT3     = 1 << 13,
+	SYS573KK_MISC_IN_KICK_FRONT2     = 1 << 14,
+	SYS573KK_MISC_IN_KICK_FRONT1     = 1 << 15
+} Sys573KKMiscInputFlag;
+
+#define SYS573KK_MISC_IN    _MMIO16(DEV0_BASE | 0x640080)
+#define SYS573KK_KICK_Y     _MMIO16(DEV0_BASE | 0x640090)
+#define SYS573KK_KICK_XL    _MMIO16(DEV0_BASE | 0x6400a0)
+#define SYS573KK_DS2401_OUT _MMIO16(DEV0_BASE | 0x6400c0)
+
+// TODO: reverse engineer and add other registers (if any)
+
+/* Fishing controller I/O board (GE765-PWB(B)A) */
+
+typedef enum {
+	SYS573F_ENCODER_H_UNUSED1     = 1 << 4,
+	SYS573F_ENCODER_H_REEL_TYPE   = 1 << 5,
+	SYS573F_ENCODER_H_UNUSED2     = 1 << 6,
+	SYS573F_ENCODER_H_SWITCH_FLAG = 1 << 7
+} Sys573FEncoderHFlag;
+
+#define SYS573F_CLUTCH_DRIVE_PWM _MMIO16(DEV0_BASE | 0x640080)
+#define SYS573F_CLUTCH_BRAKE_PWM _MMIO16(DEV0_BASE | 0x640088)
+#define SYS573F_ENCODER_XL       _MMIO16(DEV0_BASE | 0x640090) // Unused
+#define SYS573F_ENCODER_XH       _MMIO16(DEV0_BASE | 0x640092) // Unused
+#define SYS573F_ENCODER_YL       _MMIO16(DEV0_BASE | 0x640098)
+#define SYS573F_ENCODER_YH       _MMIO16(DEV0_BASE | 0x64009a)
+#define SYS573F_ENCODER_RESET    _MMIO16(DEV0_BASE | 0x6400a0)
+
+/* DDR Karaoke Mix I/O board (GX921-PWB(B)) */
+
+#define SYS573DK_PC16552_RBR(N) _MMIO16((DEV0_BASE | 0x640090) + (16 * (N))) // Bank 0
+#define SYS573DK_PC16552_THR(N) _MMIO16((DEV0_BASE | 0x640090) + (16 * (N))) // Bank 0
+#define SYS573DK_PC16552_IER(N) _MMIO16((DEV0_BASE | 0x640092) + (16 * (N))) // Bank 0
+#define SYS573DK_PC16552_IIR(N) _MMIO16((DEV0_BASE | 0x640094) + (16 * (N))) // Bank 0
+#define SYS573DK_PC16552_FCR(N) _MMIO16((DEV0_BASE | 0x640094) + (16 * (N))) // Bank 0
+#define SYS573DK_PC16552_DLL(N) _MMIO16((DEV0_BASE | 0x640090) + (16 * (N))) // Bank 1
+#define SYS573DK_PC16552_DLM(N) _MMIO16((DEV0_BASE | 0x640092) + (16 * (N))) // Bank 1
+#define SYS573DK_PC16552_AFR(N) _MMIO16((DEV0_BASE | 0x640094) + (16 * (N))) // Bank 1
+#define SYS573DK_PC16552_LCR(N) _MMIO16((DEV0_BASE | 0x640096) + (16 * (N))) // All banks
+#define SYS573DK_PC16552_MCR(N) _MMIO16((DEV0_BASE | 0x640098) + (16 * (N))) // All banks
+#define SYS573DK_PC16552_LSR(N) _MMIO16((DEV0_BASE | 0x64009a) + (16 * (N))) // All banks
+#define SYS573DK_PC16552_MSR(N) _MMIO16((DEV0_BASE | 0x64009c) + (16 * (N))) // All banks
+#define SYS573DK_PC16552_SCR(N) _MMIO16((DEV0_BASE | 0x64009e) + (16 * (N))) // All banks
+
+#define SYS573DK_DS2401 _MMIO16(DEV0_BASE | 0x6400e0)
+
+// TODO: reverse engineer and add other registers
+
+/* GunMania I/O board (PWB0000073070) */
+
+#define SYS573G_MATRIX_X   _MMIO16(DEV0_BASE | 0x640080)
+#define SYS573G_DS2401_OUT _MMIO16(DEV0_BASE | 0x640098)
+
+#define SYS573G_PC16552_RBR(N) _MMIO16((DEV0_BASE | 0x6400e0) + (16 * (N))) // Bank 0
+#define SYS573G_PC16552_THR(N) _MMIO16((DEV0_BASE | 0x6400e0) + (16 * (N))) // Bank 0
+#define SYS573G_PC16552_IER(N) _MMIO16((DEV0_BASE | 0x6400e2) + (16 * (N))) // Bank 0
+#define SYS573G_PC16552_IIR(N) _MMIO16((DEV0_BASE | 0x6400e4) + (16 * (N))) // Bank 0
+#define SYS573G_PC16552_FCR(N) _MMIO16((DEV0_BASE | 0x6400e4) + (16 * (N))) // Bank 0
+#define SYS573G_PC16552_DLL(N) _MMIO16((DEV0_BASE | 0x6400e0) + (16 * (N))) // Bank 1
+#define SYS573G_PC16552_DLM(N) _MMIO16((DEV0_BASE | 0x6400e2) + (16 * (N))) // Bank 1
+#define SYS573G_PC16552_AFR(N) _MMIO16((DEV0_BASE | 0x6400e4) + (16 * (N))) // Bank 1
+#define SYS573G_PC16552_LCR(N) _MMIO16((DEV0_BASE | 0x6400e6) + (16 * (N))) // All banks
+#define SYS573G_PC16552_MCR(N) _MMIO16((DEV0_BASE | 0x6400e8) + (16 * (N))) // All banks
+#define SYS573G_PC16552_LSR(N) _MMIO16((DEV0_BASE | 0x6400ea) + (16 * (N))) // All banks
+#define SYS573G_PC16552_MSR(N) _MMIO16((DEV0_BASE | 0x6400ec) + (16 * (N))) // All banks
+#define SYS573G_PC16552_SCR(N) _MMIO16((DEV0_BASE | 0x6400ee) + (16 * (N))) // All banks
+
+// TODO: reverse engineer and add other registers

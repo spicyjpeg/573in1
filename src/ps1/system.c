@@ -1,5 +1,5 @@
 /*
- * ps1-bare-metal - (C) 2023 spicyjpeg
+ * ps1-bare-metal - (C) 2023-2025 spicyjpeg
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,10 +20,9 @@
 #include "ps1/registers.h"
 #include "ps1/system.h"
 
-#define BIOS_ENTRY_POINT ((VoidFunction)   0xbfc00000)
-#define BIOS_API_TABLE   ((VoidFunction *) 0x80000200)
-#define BIOS_BP_VECTOR   ((uint32_t *)     0x80000040)
-#define BIOS_EXC_VECTOR  ((uint32_t *)     0x80000080)
+#define BIOS_ENTRY_POINT ((VoidFunction) 0xbfc00000)
+#define BIOS_BP_VECTOR   ((uint32_t *)   0x80000040)
+#define BIOS_EXC_VECTOR  ((uint32_t *)   0x80000080)
 
 /* Internal state */
 
@@ -40,12 +39,6 @@ Thread *nextThread    = &_mainThread;
 
 /* Exception handler setup */
 
-static inline void _flushCache(void) {
-	// This is the only function that must always run from the BIOS ROM as it
-	// temporarily disables main RAM.
-	BIOS_API_TABLE[0x44]();
-}
-
 void installCustomExceptionHandler(VoidFunction func) {
 	// Clear all pending IRQ flags and prevent the interrupt controller from
 	// generating further IRQs.
@@ -55,7 +48,7 @@ void installCustomExceptionHandler(VoidFunction func) {
 	DMA_DICR = DMA_DICR_CH_STAT_BITMASK;
 
 	// Disable interrupts and the GTE at the COP0 side.
-	cop0_setReg(COP0_SR, COP0_SR_CU0);
+	cop0_setReg(COP0_STATUS, COP0_STATUS_CU0);
 
 	// Overwrite the default breakpoint and exception handlers placed into RAM
 	// by the BIOS.
@@ -63,19 +56,19 @@ void installCustomExceptionHandler(VoidFunction func) {
 	__builtin_memcpy(_savedExceptionVector,  BIOS_EXC_VECTOR, 16);
 	__builtin_memcpy(BIOS_BP_VECTOR,  func, 16);
 	__builtin_memcpy(BIOS_EXC_VECTOR, func, 16);
-	_flushCache();
+	flushCache();
 
 	DMA_DPCR = 0x0bbbbbbb;
 	DMA_DICR = DMA_DICR_IRQ_ENABLE;
 
 	// Ensure interrupt masking is set up properly and the GTE is enabled at the
 	// COP0 side.
-	cop0_setReg(COP0_SR, COP0_SR_Im2 | COP0_SR_CU0 | COP0_SR_CU2);
+	cop0_setReg(COP0_STATUS, COP0_STATUS_Im2 | COP0_STATUS_CU0 | COP0_STATUS_CU2);
 }
 
 void uninstallExceptionHandler(void) {
 	// Disable interrupts at the COP0 side.
-	cop0_setReg(COP0_SR, COP0_SR_CU0 | COP0_SR_CU2);
+	cop0_setReg(COP0_STATUS, COP0_STATUS_CU0 | COP0_STATUS_CU2);
 
 	// Clear all pending IRQ flags and prevent the interrupt controller from
 	// generating further IRQs.
@@ -87,7 +80,7 @@ void uninstallExceptionHandler(void) {
 	// Restore the original BIOS breakpoint and exception handlers.
 	__builtin_memcpy(BIOS_BP_VECTOR,  _savedBreakpointVector, 16);
 	__builtin_memcpy(BIOS_EXC_VECTOR, _savedExceptionVector,  16);
-	_flushCache();
+	flushCache();
 }
 
 void setInterruptHandler(ArgFunction func, void *arg0, void *arg1) {
@@ -96,14 +89,6 @@ void setInterruptHandler(ArgFunction func, void *arg0, void *arg1) {
 	interruptHandlerArg0 = arg0;
 	interruptHandlerArg1 = arg1;
 	flushWriteQueue();
-}
-
-void flushCache(void) {
-	bool enable = disableInterrupts();
-
-	_flushCache();
-	if (enable)
-		enableInterrupts();
 }
 
 void softReset(void) {
