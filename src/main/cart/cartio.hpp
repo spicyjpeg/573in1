@@ -47,7 +47,6 @@ public:
 	inline Driver(CartDump &dump)
 	: _dump(dump) {}
 
-	virtual DriverError readSystemID(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readCartID(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readPublicData(void) { return UNSUPPORTED_OP; }
 	virtual DriverError readPrivateData(void) { return UNSUPPORTED_OP; }
@@ -76,7 +75,6 @@ public:
 			(DUMP_HAS_SYSTEM_ID | DUMP_HAS_CART_ID);
 	}
 
-	DriverError readSystemID(void);
 	DriverError readCartID(void);
 	DriverError readPublicData(void);
 	DriverError readPrivateData(void);
@@ -87,25 +85,7 @@ public:
 
 /* Cartridge driver classes */
 
-class CartDriver : public Driver {
-public:
-	inline CartDriver(
-		CartDump &dump, ChipType chipType = NONE, uint8_t flags = 0
-	) : Driver(dump) {
-#if 0
-		dump.clearIdentifiers();
-		dump.clearKey();
-		dump.clearData();
-#endif
-
-		dump.chipType = chipType;
-		dump.flags    = flags;
-	}
-
-	DriverError readSystemID(void);
-};
-
-class X76Driver : public CartDriver {
+class X76Driver : public Driver {
 protected:
 	DriverError _x76Command(
 		uint8_t pollByte, uint8_t cmd, int param = -1
@@ -113,7 +93,10 @@ protected:
 
 public:
 	inline X76Driver(CartDump &dump, ChipType chipType)
-	: CartDriver(dump, chipType) {}
+	: Driver(dump) {
+		dump.chipType = chipType;
+		dump.flags    = 0;
+	}
 
 	DriverError readCartID(void);
 };
@@ -140,7 +123,7 @@ public:
 	DriverError setDataKey(const uint8_t *key);
 };
 
-class ZS01Driver : public CartDriver {
+class ZS01Driver : public Driver {
 private:
 	uint8_t _encoderState;
 
@@ -148,7 +131,10 @@ private:
 
 public:
 	inline ZS01Driver(CartDump &dump)
-	: CartDriver(dump, ZS01, DUMP_HAS_CART_ID), _encoderState(0) {}
+	: Driver(dump), _encoderState(0) {
+		dump.chipType = ZS01;
+		dump.flags    = DUMP_HAS_CART_ID;
+	}
 
 	DriverError readCartID(void);
 	DriverError readPublicData(void);
@@ -158,12 +144,14 @@ public:
 	DriverError setDataKey(const uint8_t *key);
 };
 
+/* Utilities */
+
 extern const char *const DRIVER_ERROR_NAMES[];
 
 static inline const char *getErrorString(DriverError error) {
 	return DRIVER_ERROR_NAMES[error];
 }
 
-CartDriver *newCartDriver(CartDump &dump);
+Driver *newCartDriver(CartDump &dump);
 
 }

@@ -16,9 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
-#include "common/io.hpp"
 #include "common/rom.hpp"
 #include "common/romdrivers.hpp"
 #include "ps1/registers.h"
@@ -33,7 +33,7 @@ namespace rom {
 uint16_t *Region::getRawPtr(uint32_t offset, bool alignToChip) const {
 #if 0
 	if (bank >= 0)
-		io::setFlashBank(bank);
+		sys573::setFlashBank(bank);
 #endif
 	if (alignToChip)
 		offset = 0;
@@ -138,7 +138,7 @@ Driver *RTCRegion::newDriver(void) const {
 bool FlashRegion::isPresent(void) const {
 	if (!_inputs)
 		return true;
-	if (io::getJAMMAInputs() & _inputs)
+	if (sys573::getJAMMAInputs() & _inputs)
 		return true;
 
 	return false;
@@ -155,7 +155,7 @@ uint16_t *FlashRegion::getRawPtr(uint32_t offset, bool alignToChip) const {
 	auto dest = reinterpret_cast<uint16_t *>(ptr + ptrOffset);
 
 	util::assertAligned<uint16_t>(dest);
-	io::setFlashBank(bank + bankOffset);
+	sys573::setFlashBank(bank + bankOffset);
 
 	return dest;
 }
@@ -166,7 +166,7 @@ void FlashRegion::read(void *data, uint32_t offset, size_t length) const {
 	auto bankOffset = offset / FLASH_BANK_LENGTH;
 	auto ptrOffset  = offset % FLASH_BANK_LENGTH;
 
-	io::setFlashBank(bank + bankOffset);
+	sys573::setFlashBank(bank + bankOffset);
 	Region::read(data, ptrOffset, length);
 }
 
@@ -183,7 +183,7 @@ uint32_t FlashRegion::zipCRC32(
 	crc         = ~crc;
 
 	util::assertAligned<uint32_t>(source);
-	io::setFlashBank(bank + bankOffset);
+	sys573::setFlashBank(bank + bankOffset);
 
 	for (; length; length -= 4) {
 		uint32_t data = *(source++);
@@ -219,7 +219,7 @@ const util::ExecutableHeader *FlashRegion::getBootExecutableHeader(void) const {
 	auto crcPtr = reinterpret_cast<const uint32_t *>(ptr + FLASH_CRC_OFFSET);
 	auto table  = reinterpret_cast<const uint32_t *>(CACHE_BASE);
 
-	io::setFlashBank(bank);
+	sys573::setFlashBank(bank);
 
 	auto header = reinterpret_cast<const util::ExecutableHeader *>(data);
 
@@ -241,9 +241,9 @@ const util::ExecutableHeader *FlashRegion::getBootExecutableHeader(void) const {
 		crc = (crc >> 8) ^ table[(crc ^ data[i]) & 0xff];
 
 	if (~crc != *crcPtr) {
-		LOG_ROM("CRC32 mismatch");
-		LOG_ROM("exp=0x%08x", ~crc);
-		LOG_ROM("got=0x%08x", *crcPtr);
+		LOG_NVRAM("CRC32 mismatch");
+		LOG_NVRAM("exp=0x%08x", ~crc);
+		LOG_NVRAM("got=0x%08x", *crcPtr);
 		return nullptr;
 	}
 
@@ -251,7 +251,7 @@ const util::ExecutableHeader *FlashRegion::getBootExecutableHeader(void) const {
 }
 
 uint32_t FlashRegion::getJEDECID(void) const {
-	io::setFlashBank(bank);
+	sys573::setFlashBank(bank);
 
 	auto _ptr = reinterpret_cast<volatile uint16_t *>(ptr);
 
@@ -269,7 +269,7 @@ uint32_t FlashRegion::getJEDECID(void) const {
 	auto id2 = util::concat4(_ptr[0], _ptr[1]);
 
 	if (id1 == id2) {
-		LOG_ROM("chip not responding to commands");
+		LOG_NVRAM("chip not responding to commands");
 		return 0;
 	}
 
@@ -283,7 +283,7 @@ size_t FlashRegion::getActualLength(void) const {
 	// Issue a JEDEC ID command to the first chip, then keep resetting all other
 	// chips until the first one is also reset, indicating that the address has
 	// wrapped around.
-	io::setFlashBank(bank);
+	sys573::setFlashBank(bank);
 
 	auto _ptr = reinterpret_cast<volatile uint16_t *>(ptr);
 
@@ -299,12 +299,12 @@ size_t FlashRegion::getActualLength(void) const {
 	int numBanks   = regionLength / FLASH_BANK_LENGTH;
 
 	for (; bankOffset < numBanks; bankOffset++) {
-		io::setFlashBank(bank + bankOffset);
+		sys573::setFlashBank(bank + bankOffset);
 
 		_ptr[0x000] = JEDEC_RESET;
 		_ptr[0x000] = INTEL_RESET;
 
-		io::setFlashBank(bank);
+		sys573::setFlashBank(bank);
 
 		auto id2 = util::concat4(_ptr[0], _ptr[1]);
 
@@ -318,14 +318,14 @@ size_t FlashRegion::getActualLength(void) const {
 	auto id3 = util::concat4(_ptr[0], _ptr[1]);
 
 	if (id1 == id3) {
-		LOG_ROM("chip not responding to commands");
+		LOG_NVRAM("chip not responding to commands");
 		return 0;
 	}
 	if (bankOffset == numBanks) {
 		// There is at least one game that uses a "64 MB" card (actually two 32
 		// MB cards in an adapter), but it's rare enough that forcing the user
 		// to select the card size manually makes sense.
-		LOG_ROM("no mirroring detected");
+		LOG_NVRAM("no mirroring detected");
 		return 0;
 	}
 
@@ -334,7 +334,7 @@ size_t FlashRegion::getActualLength(void) const {
 
 Driver *FlashRegion::newDriver(void) const {
 	if (!isPresent()) {
-		LOG_ROM("card not present");
+		LOG_NVRAM("card not present");
 		return new Driver(*this);
 	}
 
@@ -342,7 +342,7 @@ Driver *FlashRegion::newDriver(void) const {
 	uint16_t low  = ((id >> 0) & 0xff) | ((id >>  8) & 0xff00);
 	uint16_t high = ((id >> 8) & 0xff) | ((id >> 16) & 0xff00);
 
-	LOG_ROM("low=0x%04x, high=0x%04x", low, high);
+	LOG_NVRAM("low=0x%04x, high=0x%04x", low, high);
 
 	if (low == high) {
 		// Two 8-bit chips for each bank
@@ -385,8 +385,8 @@ const BIOSRegion  bios;
 const RTCRegion   rtc;
 const FlashRegion flash(0x1000000, SYS573_BANK_FLASH);
 const FlashRegion pcmcia[2]{
-	{ 0x4000000, SYS573_BANK_PCMCIA1, io::JAMMA_PCMCIA_CD1 },
-	{ 0x4000000, SYS573_BANK_PCMCIA2, io::JAMMA_PCMCIA_CD2 }
+	{ 0x4000000, SYS573_BANK_PCMCIA1, sys573::JAMMA_PCMCIA_CD1 },
+	{ 0x4000000, SYS573_BANK_PCMCIA2, sys573::JAMMA_PCMCIA_CD2 }
 };
 
 /* BIOS ROM headers */

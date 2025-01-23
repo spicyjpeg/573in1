@@ -137,6 +137,8 @@ public:
 	virtual DeviceError eject(bool close = false) { return UNSUPPORTED_OP; }
 };
 
+/* Utilities */
+
 extern const char *const DEVICE_ERROR_NAMES[];
 
 static inline const char *getErrorString(DeviceError error) {

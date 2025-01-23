@@ -18,12 +18,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "common/gpu.hpp"
-#include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
 #include "main/app/fileio.hpp"
@@ -40,12 +40,15 @@ static constexpr size_t _WORKER_STACK_SIZE = 0x8000;
 static constexpr int _SPLASH_SCREEN_TIMEOUT = 5;
 
 App::App(ui::Context &ctx)
-#ifdef ENABLE_LOG_BUFFER
-: _logOverlay(_logBuffer),
-#else
 :
+#ifdef ENABLE_LOG_BUFFER
+	_logOverlay(_logBuffer),
 #endif
-_ctx(ctx), _cartDriver(nullptr), _cartParser(nullptr), _identified(nullptr) {}
+	_ctx(ctx),
+	_ioBoard(nullptr),
+	_cartDriver(nullptr),
+	_cartParser(nullptr),
+	_identified(nullptr) {}
 
 App::~App(void) {
 	_unloadCartData();
@@ -78,7 +81,7 @@ void App::_updateOverlays(void) {
 	static char dateString[24];
 	util::Date  date;
 
-	io::getRTCTime(date);
+	sys573::getRTCTime(date);
 	date.toString(dateString);
 
 	_textOverlay.leftText = dateString;
@@ -182,7 +185,7 @@ void _appInterruptHandler(void *arg0, void *arg1) {
 		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
 		if (!(app->_workerFlags & WORKER_REBOOT))
-			io::clearWatchdog();
+			sys573::clearWatchdog();
 		if (!(app->_workerFlags & WORKER_SUSPEND_MAIN) && gpu::isIdle())
 			switchThread(nullptr);
 	}

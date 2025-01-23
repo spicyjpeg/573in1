@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,29 +18,27 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
+#include "common/sys573/ioboard.hpp"
 
-namespace storage {
+namespace sys573 {
 
-/* PS1 memory card block device class */
+/* Digital I/O board class */
 
-class MemoryCardDevice : public Device {
-	friend MemoryCardDevice *newMemoryCardDevice(int index);
-
+class DigitalIOBoardDriver : public IOBoardDriver {
 private:
-	uint8_t _lastStatus;
-
-	inline MemoryCardDevice(int index)
-	: Device(index * IS_SECONDARY) {}
+	bool _loadRawBitstream(const uint8_t *data, size_t length) const;
+	void _initFPGA(void) const;
+	bool _initMP3(void) const;
 
 public:
-	DeviceError enumerate(void);
-	DeviceError poll(void);
+	DigitalIOBoardDriver(void);
 
-	DeviceError read(void *data, uint64_t lba, size_t count);
-	DeviceError write(const void *data, uint64_t lba, size_t count);
+	bool isReady(void) const;
+	bool loadBitstream(const uint8_t *data, size_t length);
+
+	void setLightOutputs(uint32_t bits) const;
+	void readExtMemory(void *data, uint32_t offset, size_t length);
+	void writeExtMemory(const void *data, uint32_t offset, size_t length);
 };
-
-MemoryCardDevice *newMemoryCardDevice(int index);
 
 }

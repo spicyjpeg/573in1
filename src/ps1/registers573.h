@@ -148,7 +148,7 @@ typedef enum {
 	PC16552_IIR_TYPE_RX_DATA      = 2 << 1,
 	PC16552_IIR_TYPE_LINE_STATUS  = 3 << 1,
 	PC16552_IIR_TYPE_TIMEOUT      = 6 << 1,
-	PC16552_IIR_FIFO_ENABLE       = 1 << 6
+	PC16552_IIR_FIFO_ENABLE       = 1 << 7
 } PC16552IIRFlag;
 
 typedef enum {
@@ -186,11 +186,11 @@ typedef enum {
 } PC16552LCRFlag;
 
 typedef enum {
-	PC16552_MCR_DTR      = 1 << 0,
-	PC16552_MCR_RTS      = 1 << 1,
-	PC16552_MCR_OUT1     = 1 << 2,
-	PC16552_MCR_OUT2     = 1 << 3,
-	PC16552_MCR_LOOPBACK = 1 << 4
+	PC16552_MCR_DTR  = 1 << 0,
+	PC16552_MCR_RTS  = 1 << 1,
+	PC16552_MCR_OUT1 = 1 << 2,
+	PC16552_MCR_OUT2 = 1 << 3,
+	PC16552_MCR_LOOP = 1 << 4
 } PC16552MCRFlag;
 
 typedef enum {

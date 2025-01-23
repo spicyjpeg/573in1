@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "ps1/registers.h"
 
 namespace util {
 
@@ -64,10 +65,27 @@ template<typename T> static inline const T *getHashTableEntry(
 
 /* CRC calculation */
 
+// This CRC32 implementation uses a lookup table cached in the scratchpad area
+// in order to improve performance.
+class ZIPCRC32 {
+private:
+	uint32_t _table[256];
+
+public:
+	[[gnu::always_inline]] inline uint32_t update(
+		uint8_t value, uint32_t crc
+	) const {
+		return (crc >> 8) ^ _table[(crc ^ value) & 0xff];
+	}
+
+	void init(void);
+	uint32_t update(const uint8_t *data, size_t length, uint32_t crc = 0) const;
+};
+
+static auto &zipCRC32 = *reinterpret_cast<ZIPCRC32 *>(CACHE_BASE);
+
 uint8_t dsCRC8(const uint8_t *data, size_t length);
 uint16_t zsCRC16(const uint8_t *data, size_t length);
-uint32_t zipCRC32(const uint8_t *data, size_t length, uint32_t crc = 0);
-void initZipCRC32(void);
 
 /* MD5 hash */
 
@@ -76,31 +94,6 @@ private:
 	uint32_t _state[4];
 	uint8_t  _blockBuffer[64];
 	size_t   _blockCount, _bufferLength;
-
-	static inline int _indexF(int index) {
-		return index;
-	}
-	static inline uint32_t _addF(uint32_t x, uint32_t y, uint32_t z) {
-		return z ^ (x & (y ^ z)); // (x & y) | ((~x) & z)
-	}
-	static inline int _indexG(int index) {
-		return ((index * 5) + 1) % 16;
-	}
-	static inline uint32_t _addG(uint32_t x, uint32_t y, uint32_t z) {
-		return y ^ (z & (x ^ y)); // (x & z) | (y & (~z))
-	}
-	static inline int _indexH(int index) {
-		return ((index * 3) + 5) % 16;
-	}
-	static inline uint32_t _addH(uint32_t x, uint32_t y, uint32_t z) {
-		return x ^ y ^ z;
-	}
-	static inline int _indexI(int index) {
-		return (index * 7) % 16;
-	}
-	static inline uint32_t _addI(uint32_t x, uint32_t y, uint32_t z) {
-		return (y ^ (x | (~z)));
-	}
 
 	void _flushBlock(const void *data);
 

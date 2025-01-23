@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -15,78 +15,82 @@
  */
 
 #include <stdio.h>
+#include "common/nvram/bios.hpp"
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
-#include "common/io.hpp"
 #include "common/rom.hpp"
 #include "main/app/app.hpp"
-#include "main/app/romactions.hpp"
+#include "main/app/nvramactions.hpp"
 #include "main/workers/miscworkers.hpp"
-#include "main/workers/romworkers.hpp"
+#include "main/workers/nvramworkers.hpp"
 #include "main/uibase.hpp"
 #include "main/uicommon.hpp"
 
-/* Storage device submenu */
+/* NVRAM device submenu */
 
 #define _PRINT(...) (ptr += snprintf(ptr, end - ptr __VA_OPT__(,) __VA_ARGS__))
 #define _PRINTLN()  (*(ptr++) = '\n')
 
-void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
-	_title  = STR("StorageInfoScreen.title");
+void NVRAMInfoScreen::show(ui::Context &ctx, bool goBack) {
+	_title  = STR("NVRAMInfoScreen.title");
 	_body   = _bodyText;
-	_prompt = STR("StorageInfoScreen.prompt");
+	_prompt = STR("NVRAMInfoScreen.prompt");
 
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
 	// BIOS ROM
-	_PRINT(STR("StorageInfoScreen.bios.header"));
+	_PRINT(STR("NVRAMInfoScreen.bios.header"));
 
-	if (rom::sonyKernelHeader.validateMagic()) {
+	if (nvram::sonyKernelHeader.validateMagic()) {
 		_PRINT(
-			STR("StorageInfoScreen.bios.kernelInfo.sony"),
-			rom::sonyKernelHeader.version, rom::sonyKernelHeader.year,
-			rom::sonyKernelHeader.month, rom::sonyKernelHeader.day
+			STR("NVRAMInfoScreen.bios.kernelInfo.sony"),
+			nvram::sonyKernelHeader.version,
+			nvram::sonyKernelHeader.year,
+			nvram::sonyKernelHeader.month,
+			nvram::sonyKernelHeader.day
 		);
-	} else if (rom::openBIOSHeader.validateMagic()) {
+	} else if (nvram::openBIOSHeader.validateMagic()) {
 		char buildID[64];
 
-		rom::openBIOSHeader.getBuildID(buildID);
-		_PRINT(STR("StorageInfoScreen.bios.kernelInfo.openbios"), buildID);
+		nvram::openBIOSHeader.getBuildID(buildID);
+		_PRINT(STR("NVRAMInfoScreen.bios.kernelInfo.openbios"), buildID);
 	} else {
-		_PRINT(STR("StorageInfoScreen.bios.kernelInfo.unknown"));
+		_PRINT(STR("NVRAMInfoScreen.bios.kernelInfo.unknown"));
 	}
 
-	rom::ShellInfo shell;
+	nvram::ShellInfo shell;
 
-	if (rom::getShellInfo(shell)) {
+	if (nvram::getShellInfo(shell)) {
 		if (shell.bootFileName)
 			_PRINT(
-				STR("StorageInfoScreen.bios.shellInfo.konami"), shell.name,
+				STR("NVRAMInfoScreen.bios.shellInfo.konami"),
+				shell.name,
 				shell.bootFileName
 			);
 		else
-			_PRINT(STR("StorageInfoScreen.bios.shellInfo.custom"), shell.name);
+			_PRINT(STR("NVRAMInfoScreen.bios.shellInfo.custom"), shell.name);
 	} else {
-		_PRINT(STR("StorageInfoScreen.bios.shellInfo.unknown"));
+		_PRINT(STR("NVRAMInfoScreen.bios.shellInfo.unknown"));
 	}
 
 	_PRINTLN();
 
 	// RTC RAM
-	_PRINT(STR("StorageInfoScreen.rtc.header"));
-	_PRINT(
-		io::isRTCBatteryLow()
-			? STR("StorageInfoScreen.rtc.batteryLow")
-			: STR("StorageInfoScreen.rtc.batteryOK")
-	);
+	_PRINT(STR("NVRAMInfoScreen.rtc.header"));
+	_PRINT(STRH(
+		sys573::isRTCBatteryLow()
+			? "NVRAMInfoScreen.rtc.batteryLow"_h
+			: "NVRAMInfoScreen.rtc.batteryOK"_h
+	));
 
 	_PRINTLN();
 
 	// Internal flash
 	auto id = rom::flash.getJEDECID();
 
-	_PRINT(STR("StorageInfoScreen.flash.header"));
+	_PRINT(STR("NVRAMInfoScreen.flash.header"));
 	_PRINT(
-		STR("StorageInfoScreen.flash.info"),
+		STR("NVRAMInfoScreen.flash.info"),
 		(id >>  0) & 0xff,
 		(id >>  8) & 0xff,
 		(id >> 16) & 0xff,
@@ -94,7 +98,7 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 	);
 
 	if (rom::flash.getBootExecutableHeader())
-		_PRINT(STR("StorageInfoScreen.flash.bootable"));
+		_PRINT(STR("NVRAMInfoScreen.flash.bootable"));
 
 	// TODO: show information about currently installed game
 
@@ -104,14 +108,14 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 	for (int i = 0; i < 2; i++) {
 		auto &card = rom::pcmcia[i];
 
-		_PRINT(STR("StorageInfoScreen.pcmcia.header"), i + 1);
+		_PRINT(STR("NVRAMInfoScreen.pcmcia.header"), i + 1);
 
 		if (card.isPresent()) {
 			auto id     = card.getJEDECID();
 			auto length = card.getActualLength();
 
 			_PRINT(
-				STR("StorageInfoScreen.pcmcia.info"),
+				STR("NVRAMInfoScreen.pcmcia.info"),
 				(id >>  0) & 0xff,
 				(id >>  8) & 0xff,
 				(id >> 16) & 0xff,
@@ -120,12 +124,12 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 			if (length)
 				_PRINT(
-					STR("StorageInfoScreen.pcmcia.sizeInfo"), length / 0x100000
+					STR("NVRAMInfoScreen.pcmcia.sizeInfo"), length / 0x100000
 				);
 			if (card.getBootExecutableHeader())
-				_PRINT(STR("StorageInfoScreen.pcmcia.bootable"));
+				_PRINT(STR("NVRAMInfoScreen.pcmcia.bootable"));
 		} else {
-			_PRINT(STR("StorageInfoScreen.pcmcia.noCard"));
+			_PRINT(STR("NVRAMInfoScreen.pcmcia.noCard"));
 		}
 
 		_PRINTLN();
@@ -137,14 +141,14 @@ void StorageInfoScreen::show(ui::Context &ctx, bool goBack) {
 	TextScreen::show(ctx, goBack);
 }
 
-void StorageInfoScreen::update(ui::Context &ctx) {
+void NVRAMInfoScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT))
 			ctx.show(APP->_mainMenuScreen, true, true);
 		else
-			ctx.show(APP->_storageActionsScreen, false, true);
+			ctx.show(APP->_nvramActionsScreen, false, true);
 	}
 }
 
@@ -152,158 +156,158 @@ struct Action {
 public:
 	util::Hash        name, prompt;
 	const rom::Region &region;
-	void              (StorageActionsScreen::*target)(
+	void              (NVRAMActionsScreen::*target)(
 		ui::Context &ctx, size_t length
 	);
 };
 
 static const Action _ACTIONS[]{
 	{
-		.name   = "StorageActionsScreen.runExecutable.flash.name"_h,
-		.prompt = "StorageActionsScreen.runExecutable.flash.prompt"_h,
+		.name   = "NVRAMActionsScreen.runExecutable.flash.name"_h,
+		.prompt = "NVRAMActionsScreen.runExecutable.flash.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::runExecutable
+		.target = &NVRAMActionsScreen::runExecutable
 	}, {
-		.name   = "StorageActionsScreen.runExecutable.pcmcia1.name"_h,
-		.prompt = "StorageActionsScreen.runExecutable.pcmcia1.prompt"_h,
+		.name   = "NVRAMActionsScreen.runExecutable.pcmcia1.name"_h,
+		.prompt = "NVRAMActionsScreen.runExecutable.pcmcia1.prompt"_h,
 		.region = rom::pcmcia[0],
-		.target = &StorageActionsScreen::runExecutable
+		.target = &NVRAMActionsScreen::runExecutable
 	}, {
-		.name   = "StorageActionsScreen.runExecutable.pcmcia2.name"_h,
-		.prompt = "StorageActionsScreen.runExecutable.pcmcia2.prompt"_h,
+		.name   = "NVRAMActionsScreen.runExecutable.pcmcia2.name"_h,
+		.prompt = "NVRAMActionsScreen.runExecutable.pcmcia2.prompt"_h,
 		.region = rom::pcmcia[1],
-		.target = &StorageActionsScreen::runExecutable
+		.target = &NVRAMActionsScreen::runExecutable
 	}, {
-		.name   = "StorageActionsScreen.checksum.name"_h,
-		.prompt = "StorageActionsScreen.checksum.prompt"_h,
+		.name   = "NVRAMActionsScreen.checksum.name"_h,
+		.prompt = "NVRAMActionsScreen.checksum.prompt"_h,
 		.region = rom::bios, // Dummy
-		.target = &StorageActionsScreen::checksum
+		.target = &NVRAMActionsScreen::checksum
 	}, {
-		.name   = "StorageActionsScreen.dump.name"_h,
-		.prompt = "StorageActionsScreen.dump.prompt"_h,
+		.name   = "NVRAMActionsScreen.dump.name"_h,
+		.prompt = "NVRAMActionsScreen.dump.prompt"_h,
 		.region = rom::bios, // Dummy
-		.target = &StorageActionsScreen::dump
+		.target = &NVRAMActionsScreen::dump
 	}, {
-		.name   = "StorageActionsScreen.restore.rtc.name"_h,
-		.prompt = "StorageActionsScreen.restore.rtc.prompt"_h,
+		.name   = "NVRAMActionsScreen.restore.rtc.name"_h,
+		.prompt = "NVRAMActionsScreen.restore.rtc.prompt"_h,
 		.region = rom::rtc,
-		.target = &StorageActionsScreen::restore
+		.target = &NVRAMActionsScreen::restore
 	}, {
-		.name   = "StorageActionsScreen.restore.flash.name"_h,
-		.prompt = "StorageActionsScreen.restore.flash.prompt"_h,
+		.name   = "NVRAMActionsScreen.restore.flash.name"_h,
+		.prompt = "NVRAMActionsScreen.restore.flash.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::restore
+		.target = &NVRAMActionsScreen::restore
 	}, {
-		.name   = "StorageActionsScreen.restore.pcmcia1.name"_h,
-		.prompt = "StorageActionsScreen.restore.pcmcia1.prompt"_h,
+		.name   = "NVRAMActionsScreen.restore.pcmcia1.name"_h,
+		.prompt = "NVRAMActionsScreen.restore.pcmcia1.prompt"_h,
 		.region = rom::pcmcia[0],
-		.target = &StorageActionsScreen::restore
+		.target = &NVRAMActionsScreen::restore
 	}, {
-		.name   = "StorageActionsScreen.restore.pcmcia2.name"_h,
-		.prompt = "StorageActionsScreen.restore.pcmcia2.prompt"_h,
+		.name   = "NVRAMActionsScreen.restore.pcmcia2.name"_h,
+		.prompt = "NVRAMActionsScreen.restore.pcmcia2.prompt"_h,
 		.region = rom::pcmcia[1],
-		.target = &StorageActionsScreen::restore
+		.target = &NVRAMActionsScreen::restore
 	}, {
-		.name   = "StorageActionsScreen.erase.rtc.name"_h,
-		.prompt = "StorageActionsScreen.erase.rtc.prompt"_h,
+		.name   = "NVRAMActionsScreen.erase.rtc.name"_h,
+		.prompt = "NVRAMActionsScreen.erase.rtc.prompt"_h,
 		.region = rom::rtc,
-		.target = &StorageActionsScreen::erase
+		.target = &NVRAMActionsScreen::erase
 	}, {
-		.name   = "StorageActionsScreen.erase.flash.name"_h,
-		.prompt = "StorageActionsScreen.erase.flash.prompt"_h,
+		.name   = "NVRAMActionsScreen.erase.flash.name"_h,
+		.prompt = "NVRAMActionsScreen.erase.flash.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::erase
+		.target = &NVRAMActionsScreen::erase
 	}, {
-		.name   = "StorageActionsScreen.erase.pcmcia1.name"_h,
-		.prompt = "StorageActionsScreen.erase.pcmcia1.prompt"_h,
+		.name   = "NVRAMActionsScreen.erase.pcmcia1.name"_h,
+		.prompt = "NVRAMActionsScreen.erase.pcmcia1.prompt"_h,
 		.region = rom::pcmcia[0],
-		.target = &StorageActionsScreen::erase
+		.target = &NVRAMActionsScreen::erase
 	}, {
-		.name   = "StorageActionsScreen.erase.pcmcia2.name"_h,
-		.prompt = "StorageActionsScreen.erase.pcmcia2.prompt"_h,
+		.name   = "NVRAMActionsScreen.erase.pcmcia2.name"_h,
+		.prompt = "NVRAMActionsScreen.erase.pcmcia2.prompt"_h,
 		.region = rom::pcmcia[1],
-		.target = &StorageActionsScreen::erase
+		.target = &NVRAMActionsScreen::erase
 #if 0
 	}, {
-		.name   = "StorageActionsScreen.installExecutable.flash.name"_h,
-		.prompt = "StorageActionsScreen.installExecutable.flash.prompt"_h,
+		.name   = "NVRAMActionsScreen.installExecutable.flash.name"_h,
+		.prompt = "NVRAMActionsScreen.installExecutable.flash.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::installExecutable
+		.target = &NVRAMActionsScreen::installExecutable
 	}, {
-		.name   = "StorageActionsScreen.installExecutable.pcmcia1.name"_h,
-		.prompt = "StorageActionsScreen.installExecutable.pcmcia1.prompt"_h,
+		.name   = "NVRAMActionsScreen.installExecutable.pcmcia1.name"_h,
+		.prompt = "NVRAMActionsScreen.installExecutable.pcmcia1.prompt"_h,
 		.region = rom::pcmcia[0],
-		.target = &StorageActionsScreen::installExecutable
+		.target = &NVRAMActionsScreen::installExecutable
 	}, {
-		.name   = "StorageActionsScreen.installExecutable.pcmcia2.name"_h,
-		.prompt = "StorageActionsScreen.installExecutable.pcmcia2.prompt"_h,
+		.name   = "NVRAMActionsScreen.installExecutable.pcmcia2.name"_h,
+		.prompt = "NVRAMActionsScreen.installExecutable.pcmcia2.prompt"_h,
 		.region = rom::pcmcia[1],
-		.target = &StorageActionsScreen::installExecutable
+		.target = &NVRAMActionsScreen::installExecutable
 #endif
 	}, {
-		.name   = "StorageActionsScreen.resetFlashHeader.name"_h,
-		.prompt = "StorageActionsScreen.resetFlashHeader.prompt"_h,
+		.name   = "NVRAMActionsScreen.resetFlashHeader.name"_h,
+		.prompt = "NVRAMActionsScreen.resetFlashHeader.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::resetFlashHeader
+		.target = &NVRAMActionsScreen::resetFlashHeader
 #if 0
 	}, {
-		.name   = "StorageActionsScreen.matchFlashHeader.name"_h,
-		.prompt = "StorageActionsScreen.matchFlashHeader.prompt"_h,
+		.name   = "NVRAMActionsScreen.matchFlashHeader.name"_h,
+		.prompt = "NVRAMActionsScreen.matchFlashHeader.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::matchFlashHeader
+		.target = &NVRAMActionsScreen::matchFlashHeader
 	}, {
-		.name   = "StorageActionsScreen.editFlashHeader.name"_h,
-		.prompt = "StorageActionsScreen.editFlashHeader.prompt"_h,
+		.name   = "NVRAMActionsScreen.editFlashHeader.name"_h,
+		.prompt = "NVRAMActionsScreen.editFlashHeader.prompt"_h,
 		.region = rom::flash,
-		.target = &StorageActionsScreen::editFlashHeader
+		.target = &NVRAMActionsScreen::editFlashHeader
 #endif
 	}
 };
 
-const char *StorageActionsScreen::_getItemName(
+const char *NVRAMActionsScreen::_getItemName(
 	ui::Context &ctx, int index
 ) const {
 	return STRH(_ACTIONS[index].name);
 }
 
-void StorageActionsScreen::runExecutable(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::runExecutable(ui::Context &ctx, size_t length) {
 	if (selectedRegion->getBootExecutableHeader()) {
 		APP->_runWorker(&executableWorker, true);
 	} else {
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 		APP->_messageScreen.setMessage(
-			MESSAGE_ERROR, STR("StorageActionsScreen.runExecutable.error")
+			MESSAGE_ERROR, STR("NVRAMActionsScreen.runExecutable.error")
 		);
 
 		ctx.show(APP->_messageScreen, false, true);
 	}
 }
 
-void StorageActionsScreen::checksum(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::checksum(ui::Context &ctx, size_t length) {
 	if (APP->_checksumScreen.valid)
 		ctx.show(APP->_checksumScreen, false, true);
 	else
-		APP->_runWorker(&romChecksumWorker, true);
+		APP->_runWorker(&nvramChecksumWorker, true);
 }
 
-void StorageActionsScreen::dump(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::dump(ui::Context &ctx, size_t length) {
 	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
-				&(APP->_storageInfoScreen);
+				&(APP->_nvramInfoScreen);
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
-				&(APP->_storageActionsScreen);
+				&(APP->_nvramActionsScreen);
 
-			APP->_runWorker(&romDumpWorker, true);
+			APP->_runWorker(&nvramDumpWorker, true);
 		},
-		STR("StorageActionsScreen.dump.confirm")
+		STR("NVRAMActionsScreen.dump.confirm")
 	);
 
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void StorageActionsScreen::restore(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::restore(ui::Context &ctx, size_t length) {
 	selectedLength = length;
 
 	APP->_filePickerScreen.previousScreen = this;
@@ -311,45 +315,45 @@ void StorageActionsScreen::restore(ui::Context &ctx, size_t length) {
 		[](ui::Context &ctx) {
 			ctx.show(APP->_confirmScreen, false, true);
 		},
-		STR("StorageActionsScreen.restore.filePrompt")
+		STR("NVRAMActionsScreen.restore.filePrompt")
 	);
 
 	APP->_confirmScreen.previousScreen = &(APP->_fileBrowserScreen);
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
-				&(APP->_storageInfoScreen);
+				&(APP->_nvramInfoScreen);
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
 				&(APP->_fileBrowserScreen);
 
-			APP->_runWorker(&romRestoreWorker, true);
+			APP->_runWorker(&nvramRestoreWorker, true);
 		},
-		STR("StorageActionsScreen.restore.confirm")
+		STR("NVRAMActionsScreen.restore.confirm")
 	);
 
 	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
-void StorageActionsScreen::erase(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::erase(ui::Context &ctx, size_t length) {
 	selectedLength = length;
 
 	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
-				&(APP->_storageInfoScreen);
+				&(APP->_nvramInfoScreen);
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
-				&(APP->_storageActionsScreen);
+				&(APP->_nvramActionsScreen);
 
-			APP->_runWorker(&romEraseWorker, true);
+			APP->_runWorker(&nvramEraseWorker, true);
 		},
-		STR("StorageActionsScreen.erase.confirm")
+		STR("NVRAMActionsScreen.erase.confirm")
 	);
 
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void StorageActionsScreen::installExecutable(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::installExecutable(ui::Context &ctx, size_t length) {
 	selectedLength = length;
 
 	APP->_filePickerScreen.previousScreen = this;
@@ -357,61 +361,61 @@ void StorageActionsScreen::installExecutable(ui::Context &ctx, size_t length) {
 		[](ui::Context &ctx) {
 			ctx.show(APP->_confirmScreen, false, true);
 		},
-		STR("StorageActionsScreen.installExecutable.filePrompt")
+		STR("NVRAMActionsScreen.installExecutable.filePrompt")
 	);
 
 	APP->_confirmScreen.previousScreen = &(APP->_fileBrowserScreen);
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
 			APP->_messageScreen.previousScreens[MESSAGE_SUCCESS] =
-				&(APP->_storageInfoScreen);
+				&(APP->_nvramInfoScreen);
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR]   =
 				&(APP->_fileBrowserScreen);
 
 			APP->_runWorker(&flashExecutableWriteWorker, true);
 		},
-		STR("StorageActionsScreen.installExecutable.confirm")
+		STR("NVRAMActionsScreen.installExecutable.confirm")
 	);
 
 	APP->_filePickerScreen.reloadAndShow(ctx);
 }
 
-void StorageActionsScreen::resetFlashHeader(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::resetFlashHeader(ui::Context &ctx, size_t length) {
 	APP->_confirmScreen.previousScreen = this;
 	APP->_confirmScreen.setMessage(
 		[](ui::Context &ctx) {
 			util::clear(APP->_romHeaderDump.data);
 
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
-				&(APP->_storageActionsScreen);
+				&(APP->_nvramActionsScreen);
 
 			APP->_runWorker(&flashHeaderWriteWorker, true);
 		},
-		STR("StorageActionsScreen.resetFlashHeader.confirm")
+		STR("NVRAMActionsScreen.resetFlashHeader.confirm")
 	);
 
 	ctx.show(APP->_confirmScreen, false, true);
 }
 
-void StorageActionsScreen::matchFlashHeader(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::matchFlashHeader(ui::Context &ctx, size_t length) {
 	// TODO: implement
 }
 
-void StorageActionsScreen::editFlashHeader(ui::Context &ctx, size_t length) {
+void NVRAMActionsScreen::editFlashHeader(ui::Context &ctx, size_t length) {
 	// TODO: implement
 }
 
-void StorageActionsScreen::show(ui::Context &ctx, bool goBack) {
-	_title      = STR("StorageActionsScreen.title");
+void NVRAMActionsScreen::show(ui::Context &ctx, bool goBack) {
+	_title      = STR("NVRAMActionsScreen.title");
 	_prompt     = STRH(_ACTIONS[0].prompt);
-	_itemPrompt = STR("StorageActionsScreen.itemPrompt");
+	_itemPrompt = STR("NVRAMActionsScreen.itemPrompt");
 
 	_listLength = util::countOf(_ACTIONS);
 
 	ListScreen::show(ctx, goBack);
 }
 
-void StorageActionsScreen::update(ui::Context &ctx) {
+void NVRAMActionsScreen::update(ui::Context &ctx) {
 	auto &action = _ACTIONS[_activeItem];
 	_prompt      = STRH(action.prompt);
 
@@ -419,7 +423,7 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
-			ctx.show(APP->_storageInfoScreen, true, true);
+			ctx.show(APP->_nvramInfoScreen, true, true);
 		} else {
 			if (action.region.isPresent()) {
 				auto length    = action.region.getActualLength();
@@ -434,7 +438,8 @@ void StorageActionsScreen::update(ui::Context &ctx) {
 			} else {
 				APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
 				APP->_messageScreen.setMessage(
-					MESSAGE_ERROR, STR("StorageActionsScreen.cardError")
+					MESSAGE_ERROR,
+					STR("NVRAMActionsScreen.cardError")
 				);
 
 				ctx.show(APP->_messageScreen, false, true);
@@ -462,11 +467,12 @@ void CardSizeScreen::update(ui::Context &ctx) {
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (_activeButton)
-			(APP->_storageActionsScreen.*callback)(
-				ctx, 0x400000 << _activeButton // 1 = 8 MB, 2 = 16 MB, ...
+			(APP->_nvramActionsScreen.*callback)(
+				ctx,
+				0x400000 << _activeButton // 1 = 8 MB, 2 = 16 MB, ...
 			);
 		else
-			ctx.show(APP->_storageActionsScreen, true, true);
+			ctx.show(APP->_nvramActionsScreen, true, true);
 	}
 }
 
@@ -508,5 +514,5 @@ void ChecksumScreen::update(ui::Context &ctx) {
 	TextScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START))
-		ctx.show(APP->_storageActionsScreen, true, true);
+		ctx.show(APP->_nvramActionsScreen, true, true);
 }

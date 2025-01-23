@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,9 +23,9 @@
 #include "main/uicommon.hpp"
 #include "main/uimodals.hpp"
 
-/* Storage device submenu */
+/* NVRAM device submenu */
 
-class StorageInfoScreen : public ui::TextScreen {
+class NVRAMInfoScreen : public ui::TextScreen {
 private:
 	char _bodyText[2048];
 
@@ -34,7 +34,7 @@ public:
 	void update(ui::Context &ctx);
 };
 
-class StorageActionsScreen : public ui::ListScreen {
+class NVRAMActionsScreen : public ui::ListScreen {
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
 
@@ -58,7 +58,7 @@ public:
 
 class CardSizeScreen : public ui::MessageBoxScreen {
 public:
-	void (StorageActionsScreen::*callback)(ui::Context &ctx, size_t length);
+	void (NVRAMActionsScreen::*callback)(ui::Context &ctx, size_t length);
 
 	void show(ui::Context &ctx, bool goBack = false);
 	void update(ui::Context &ctx);

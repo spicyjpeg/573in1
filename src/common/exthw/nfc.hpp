@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/util/templates.hpp"
-#include "common/io.hpp"
+#include "common/bus.hpp"
 
 namespace exthw {
 
@@ -197,8 +197,8 @@ public:
 
 class PN532Driver {
 private:
-	io::UARTDriver &_serial;
-	bool           _isIdle;
+	bus::UARTDriver &_serial;
+	bool            _isIdle;
 
 	template<size_t N> inline bool _transact(
 		const PN532PacketHeader &request,
@@ -214,7 +214,7 @@ private:
 	);
 
 public:
-	inline PN532Driver(io::UARTDriver &serial)
+	inline PN532Driver(bus::UARTDriver &serial)
 	: _serial(serial) {}
 
 	bool init(void);

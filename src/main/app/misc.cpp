@@ -19,9 +19,9 @@
 #include <stdio.h>
 #include "common/fs/file.hpp"
 #include "common/storage/device.hpp"
+#include "common/sys573/base.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
-#include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
 #include "main/app/misc.hpp"
@@ -159,7 +159,7 @@ void RTCTimeScreen::show(ui::Context &ctx, bool goBack) {
 
 	_numButtons = 2;
 
-	io::getRTCTime(_date);
+	sys573::getRTCTime(_date);
 	if (!_date.isValid())
 		_date.reset();
 
@@ -176,7 +176,7 @@ void RTCTimeScreen::update(ui::Context &ctx) {
 		(_activeButton >= _buttonIndexOffset)
 	) {
 		if (_activeButton == (_buttonIndexOffset + 1))
-			io::setRTCTime(_date);
+			sys573::setRTCTime(_date);
 
 		ctx.show(APP->_mainMenuScreen, true, true);
 	}
@@ -233,43 +233,15 @@ public:
 };
 
 static const Resolution _RESOLUTIONS[]{
-	{
-		.width          = 320,
-		.height         = 240,
-		.forceInterlace = false
-	}, {
-		.width          = 320,
-		.height         = 240,
-		.forceInterlace = true
-	}, {
-		.width          = 368,
-		.height         = 240,
-		.forceInterlace = false
-	}, {
-		.width          = 368,
-		.height         = 240,
-		.forceInterlace = true
-	}, {
-		.width          = 512,
-		.height         = 240,
-		.forceInterlace = false
-	}, {
-		.width          = 512,
-		.height         = 240,
-		.forceInterlace = true
-	}, {
-		.width          = 640,
-		.height         = 240,
-		.forceInterlace = false
-	}, {
-		.width          = 640,
-		.height         = 240,
-		.forceInterlace = true
-	}, {
-		.width          = 640,
-		.height         = 480,
-		.forceInterlace = true
-	}
+	{ .width = 320, .height = 240, .forceInterlace = false },
+	{ .width = 320, .height = 240, .forceInterlace = true  },
+	{ .width = 368, .height = 240, .forceInterlace = false },
+	{ .width = 368, .height = 240, .forceInterlace = true  },
+	{ .width = 512, .height = 240, .forceInterlace = false },
+	{ .width = 512, .height = 240, .forceInterlace = true  },
+	{ .width = 640, .height = 240, .forceInterlace = false },
+	{ .width = 640, .height = 240, .forceInterlace = true  },
+	{ .width = 640, .height = 480, .forceInterlace = true  }
 };
 
 const char *ResolutionScreen::_getItemName(ui::Context &ctx, int index) const {
@@ -307,7 +279,10 @@ void ResolutionScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (!ctx.buttons.held(ui::BTN_LEFT) && !ctx.buttons.held(ui::BTN_RIGHT))
 			ctx.gpuCtx.setResolution(
-				GP1_MODE_NTSC, res.width, res.height, res.forceInterlace
+				GP1_MODE_NTSC,
+				res.width,
+				res.height,
+				res.forceInterlace
 			);
 
 		ctx.show(APP->_mainMenuScreen, true, true);

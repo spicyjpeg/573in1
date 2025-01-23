@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,12 +14,11 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "common/sys573/base.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/args.hpp"
 #include "common/gpu.hpp"
-#include "common/io.hpp"
-#include "common/ioboard.hpp"
 #include "common/mdec.hpp"
 #include "common/pad.hpp"
 #include "common/spu.hpp"
@@ -39,8 +38,8 @@ int main(int argc, const char **argv) {
 	spu::init();
 	mdec::init();
 	pad::init();
-	io::init();
-	util::initZipCRC32();
+	sys573::init();
+	util::zipCRC32.init();
 
 	args::MainArgs args;
 
@@ -64,8 +63,7 @@ int main(int argc, const char **argv) {
 
 	gpu::enableDisplay(true);
 	spu::setMasterVolume(spu::MAX_VOLUME / 2);
-	io::setMiscOutput(io::MISC_OUT_SPU_ENABLE, true);
-	io::setIOBoardLights(0);
+	sys573::setMiscOutput(sys573::MISC_OUT_SPU_ENABLE, true);
 
 	app->run(args.resourcePtr, args.resourceLength);
 

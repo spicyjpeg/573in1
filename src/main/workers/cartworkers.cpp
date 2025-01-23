@@ -18,11 +18,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/fs/file.hpp"
+#include "common/sys573/ioboard.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
-#include "common/ioboard.hpp"
 #include "main/app/app.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"
@@ -49,7 +49,6 @@ bool cartDetectWorker(App &app) {
 	if (cart::dummyDriverDump.chipType) {
 		LOG_APP("using dummy cart driver");
 		app._cartDriver = new cart::DummyDriver(app._cartDump);
-		app._cartDriver->readSystemID();
 	} else {
 		app._cartDriver = cart::newCartDriver(app._cartDump);
 	}
@@ -104,18 +103,13 @@ bool cartDetectWorker(App &app) {
 _cartInitDone:
 	app._workerStatusScreen.setMessage(WSTR("App.cartDetectWorker.readDigitalIO"));
 
-	if (
-#ifdef ENABLE_DUMMY_CART_DRIVER
-		!(app._cartDump.flags & cart::DUMP_SYSTEM_ID_OK) &&
-#endif
-		io::isDigitalIOPresent()
-	) {
+	if (app._ioBoard->type == sys573::IO_DIGITAL) {
 		util::Data bitstream;
 
 		if (!app._fileIO.loadData(bitstream, "data/fpga.bit"))
 			goto _done;
 
-		bool ready = io::digitalIOLoadBitstream(
+		bool ready = app._ioBoard->loadBitstream(
 			bitstream.as<uint8_t>(),
 			bitstream.length
 		);
@@ -123,12 +117,8 @@ _cartInitDone:
 
 		if (!ready)
 			goto _done;
-
-		io::digitalIOFPGAInit();
-		auto error = app._cartDriver->readSystemID();
-
-		if (error)
-			LOG_APP("XID error [%s]", cart::getErrorString(error));
+		if (!app._ioBoard->ds2401->readID(app._cartDump.systemID.data))
+			LOG_APP("XID error");
 	}
 
 _done:

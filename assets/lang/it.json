@@ -79,14 +79,14 @@
 			"compress": "Compressione dump in corso...",
 			"generate": "Generazione QR code in corso..."
 		},
-		"romChecksumWorker": {
+		"nvramChecksumWorker": {
 			"hashBIOS":    "Calcolo CRC32 BIOS in corso...",
 			"hashRTC":     "Calcolo CRC32 memoria RTC in corso...",
 			"hashFlash":   "Calcolo CRC32 flash interna in corso...",
 			"hashPCMCIA1": "Calcolo CRC32 flash card PCMCIA 1 in corso...",
 			"hashPCMCIA2": "Calcolo CRC32 flash card PCMCIA 2 in corso..."
 		},
-		"romDumpWorker": {
+		"nvramDumpWorker": {
 			"init":        "Creazione cartella dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
 			"dumpBIOS":    "Salvataggio dump BIOS in corso...\nNon spegnere il 573 o rimuovere dischi.",
 			"dumpRTC":     "Salvataggio dump memoria RTC in corso...\nNon spegnere il 573 o rimuovere dischi.",
@@ -97,13 +97,13 @@
 			"initError":   "Impossibile creare una nuova directory per i dump. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nDirectory: %s\nPremi il pulsante Test per mostrare i log di debug.",
 			"fileError":   "Si è verificato un errore durante il salvataggio di uno dei dump. Controlla che ci sia abbastanza spazio libero (minimo 32 MB, più eventuali flash card PCMCIA) e che il filesystem non sia danneggiato.\n\nFile: %s\nPremi il pulsante Test per mostrare i log di debug."
 		},
-		"romEraseWorker": {
+		"nvramEraseWorker": {
 			"erase":       "Cancellazione in corso...\nNon spegnere il 573.",
 			"success":     "Tutti i dati sono stati eliminati correttamente.\n\nSettori cancellati: %d",
 			"flashError":  "Si è verificato un errore durante la cancellazione dei dati su uno dei chip.\n\nCodice errore:\t%s\nSettori cancellati:\t%d\nPremi il pulsante Test per mostrare i log di debug.",
 			"unsupported": "I chip di memoria flash di questo dispositivo non rispondono ai comandi o non sono attualmente supportati da 573in1. Se stai usando una flash card PCMCIA con uno switch di protezione scrittura, assicurati che sia disattivato.\n\nFai riferimento alla documentazione per ulteriori informazioni sui chip supportati."
 		},
-		"romRestoreWorker": {
+		"nvramRestoreWorker": {
 			"init":        "Lettura file dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
 			"write":       "Scrittura nuovi dati in corso...\nNon spegnere il 573 o rimuovere dischi.",
 			"success":     "Tutti i dati sono stati ripristinati correttamente.\n\nByte scritti: %d",
@@ -137,7 +137,7 @@
 
 	"AutobootScreen": {
 		"title": "Nota",
-		"rom":   "Un eseguibile di boot è stato trovato nella flash interna o in una flash card PCMCIA e sarà avviato a breve. Puoi disattivare il boot automatico tramite il DIP switch 1 o solo per flash e PCMCIA con il DIP switch 4.",
+		"flash": "Un eseguibile di boot è stato trovato nella flash interna o in una flash card PCMCIA e sarà avviato a breve. Puoi disattivare il boot automatico tramite il DIP switch 1 o solo per flash e PCMCIA con il DIP switch 4.",
 		"ide":   "Un eseguibile di boot è stato trovato in uno dei dischi IDE connessi e sarà avviato a breve. Puoi disattivare il boot automatico tramite il DIP switch 1 o per un solo disco creando un file noboot.txt nella directory radice.\n\nFile: %s",
 
 		"cancel": "▭ Annulla (%ds)"
@@ -446,7 +446,7 @@
 			"name":   "Gestisci security cart",
 			"prompt": "Mostra informazioni su, sblocca, leggi e modifica i contenuti della security cart attualmente inserita (se presente)."
 		},
-		"storageInfo": {
+		"nvramInfo": {
 			"name":   "Gestisci flash interna, flash card PCMCIA, RTC e BIOS",
 			"prompt": "Mostra informazioni su, leggi e modifica i contenuti dei dispositivi di storage integrati e delle flash card PCMCIA inserite."
 		},
@@ -499,35 +499,7 @@
 		"ok": "Continua"
 	},
 
-	"QRCodeScreen": {
-		"title":  "▸ Dump security cart",
-		"prompt": "Scansiona il codice e usa lo script decodeDump.py fornito con 573in1 per decodificare la stringa risultante. Torna indietro con ▭."
-	},
-
-	"ReflashGameScreen": {
-		"title":      "▸ Select game to convert cartridge to",
-		"prompt":     "Assicurati di aver selezionato la regione corretta. Le security cart possono essere convertite solo ad altri giochi che utilizzano lo stesso tipo di EEPROM.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro"
-	},
-
-	"ResolutionScreen": {
-		"title":      "▸ Seleziona risoluzione schermo",
-		"prompt":     "Seleziona una modalità appropriata per il tuo monitor o upscaler. Le modalità interlacciate potrebbero essere soggette a flickering.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
-
-		"progressive":   "%dx%d, progressivo",
-		"interlaced":    "%dx%d, interlacciato come 480i",
-		"interlaced480": "%dx%d, interlacciato"
-	},
-
-	"RTCTimeScreen": {
-		"title":  "Imposta data e ora RTC",
-		"body":   "Inserisci la data e l'orario correnti. Nota che i giochi accettano solo anni compresi tra 1970 e 2069.\n\nMuovi il cursore con ◁▷, tieni premuto ▭ e usa ◁▷ per modificare il campo evidenziato.",
-		"cancel": "Annulla",
-		"ok":     "Conferma"
-	},
-
-	"StorageActionsScreen": {
+	"NVRAMActionsScreen": {
 		"title":      "▸ Opzioni storage",
 		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 		"cardError":  "Lo slot PCMCIA selezionato è vuoto.\n\nSpegni il 573 e inserisci una flash card PCMCIA supportata per procedere. NON INSERIRE FLASH CARD A 573 ACCESO; ciò potrebbe danneggiare sia il 573 che la flash card.",
@@ -633,7 +605,7 @@
 		}
 	},
 
-	"StorageInfoScreen": {
+	"NVRAMInfoScreen": {
 		"title":  "▸ Informazioni storage",
 		"prompt": "▸ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
 
@@ -680,6 +652,34 @@
 			"bootable": "  Eseguibile di boot valido presente\n",
 			"noCard":   "  Nessuna flash card inserita\n"
 		}
+	},
+
+	"QRCodeScreen": {
+		"title":  "▸ Dump security cart",
+		"prompt": "Scansiona il codice e usa lo script decodeDump.py fornito con 573in1 per decodificare la stringa risultante. Torna indietro con ▭."
+	},
+
+	"ReflashGameScreen": {
+		"title":      "▸ Select game to convert cartridge to",
+		"prompt":     "Assicurati di aver selezionato la regione corretta. Le security cart possono essere convertite solo ad altri giochi che utilizzano lo stesso tipo di EEPROM.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro"
+	},
+
+	"ResolutionScreen": {
+		"title":      "▸ Seleziona risoluzione schermo",
+		"prompt":     "Seleziona una modalità appropriata per il tuo monitor o upscaler. Le modalità interlacciate potrebbero essere soggette a flickering.",
+		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+
+		"progressive":   "%dx%d, progressivo",
+		"interlaced":    "%dx%d, interlacciato come 480i",
+		"interlaced480": "%dx%d, interlacciato"
+	},
+
+	"RTCTimeScreen": {
+		"title":  "Imposta data e ora RTC",
+		"body":   "Inserisci la data e l'orario correnti. Nota che i giochi accettano solo anni compresi tra 1970 e 2069.\n\nMuovi il cursore con ◁▷, tieni premuto ▭ e usa ◁▷ per modificare il campo evidenziato.",
+		"cancel": "Annulla",
+		"ok":     "Conferma"
 	},
 
 	"SystemIDEntryScreen": {

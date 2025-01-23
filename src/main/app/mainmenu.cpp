@@ -56,7 +56,9 @@ void WarningScreen::update(ui::Context &ctx) {
 		time = (time / ctx.gpuCtx.refreshRate) + 1;
 
 		snprintf(
-			_buttonText, sizeof(_buttonText), STR("WarningScreen.cooldown"),
+			_buttonText,
+			sizeof(_buttonText),
+			STR("WarningScreen.cooldown"),
 			time
 		);
 		return;
@@ -78,11 +80,13 @@ void AutobootScreen::show(ui::Context &ctx, bool goBack) {
 	_timer         = ctx.time + ctx.gpuCtx.refreshRate * _AUTOBOOT_DELAY;
 	_buttonText[0] = 0;
 
-	if (APP->_storageActionsScreen.selectedRegion)
-		snprintf(_bodyText, sizeof(_bodyText), STR("AutobootScreen.rom"));
+	if (APP->_nvramActionsScreen.selectedRegion)
+		snprintf(_bodyText, sizeof(_bodyText), STR("AutobootScreen.flash"));
 	else
 		snprintf(
-			_bodyText, sizeof(_bodyText), STR("AutobootScreen.ide"),
+			_bodyText,
+			sizeof(_bodyText),
+			STR("AutobootScreen.ide"),
 			APP->_fileBrowserScreen.selectedPath
 		);
 
@@ -158,9 +162,9 @@ static const MenuEntry _MENU_ENTRIES[]{
 		.prompt = "MainMenuScreen.cartInfo.prompt"_h,
 		.target = &MainMenuScreen::cartInfo
 	}, {
-		.name   = "MainMenuScreen.storageInfo.name"_h,
-		.prompt = "MainMenuScreen.storageInfo.prompt"_h,
-		.target = &MainMenuScreen::storageInfo
+		.name   = "MainMenuScreen.nvramInfo.name"_h,
+		.prompt = "MainMenuScreen.nvramInfo.prompt"_h,
+		.target = &MainMenuScreen::nvramInfo
 	}, {
 		.name   = "MainMenuScreen.ideInfo.name"_h,
 		.prompt = "MainMenuScreen.ideInfo.prompt"_h,
@@ -213,8 +217,8 @@ void MainMenuScreen::cartInfo(ui::Context &ctx) {
 		APP->_runWorker(&cartDetectWorker, true);
 }
 
-void MainMenuScreen::storageInfo(ui::Context &ctx) {
-	ctx.show(APP->_storageInfoScreen, false, true);
+void MainMenuScreen::nvramInfo(ui::Context &ctx) {
+	ctx.show(APP->_nvramInfoScreen, false, true);
 }
 
 void MainMenuScreen::ideInfo(ui::Context &ctx) {
@@ -225,7 +229,7 @@ void MainMenuScreen::runExecutable(ui::Context &ctx) {
 	APP->_filePickerScreen.previousScreen = this;
 	APP->_filePickerScreen.setMessage(
 		[](ui::Context &ctx) {
-			APP->_storageActionsScreen.selectedRegion          = nullptr;
+			APP->_nvramActionsScreen.selectedRegion            = nullptr;
 			APP->_messageScreen.previousScreens[MESSAGE_ERROR] =
 				&(APP->_fileBrowserScreen);
 

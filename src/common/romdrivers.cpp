@@ -87,7 +87,7 @@ DriverError RTCDriver::flushWrite(uint32_t offset, uint16_t value) {
 	uint16_t actualValue = util::concat2(ptr[0] & 0xff, ptr[1] & 0xff);
 
 	if (value != actualValue) {
-		LOG_ROM(
+		LOG_NVRAM(
 			"ptr=0x%06x, exp=0x%02x, got=0x%04x", offset, value, actualValue
 		);
 		return VERIFY_MISMATCH;
@@ -136,10 +136,10 @@ DriverError AM29F016Driver::_flush(
 	*ptr = JEDEC_RESET;
 
 	if (status & JEDEC_STATUS_ERROR) {
-		LOG_ROM("JEDEC error, ptr=0x%06x, st=0x%02x", offset, status);
+		LOG_NVRAM("JEDEC error, ptr=0x%06x, st=0x%02x", offset, status);
 		return CHIP_ERROR;
 	} else {
-		LOG_ROM("JEDEC timeout, ptr=0x%06x, st=0x%02x", offset, status);
+		LOG_NVRAM("JEDEC timeout, ptr=0x%06x, st=0x%02x", offset, status);
 		return CHIP_TIMEOUT;
 	}
 }
@@ -271,13 +271,13 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 		if (status & (INTEL_STATUS_DPS | INTEL_STATUS_VPPS)) {
 			*ptr = INTEL_CLEAR_STATUS;
 
-			LOG_ROM("Intel WP, ptr=0x%06x, st=0x%02x", offset, status);
+			LOG_NVRAM("Intel WP, ptr=0x%06x, st=0x%02x", offset, status);
 			return WRITE_PROTECTED;
 		}
 		if (status & (INTEL_STATUS_BWSLBS | INTEL_STATUS_ECLBS)) {
 			*ptr = INTEL_CLEAR_STATUS;
 
-			LOG_ROM("Intel error, ptr=0x%06x, st=0x%02x", offset, status);
+			LOG_NVRAM("Intel error, ptr=0x%06x, st=0x%02x", offset, status);
 			return CHIP_ERROR;
 		}
 
@@ -286,7 +286,7 @@ DriverError Intel28F016S5Driver::_flush(uint32_t offset, int timeout) {
 
 	*ptr = INTEL_RESET;
 
-	LOG_ROM("Intel timeout, ptr=0x%06x, st=0x%02x", offset, status);
+	LOG_NVRAM("Intel timeout, ptr=0x%06x, st=0x%02x", offset, status);
 	return CHIP_TIMEOUT;
 }
 

@@ -1,4 +1,4 @@
-# 573in1 - Copyright (C) 2022-2024 spicyjpeg
+# 573in1 - Copyright (C) 2022-2025 spicyjpeg
 #
 # 573in1 is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -28,7 +28,7 @@ find_program(
 ## Release information
 
 set(
-	RELEASE_INFO "${PROJECT_NAME} ${PROJECT_VERSION} - (C) 2022-2024 spicyjpeg"
+	RELEASE_INFO "${PROJECT_NAME} ${PROJECT_VERSION} - (C) 2022-2025 spicyjpeg"
 	CACHE STRING "Executable description and version string, placed in the \
 executable header (optional)"
 )
@@ -69,8 +69,8 @@ set(
 	CACHE BOOL "Log messages from System 573 and I/O board drivers"
 )
 set(
-	ENABLE_ROM_LOGGING ON
-	CACHE BOOL "Log messages from ROM/flash drivers"
+	ENABLE_NVRAM_LOGGING ON
+	CACHE BOOL "Log messages from NVRAM (BIOS, RTC, flash) drivers"
 )
 set(
 	ENABLE_STORAGE_LOGGING ON
@@ -126,7 +126,7 @@ set(
 	$<$<BOOL:${ENABLE_CART_IO_LOGGING}    >:ENABLE_CART_IO_LOGGING=1>
 	$<$<BOOL:${ENABLE_CART_DATA_LOGGING}  >:ENABLE_CART_DATA_LOGGING=1>
 	$<$<BOOL:${ENABLE_IO_LOGGING}         >:ENABLE_IO_LOGGING=1>
-	$<$<BOOL:${ENABLE_ROM_LOGGING}        >:ENABLE_ROM_LOGGING=1>
+	$<$<BOOL:${ENABLE_NVRAM_LOGGING}      >:ENABLE_NVRAM_LOGGING=1>
 	$<$<BOOL:${ENABLE_STORAGE_LOGGING}    >:ENABLE_STORAGE_LOGGING=1>
 	$<$<BOOL:${ENABLE_FS_LOGGING}         >:ENABLE_FS_LOGGING=1>
 	$<$<BOOL:${ENABLE_DUMMY_CART_DRIVER}  >:ENABLE_DUMMY_CART_DRIVER=1>

@@ -19,9 +19,9 @@
 #include "common/storage/ata.hpp"
 #include "common/storage/atapi.hpp"
 #include "common/storage/device.hpp"
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
-#include "common/io.hpp"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
 
@@ -102,7 +102,7 @@ int IDEIdentifyBlock::getHighestPIOMode(void) const {
 
 void IDEDevice::_readData(void *data, size_t length) const {
 #if 0
-	io::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
+	sys573::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
 #else
 	length = (length + 1) / 2;
 
@@ -117,7 +117,7 @@ void IDEDevice::_readData(void *data, size_t length) const {
 
 void IDEDevice::_writeData(const void *data, size_t length) const {
 #if 0
-	io::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
+	sys573::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
 #else
 	length = (length + 1) / 2;
 

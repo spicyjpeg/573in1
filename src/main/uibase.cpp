@@ -15,12 +15,12 @@
  */
 
 #include <stdint.h>
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "common/util/tween.hpp"
 #include "common/gpu.hpp"
 #include "common/gpufont.hpp"
-#include "common/io.hpp"
 #include "common/pad.hpp"
 #include "main/uibase.hpp"
 #include "ps1/gpucmd.h"
@@ -33,65 +33,73 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 	{
 		// MAP_JOYSTICK
 		0
-			| io::JAMMA_P1_LEFT
-			| io::JAMMA_P2_LEFT
-			| io::JAMMA_P1_UP
-			| io::JAMMA_P2_UP,
+			| sys573::JAMMA_P1_LEFT
+			| sys573::JAMMA_P2_LEFT
+			| sys573::JAMMA_P1_UP
+			| sys573::JAMMA_P2_UP,
 		0
-			| io::JAMMA_P1_RIGHT
-			| io::JAMMA_P2_RIGHT
-			| io::JAMMA_P1_DOWN
-			| io::JAMMA_P2_DOWN,
+			| sys573::JAMMA_P1_RIGHT
+			| sys573::JAMMA_P2_RIGHT
+			| sys573::JAMMA_P1_DOWN
+			| sys573::JAMMA_P2_DOWN,
 		0
-			| io::JAMMA_P1_START
-			| io::JAMMA_P2_START
-			| io::JAMMA_P1_BUTTON1
-			| io::JAMMA_P2_BUTTON1,
-		io::JAMMA_TEST | io::JAMMA_SERVICE
+			| sys573::JAMMA_P1_START
+			| sys573::JAMMA_P2_START
+			| sys573::JAMMA_P1_BUTTON1
+			| sys573::JAMMA_P2_BUTTON1,
+		sys573::JAMMA_TEST | sys573::JAMMA_SERVICE
 	}, {
 		// MAP_DDR_CAB
-		io::JAMMA_P1_BUTTON2 | io::JAMMA_P2_BUTTON2,
-		io::JAMMA_P1_BUTTON3 | io::JAMMA_P2_BUTTON3,
-		io::JAMMA_P1_START   | io::JAMMA_P2_START,
-		io::JAMMA_TEST       | io::JAMMA_SERVICE
+		sys573::JAMMA_P1_BUTTON2 | sys573::JAMMA_P2_BUTTON2,
+		sys573::JAMMA_P1_BUTTON3 | sys573::JAMMA_P2_BUTTON3,
+		sys573::JAMMA_P1_START   | sys573::JAMMA_P2_START,
+		sys573::JAMMA_TEST       | sys573::JAMMA_SERVICE
 	}, {
 		// MAP_DDR_SOLO_CAB
-		io::JAMMA_P1_BUTTON5,
-		io::JAMMA_P2_BUTTON5,
-		io::JAMMA_P1_START,
-		io::JAMMA_TEST | io::JAMMA_SERVICE
+		sys573::JAMMA_P1_BUTTON5,
+		sys573::JAMMA_P2_BUTTON5,
+		sys573::JAMMA_P1_START,
+		sys573::JAMMA_TEST | sys573::JAMMA_SERVICE
 	}, {
 		// MAP_DM_CAB
-		io::JAMMA_P2_LEFT,
-		io::JAMMA_P2_RIGHT,
-		io::JAMMA_P1_START,
-		io::JAMMA_TEST | io::JAMMA_SERVICE
+		sys573::JAMMA_P2_LEFT,
+		sys573::JAMMA_P2_RIGHT,
+		sys573::JAMMA_P1_START,
+		sys573::JAMMA_TEST | sys573::JAMMA_SERVICE
 	}, {
 		// MAP_DMX_CAB (more or less redundant with MAP_JOYSTICK)
-		io::JAMMA_P1_UP    | io::JAMMA_P2_UP,
-		io::JAMMA_P1_DOWN  | io::JAMMA_P2_DOWN,
-		io::JAMMA_P1_START | io::JAMMA_P2_START,
-		io::JAMMA_TEST     | io::JAMMA_SERVICE
+		sys573::JAMMA_P1_UP    | sys573::JAMMA_P2_UP,
+		sys573::JAMMA_P1_DOWN  | sys573::JAMMA_P2_DOWN,
+		sys573::JAMMA_P1_START | sys573::JAMMA_P2_START,
+		sys573::JAMMA_TEST     | sys573::JAMMA_SERVICE
 	}, {
 		// MAP_SINGLE_BUTTON
 		0,
 		0,
 		0
-			| io::JAMMA_P1_START
-			| io::JAMMA_P2_START
-			| io::JAMMA_TEST
-			| io::JAMMA_SERVICE,
+			| sys573::JAMMA_P1_START
+			| sys573::JAMMA_P2_START
+			| sys573::JAMMA_TEST
+			| sys573::JAMMA_SERVICE,
 		0
 	}
 };
 
 ButtonState::ButtonState(void)
-: _buttonMap(MAP_JOYSTICK), _held(0), _prevHeld(0), _longHeld(0),
-_prevLongHeld(0), _pressed(0), _released(0), _longPressed(0), _longReleased(0),
-_repeatTimer(0) {}
+:
+	_buttonMap(MAP_JOYSTICK),
+	_held(0),
+	_prevHeld(0),
+	_longHeld(0),
+	_prevLongHeld(0),
+	_pressed(0),
+	_released(0),
+	_longPressed(0),
+	_longReleased(0),
+	_repeatTimer(0) {}
 
 uint8_t ButtonState::_getHeld(void) const {
-	auto    inputs = io::getJAMMAInputs();
+	auto    inputs = sys573::getJAMMAInputs();
 	auto    map    = _BUTTON_MAPPINGS[_buttonMap];
 	uint8_t held   = 0;
 

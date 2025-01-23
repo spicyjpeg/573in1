@@ -93,43 +93,51 @@ template<typename T> static constexpr inline size_t countOf(T &array) {
 
 /* Concatenation and BCD conversion */
 
+template<typename T, typename V, typename... A>
+static constexpr inline T concat(V value, A... next) {
+	constexpr int remaining = sizeof...(next);
+
+	if constexpr (remaining)
+		return 0
+			| T(value)
+			| (concat<T>(next...) << (remaining ? (sizeof(V) * 8) : 0));
+
+	return T(value);
+}
+
+template<typename T, typename V, int N = sizeof(T) / sizeof(V)>
+static constexpr inline T mirror(V value) {
+	constexpr int remaining = max(N - 1, 0);
+
+	if constexpr (remaining)
+		return 0
+			| T(value)
+			| (mirror<T, V, remaining>(value) << (sizeof(V) * 8));
+
+	return T(value);
+}
+
 static constexpr inline uint16_t concat2(uint8_t low, uint8_t high) {
-	return low | (high << 8);
+	return concat<uint16_t>(low, high);
+}
+static constexpr inline uint16_t mirror2(uint8_t value) {
+	return mirror<uint16_t>(value);
 }
 
 static constexpr inline uint32_t concat4(uint16_t low, uint16_t high) {
-	return low | (high << 16);
+	return concat<uint32_t>(low, high);
+}
+static constexpr inline uint32_t mirror4(uint16_t value) {
+	return mirror<uint32_t>(value);
 }
 
 static constexpr inline uint32_t concat4(
 	uint8_t a, uint8_t b, uint8_t c, uint8_t d
 ) {
-	return a | (b << 8) | (c << 16) | (d << 24);
+	return concat<uint32_t>(a, b, c, d);
 }
-
-static constexpr inline uint64_t concat8(uint32_t low, uint32_t high) {
-	return uint64_t(low) | (uint64_t(high) << 32);
-}
-
-static constexpr inline uint64_t concat8(
-	uint16_t a, uint16_t b, uint16_t c, uint16_t d
-) {
-	return 0
-		| (uint64_t(a) <<  0)
-		| (uint64_t(b) << 16)
-		| (uint64_t(c) << 32)
-		| (uint64_t(d) << 48);
-}
-
-static constexpr inline uint64_t concat8(
-	uint8_t a, uint8_t b, uint8_t c, uint8_t d,
-	uint8_t e, uint8_t f, uint8_t g, uint8_t h
-) {
-	return 0
-		| (uint64_t(a) <<  0) | (uint64_t(b) <<  8)
-		| (uint64_t(c) << 16) | (uint64_t(d) << 24)
-		| (uint64_t(e) << 32) | (uint64_t(f) << 40)
-		| (uint64_t(g) << 48) | (uint64_t(h) << 56);
+static constexpr inline uint32_t mirror4(uint8_t value) {
+	return mirror<uint32_t>(value);
 }
 
 static constexpr inline uint8_t encodeBCD(uint8_t value) {

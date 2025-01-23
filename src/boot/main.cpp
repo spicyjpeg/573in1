@@ -17,10 +17,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/fs/package.hpp"
+#include "common/sys573/base.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/string.hpp"
-#include "common/io.hpp"
 #include "ps1/system.h"
 
 extern "C" const uint8_t _resourcePackage[];
@@ -31,7 +31,7 @@ static char _lengthArg[]{ "resource.length=xxxxxxxx\0" };
 
 int main(int argc, const char **argv) {
 	disableInterrupts();
-	io::init();
+	sys573::init();
 
 	auto header = \
 		reinterpret_cast<const fs::PackageIndexHeader *>(_resourcePackage);
@@ -61,7 +61,7 @@ int main(int argc, const char **argv) {
 		entry->uncompLength,
 		entry->compLength
 	);
-	io::clearWatchdog();
+	sys573::clearWatchdog();
 
 	util::ExecutableLoader loader(
 		exeHeader.getEntryPoint(),
@@ -84,7 +84,7 @@ int main(int argc, const char **argv) {
 #endif
 
 	flushCache();
-	io::clearWatchdog();
+	sys573::clearWatchdog();
 
 	loader.run();
 	return 0;

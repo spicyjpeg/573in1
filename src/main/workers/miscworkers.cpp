@@ -17,14 +17,18 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/fs/file.hpp"
+#include "common/nvram/flashdetect.hpp"
 #include "common/storage/device.hpp"
+#include "common/sys573/base.hpp"
+#include "common/sys573/ioboard.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
-#include "common/io.hpp"
 #include "common/rom.hpp"
 #include "main/app/app.hpp"
+#include "main/cart/cartio.hpp"
 #include "main/workers/miscworkers.hpp"
+#include "ps1/registers573.h"
 #include "ps1/system.h"
 
 static const rom::Region *const _AUTOBOOT_REGIONS[]{
@@ -46,22 +50,22 @@ static const char *const _AUTOBOOT_PATHS[][2]{
 bool startupWorker(App &app) {
 	app._workerStatusScreen.setMessage(WSTR("App.startupWorker.ideInit"));
 
-	io::resetIDEDevices();
+	sys573::resetIDEDevices();
 	app._fileIO.init();
 
 	fileInitWorker(app);
 
 #ifdef ENABLE_AUTOBOOT
 	// Only try to autoboot if DIP switch 1 is on.
-	if (io::getDIPSwitch(0)) {
+	if (sys573::getDIPSwitch(0)) {
 		app._workerStatusScreen.setMessage(WSTR("App.ideInitWorker.autoboot"));
 
-		if (io::getDIPSwitch(3)) {
+		if (sys573::getDIPSwitch(3)) {
 			for (auto region : _AUTOBOOT_REGIONS) {
 				if (!region->getBootExecutableHeader())
 					continue;
 
-				app._storageActionsScreen.selectedRegion = region;
+				app._nvramActionsScreen.selectedRegion = region;
 
 				app._ctx.show(app._autobootScreen);
 				return true;
@@ -76,7 +80,7 @@ bool startupWorker(App &app) {
 			if (!app._fileIO.getFileInfo(info, path[1]))
 				continue;
 
-			app._storageActionsScreen.selectedRegion = nullptr;
+			app._nvramActionsScreen.selectedRegion = nullptr;
 			__builtin_strncpy(
 				app._fileBrowserScreen.selectedPath,
 				path[1],
@@ -88,6 +92,14 @@ bool startupWorker(App &app) {
 		}
 	}
 #endif
+
+	// If autoboot fails or is skipped, proceed to discover and initialize all
+	// other hardware.
+	app._ioBoard    = sys573::newIOBoardDriver();
+	app._cartDriver = cart::newCartDriver(app._cartDump);
+	app._flash      = nvram::newFlashRegion(SYS573_BANK_FLASH);
+	app._pcmcia[0]  = nvram::newFlashRegion(SYS573_BANK_PCMCIA1);
+	app._pcmcia[1]  = nvram::newFlashRegion(SYS573_BANK_PCMCIA2);
 
 	app._ctx.show(app._warningScreen);
 	return true;
@@ -140,7 +152,7 @@ static const char *const _DEVICE_TYPES[]{
 bool executableWorker(App &app) {
 	app._workerStatusScreen.setMessage(WSTR("App.executableWorker.init"));
 
-	auto       region = app._storageActionsScreen.selectedRegion;
+	auto       region = app._nvramActionsScreen.selectedRegion;
 	const char *path  = app._fileBrowserScreen.selectedPath;
 
 	const char *deviceType;
@@ -277,7 +289,7 @@ bool executableWorker(App &app) {
 
 		LOG_APP("jumping to launcher");
 		uninstallExceptionHandler();
-		io::clearWatchdog();
+		sys573::clearWatchdog();
 
 		loader.run();
 	}

@@ -135,8 +135,8 @@ ChannelMask getFreeChannels(int count) {
 void stopChannels(ChannelMask mask) {
 	mask &= ALL_CHANNELS;
 
-	SPU_FLAG_OFF1 = mask & 0xffff;
-	SPU_FLAG_OFF2 = mask >> 16;
+	SPU_FLAG_OFF1 = (mask >>  0) & 0xffff;
+	SPU_FLAG_OFF2 = (mask >> 16) & 0xffff;
 
 	for (Channel ch = 0; mask; ch++, mask >>= 1) {
 		if (!(mask & 1))
@@ -148,8 +148,8 @@ void stopChannels(ChannelMask mask) {
 		SPU_CH_ADDR(ch)  = DUMMY_BLOCK_OFFSET / 8;
 	}
 
-	SPU_FLAG_ON1 = mask & 0xffff;
-	SPU_FLAG_ON2 = mask >> 16;
+	SPU_FLAG_ON1 = (mask >>  0) & 0xffff;
+	SPU_FLAG_ON2 = (mask >> 16) & 0xffff;
 }
 
 size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
@@ -372,8 +372,8 @@ ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
 	}
 
 	_channelMask = mask;
-	SPU_FLAG_ON1 = mask & 0xffff;
-	SPU_FLAG_ON2 = mask >> 16;
+	SPU_FLAG_ON1 = (mask >>  0) & 0xffff;
+	SPU_FLAG_ON2 = (mask >> 16) & 0xffff;
 
 	handleInterrupt();
 	return mask;

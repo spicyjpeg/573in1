@@ -19,7 +19,6 @@
 #include "common/exthw/nfc.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
-#include "common/io.hpp"
 #include "ps1/system.h"
 
 /*
@@ -351,11 +350,11 @@ size_t PN532Driver::readISO14443CardID(uint8_t *output) {
 	if (!packet.param[0])
 		return 0;
 
+	auto idLength = packet.param[4];
+#if 0
 	auto atqa     = util::concat2(packet.param[2], packet.param[1]);
 	auto saq      = packet.param[3];
-	auto idLength = packet.param[4];
 
-#if 0
 	char buffer[32];
 
 	util::hexToString(buffer, &packet.param[5], idLength, '-');

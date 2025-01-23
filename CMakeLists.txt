@@ -19,7 +19,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.4
+	VERSION      1.0.5
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
@@ -58,10 +58,9 @@ set(
 set(
 	commonSources
 	src/common/args.cpp
+	src/common/bus.cpp
 	src/common/gpu.cpp
 	src/common/gpufont.cpp
-	src/common/io.cpp
-	src/common/ioboard.cpp
 	src/common/mdec.cpp
 	src/common/mdec.s
 	src/common/pad.cpp
@@ -87,11 +86,24 @@ set(
 	src/common/fs/zip.cpp
 )
 set(
+	nvramSources
+	src/common/nvram/bios.cpp
+	src/common/nvram/flash.cpp
+	src/common/nvram/flashdetect.cpp
+)
+set(
 	storageSources
 	src/common/storage/ata.cpp
 	src/common/storage/atapi.cpp
 	src/common/storage/idebase.cpp
 	src/common/storage/memorycard.cpp
+)
+set(
+	sys573Sources
+	src/common/sys573/base.cpp
+	src/common/sys573/digitalio.cpp
+	src/common/sys573/ioboard.cpp
+	src/common/sys573/mp3.cpp
 )
 set(
 	utilSources
@@ -110,7 +122,9 @@ set(
 	${commonSources}
 	${exthwSources}
 	${fsSources}
+	${nvramSources}
 	${storageSources}
+	${sys573Sources}
 	${utilSources}
 	src/libc/crt0.c
 	src/main/app/app.cpp
@@ -120,7 +134,7 @@ set(
 	src/main/app/mainmenu.cpp
 	src/main/app/misc.cpp
 	src/main/app/modals.cpp
-	src/main/app/romactions.cpp
+	src/main/app/nvramactions.cpp
 	src/main/app/tests.cpp
 	src/main/app/threads.cpp
 	src/main/cart/cart.cpp
@@ -129,7 +143,7 @@ set(
 	src/main/cart/zs01.cpp
 	src/main/workers/cartworkers.cpp
 	src/main/workers/miscworkers.cpp
-	src/main/workers/romworkers.cpp
+	src/main/workers/nvramworkers.cpp
 	src/main/formats.cpp
 	src/main/main.cpp
 	src/main/uibase.cpp
@@ -140,9 +154,9 @@ set(
 	launcherSources
 	${ps1Sources}
 	${storageSources}
+	${sys573Sources}
 	${utilSources}
 	src/common/args.cpp
-	src/common/io.cpp
 	src/launcher/exchandler.s
 	src/launcher/main.cpp
 	src/libc/crt0.c
@@ -150,10 +164,10 @@ set(
 set(
 	bootStubSources
 	${ps1Sources}
+	${sys573Sources}
 	${utilSources}
 	src/boot/crt0.s
 	src/boot/main.cpp
-	src/common/io.cpp
 )
 
 ## Flags and compile-time options

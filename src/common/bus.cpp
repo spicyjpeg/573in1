@@ -16,194 +16,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
+#include "common/util/hash.hpp"
+#include "common/util/log.hpp"
 #include "common/util/misc.hpp"
-#include "common/util/templates.hpp"
-#include "common/io.hpp"
+#include "common/bus.hpp"
 #include "ps1/registers.h"
-#include "ps1/registers573.h"
 #include "ps1/system.h"
 
-namespace io {
+namespace bus {
 
-uint16_t _bankSwitchReg, _cartOutputReg, _miscOutputReg;
-
-/* System initialization */
-
-static constexpr int _IDE_RESET_ASSERT_DELAY = 5000;
-static constexpr int _IDE_RESET_CLEAR_DELAY  = 50000;
-
-void init(void) {
-	BIU_DEV0_CTRL = 0
-		| (7 << 0) // Write delay
-		| (4 << 4) // Read delay
-		| BIU_CTRL_RECOVERY
-		| BIU_CTRL_HOLD
-		| BIU_CTRL_FLOAT
-		| BIU_CTRL_PRESTROBE
-		| BIU_CTRL_WIDTH_16
-		| BIU_CTRL_AUTO_INCR
-		| (23 << 16) // Number of address lines
-		| ( 4 << 24) // DMA read/write delay
-		| BIU_CTRL_DMA_DELAY;
-	DMA_DPCR     |= DMA_DPCR_ENABLE << (DMA_PIO * 4);
-
-#if 0
-	// Revision D of the main board has footprints for either eight 8-bit RAM
-	// chips wired as two 32-bit banks, or two 16-bit chips wired as a single
-	// bank.
-	DRAM_CTRL = isDualBankRAM() ? 0x0c80 : 0x4788;
-#endif
-
-	_bankSwitchReg = 0;
-	_cartOutputReg = 0;
-	_miscOutputReg = 0
-		| SYS573_MISC_OUT_ADC_DI
-		| SYS573_MISC_OUT_ADC_CS
-		| SYS573_MISC_OUT_ADC_CLK
-		| SYS573_MISC_OUT_JVS_RESET;
-
-	SYS573_BANK_CTRL = _bankSwitchReg;
-	SYS573_CART_OUT  = _cartOutputReg;
-	SYS573_MISC_OUT  = _miscOutputReg;
-
-	clearWatchdog();
-}
-
-void resetIDEDevices(void) {
-	SYS573_IDE_RESET = 0;
-	delayMicroseconds(_IDE_RESET_ASSERT_DELAY);
-
-	SYS573_IDE_RESET = 1;
-	delayMicroseconds(_IDE_RESET_CLEAR_DELAY);
-}
-
-/* System bus DMA */
-
-static constexpr int _DMA_TIMEOUT = 100000;
-
-size_t doDMARead(volatile void *source, void *data, size_t length, bool wait) {
-	length = (length + 3) / 4;
-
-	util::assertAligned<uint32_t>(data);
-
-	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
-		return 0;
-
-	// The BIU will output the base address set through this register over the
-	// address lines during a DMA transfer. This does not affect non-DMA access
-	// as the BIU will realign the address by masking off the bottommost N bits
-	// (where N is the number of address lines used) and replace them with the
-	// respective CPU address bits.
-	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(source) & 0x1fffffff;
-
-	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_PIO) = length;
-	DMA_CHCR(DMA_PIO) = 0
-		| DMA_CHCR_READ
-		| DMA_CHCR_MODE_BURST
-		| DMA_CHCR_ENABLE
-		| DMA_CHCR_TRIGGER;
-
-	if (wait)
-		waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT);
-
-	return length * 4;
-}
-
-size_t doDMAWrite(
-	volatile void *dest, const void *data, size_t length, bool wait
-) {
-	length = (length + 3) / 4;
-
-	util::assertAligned<uint32_t>(data);
-
-	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
-		return 0;
-
-	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(dest) & 0x1fffffff;
-
-	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
-	DMA_BCR (DMA_PIO) = length;
-	DMA_CHCR(DMA_PIO) = 0
-		| DMA_CHCR_WRITE
-		| DMA_CHCR_MODE_BURST
-		| DMA_CHCR_ENABLE
-		| DMA_CHCR_TRIGGER;
-
-	if (wait)
-		waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT);
-
-	return length * 4;
-}
-
-/* JAMMA and RTC functions */
-
-uint32_t getJAMMAInputs(void) {
-	uint32_t inputs;
-
-	inputs  =  SYS573_JAMMA_MAIN;
-	inputs |= (SYS573_JAMMA_EXT1 & 0x0f00) <<  8;
-	inputs |= (SYS573_JAMMA_EXT2 & 0x0f00) << 12;
-	inputs |= (SYS573_MISC_IN2   & 0x1f00) << 16;
-
-	return inputs ^ 0x1fffffff;
-}
-
-void getRTCTime(util::Date &output) {
-	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_READ;
-
-	auto second = SYS573_RTC_SECOND, minute = SYS573_RTC_MINUTE;
-	auto hour   = SYS573_RTC_HOUR,   day    = SYS573_RTC_DAY;
-	auto month  = SYS573_RTC_MONTH,  year   = SYS573_RTC_YEAR;
-
-	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_READ;
-
-	output.year   = util::decodeBCD(year);   // 0-99
-	output.month  = util::decodeBCD(month);  // 1-12
-	output.day    = util::decodeBCD(day);    // 1-31
-	output.hour   = util::decodeBCD(hour);   // 0-23
-	output.minute = util::decodeBCD(minute); // 0-59
-	output.second = util::decodeBCD(second); // 0-59
-
-	output.year += (output.year < 70) ? 2000 : 1900;
-}
-
-void setRTCTime(const util::Date &value, bool stop) {
-	assert((value.year >= 1970) && (value.year <= 2069));
-
-	int weekday = value.getDayOfWeek() + 1;
-	int year    = util::encodeBCD(value.year % 100);
-	int month   = util::encodeBCD(value.month);
-	int day     = util::encodeBCD(value.day);
-	int hour    = util::encodeBCD(value.hour);
-	int minute  = util::encodeBCD(value.minute);
-	int second  = util::encodeBCD(value.second);
-
-	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_WRITE;
-
-	SYS573_RTC_SECOND  = second
-		| (stop ? SYS573_RTC_SECOND_STOP : 0);
-	SYS573_RTC_MINUTE  = minute;
-	SYS573_RTC_HOUR    = hour;
-	SYS573_RTC_WEEKDAY = weekday
-		| SYS573_RTC_WEEKDAY_CENTURY
-		| SYS573_RTC_WEEKDAY_CENTURY_ENABLE;
-	SYS573_RTC_DAY     = day
-		| SYS573_RTC_DAY_BATTERY_MONITOR;
-	SYS573_RTC_MONTH   = month;
-	SYS573_RTC_YEAR    = year;
-
-	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_WRITE;
-}
-
-bool isRTCBatteryLow(void) {
-	SYS573_RTC_DAY |= SYS573_RTC_DAY_BATTERY_MONITOR;
-
-	return (SYS573_RTC_DAY / SYS573_RTC_DAY_LOW_BATTERY) & 1;
-}
-
-/* Hardware serial port drivers */
+/* Hardware serial port driver */
 
 size_t UARTDriver::readBytes(uint8_t *data, size_t length, int timeout) const {
 	auto remaining = length;
@@ -227,7 +49,7 @@ void UARTDriver::writeBytes(const uint8_t *data, size_t length) const {
 		writeByte(*(data++));
 }
 
-int CartUARTDriver::init(int baud) const {
+int SIO1Driver::init(int baud) const {
 	SIO_CTRL(1) = SIO_CTRL_RESET;
 
 	int divider = F_CPU / baud;
@@ -245,14 +67,14 @@ int CartUARTDriver::init(int baud) const {
 	return F_CPU / divider;
 }
 
-uint8_t CartUARTDriver::readByte(void) const {
+uint8_t SIO1Driver::readByte(void) const {
 	while (!(SIO_STAT(1) & SIO_STAT_RX_NOT_EMPTY))
 		__asm__ volatile("");
 
 	return SIO_DATA(1);
 }
 
-void CartUARTDriver::writeByte(uint8_t value) const {
+void SIO1Driver::writeByte(uint8_t value) const {
 	// The serial interface will buffer but not send any data if the CTS input
 	// is not asserted, so we are going to abort if CTS is not set to avoid
 	// waiting forever.
@@ -265,15 +87,15 @@ void CartUARTDriver::writeByte(uint8_t value) const {
 		SIO_DATA(1) = value;
 }
 
-bool CartUARTDriver::isConnected(void) const {
+bool SIO1Driver::isConnected(void) const {
 	return (SIO_STAT(1) / SIO_STAT_CTS) & 1;
 }
 
-bool CartUARTDriver::isRXAvailable(void) const {
+bool SIO1Driver::isRXAvailable(void) const {
 	return (SIO_STAT(1) / SIO_STAT_RX_NOT_EMPTY) & 1;
 }
 
-bool CartUARTDriver::isTXFull(void) const {
+bool SIO1Driver::isTXFull(void) const {
 	return ((SIO_STAT(1) / SIO_STAT_TX_NOT_FULL) & 1) ^ 1;
 }
 
@@ -482,40 +304,41 @@ void OneWireDriver::writeByte(uint8_t value) const {
 	}
 }
 
-/* Security cartridge bus APIs */
+/* 1-wire chip ID reader */
 
-bool CartI2CDriver::_getSDA(void) const {
-	return (SYS573_MISC_IN2 / SYS573_MISC_IN2_CART_SDA) & 1;
+enum OneWireCommand : uint8_t {
+	_CMD_READ_ROM   = 0x33,
+	_CMD_MATCH_ROM  = 0x55,
+	_CMD_SKIP_ROM   = 0xcc,
+	_CMD_SEARCH_ROM = 0xf0
+};
+
+bool OneWireDriver::readID(uint8_t *output) const {
+	util::CriticalSection sec;
+
+	if (!reset()) {
+		LOG_IO("no 1-wire device found");
+		return false;
+	}
+
+	writeByte(_CMD_READ_ROM);
+
+	for (int i = 0; i < 8; i++)
+		output[i] = readByte();
+
+	auto code = output[0];
+	auto crc  = util::dsCRC8(output, 7);
+
+	if (!code || (code == 0xff)) {
+		LOG_IO("invalid 1-wire code 0x%02x", code);
+		return false;
+	}
+	if (crc != output[7]) {
+		LOG_IO("CRC mismatch, exp=0x%02x, got=0x%02x", crc, output[7]);
+		return false;
+	}
+
+	return true;
 }
-
-void CartI2CDriver::_setSDA(bool value) const {
-	// SDA is open-drain so it is toggled by tristating the pin.
-	setCartOutput(CART_OUTPUT_SDA, false);
-	setCartSDADirection(value ^ 1);
-}
-
-void CartI2CDriver::_setSCL(bool value) const {
-	setCartOutput(CART_OUTPUT_SCL, value);
-}
-
-void CartI2CDriver::_setCS(bool value) const {
-	setCartOutput(CART_OUTPUT_CS, value);
-}
-
-void CartI2CDriver::_setReset(bool value) const {
-	setCartOutput(CART_OUTPUT_RESET, value);
-}
-
-bool CartDS2401Driver::_get(void) const {
-	return getCartInput(CART_INPUT_DS2401);
-}
-
-void CartDS2401Driver::_set(bool value) const {
-	setCartOutput(CART_OUTPUT_DS2401, value ^ 1);
-}
-
-const CartUARTDriver   cartSerial;
-const CartI2CDriver    cartI2C;
-const CartDS2401Driver cartDS2401;
 
 }

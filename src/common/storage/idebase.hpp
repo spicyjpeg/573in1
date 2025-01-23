@@ -150,12 +150,14 @@ public:
 	uint16_t checksum;              // 255
 
 	inline uint32_t getSectorCount(void) const {
-		return util::concat4(sectorCount[0], sectorCount[1]);
+		return util::concat<uint32_t>(sectorCount[0], sectorCount[1]);
 	}
 	inline uint64_t getSectorCountExt(void) const {
-		return util::concat8(
-			sectorCountExt[0], sectorCountExt[1],
-			sectorCountExt[2], sectorCountExt[3]
+		return util::concat<uint64_t>(
+			sectorCountExt[0],
+			sectorCountExt[1],
+			sectorCountExt[2],
+			sectorCountExt[3]
 		);
 	}
 
@@ -171,6 +173,9 @@ private:
 
 protected:
 	uint8_t _lastStatusReg, _lastErrorReg, _lastCountReg;
+
+	inline IDEDevice(int index)
+	: Device(index * IS_SECONDARY) {}
 
 	inline void _set(IDECS0Register reg, uint8_t value) const {
 		SYS573_IDE_CS0_BASE[reg] = value;
@@ -196,7 +201,10 @@ protected:
 		_set(CS0_CYLINDER_H, (value >> 8) & 0xff);
 	}
 	inline uint16_t _getCylinder(void) const {
-		return util::concat2(_get(CS0_CYLINDER_L), _get(CS0_CYLINDER_H));
+		return util::concat<uint16_t>(
+			_get(CS0_CYLINDER_L),
+			_get(CS0_CYLINDER_H)
+		);
 	}
 
 	void _readData(void *data, size_t length) const;
@@ -207,10 +215,6 @@ protected:
 		bool drdy = false, int timeout = 0, bool ignoreError = false
 	);
 	DeviceError _waitForDRQ(int timeout = 0, bool ignoreError = false);
-
-public:
-	inline IDEDevice(int index)
-	: Device(index * IS_SECONDARY) {}
 };
 
 IDEDevice *newIDEDevice(int index);

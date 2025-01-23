@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -16,11 +16,12 @@
 
 #pragma once
 
-#include "main/app/app.hpp"
+#include "common/nvram/flash.hpp"
 
-bool romChecksumWorker(App &app);
-bool romDumpWorker(App &app);
-bool romRestoreWorker(App &app);
-bool romEraseWorker(App &app);
-bool flashExecutableWriteWorker(App &app);
-bool flashHeaderWriteWorker(App &app);
+namespace nvram {
+
+/* Flash region constructor */
+
+FlashRegion *newFlashRegion(int bank);
+
+}

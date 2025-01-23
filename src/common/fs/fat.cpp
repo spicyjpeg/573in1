@@ -19,9 +19,9 @@
 #include "common/fs/fat.hpp"
 #include "common/fs/file.hpp"
 #include "common/storage/device.hpp"
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
-#include "common/io.hpp"
 #include "vendor/diskio.h"
 #include "vendor/ff.h"
 
@@ -342,7 +342,7 @@ extern "C" DRESULT disk_ioctl(PDRV_t drive, uint8_t cmd, void *data) {
 extern "C" uint32_t get_fattime(void) {
 	util::Date date;
 
-	io::getRTCTime(date);
+	sys573::getRTCTime(date);
 	return date.toDOSTime();
 }
 

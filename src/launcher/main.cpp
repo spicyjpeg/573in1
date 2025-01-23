@@ -19,11 +19,11 @@
 #include "common/storage/ata.hpp"
 #include "common/storage/atapi.hpp"
 #include "common/storage/device.hpp"
+#include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 #include "common/args.hpp"
-#include "common/io.hpp"
 #include "ps1/system.h"
 
 enum ExitCode {
@@ -35,44 +35,33 @@ enum ExitCode {
 
 /* Executable loading */
 
-static constexpr size_t _LOAD_CHUNK_LENGTH = 0x8000;
-
 static ExitCode _loadFromFlash(args::ExecutableLauncherArgs &args) {
 	// The executable's offset and length are always passed as a single
 	// fragment.
 	if (args.numFragments != 1)
 		return INVALID_ARGS;
 
-	io::setFlashBank(args.deviceIndex);
-
-	auto ptr    = reinterpret_cast<uintptr_t>(args.loadAddress);
-	auto source = uintptr_t(args.fragments[0].lba);
-	auto length = size_t(args.fragments[0].length);
-
-	while (length) {
-		size_t chunkLength = util::min(length, _LOAD_CHUNK_LENGTH);
-
-		__builtin_memcpy(
-			reinterpret_cast<void *>(ptr),
-			reinterpret_cast<const void *>(source), chunkLength
-		);
-
-		ptr    += chunkLength;
-		source += chunkLength;
-		length -= chunkLength;
-	}
+	sys573::setFlashBank(args.deviceIndex);
+	__builtin_memcpy(
+		args.loadAddress,
+		reinterpret_cast<const void *>(args.fragments[0].lba),
+		size_t(args.fragments[0].length)
+	);
 
 	return NO_ERROR;
 }
 
 static ExitCode _loadFromStorage(
-	args::ExecutableLauncherArgs &args, storage::Device &dev
+	args::ExecutableLauncherArgs &args,
+	storage::Device              &dev
 ) {
 	auto error = dev.enumerate();
 
 	if (error) {
 		LOG_APP(
-			"drive %d: %s", args.deviceIndex, storage::getErrorString(error)
+			"drive %d: %s",
+			args.deviceIndex,
+			storage::getErrorString(error)
 		);
 		return INIT_FAILED;
 	}
@@ -100,7 +89,9 @@ static ExitCode _loadFromStorage(
 
 		if (error) {
 			LOG_APP(
-				"drive %d: %s", args.deviceIndex, storage::getErrorString(error)
+				"drive %d: %s",
+				args.deviceIndex,
+				storage::getErrorString(error)
 			);
 			return READ_FAILED;
 		}
@@ -119,7 +110,7 @@ extern "C" void _launcherExceptionVector(void);
 
 int main(int argc, const char **argv) {
 	installCustomExceptionHandler(&_launcherExceptionVector);
-	io::init();
+	sys573::init();
 
 	args::ExecutableLauncherArgs args;
 
@@ -181,7 +172,7 @@ int main(int argc, const char **argv) {
 
 	LOG_APP("launching executable");
 	uninstallExceptionHandler();
-	io::clearWatchdog();
+	sys573::clearWatchdog();
 
 	loader.run();
 	return NO_ERROR;

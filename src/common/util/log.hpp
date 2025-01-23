@@ -94,10 +94,10 @@ extern Logger logger;
 #define LOG_IO(fmt, ...)
 #endif
 
-#ifdef ENABLE_ROM_LOGGING
-#define LOG_ROM(fmt, ...) LOG("rom", fmt __VA_OPT__(,) __VA_ARGS__)
+#ifdef ENABLE_NVRAM_LOGGING
+#define LOG_NVRAM(fmt, ...) LOG("nvram", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
-#define LOG_ROM(fmt, ...)
+#define LOG_NVRAM(fmt, ...)
 #endif
 
 #ifdef ENABLE_STORAGE_LOGGING

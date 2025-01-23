@@ -57,7 +57,7 @@ protected:
 
 public:
 	void cartInfo(ui::Context &ctx);
-	void storageInfo(ui::Context &ctx);
+	void nvramInfo(ui::Context &ctx);
 	void ideInfo(ui::Context &ctx);
 	void runExecutable(ui::Context &ctx);
 	void setRTCTime(ui::Context &ctx);

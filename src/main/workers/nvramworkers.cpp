@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -24,8 +24,8 @@
 #include "common/rom.hpp"
 #include "common/romdrivers.hpp"
 #include "main/app/app.hpp"
-#include "main/app/romactions.hpp"
-#include "main/workers/romworkers.hpp"
+#include "main/app/nvramactions.hpp"
+#include "main/workers/nvramworkers.hpp"
 
 struct RegionInfo {
 public:
@@ -37,32 +37,32 @@ public:
 
 static const RegionInfo _REGION_INFO[]{
 	{
-		.dumpPrompt = "App.romDumpWorker.dumpBIOS"_h,
-		.crcPrompt  = "App.romChecksumWorker.hashBIOS"_h,
+		.dumpPrompt = "App.nvramDumpWorker.dumpBIOS"_h,
+		.crcPrompt  = "App.nvramChecksumWorker.hashBIOS"_h,
 		.path       = "%s/bios.bin",
 		.region     = rom::bios,
 		.crcOffset  = offsetof(ChecksumValues, bios)
 	}, {
-		.dumpPrompt = "App.romDumpWorker.dumpRTC"_h,
-		.crcPrompt  = "App.romChecksumWorker.hashRTC"_h,
+		.dumpPrompt = "App.nvramDumpWorker.dumpRTC"_h,
+		.crcPrompt  = "App.nvramChecksumWorker.hashRTC"_h,
 		.path       = "%s/rtc.bin",
 		.region     = rom::rtc,
 		.crcOffset  = offsetof(ChecksumValues, rtc)
 	}, {
-		.dumpPrompt = "App.romDumpWorker.dumpFlash"_h,
-		.crcPrompt  = "App.romChecksumWorker.hashFlash"_h,
+		.dumpPrompt = "App.nvramDumpWorker.dumpFlash"_h,
+		.crcPrompt  = "App.nvramChecksumWorker.hashFlash"_h,
 		.path       = "%s/flash.bin",
 		.region     = rom::flash,
 		.crcOffset  = offsetof(ChecksumValues, flash)
 	}, {
-		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA1"_h,
-		.crcPrompt  = "App.romChecksumWorker.hashPCMCIA1"_h,
+		.dumpPrompt = "App.nvramDumpWorker.dumpPCMCIA1"_h,
+		.crcPrompt  = "App.nvramChecksumWorker.hashPCMCIA1"_h,
 		.path       = "%s/pcmcia1.bin",
 		.region     = rom::pcmcia[0],
 		.crcOffset  = offsetof(ChecksumValues, pcmcia[0])
 	}, {
-		.dumpPrompt = "App.romDumpWorker.dumpPCMCIA2"_h,
-		.crcPrompt  = "App.romChecksumWorker.hashPCMCIA2"_h,
+		.dumpPrompt = "App.nvramDumpWorker.dumpPCMCIA2"_h,
+		.crcPrompt  = "App.nvramChecksumWorker.hashPCMCIA2"_h,
 		.path       = "%s/pcmcia2.bin",
 		.region     = rom::pcmcia[1],
 		.crcOffset  = offsetof(ChecksumValues, pcmcia[1])
@@ -74,7 +74,7 @@ static constexpr size_t _DUMP_CHUNKS_PER_CRC = 32; // Save CRC32 every 16 MB
 
 // TODO: all these *really* need a cleanup...
 
-bool romChecksumWorker(App &app) {
+bool nvramChecksumWorker(App &app) {
 	app._checksumScreen.valid = false;
 
 	for (auto &entry : _REGION_INFO) {
@@ -115,8 +115,8 @@ bool romChecksumWorker(App &app) {
 	return true;
 }
 
-bool romDumpWorker(App &app) {
-	app._workerStatusScreen.setMessage(WSTR("App.romDumpWorker.init"));
+bool nvramDumpWorker(App &app) {
+	app._workerStatusScreen.setMessage(WSTR("App.nvramDumpWorker.init"));
 
 	// Store all dumps in a subdirectory named "dumpNNNN" within the main data
 	// folder.
@@ -188,7 +188,7 @@ bool romDumpWorker(App &app) {
 
 	app._messageScreen.setMessage(
 		MESSAGE_SUCCESS,
-		WSTR("App.romDumpWorker.success"),
+		WSTR("App.nvramDumpWorker.success"),
 		dirPath
 	);
 	app._ctx.show(app._messageScreen);
@@ -197,7 +197,7 @@ bool romDumpWorker(App &app) {
 _initError:
 	app._messageScreen.setMessage(
 		MESSAGE_ERROR,
-		WSTR("App.romDumpWorker.initError"),
+		WSTR("App.nvramDumpWorker.initError"),
 		dirPath
 	);
 	app._ctx.show(app._messageScreen);
@@ -206,15 +206,15 @@ _initError:
 _fileError:
 	app._messageScreen.setMessage(
 		MESSAGE_ERROR,
-		WSTR("App.romDumpWorker.fileError"),
+		WSTR("App.nvramDumpWorker.fileError"),
 		filePath
 	);
 	app._ctx.show(app._messageScreen);
 	return false;
 }
 
-bool romRestoreWorker(App &app) {
-	app._workerStatusScreen.setMessage(WSTR("App.romRestoreWorker.init"));
+bool nvramRestoreWorker(App &app) {
+	app._workerStatusScreen.setMessage(WSTR("App.nvramRestoreWorker.init"));
 
 	const char *path = app._fileBrowserScreen.selectedPath;
 	auto       file  = app._fileIO.openFile(path, fs::READ);
@@ -222,25 +222,25 @@ bool romRestoreWorker(App &app) {
 	if (!file) {
 		app._messageScreen.setMessage(
 			MESSAGE_ERROR,
-			WSTR("App.romRestoreWorker.fileError"),
+			WSTR("App.nvramRestoreWorker.fileError"),
 			path
 		);
 		app._ctx.show(app._messageScreen);
 		return false;
 	}
 
-	if (!romEraseWorker(app))
+	if (!nvramEraseWorker(app))
 		return false;
 
-	auto region       = app._storageActionsScreen.selectedRegion;
-	auto regionLength = app._storageActionsScreen.selectedLength;
+	auto region       = app._nvramActionsScreen.selectedRegion;
+	auto regionLength = app._nvramActionsScreen.selectedLength;
 
 	auto driver         = region->newDriver();
 	auto chipLength     = driver->getChipSize().chipLength;
 	auto numChips       = (regionLength + chipLength - 1) / chipLength;
 	auto maxChunkLength = util::min(regionLength, _DUMP_CHUNK_LENGTH / numChips);
 
-	app._workerStatusScreen.setMessage(WSTR("App.romRestoreWorker.write"));
+	app._workerStatusScreen.setMessage(WSTR("App.nvramRestoreWorker.write"));
 
 	LOG_APP("%d chips, buf=%d", numChips, maxChunkLength);
 
@@ -341,7 +341,7 @@ bool romRestoreWorker(App &app) {
 
 				app._messageScreen.setMessage(
 					MESSAGE_ERROR,
-					WSTR("App.romRestoreWorker.flashError"),
+					WSTR("App.nvramRestoreWorker.flashError"),
 					rom::getErrorString(error),
 					bytesWritten
 				);
@@ -354,8 +354,8 @@ bool romRestoreWorker(App &app) {
 	util::Hash message;
 
 	message = (file->size > regionLength)
-		? "App.romRestoreWorker.overflow"_h
-		: "App.romRestoreWorker.success"_h;
+		? "App.nvramRestoreWorker.overflow"_h
+		: "App.nvramRestoreWorker.success"_h;
 
 	buffers.destroy();
 	chunkLengths.destroy();
@@ -368,9 +368,9 @@ bool romRestoreWorker(App &app) {
 	return true;
 }
 
-bool romEraseWorker(App &app) {
-	auto region       = app._storageActionsScreen.selectedRegion;
-	auto regionLength = app._storageActionsScreen.selectedLength;
+bool nvramEraseWorker(App &app) {
+	auto region       = app._nvramActionsScreen.selectedRegion;
+	auto regionLength = app._nvramActionsScreen.selectedLength;
 
 	auto   driver       = region->newDriver();
 	size_t chipLength   = driver->getChipSize().chipLength;
@@ -383,7 +383,7 @@ bool romEraseWorker(App &app) {
 
 		app._messageScreen.setMessage(
 			MESSAGE_ERROR,
-			WSTR("App.romEraseWorker.unsupported")
+			WSTR("App.nvramEraseWorker.unsupported")
 		);
 		app._ctx.show(app._messageScreen);
 		return false;
@@ -391,7 +391,7 @@ bool romEraseWorker(App &app) {
 
 	app._checksumScreen.valid = false;
 
-	app._workerStatusScreen.setMessage(WSTR("App.romEraseWorker.erase"));
+	app._workerStatusScreen.setMessage(WSTR("App.nvramEraseWorker.erase"));
 
 	// Parallelize erasing by sending the same sector erase command to all chips
 	// at the same time.
@@ -411,7 +411,7 @@ bool romEraseWorker(App &app) {
 
 			app._messageScreen.setMessage(
 				MESSAGE_ERROR,
-				WSTR("App.romEraseWorker.flashError"),
+				WSTR("App.nvramEraseWorker.flashError"),
 				rom::getErrorString(error),
 				sectorsErased
 			);
@@ -424,7 +424,7 @@ bool romEraseWorker(App &app) {
 
 	app._messageScreen.setMessage(
 		MESSAGE_SUCCESS,
-		WSTR("App.romEraseWorker.success"),
+		WSTR("App.nvramEraseWorker.success"),
 		sectorsErased
 	);
 	app._ctx.show(app._messageScreen);
@@ -512,7 +512,7 @@ bool flashHeaderWriteWorker(App &app) {
 	buffer.destroy();
 	delete driver;
 
-	app._ctx.show(app._storageInfoScreen, true);
+	app._ctx.show(app._nvramInfoScreen, true);
 	return true;
 
 _flashError:

@@ -79,14 +79,14 @@
 			"compress": "Compressing cartridge dump...",
 			"generate": "Generating QR code..."
 		},
-		"romChecksumWorker": {
+		"nvramChecksumWorker": {
 			"hashBIOS":    "Calculating BIOS ROM checksum...",
 			"hashRTC":     "Calculating RTC RAM checksum...",
 			"hashFlash":   "Calculating internal flash checksum...",
 			"hashPCMCIA1": "Calculating PCMCIA card 1 checksum...",
 			"hashPCMCIA2": "Calculating PCMCIA card 2 checksum..."
 		},
-		"romDumpWorker": {
+		"nvramDumpWorker": {
 			"init":        "Creating dump directory...\nDo not turn off the 573 or unplug drives.",
 			"dumpBIOS":    "Dumping BIOS ROM...\nDo not turn off the 573 or unplug drives.",
 			"dumpRTC":     "Dumping RTC RAM...\nDo not turn off the 573 or unplug drives.",
@@ -97,13 +97,13 @@
 			"initError":   "An error occurred while creating the dump directory. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nPath: %s\nPress the Test button to view debug logs.",
 			"fileError":   "An error occurred while saving one of the dumps. Ensure the filesystem has enough free space available (32 MB minimum, more if PCMCIA cards are present) and is not damaged.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
-		"romEraseWorker": {
+		"nvramEraseWorker": {
 			"erase":       "Erasing device...\nDo not turn off the 573.",
 			"success":     "The device has been successfully wiped.\n\nSectors erased: %d",
 			"flashError":  "An error occurred while erasing sectors on one of the chips.\n\nError code:\t%s\nSectors erased:\t%d\nPress the Test button to view debug logs.",
 			"unsupported": "The flash memory chips on this device are unresponsive to commands or are currently unsupported. If you are trying to erase a PCMCIA card with a write protect switch, make sure the switch is off.\n\nSee the documentation for more information on supported flash chips."
 		},
-		"romRestoreWorker": {
+		"nvramRestoreWorker": {
 			"init":        "Opening dump file...\nDo not turn off the 573 or unplug drives.",
 			"write":       "Restoring data...\nDo not turn off the 573 or unplug drives.",
 			"success":     "All data has been successfully restored.\n\nBytes written: %d",
@@ -137,7 +137,7 @@
 
 	"AutobootScreen": {
 		"title": "Note",
-		"rom":   "A valid boot executable has been found on the internal flash memory or a PCMCIA card and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or for flash devices only by using DIP switch 4.",
+		"flash": "A valid boot executable has been found on the internal flash memory or a PCMCIA card and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or for flash devices only by using DIP switch 4.",
 		"ide":   "A valid boot executable has been found on an IDE drive and will be launched shortly. You may disable automatic booting globally by turning off DIP switch 1 or per-drive by creating a file named noboot.txt in the root of the filesystem.\n\nFile: %s",
 
 		"cancel": "▭ Cancel (%ds)"
@@ -446,7 +446,7 @@
 			"name":   "Manage security cartridge",
 			"prompt": "Display information about, unlock, dump and manipulate the contents of the inserted security cartridge (if any)."
 		},
-		"storageInfo": {
+		"nvramInfo": {
 			"name":   "Manage flash, PCMCIA cards, RTC and BIOS ROM",
 			"prompt": "Display information about, dump and manipulate the contents of the system's built-in storage devices or any inserted PCMCIA flash cards."
 		},
@@ -499,35 +499,7 @@
 		"ok": "Continue"
 	},
 
-	"QRCodeScreen": {
-		"title":  "▸ Cartridge dump",
-		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press ▭ to go back."
-	},
-
-	"ReflashGameScreen": {
-		"title":      "▸ Select game to convert cartridge to",
-		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back"
-	},
-
-	"ResolutionScreen": {
-		"title":      "▸ Select screen resolution",
-		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
-
-		"progressive":   "%dx%d, progressive",
-		"interlaced":    "%dx%d, interlaced as 480i",
-		"interlaced480": "%dx%d, interlaced"
-	},
-
-	"RTCTimeScreen": {
-		"title":  "Set RTC date and time",
-		"body":   "Enter the current date and time. Note that System 573 games only accept years in 1970-2069 range.\n\nUse ◁▷ to move the cursor, hold ▭ and use ◁▷ to edit the highlighted field.",
-		"cancel": "Cancel",
-		"ok":     "Confirm"
-	},
-
-	"StorageActionsScreen": {
+	"NVRAMActionsScreen": {
 		"title":      "▸ Storage device options",
 		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
 		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
@@ -633,7 +605,7 @@
 		}
 	},
 
-	"StorageInfoScreen": {
+	"NVRAMInfoScreen": {
 		"title":  "▸ Storage device information",
 		"prompt": "▸ Press ▭ for more options, hold ◁▷ + ▭ to go back.",
 
@@ -680,6 +652,34 @@
 			"bootable": "  Valid boot executable present\n",
 			"noCard":   "  No card inserted\n"
 		}
+	},
+
+	"QRCodeScreen": {
+		"title":  "▸ Cartridge dump",
+		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press ▭ to go back."
+	},
+
+	"ReflashGameScreen": {
+		"title":      "▸ Select game to convert cartridge to",
+		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back"
+	},
+
+	"ResolutionScreen": {
+		"title":      "▸ Select screen resolution",
+		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
+		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+
+		"progressive":   "%dx%d, progressive",
+		"interlaced":    "%dx%d, interlaced as 480i",
+		"interlaced480": "%dx%d, interlaced"
+	},
+
+	"RTCTimeScreen": {
+		"title":  "Set RTC date and time",
+		"body":   "Enter the current date and time. Note that System 573 games only accept years in 1970-2069 range.\n\nUse ◁▷ to move the cursor, hold ▭ and use ◁▷ to edit the highlighted field.",
+		"cancel": "Cancel",
+		"ok":     "Confirm"
 	},
 
 	"SystemIDEntryScreen": {

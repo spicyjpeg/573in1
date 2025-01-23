@@ -14,12 +14,12 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "common/sys573/base.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/string.hpp"
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
-#include "common/io.hpp"
 #include "common/spu.hpp"
 #include "main/app/app.hpp"
 #include "main/app/tests.hpp"
@@ -102,35 +102,35 @@ void TestMenuScreen::update(ui::Context &ctx) {
 /* Test submenus */
 
 static const util::Hash _JAMMA_INPUT_NAMES[]{
-	"JAMMATestScreen.p2.left"_h,    // io::JAMMA_P2_LEFT
-	"JAMMATestScreen.p2.right"_h,   // io::JAMMA_P2_RIGHT
-	"JAMMATestScreen.p2.up"_h,      // io::JAMMA_P2_UP
-	"JAMMATestScreen.p2.down"_h,    // io::JAMMA_P2_DOWN
-	"JAMMATestScreen.p2.button1"_h, // io::JAMMA_P2_BUTTON1
-	"JAMMATestScreen.p2.button2"_h, // io::JAMMA_P2_BUTTON2
-	"JAMMATestScreen.p2.button3"_h, // io::JAMMA_P2_BUTTON3
-	"JAMMATestScreen.p2.start"_h,   // io::JAMMA_P2_START
-	"JAMMATestScreen.p1.left"_h,    // io::JAMMA_P1_LEFT
-	"JAMMATestScreen.p1.right"_h,   // io::JAMMA_P1_RIGHT
-	"JAMMATestScreen.p1.up"_h,      // io::JAMMA_P1_UP
-	"JAMMATestScreen.p1.down"_h,    // io::JAMMA_P1_DOWN
-	"JAMMATestScreen.p1.button1"_h, // io::JAMMA_P1_BUTTON1
-	"JAMMATestScreen.p1.button2"_h, // io::JAMMA_P1_BUTTON2
-	"JAMMATestScreen.p1.button3"_h, // io::JAMMA_P1_BUTTON3
-	"JAMMATestScreen.p1.start"_h,   // io::JAMMA_P1_START
-	"JAMMATestScreen.p1.button4"_h, // io::JAMMA_P1_BUTTON4
-	"JAMMATestScreen.p1.button5"_h, // io::JAMMA_P1_BUTTON5
-	"JAMMATestScreen.test"_h,       // io::JAMMA_TEST
-	"JAMMATestScreen.p1.button6"_h, // io::JAMMA_P1_BUTTON6
-	"JAMMATestScreen.p2.button4"_h, // io::JAMMA_P2_BUTTON4
-	"JAMMATestScreen.p2.button5"_h, // io::JAMMA_P2_BUTTON5
-	0,                              // io::JAMMA_RAM_LAYOUT
-	"JAMMATestScreen.p2.button6"_h, // io::JAMMA_P2_BUTTON6
-	"JAMMATestScreen.coin1"_h,      // io::JAMMA_COIN1
-	"JAMMATestScreen.coin2"_h,      // io::JAMMA_COIN2
-	0,                              // io::JAMMA_PCMCIA_CD1
-	0,                              // io::JAMMA_PCMCIA_CD2
-	"JAMMATestScreen.service"_h     // io::JAMMA_SERVICE
+	"JAMMATestScreen.p2.left"_h,    // sys573::JAMMA_P2_LEFT
+	"JAMMATestScreen.p2.right"_h,   // sys573::JAMMA_P2_RIGHT
+	"JAMMATestScreen.p2.up"_h,      // sys573::JAMMA_P2_UP
+	"JAMMATestScreen.p2.down"_h,    // sys573::JAMMA_P2_DOWN
+	"JAMMATestScreen.p2.button1"_h, // sys573::JAMMA_P2_BUTTON1
+	"JAMMATestScreen.p2.button2"_h, // sys573::JAMMA_P2_BUTTON2
+	"JAMMATestScreen.p2.button3"_h, // sys573::JAMMA_P2_BUTTON3
+	"JAMMATestScreen.p2.start"_h,   // sys573::JAMMA_P2_START
+	"JAMMATestScreen.p1.left"_h,    // sys573::JAMMA_P1_LEFT
+	"JAMMATestScreen.p1.right"_h,   // sys573::JAMMA_P1_RIGHT
+	"JAMMATestScreen.p1.up"_h,      // sys573::JAMMA_P1_UP
+	"JAMMATestScreen.p1.down"_h,    // sys573::JAMMA_P1_DOWN
+	"JAMMATestScreen.p1.button1"_h, // sys573::JAMMA_P1_BUTTON1
+	"JAMMATestScreen.p1.button2"_h, // sys573::JAMMA_P1_BUTTON2
+	"JAMMATestScreen.p1.button3"_h, // sys573::JAMMA_P1_BUTTON3
+	"JAMMATestScreen.p1.start"_h,   // sys573::JAMMA_P1_START
+	"JAMMATestScreen.p1.button4"_h, // sys573::JAMMA_P1_BUTTON4
+	"JAMMATestScreen.p1.button5"_h, // sys573::JAMMA_P1_BUTTON5
+	"JAMMATestScreen.test"_h,       // sys573::JAMMA_TEST
+	"JAMMATestScreen.p1.button6"_h, // sys573::JAMMA_P1_BUTTON6
+	"JAMMATestScreen.p2.button4"_h, // sys573::JAMMA_P2_BUTTON4
+	"JAMMATestScreen.p2.button5"_h, // sys573::JAMMA_P2_BUTTON5
+	0,                              // sys573::JAMMA_RAM_LAYOUT
+	"JAMMATestScreen.p2.button6"_h, // sys573::JAMMA_P2_BUTTON6
+	"JAMMATestScreen.coin1"_h,      // sys573::JAMMA_COIN1
+	"JAMMATestScreen.coin2"_h,      // sys573::JAMMA_COIN2
+	0,                              // sys573::JAMMA_PCMCIA_CD1
+	0,                              // sys573::JAMMA_PCMCIA_CD2
+	"JAMMATestScreen.service"_h     // sys573::JAMMA_SERVICE
 };
 
 #define _PRINT(...) (ptr += snprintf(ptr, end - ptr __VA_OPT__(,) __VA_ARGS__))
@@ -149,7 +149,7 @@ void JAMMATestScreen::show(ui::Context &ctx, bool goBack) {
 void JAMMATestScreen::update(ui::Context &ctx) {
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
-	auto inputs = io::getJAMMAInputs();
+	auto inputs = sys573::getJAMMAInputs();
 
 	if (inputs) {
 		_PRINT(STR("JAMMATestScreen.inputs"));
@@ -225,19 +225,19 @@ void AudioTestScreen::playBoth(ui::Context &ctx) {
 }
 
 void AudioTestScreen::enableAmp(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_OUT_AMP_ENABLE, true);
+	sys573::setMiscOutput(sys573::MISC_OUT_AMP_ENABLE, true);
 }
 
 void AudioTestScreen::disableAmp(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_OUT_AMP_ENABLE, false);
+	sys573::setMiscOutput(sys573::MISC_OUT_AMP_ENABLE, false);
 }
 
 void AudioTestScreen::enableCDDA(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_OUT_CDDA_ENABLE, true);
+	sys573::setMiscOutput(sys573::MISC_OUT_CDDA_ENABLE, true);
 }
 
 void AudioTestScreen::disableCDDA(ui::Context &ctx) {
-	io::setMiscOutput(io::MISC_OUT_CDDA_ENABLE, false);
+	sys573::setMiscOutput(sys573::MISC_OUT_CDDA_ENABLE, false);
 }
 
 void AudioTestScreen::show(ui::Context &ctx, bool goBack) {
@@ -256,8 +256,8 @@ void AudioTestScreen::update(ui::Context &ctx) {
 	if (ctx.buttons.pressed(ui::BTN_START)) {
 		if (ctx.buttons.held(ui::BTN_LEFT) || ctx.buttons.held(ui::BTN_RIGHT)) {
 #if 0
-			io::setMiscOutput(io::MISC_OUT_AMP_ENABLE,  false);
-			io::setMiscOutput(io::MISC_OUT_CDDA_ENABLE, false);
+			sys573::setMiscOutput(sys573::MISC_OUT_AMP_ENABLE,  false);
+			sys573::setMiscOutput(sys573::MISC_OUT_CDDA_ENABLE, false);
 #endif
 
 			ctx.show(APP->_testMenuScreen, true, true);
@@ -298,12 +298,21 @@ void TestPatternScreen::_drawTextOverlay(
 	textRect.y1 = ui::SCREEN_MARGIN_Y;
 	textRect.x2 = textRect.x1 + screenWidth;
 	textRect.y2 = textRect.y1 + lineHeight;
-	ctx.font.draw(ctx.gpuCtx, title, textRect, ctx.colors[ui::COLOR_TITLE]);
+	ctx.font.draw(
+		ctx.gpuCtx,
+		title,
+		textRect,
+		ctx.colors[ui::COLOR_TITLE]
+	);
 
 	textRect.y1 += screenHeight - ui::SCREEN_PROMPT_HEIGHT_MIN;
 	textRect.y2 += textRect.y1;
 	ctx.font.draw(
-		ctx.gpuCtx, prompt, textRect, ctx.colors[ui::COLOR_TEXT1], true
+		ctx.gpuCtx,
+		prompt,
+		textRect,
+		ctx.colors[ui::COLOR_TEXT1],
+		true
 	);
 }
 
@@ -369,7 +378,10 @@ void ColorIntensityScreen::draw(ui::Context &ctx, bool active) const {
 
 	for (auto &bar : _INTENSITY_BARS) {
 		ctx.font.draw(
-			ctx.gpuCtx, STRH(bar.name), textRect, ctx.colors[ui::COLOR_TEXT1]
+			ctx.gpuCtx,
+			STRH(bar.name),
+			textRect,
+			ctx.colors[ui::COLOR_TEXT1]
 		);
 		textRect.y += _INTENSITY_BAR_HEIGHT;
 
@@ -390,11 +402,17 @@ void ColorIntensityScreen::draw(ui::Context &ctx, bool active) const {
 
 	for (int i = 0; i < 32; i++, textRect.x += textRect.w) {
 		value[0] = util::HEX_CHARSET[i & 15];
-		ctx.font.draw(ctx.gpuCtx, value, textRect, ctx.colors[ui::COLOR_TEXT2]);
+		ctx.font.draw(
+			ctx.gpuCtx,
+			value,
+			textRect,
+			ctx.colors[ui::COLOR_TEXT2]
+		);
 	}
 
 	_drawTextOverlay(
-		ctx, STR("ColorIntensityScreen.title"),
+		ctx,
+		STR("ColorIntensityScreen.title"),
 		STR("ColorIntensityScreen.prompt")
 	);
 }

@@ -18,6 +18,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/nvram/flash.hpp"
+#include "common/sys573/ioboard.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "main/app/cartactions.hpp"
@@ -26,7 +28,7 @@
 #include "main/app/mainmenu.hpp"
 #include "main/app/misc.hpp"
 #include "main/app/modals.hpp"
-#include "main/app/romactions.hpp"
+#include "main/app/nvramactions.hpp"
 #include "main/app/tests.hpp"
 #include "main/app/threads.hpp"
 #include "main/cart/cart.hpp"
@@ -59,11 +61,11 @@ private:
 	friend bool cartReflashWorker(App &app);
 	friend bool cartEraseWorker(App &app);
 
-	// romworkers.cpp
-	friend bool romChecksumWorker(App &app);
-	friend bool romDumpWorker(App &app);
-	friend bool romRestoreWorker(App &app);
-	friend bool romEraseWorker(App &app);
+	// nvramworkers.cpp
+	friend bool nvramChecksumWorker(App &app);
+	friend bool nvramDumpWorker(App &app);
+	friend bool nvramRestoreWorker(App &app);
+	friend bool nvramEraseWorker(App &app);
 	friend bool flashExecutableWriteWorker(App &app);
 	friend bool flashHeaderWriteWorker(App &app);
 
@@ -120,16 +122,16 @@ private:
 	ReflashGameScreen   _reflashGameScreen;
 	SystemIDEntryScreen _systemIDEntryScreen;
 
-	// romactions.cpp
-	friend class StorageInfoScreen;
-	friend class StorageActionsScreen;
+	// nvramactions.cpp
+	friend class NVRAMInfoScreen;
+	friend class NVRAMActionsScreen;
 	friend class CardSizeScreen;
 	friend class ChecksumScreen;
 
-	StorageInfoScreen    _storageInfoScreen;
-	StorageActionsScreen _storageActionsScreen;
-	CardSizeScreen       _cardSizeScreen;
-	ChecksumScreen       _checksumScreen;
+	NVRAMInfoScreen    _nvramInfoScreen;
+	NVRAMActionsScreen _nvramActionsScreen;
+	CardSizeScreen     _cardSizeScreen;
+	ChecksumScreen     _checksumScreen;
 
 	// tests.cpp
 	friend class TestMenuScreen;
@@ -183,7 +185,10 @@ private:
 	cart::CartDB        _cartDB;
 	cart::ROMHeaderDB   _romHeaderDB;
 
-	cart::Driver            *_cartDriver;
+	sys573::IOBoardDriver *_ioBoard;
+	cart::Driver          *_cartDriver;
+	nvram::FlashRegion    *_flash, *_pcmcia[2];
+
 	cart::CartParser        *_cartParser;
 	const cart::CartDBEntry *_identified, *_selectedEntry;
 
