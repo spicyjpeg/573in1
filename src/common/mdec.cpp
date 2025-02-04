@@ -18,7 +18,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/util/templates.hpp"
+#include "common/gpu.hpp"
 #include "common/mdec.hpp"
+#include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 
@@ -132,6 +134,103 @@ size_t receive(void *data, size_t length, bool wait) {
 		waitForDMATransfer(DMA_MDEC_OUT, _DMA_TIMEOUT);
 
 	return length * _DMA_CHUNK_SIZE_OUT * 4;
+}
+
+/* Asynchronous MDEC-to-VRAM image uploader */
+
+VRAMUploader::VRAMUploader(const gpu::Rect &rect, GP1ColorDepth colorDepth) {
+	_x          = rect.x1;
+	_y          = rect.y1;
+	_blockWidth = colorDepth ? (MACROBLOCK_SIZE * 3 / 2) : MACROBLOCK_SIZE;
+
+	_clip.x1 = rect.x1;
+	_clip.y1 = rect.y1;
+	_clip.x2 = rect.x2 + _blockWidth     - 1;
+	_clip.y2 = rect.y2 + MACROBLOCK_SIZE - 1;
+
+}
+
+VRAMUploader::VRAMUploader(const gpu::RectWH &rect, GP1ColorDepth colorDepth) {
+	_x          = rect.x;
+	_y          = rect.y;
+	_blockWidth = colorDepth ? (MACROBLOCK_SIZE * 3 / 2) : MACROBLOCK_SIZE;
+
+	_clip.x1 = rect.x;
+	_clip.y1 = rect.y;
+	_clip.x2 = rect.x + rect.w + _blockWidth     - 1;
+	_clip.y2 = rect.y + rect.h + MACROBLOCK_SIZE - 1;
+}
+
+bool VRAMUploader::pollRowMajor(void) {
+	if (_y >= _clip.y2)
+		return false;
+
+	while (MDEC1 & MDEC_STAT_DREQ_OUT) {
+		while (!(GPU_GP1 & GP1_STAT_CMD_READY))
+			__asm__ volatile("");
+
+		GPU_GP0 = gp0_vramWrite();
+		GPU_GP0 = gp0_xy(_x, _y);
+		GPU_GP0 = gp0_xy(_blockWidth, MACROBLOCK_SIZE);
+
+		for (size_t i = _blockWidth; i > 0; i -= 2) {
+			// In order to maximize efficiency, saturate the GP0 FIFO by copying
+			// 16 words (32 pixels in 16bpp mode) at a time.
+			while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
+				__asm__ volatile("");
+
+			for (int j = 4; j > 0; j--) {
+				GPU_GP0 = MDEC0;
+				GPU_GP0 = MDEC0;
+				GPU_GP0 = MDEC0;
+				GPU_GP0 = MDEC0;
+			}
+		}
+
+		_x += _blockWidth;
+
+		if (_x >= _clip.x2) {
+			_x  = _clip.x1;
+			_y += MACROBLOCK_SIZE;
+		}
+	}
+
+	return true;
+}
+
+bool VRAMUploader::pollColumnMajor(void) {
+	if (_x >= _clip.x2)
+		return false;
+
+	while (MDEC1 & MDEC_STAT_DREQ_OUT) {
+		while (!(GPU_GP1 & GP1_STAT_CMD_READY))
+			__asm__ volatile("");
+
+		GPU_GP0 = gp0_vramWrite();
+		GPU_GP0 = gp0_xy(_x, _y);
+		GPU_GP0 = gp0_xy(_blockWidth, MACROBLOCK_SIZE);
+
+		for (size_t i = _blockWidth; i > 0; i -= 2) {
+			while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
+				__asm__ volatile("");
+
+			for (int j = 4; j > 0; j--) {
+				GPU_GP0 = MDEC0;
+				GPU_GP0 = MDEC0;
+				GPU_GP0 = MDEC0;
+				GPU_GP0 = MDEC0;
+			}
+		}
+
+		_y += MACROBLOCK_SIZE;
+
+		if (_y >= _clip.y2) {
+			_y  = _clip.y1;
+			_x += _blockWidth;
+		}
+	}
+
+	return true;
 }
 
 /* MDEC bitstream decompressor */

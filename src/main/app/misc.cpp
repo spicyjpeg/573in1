@@ -17,8 +17,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
-#include "common/storage/device.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
@@ -82,21 +82,21 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 				dev->serialNumber
 			);
 
-			if (dev->type == storage::ATAPI) {
+			if (dev->type == blkdev::ATAPI) {
 				_PRINT(
 					STR("IDEInfoScreen.device.atapiInfo"),
-					(dev->flags & storage::REQUIRES_EXT_PACKET) ? 16 : 12
+					(dev->flags & blkdev::REQUIRES_EXT_PACKET) ? 16 : 12
 				);
 			} else {
 				_PRINT(
 					STR("IDEInfoScreen.device.ataInfo"),
 					uint64_t(dev->capacity / (0x100000 / 512)),
-					(dev->flags & storage::SUPPORTS_EXT_LBA) ? 48 : 28
+					(dev->flags & blkdev::SUPPORTS_EXT_LBA) ? 48 : 28
 				);
 
-				if (dev->flags & storage::SUPPORTS_TRIM)
+				if (dev->flags & blkdev::SUPPORTS_TRIM)
 					_PRINT(STR("IDEInfoScreen.device.hasTrim"));
-				if (dev->flags & storage::SUPPORTS_FLUSH)
+				if (dev->flags & blkdev::SUPPORTS_FLUSH)
 					_PRINT(STR("IDEInfoScreen.device.hasFlush"));
 			}
 		} else {

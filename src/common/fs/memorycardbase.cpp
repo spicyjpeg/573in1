@@ -16,8 +16,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/memorycardbase.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
@@ -87,7 +87,7 @@ bool MemoryCardIOHandler::_relocate(const void *data, uint32_t lba) {
 		// relocation table accordingly.
 		auto error = _dev->write(data, MC_LBA_RELOC_DATA + i, 1);
 
-		if (error == storage::DRIVE_ERROR) {
+		if (error == blkdev::DRIVE_ERROR) {
 			LOG_FS("write error, lba=0x%x, reloc=%d", lba, i);
 			continue;
 		}
@@ -96,7 +96,7 @@ bool MemoryCardIOHandler::_relocate(const void *data, uint32_t lba) {
 
 		error = _dev->write(&entry, MC_LBA_RELOC_TABLE + i, 1);
 
-		if (error == storage::DRIVE_ERROR) {
+		if (error == blkdev::DRIVE_ERROR) {
 			LOG_FS("write error, lba=0x%x, reloc=%d", lba, i);
 			continue;
 		}
@@ -134,7 +134,7 @@ bool MemoryCardIOHandler::_deleteRelocation(uint32_t lba) {
 	return true;
 }
 
-bool MemoryCardIOHandler::init(storage::Device &dev) {
+bool MemoryCardIOHandler::init(blkdev::Device &dev) {
 	MemoryCardRelocListEntry entries[MC_MAX_RELOC_SECTORS];
 
 	if (dev.read(entries, MC_LBA_RELOC_TABLE, MC_MAX_RELOC_SECTORS)) {
@@ -169,7 +169,7 @@ bool MemoryCardIOHandler::readRelocated(void *data, uint32_t lba) {
 
 	if (!error)
 		return true;
-	if (error != storage::DRIVE_ERROR)
+	if (error != blkdev::DRIVE_ERROR)
 		return false;
 
 	{
@@ -202,7 +202,7 @@ bool MemoryCardIOHandler::writeRelocated(const void *data, uint32_t lba) {
 
 	if (!error)
 		return _deleteRelocation(lba);
-	if (error != storage::DRIVE_ERROR)
+	if (error != blkdev::DRIVE_ERROR)
 		return false;
 
 	// If that fails, search for any existing relocation and attempt to
@@ -224,7 +224,7 @@ bool MemoryCardIOHandler::writeRelocated(const void *data, uint32_t lba) {
 
 			if (!error)
 				return true;
-			if (error != storage::DRIVE_ERROR)
+			if (error != blkdev::DRIVE_ERROR)
 				return false;
 
 			LOG_FS("write error, lba=0x%x, reloc=%d", lba, i);

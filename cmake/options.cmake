@@ -57,10 +57,6 @@ set(
 	CACHE BOOL "Log messages from application code"
 )
 set(
-	ENABLE_CART_IO_LOGGING ON
-	CACHE BOOL "Log messages from security cartridge drivers"
-)
-set(
 	ENABLE_CART_DATA_LOGGING ON
 	CACHE BOOL "Log messages from security cartridge data parsers and builders"
 )
@@ -69,11 +65,15 @@ set(
 	CACHE BOOL "Log messages from System 573 and I/O board drivers"
 )
 set(
+	ENABLE_CART_LOGGING ON
+	CACHE BOOL "Log messages from security cartridge drivers"
+)
+set(
 	ENABLE_NVRAM_LOGGING ON
 	CACHE BOOL "Log messages from NVRAM (BIOS, RTC, flash) drivers"
 )
 set(
-	ENABLE_STORAGE_LOGGING ON
+	ENABLE_BLKDEV_LOGGING ON
 	CACHE BOOL "Log messages from IDE/ATAPI and other block device drivers"
 )
 set(
@@ -85,18 +85,6 @@ set(
 	ENABLE_DUMMY_CART_DRIVER OFF
 	CACHE BOOL "Enable support for simulating a dummy security cartridge (if \
 data/dummy.dmp is present in the resource package)"
-)
-set(
-	ENABLE_X76F041_CART_DRIVER ON
-	CACHE BOOL "Enable support for X76F041 security cartridges"
-)
-set(
-	ENABLE_X76F100_CART_DRIVER OFF
-	CACHE BOOL "Enable support for X76F100 security cartridges"
-)
-set(
-	ENABLE_ZS01_CART_DRIVER ON
-	CACHE BOOL "Enable support for ZS01 security cartridges"
 )
 
 set(
@@ -121,21 +109,18 @@ set(
 
 set(
 	mainOptions
-	$<$<BOOL:${ENABLE_LOG_BUFFER}         >:ENABLE_LOG_BUFFER=1>
-	$<$<BOOL:${ENABLE_APP_LOGGING}        >:ENABLE_APP_LOGGING=1>
-	$<$<BOOL:${ENABLE_CART_IO_LOGGING}    >:ENABLE_CART_IO_LOGGING=1>
-	$<$<BOOL:${ENABLE_CART_DATA_LOGGING}  >:ENABLE_CART_DATA_LOGGING=1>
-	$<$<BOOL:${ENABLE_IO_LOGGING}         >:ENABLE_IO_LOGGING=1>
-	$<$<BOOL:${ENABLE_NVRAM_LOGGING}      >:ENABLE_NVRAM_LOGGING=1>
-	$<$<BOOL:${ENABLE_STORAGE_LOGGING}    >:ENABLE_STORAGE_LOGGING=1>
-	$<$<BOOL:${ENABLE_FS_LOGGING}         >:ENABLE_FS_LOGGING=1>
-	$<$<BOOL:${ENABLE_DUMMY_CART_DRIVER}  >:ENABLE_DUMMY_CART_DRIVER=1>
-	$<$<BOOL:${ENABLE_X76F041_CART_DRIVER}>:ENABLE_X76F041_CART_DRIVER=1>
-	$<$<BOOL:${ENABLE_X76F100_CART_DRIVER}>:ENABLE_X76F100_CART_DRIVER=1>
-	$<$<BOOL:${ENABLE_ZS01_CART_DRIVER}   >:ENABLE_ZS01_CART_DRIVER=1>
-	$<$<BOOL:${ENABLE_AUTOBOOT}           >:ENABLE_AUTOBOOT=1>
-	$<$<BOOL:${ENABLE_PCDRV}              >:ENABLE_PCDRV=1>
-	$<$<BOOL:${ENABLE_PS1_CONTROLLER}     >:ENABLE_PS1_CONTROLLER=1>
+	$<$<BOOL:${ENABLE_LOG_BUFFER}       >:ENABLE_LOG_BUFFER=1>
+	$<$<BOOL:${ENABLE_APP_LOGGING}      >:ENABLE_APP_LOGGING=1>
+	$<$<BOOL:${ENABLE_CART_DATA_LOGGING}>:ENABLE_CART_DATA_LOGGING=1>
+	$<$<BOOL:${ENABLE_IO_LOGGING}       >:ENABLE_IO_LOGGING=1>
+	$<$<BOOL:${ENABLE_CART_LOGGING}     >:ENABLE_CART_LOGGING=1>
+	$<$<BOOL:${ENABLE_NVRAM_LOGGING}    >:ENABLE_NVRAM_LOGGING=1>
+	$<$<BOOL:${ENABLE_BLKDEV_LOGGING}   >:ENABLE_BLKDEV_LOGGING=1>
+	$<$<BOOL:${ENABLE_FS_LOGGING}       >:ENABLE_FS_LOGGING=1>
+	$<$<BOOL:${ENABLE_DUMMY_CART_DRIVER}>:ENABLE_DUMMY_CART_DRIVER=1>
+	$<$<BOOL:${ENABLE_AUTOBOOT}         >:ENABLE_AUTOBOOT=1>
+	$<$<BOOL:${ENABLE_PCDRV}            >:ENABLE_PCDRV=1>
+	$<$<BOOL:${ENABLE_PS1_CONTROLLER}   >:ENABLE_PS1_CONTROLLER=1>
 )
 set(
 	subExecutableOptions

@@ -16,16 +16,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/ata.hpp"
-#include "common/storage/atapi.hpp"
-#include "common/storage/device.hpp"
+#include "common/blkdev/ata.hpp"
+#include "common/blkdev/atapi.hpp"
+#include "common/blkdev/device.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "ps1/registers573.h"
 #include "ps1/system.h"
 
-namespace storage {
+namespace blkdev {
 
 const char *const DEVICE_ERROR_NAMES[]{
 	"NO_ERROR",
@@ -80,7 +80,7 @@ bool IDEIdentifyBlock::validateChecksum(void) const {
 	))) & 0xff;
 
 	if (value != (checksum >> 8)) {
-		LOG_STORAGE("mismatch, exp=0x%02x, got=0x%02x", value, checksum >> 8);
+		LOG_BLKDEV("mismatch, exp=0x%02x, got=0x%02x", value, checksum >> 8);
 		return false;
 	}
 
@@ -160,7 +160,7 @@ DeviceError IDEDevice::_setup(const IDEIdentifyBlock &block) {
 	if (error)
 		return error;
 
-	LOG_STORAGE("drive %d ready, mode=PIO%d", getDeviceIndex(), mode);
+	LOG_BLKDEV("drive %d ready, mode=PIO%d", getDeviceIndex(), mode);
 
 	// Make sure any pending ATAPI sense data is cleared.
 	do {
@@ -194,7 +194,7 @@ DeviceError IDEDevice::_waitForIdle(bool drdy, int timeout, bool ignoreError) {
 		delayMicroseconds(10);
 	}
 
-	LOG_STORAGE("timeout, ignore=%d", ignoreError);
+	LOG_BLKDEV("timeout, ignore=%d", ignoreError);
 	_handleError();
 	return STATUS_TIMEOUT;
 }
@@ -221,7 +221,7 @@ DeviceError IDEDevice::_waitForDRQ(int timeout, bool ignoreError) {
 		delayMicroseconds(10);
 	}
 
-	LOG_STORAGE("timeout, ignore=%d", ignoreError);
+	LOG_BLKDEV("timeout, ignore=%d", ignoreError);
 	_handleError();
 	return STATUS_TIMEOUT;
 }
@@ -231,7 +231,7 @@ void IDEDevice::_handleError(void) {
 	_lastErrorReg  = _get(CS0_ERROR);
 	_lastCountReg  = _get(CS0_COUNT);
 
-	LOG_STORAGE(
+	LOG_BLKDEV(
 		"%d, st=0x%02x, err=0x%02x, cnt=0x%02x",
 		getDeviceIndex(),
 		_lastStatusReg,
@@ -296,14 +296,14 @@ IDEDevice *newIDEDevice(int index) {
 				break;
 
 			default:
-				LOG_STORAGE("drive %d: invalid type 0x%04x", index, sig);
+				LOG_BLKDEV("drive %d: invalid type 0x%04x", index, sig);
 				return nullptr;
 		}
 
 		auto error = dev->enumerate();
 
 		if (error) {
-			LOG_STORAGE("drive %d: %s", index, getErrorString(error));
+			LOG_BLKDEV("drive %d: %s", index, getErrorString(error));
 			delete dev;
 			return nullptr;
 		}
@@ -311,7 +311,7 @@ IDEDevice *newIDEDevice(int index) {
 		return dev;
 	}
 
-	LOG_STORAGE("drive %d timeout", index);
+	LOG_BLKDEV("drive %d timeout", index);
 	return nullptr;
 }
 

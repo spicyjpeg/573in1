@@ -16,9 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/fs/iso9660.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
@@ -203,7 +203,10 @@ size_t ISORecord::comparePath(const char *path) const {
 		if ((isoName[0] == '.') && (isoName[1] == ';'))
 			break;
 
-		if (__builtin_toupper(*(isoName++)) != __builtin_toupper(*(path++)))
+		if (
+			__builtin_toupper(*(isoName++)) !=
+			__builtin_toupper(*(path++))
+		)
 			return 0;
 	}
 
@@ -244,7 +247,7 @@ size_t ISO9660File::read(void *output, size_t length) {
 		if (
 			!ptrOffset &&
 			(remaining >= _dev->sectorLength) &&
-			storage::isBufferAligned(buffer)
+			blkdev::isBufferAligned(buffer)
 		) {
 			// If the read offset is on a sector boundary, at least one sector's
 			// worth of data needs to be read and the pointer satisfies any DMA
@@ -380,7 +383,7 @@ bool ISO9660Provider::_getRecord(
 	return false;
 }
 
-bool ISO9660Provider::init(storage::Device &dev) {
+bool ISO9660Provider::init(blkdev::Device &dev) {
 	if (type)
 		return false;
 
@@ -392,7 +395,7 @@ bool ISO9660Provider::init(storage::Device &dev) {
 	for (
 		uint32_t lba = _VOLUME_DESC_START_LBA; lba < _VOLUME_DESC_END_LBA; lba++
 	) {
-		uint8_t pvdBuffer[storage::MAX_SECTOR_LENGTH];
+		uint8_t pvdBuffer[blkdev::MAX_SECTOR_LENGTH];
 
 		if (_dev->read(pvdBuffer, lba, numPVDSectors))
 			return false;

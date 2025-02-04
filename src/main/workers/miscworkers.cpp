@@ -16,9 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/nvram/flashdetect.hpp"
-#include "common/storage/device.hpp"
 #include "common/sys573/base.hpp"
 #include "common/sys573/ioboard.hpp"
 #include "common/util/log.hpp"
@@ -144,9 +144,9 @@ static const Launcher _LAUNCHERS[]{
 };
 
 static const char *const _DEVICE_TYPES[]{
-	"none", // storage::NONE
-	"ata",  // storage::ATA
-	"atapi" // storage::ATAPI
+	"none", // blkdev::NONE
+	"ata",  // blkdev::ATA
+	"atapi" // blkdev::ATAPI
 };
 
 bool executableWorker(App &app) {
@@ -319,16 +319,16 @@ bool atapiEjectWorker(App &app) {
 		return false;
 	}
 
-	auto error = storage::DISC_CHANGED;
+	auto error = blkdev::DISC_CHANGED;
 
-	while (error == storage::DISC_CHANGED)
+	while (error == blkdev::DISC_CHANGED)
 		error = mp->dev->eject();
 
 	if (error) {
 		app._messageScreen.setMessage(
 			MESSAGE_ERROR,
 			WSTR("App.atapiEjectWorker.ejectError"),
-			storage::getErrorString(error)
+			blkdev::getErrorString(error)
 		);
 		app._ctx.show(app._messageScreen);
 		return false;

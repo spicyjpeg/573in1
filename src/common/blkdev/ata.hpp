@@ -18,10 +18,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
-#include "common/storage/idebase.hpp"
+#include "common/blkdev/device.hpp"
+#include "common/blkdev/idebase.hpp"
 
-namespace storage {
+namespace blkdev {
 
 /* ATA command definitions */
 

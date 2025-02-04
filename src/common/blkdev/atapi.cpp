@@ -16,9 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/ata.hpp"
-#include "common/storage/atapi.hpp"
-#include "common/storage/device.hpp"
+#include "common/blkdev/ata.hpp"
+#include "common/blkdev/atapi.hpp"
+#include "common/blkdev/device.hpp"
 #include "common/util/log.hpp"
 #include "ps1/system.h"
 
@@ -33,7 +33,7 @@
  * https://web.archive.org/web/20060427142409/http://www.stanford.edu/~csapuntz/blackmagic.html
  */
 
-namespace storage {
+namespace blkdev {
 
 static constexpr size_t _SECTOR_LENGTH = 2048;
 
@@ -63,12 +63,12 @@ static DeviceError _senseDataToError(const ATAPISenseData &data) {
 	auto asc = data.getPackedASC();
 	auto lba = data.getErrorLBA();
 
-	LOG_STORAGE("%s", _SENSE_KEY_NAMES[key]);
-	LOG_STORAGE("err=0x%02x, key=0x%02x", data.errorCode, data.senseKey);
-	LOG_STORAGE("asc=0x%02x, ascq=0x%02x", data.asc, data.ascQualifier);
+	LOG_BLKDEV("%s", _SENSE_KEY_NAMES[key]);
+	LOG_BLKDEV("err=0x%02x, key=0x%02x", data.errorCode, data.senseKey);
+	LOG_BLKDEV("asc=0x%02x, ascq=0x%02x", data.asc, data.ascQualifier);
 
 	if (lba) {
-		LOG_STORAGE("lba=0x%08x", lba);
+		LOG_BLKDEV("lba=0x%08x", lba);
 	}
 
 	switch (key) {
@@ -145,13 +145,13 @@ DeviceError ATAPIDevice::_requestSense(void) {
 		size_t length = _getCylinder();
 
 		_readData(&lastSenseData, length);
-		LOG_STORAGE("data ok, length=0x%x", length);
+		LOG_BLKDEV("data ok, length=0x%x", length);
 	} else {
 		// If the request sense command fails, fall back to reading the sense
 		// key from the error register.
 		lastSenseData.senseKey = _lastErrorReg >> 4;
 
-		LOG_STORAGE("%s", getErrorString(error));
+		LOG_BLKDEV("%s", getErrorString(error));
 		_set(CS0_COMMAND, ATA_DEVICE_RESET);
 	}
 
@@ -164,7 +164,7 @@ DeviceError ATAPIDevice::_issuePacket(
 	if (!type)
 		return NO_DRIVE;
 
-	LOG_STORAGE("cmd=0x%02x, length=0x%x", packet.command, dataLength);
+	LOG_BLKDEV("cmd=0x%02x, length=0x%x", packet.command, dataLength);
 
 	// Keep resending the command as long as the drive reports it is in progress
 	// of becoming ready (i.e. spinning up).
@@ -200,19 +200,19 @@ DeviceError ATAPIDevice::_issuePacket(
 
 		// If an error occurred, fetch sense data to determine whether to resend
 		// the command.
-		LOG_STORAGE("%s, cmd=0x%02x", getErrorString(error), packet.command);
+		LOG_BLKDEV("%s, cmd=0x%02x", getErrorString(error), packet.command);
 
 		error = _requestSense();
 
 		if (error && (error != NOT_YET_READY)) {
-			LOG_STORAGE("%s (from sense)", getErrorString(error));
+			LOG_BLKDEV("%s (from sense)", getErrorString(error));
 			return error;
 		}
 
 		delayMicroseconds(_ATAPI_POLL_DELAY);
 	}
 
-	LOG_STORAGE("retry timeout, cmd=0x%02x", packet.command);
+	LOG_BLKDEV("retry timeout, cmd=0x%02x", packet.command);
 	return STATUS_TIMEOUT;
 }
 
@@ -241,7 +241,7 @@ DeviceError ATAPIDevice::enumerate(void) {
 		(block.deviceFlags & IDE_IDENTIFY_DEV_ATAPI_TYPE_BITMASK)
 		!= IDE_IDENTIFY_DEV_ATAPI_TYPE_CDROM
 	) {
-		LOG_STORAGE("ignoring non-CD-ROM drive %d", getDeviceIndex());
+		LOG_BLKDEV("ignoring non-CD-ROM drive %d", getDeviceIndex());
 		return UNSUPPORTED_OP;
 	}
 
@@ -259,7 +259,7 @@ DeviceError ATAPIDevice::enumerate(void) {
 	else
 		flags &= ~REQUIRES_EXT_PACKET;
 
-	LOG_STORAGE("drive %d is ATAPI", getDeviceIndex());
+	LOG_BLKDEV("drive %d is ATAPI", getDeviceIndex());
 	return _setup(block);
 }
 

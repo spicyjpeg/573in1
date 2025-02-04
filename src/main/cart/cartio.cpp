@@ -145,7 +145,7 @@ DriverError X76Driver::readCartID(void) {
 	util::CriticalSection sec;
 
 	if (!sys573::cartDS2401.reset()) {
-		LOG_CART_IO("no 1-wire device found");
+		LOG_CART("no 1-wire device found");
 		return DS2401_NO_RESP;
 	}
 
@@ -171,7 +171,7 @@ DriverError X76Driver::_x76Command(
 	sys573::cartI2C.writeByte(cmd);
 	if (!sys573::cartI2C.getACK()) {
 		sys573::cartI2C.stopWithCS();
-		LOG_CART_IO("NACK while sending cmd=0x%02x", cmd);
+		LOG_CART("NACK while sending cmd=0x%02x", cmd);
 		return X76_NACK;
 	}
 
@@ -179,14 +179,14 @@ DriverError X76Driver::_x76Command(
 		sys573::cartI2C.writeByte(param);
 		if (!sys573::cartI2C.getACK()) {
 			sys573::cartI2C.stopWithCS();
-			LOG_CART_IO("NACK while sending param=0x%02x", param);
+			LOG_CART("NACK while sending param=0x%02x", param);
 			return X76_NACK;
 		}
 	}
 
 	if (!sys573::cartI2C.writeBytes(_dump.dataKey, sizeof(_dump.dataKey))) {
 		sys573::cartI2C.stopWithCS();
-		LOG_CART_IO("NACK while sending data key");
+		LOG_CART("NACK while sending data key");
 		return X76_NACK;
 	}
 
@@ -195,9 +195,9 @@ DriverError X76Driver::_x76Command(
 
 	util::hexToString(buffer, _dump.dataKey, sizeof(_dump.dataKey), ' ');
 	if (param >= 0)
-		LOG_CART_IO("S: %02X %02X %s", cmd, param, buffer);
+		LOG_CART("S: %02X %02X %s", cmd, param, buffer);
 	else
-		LOG_CART_IO("S: %02X %s", cmd, buffer);
+		LOG_CART("S: %02X %s", cmd, buffer);
 #endif
 
 	for (int i = _X76_MAX_ACK_POLLS; i; i--) {
@@ -209,7 +209,7 @@ DriverError X76Driver::_x76Command(
 	}
 
 	sys573::cartI2C.stopWithCS();
-	LOG_CART_IO("ACK polling timeout (wrong key?)");
+	LOG_CART("ACK polling timeout (wrong key?)");
 	return X76_POLL_FAIL;
 }
 
@@ -246,7 +246,7 @@ DriverError X76F041Driver::readPrivateData(void) {
 		sys573::cartI2C.writeByte(i & 0xff);
 		if (!sys573::cartI2C.getACK()) {
 			sys573::cartI2C.stopWithCS();
-			LOG_CART_IO("NACK after resending addr=0x%02x", i & 0xff);
+			LOG_CART("NACK after resending addr=0x%02x", i & 0xff);
 			return X76_NACK;
 		}
 
@@ -285,7 +285,7 @@ DriverError X76F041Driver::writeData(void) {
 		sys573::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
-			LOG_CART_IO("NACK while sending data bytes");
+			LOG_CART("NACK while sending data bytes");
 			return X76_NACK;
 		}
 	}
@@ -301,7 +301,7 @@ DriverError X76F041Driver::writeData(void) {
 	sys573::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 	if (!ok) {
-		LOG_CART_IO("NACK while sending config registers");
+		LOG_CART("NACK while sending config registers");
 		return X76_NACK;
 	}
 
@@ -335,7 +335,7 @@ DriverError X76F041Driver::setDataKey(const uint8_t *key) {
 	for (int i = 2; i; i--) {
 		if (!sys573::cartI2C.writeBytes(key, sizeof(_dump.dataKey))) {
 			sys573::cartI2C.stopWithCS(_X76_WRITE_DELAY);
-			LOG_CART_IO("NACK while setting new data key");
+			LOG_CART("NACK while setting new data key");
 			return X76_NACK;
 		}
 	}
@@ -385,7 +385,7 @@ DriverError X76F100Driver::writeData(void) {
 		sys573::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
-			LOG_CART_IO("NACK while sending data bytes");
+			LOG_CART("NACK while sending data bytes");
 			return X76_NACK;
 		}
 	}
@@ -410,7 +410,7 @@ DriverError X76F100Driver::erase(void) {
 		sys573::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
-			LOG_CART_IO("NACK while sending data bytes");
+			LOG_CART("NACK while sending data bytes");
 			return X76_NACK;
 		}
 	}
@@ -433,7 +433,7 @@ DriverError X76F100Driver::setDataKey(const uint8_t *key) {
 		sys573::cartI2C.stopWithCS(_X76_WRITE_DELAY);
 
 		if (!ok) {
-			LOG_CART_IO("NACK while setting new data key");
+			LOG_CART("NACK while setting new data key");
 			return X76_NACK;
 		}
 	}
@@ -454,14 +454,14 @@ DriverError ZS01Driver::_transact(
 	char buffer[48];
 
 	util::hexToString(buffer, &request.command, sizeof(ZS01Packet), ' ');
-	LOG_CART_IO("S: %s", buffer);
+	LOG_CART("S: %s", buffer);
 #endif
 
 	if (!sys573::cartI2C.writeBytes(
 		&request.command, sizeof(ZS01Packet), _ZS01_SEND_DELAY
 	)) {
 		sys573::cartI2C.stop();
-		LOG_CART_IO("NACK while sending request packet");
+		LOG_CART("NACK while sending request packet");
 		return ZS01_NACK;
 	}
 
@@ -470,14 +470,14 @@ DriverError ZS01Driver::_transact(
 
 #if 0
 	util::hexToString(buffer, &response.command, sizeof(ZS01Packet), ' ');
-	LOG_CART_IO("R: %s", buffer);
+	LOG_CART("R: %s", buffer);
 #endif
 
 	bool ok = response.decodeResponse();
 
 #if 0
 	util::hexToString(buffer, &response.command, sizeof(ZS01Packet), ' ');
-	LOG_CART_IO("D: %s", buffer);
+	LOG_CART("D: %s", buffer);
 #endif
 
 	if (!ok)
@@ -486,7 +486,7 @@ DriverError ZS01Driver::_transact(
 	_encoderState = response.address;
 
 	if (response.command != ZS01_RESP_NO_ERROR) {
-		LOG_CART_IO("ZS01 error, code=0x%02x", response.command);
+		LOG_CART("ZS01 error, code=0x%02x", response.command);
 		return ZS01_ERROR;
 	}
 
@@ -652,20 +652,20 @@ enum ChipIdentifier : uint32_t {
 
 Driver *newCartDriver(CartDump &dump) {
 	if (!sys573::getCartInsertionStatus()) {
-		LOG_CART_IO("DSR not asserted");
+		LOG_CART("DSR not asserted");
 		return new Driver(dump);
 	}
 
 #ifdef ENABLE_ZS01_CART_DRIVER
 	auto id1 = sys573::cartI2C.resetZS01();
-	LOG_CART_IO("detecting ZS01: 0x%08x", id1);
+	LOG_CART("detecting ZS01: 0x%08x", id1);
 
 	if (id1 == _ID_ZS01)
 		return new ZS01Driver(dump);
 #endif
 
 	auto id2 = sys573::cartI2C.resetX76();
-	LOG_CART_IO("detecting X76: 0x%08x", id2);
+	LOG_CART("detecting X76: 0x%08x", id2);
 
 	switch (id2) {
 #ifdef ENABLE_X76F041_CART_DRIVER

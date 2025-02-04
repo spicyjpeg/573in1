@@ -177,13 +177,13 @@ def _findDriverTableCalls(
 		encodeJR(Register.RA) +
 		encodeADDIU(Register.V0, Register.ZERO, dummyErrorCode)
 	):
+		dummyFunctions: bytes = dummy.to_bytes(4, "little") * len(functionNames)
+		dummyValues:    bytes = bytes(4 * len(valueNames))
+
 		try:
-			table = exe.findSingleMatch(
-				(dummy.to_bytes(4, "little") * len(functionNames)) +
-				bytes(4 * len(valueNames))
-			)
+			table = exe.findSingleMatch(dummyFunctions + dummyValues)
 			break
-		except StopIteration:
+		except AnalysisError:
 			continue
 
 	if not table:
@@ -259,3 +259,5 @@ def findFlashFunctions(exe: PSEXEAnalyzer) -> dict[str, int]:
 			"resetChip"
 		)
 	)
+
+# TODO: find ddr stage io init

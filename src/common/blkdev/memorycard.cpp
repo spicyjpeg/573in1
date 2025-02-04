@@ -16,13 +16,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
-#include "common/storage/memorycard.hpp"
+#include "common/blkdev/device.hpp"
+#include "common/blkdev/memorycard.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "common/pad.hpp"
 
-namespace storage {
+namespace blkdev {
 
 static constexpr uint64_t _CAPACITY         = 1024;
 static constexpr size_t   _SECTOR_LENGTH    = 128;
@@ -112,7 +112,7 @@ DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
 		return STATUS_TIMEOUT;
 
 	if (ackResponse[1] != 'G') {
-		LOG_STORAGE(
+		LOG_BLKDEV(
 			"card error, code=0x%02x, st=0x%02x", ackResponse[1], _lastStatus
 		);
 		return DRIVE_ERROR;
@@ -124,7 +124,7 @@ DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
 		^ util::bitwiseXOR(ptr, _SECTOR_LENGTH);
 
 	if (checksum != ackResponse[0]) {
-		LOG_STORAGE(
+		LOG_BLKDEV(
 			"mismatch, exp=0x%02x, got=0x%02x", checksum, ackResponse[0]
 		);
 		return CHECKSUM_MISMATCH;
@@ -191,11 +191,11 @@ DeviceError MemoryCardDevice::write(
 			return NO_ERROR;
 
 		case 'N':
-			LOG_STORAGE("card reported mismatch, sent=0x%02x", checksum);
+			LOG_BLKDEV("card reported mismatch, sent=0x%02x", checksum);
 			return CHECKSUM_MISMATCH;
 
 		default:
-			LOG_STORAGE(
+			LOG_BLKDEV(
 				"card error, code=0x%02x, st=0x%02x", ackResponse[3],
 				_lastStatus
 			);
@@ -210,7 +210,7 @@ MemoryCardDevice *newMemoryCardDevice(int index) {
 	auto error = dev->enumerate();
 
 	if (error) {
-		LOG_STORAGE("card %d: %s", index, getErrorString(error));
+		LOG_BLKDEV("card %d: %s", index, getErrorString(error));
 		delete dev;
 		return nullptr;
 	}

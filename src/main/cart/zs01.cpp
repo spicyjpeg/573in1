@@ -122,7 +122,7 @@ bool ZS01Packet::validateCRC(void) const {
 	uint16_t value = util::zsCRC16(&command, sizeof(ZS01Packet) - sizeof(crc));
 
 	if (value != _crc) {
-		LOG_CART_IO("mismatch, exp=0x%04x, got=0x%04x", value, _crc);
+		LOG_CART("mismatch, exp=0x%04x, got=0x%04x", value, _crc);
 		return false;
 	}
 
@@ -130,7 +130,7 @@ bool ZS01Packet::validateCRC(void) const {
 }
 
 void ZS01Packet::encodeReadRequest(void) {
-	LOG_CART_IO("addr=0x%02x", address);
+	LOG_CART("addr=0x%02x", address);
 
 	command = ZS01_REQ_READ;
 	_RESPONSE_KEY.packInto(data);
@@ -140,7 +140,7 @@ void ZS01Packet::encodeReadRequest(void) {
 }
 
 void ZS01Packet::encodeReadRequest(ZS01Key &dataKey, uint8_t state) {
-	LOG_CART_IO("addr=0x%02x, privileged", address);
+	LOG_CART("addr=0x%02x, privileged", address);
 
 	command = ZS01_REQ_READ | ZS01_REQ_PRIVILEGED;
 	_RESPONSE_KEY.packInto(data);
@@ -151,7 +151,7 @@ void ZS01Packet::encodeReadRequest(ZS01Key &dataKey, uint8_t state) {
 }
 
 void ZS01Packet::encodeWriteRequest(ZS01Key &dataKey, uint8_t state) {
-	LOG_CART_IO("addr=0x%02x", address);
+	LOG_CART("addr=0x%02x", address);
 
 	command = ZS01_REQ_READ | ZS01_REQ_PRIVILEGED;
 	updateCRC();

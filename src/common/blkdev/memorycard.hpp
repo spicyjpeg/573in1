@@ -18,9 +18,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
+#include "common/blkdev/device.hpp"
 
-namespace storage {
+namespace blkdev {
 
 /* PS1 memory card block device class */
 

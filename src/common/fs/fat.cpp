@@ -16,9 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/fat.hpp"
 #include "common/fs/file.hpp"
-#include "common/storage/device.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
@@ -119,7 +119,7 @@ void FATDirectory::close(void) {
 
 /* FAT filesystem provider */
 
-bool FATProvider::init(storage::Device &dev, int mutexID) {
+bool FATProvider::init(blkdev::Device &dev, int mutexID) {
 	if (type)
 		return false;
 
@@ -276,14 +276,14 @@ static constexpr int _MUTEX_TIMEOUT = 30000000;
 static util::MutexFlags<uint32_t> _fatMutex;
 
 extern "C" DSTATUS disk_status(PDRV_t drive) {
-	auto     dev   = reinterpret_cast<storage::Device *>(drive);
+	auto     dev   = reinterpret_cast<blkdev::Device *>(drive);
 	uint32_t flags = 0;
 
 	if (!(dev->type))
 		flags |= STA_NOINIT;
 	if (!dev->capacity)
 		flags |= STA_NODISK;
-	if (dev->flags & storage::READ_ONLY)
+	if (dev->flags & blkdev::READ_ONLY)
 		flags |= STA_PROTECT;
 
 	return flags;
@@ -292,7 +292,7 @@ extern "C" DSTATUS disk_status(PDRV_t drive) {
 extern "C" DRESULT disk_read(
 	PDRV_t drive, uint8_t *data, LBA_t lba, size_t count
 ) {
-	auto dev = reinterpret_cast<storage::Device *>(drive);
+	auto dev = reinterpret_cast<blkdev::Device *>(drive);
 
 	return dev->read(data, lba, count) ? RES_ERROR : RES_OK;
 }
@@ -300,16 +300,16 @@ extern "C" DRESULT disk_read(
 extern "C" DRESULT disk_write(
 	PDRV_t drive, const uint8_t *data, LBA_t lba, size_t count
 ) {
-	auto dev = reinterpret_cast<storage::Device *>(drive);
+	auto dev = reinterpret_cast<blkdev::Device *>(drive);
 
-	if (dev->flags & storage::READ_ONLY)
+	if (dev->flags & blkdev::READ_ONLY)
 		return RES_WRPRT;
 
 	return dev->write(data, lba, count) ? RES_ERROR : RES_OK;
 }
 
 extern "C" DRESULT disk_ioctl(PDRV_t drive, uint8_t cmd, void *data) {
-	auto dev  = reinterpret_cast<storage::Device *>(drive);
+	auto dev  = reinterpret_cast<blkdev::Device *>(drive);
 	auto lbas = reinterpret_cast<LBA_t *>(data);
 
 	if (!(dev->type))

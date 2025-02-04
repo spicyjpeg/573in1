@@ -18,7 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
+#include "common/blkdev/device.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 
@@ -193,7 +193,7 @@ public:
 
 class MemoryCardIOHandler {
 private:
-	storage::Device            *_dev;
+	blkdev::Device             *_dev;
 	util::MutexFlags<uint32_t> _mutex;
 
 	uint16_t _relocations[MC_MAX_RELOC_SECTORS];
@@ -212,7 +212,7 @@ public:
 		return !_dev->write(data, lba, 1);
 	}
 
-	bool init(storage::Device &dev);
+	bool init(blkdev::Device &dev);
 	bool readRelocated(void *data, uint32_t lba);
 	bool writeRelocated(const void *data, uint32_t lba);
 };

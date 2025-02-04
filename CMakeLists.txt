@@ -64,9 +64,23 @@ set(
 	src/common/mdec.cpp
 	src/common/mdec.s
 	src/common/pad.cpp
-	src/common/rom.cpp
-	src/common/romdrivers.cpp
+	src/common/rom.cpp        # TODO: remove
+	src/common/romdrivers.cpp # TODO: remove
 	src/common/spu.cpp
+)
+set(
+	blkdevSources
+	src/common/blkdev/ata.cpp
+	src/common/blkdev/atapi.cpp
+	src/common/blkdev/idebase.cpp
+	src/common/blkdev/memorycard.cpp
+)
+set(
+	cartSources
+	src/common/cart/cart.cpp
+	src/common/cart/cartio.cpp
+	src/common/cart/x76.cpp
+	src/common/cart/zs01.cpp
 )
 set(
 	exthwSources
@@ -91,13 +105,7 @@ set(
 	src/common/nvram/flash.cpp
 	src/common/nvram/flashdetect.cpp
 )
-set(
-	storageSources
-	src/common/storage/ata.cpp
-	src/common/storage/atapi.cpp
-	src/common/storage/idebase.cpp
-	src/common/storage/memorycard.cpp
-)
+
 set(
 	sys573Sources
 	src/common/sys573/base.cpp
@@ -120,10 +128,11 @@ set(
 	${ps1Sources}
 	${vendorSources}
 	${commonSources}
+	${blkdevSources}
+	#${cartSources}
 	${exthwSources}
 	${fsSources}
 	${nvramSources}
-	${storageSources}
 	${sys573Sources}
 	${utilSources}
 	src/libc/crt0.c
@@ -137,10 +146,10 @@ set(
 	src/main/app/nvramactions.cpp
 	src/main/app/tests.cpp
 	src/main/app/threads.cpp
-	src/main/cart/cart.cpp
-	src/main/cart/cartdata.cpp
-	src/main/cart/cartio.cpp
-	src/main/cart/zs01.cpp
+	src/main/cart/cart.cpp     # TODO: remove
+	src/main/cart/cartdata.cpp # TODO: remove
+	src/main/cart/cartio.cpp   # TODO: remove
+	src/main/cart/zs01.cpp     # TODO: remove
 	src/main/workers/cartworkers.cpp
 	src/main/workers/miscworkers.cpp
 	src/main/workers/nvramworkers.cpp
@@ -153,7 +162,7 @@ set(
 set(
 	launcherSources
 	${ps1Sources}
-	${storageSources}
+	${blkdevSources}
 	${sys573Sources}
 	${utilSources}
 	src/common/args.cpp

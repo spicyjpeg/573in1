@@ -18,8 +18,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/templates.hpp"
 
 namespace fs {
@@ -191,12 +191,12 @@ class ISO9660File : public File {
 	friend class ISO9660Provider;
 
 private:
-	storage::Device *_dev;
-	uint32_t        _startLBA;
+	blkdev::Device *_dev;
+	uint32_t       _startLBA;
 
 	uint64_t _offset;
 	uint32_t _bufferedLBA;
-	uint8_t  _sectorBuffer[storage::MAX_SECTOR_LENGTH];
+	uint8_t  _sectorBuffer[blkdev::MAX_SECTOR_LENGTH];
 
 	bool _loadSector(uint32_t lba);
 
@@ -222,8 +222,8 @@ public:
 
 class ISO9660Provider : public Provider {
 private:
-	storage::Device *_dev;
-	ISORecord       _root;
+	blkdev::Device *_dev;
+	ISORecord      _root;
 
 	bool _readData(util::Data &output, uint32_t lba, size_t numSectors) const;
 	bool _getRecord(
@@ -234,7 +234,7 @@ public:
 	inline ISO9660Provider(void)
 	: _dev(nullptr) {}
 
-	bool init(storage::Device &dev);
+	bool init(blkdev::Device &dev);
 	void close(void);
 
 	bool getFileInfo(FileInfo &output, const char *path);

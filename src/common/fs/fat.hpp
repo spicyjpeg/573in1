@@ -18,8 +18,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
-#include "common/storage/device.hpp"
 #include "vendor/ff.h"
 
 namespace fs {
@@ -62,7 +62,7 @@ public:
 		_fs.fs_type = 0;
 	}
 
-	bool init(storage::Device &dev, int mutexID);
+	bool init(blkdev::Device &dev, int mutexID);
 	void close(void);
 	uint64_t getFreeSpace(void);
 

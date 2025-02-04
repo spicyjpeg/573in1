@@ -18,11 +18,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
+#include "common/blkdev/device.hpp"
 #include "common/util/templates.hpp"
 #include "ps1/registers573.h"
 
-namespace storage {
+namespace blkdev {
 
 /* IDE register definitions */
 

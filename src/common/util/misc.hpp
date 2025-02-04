@@ -31,7 +31,7 @@ public:
 	uint8_t  month, day, hour, minute, second;
 
 	inline void reset(void) {
-		year   = 2024;
+		year   = 2025;
 		month  = 1;
 		day    = 1;
 		hour   = 0;

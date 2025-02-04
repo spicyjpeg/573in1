@@ -16,9 +16,9 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/fs/vfs.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
@@ -123,10 +123,10 @@ void ConfirmScreen::update(ui::Context &ctx) {
 /* File picker screen */
 
 static const util::Hash _DEVICE_ERROR_STRINGS[]{
-	"FilePickerScreen.host.error"_h,      // storage::NONE
-	"FilePickerScreen.ata.error"_h,       // storage::ATA
-	"FilePickerScreen.atapi.error"_h,     // storage::ATAPI
-	"FilePickerScreen.memoryCard.error"_h // storage::MEMORY_CARD
+	"FilePickerScreen.host.error"_h,      // blkdev::NONE
+	"FilePickerScreen.ata.error"_h,       // blkdev::ATA
+	"FilePickerScreen.atapi.error"_h,     // blkdev::ATAPI
+	"FilePickerScreen.memoryCard.error"_h // blkdev::MEMORY_CARD
 };
 
 void FilePickerScreen::_addDevice(
@@ -160,10 +160,10 @@ void FilePickerScreen::_addDevice(
 		util::Hash name;
 
 		switch (mp.dev->type) {
-			case storage::ATA:
-			case storage::ATAPI:
+			case blkdev::ATA:
+			case blkdev::ATAPI:
 				entry.prefix = IDE_MOUNT_POINTS[mp.dev->getDeviceIndex()];
-				name         = (mp.dev->type == storage::ATA)
+				name         = (mp.dev->type == blkdev::ATA)
 					? "FilePickerScreen.ata.name"_h
 					: "FilePickerScreen.atapi.name"_h;
 
@@ -176,7 +176,7 @@ void FilePickerScreen::_addDevice(
 				);
 				return;
 
-			case storage::MEMORY_CARD:
+			case blkdev::MEMORY_CARD:
 				entry.prefix = MC_MOUNT_POINTS[mp.dev->getDeviceIndex()];
 
 				snprintf(
@@ -264,7 +264,7 @@ void FilePickerScreen::update(ui::Context &ctx) {
 			auto &entry = _entries[_activeItem];
 			auto type   = entry.mp->dev
 				? entry.mp->dev->type
-				: storage::NONE;
+				: blkdev::NONE;
 
 			int count =
 				APP->_fileBrowserScreen.loadDirectory(ctx, entry.prefix);

@@ -18,9 +18,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/fs/memorycardbase.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 
@@ -117,7 +117,7 @@ private:
 	bool _truncate(const char *name, bool purgeFirst = false);
 
 public:
-	bool init(storage::Device &dev);
+	bool init(blkdev::Device &dev);
 	void close(void);
 	uint64_t getFreeSpace(void);
 

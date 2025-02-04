@@ -76,12 +76,6 @@ extern Logger logger;
 #define LOG_APP(fmt, ...)
 #endif
 
-#ifdef ENABLE_CART_IO_LOGGING
-#define LOG_CART_IO(fmt, ...) LOG("cart", fmt __VA_OPT__(,) __VA_ARGS__)
-#else
-#define LOG_CART_IO(fmt, ...)
-#endif
-
 #ifdef ENABLE_CART_DATA_LOGGING
 #define LOG_CART_DATA(fmt, ...) LOG("data", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
@@ -94,16 +88,22 @@ extern Logger logger;
 #define LOG_IO(fmt, ...)
 #endif
 
+#ifdef ENABLE_CART_LOGGING
+#define LOG_CART(fmt, ...) LOG("cart", fmt __VA_OPT__(,) __VA_ARGS__)
+#else
+#define LOG_CART(fmt, ...)
+#endif
+
 #ifdef ENABLE_NVRAM_LOGGING
 #define LOG_NVRAM(fmt, ...) LOG("nvram", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
 #define LOG_NVRAM(fmt, ...)
 #endif
 
-#ifdef ENABLE_STORAGE_LOGGING
-#define LOG_STORAGE(fmt, ...) LOG("storage", fmt __VA_OPT__(,) __VA_ARGS__)
+#ifdef ENABLE_BLKDEV_LOGGING
+#define LOG_BLKDEV(fmt, ...) LOG("blkdev", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
-#define LOG_STORAGE(fmt, ...)
+#define LOG_BLKDEV(fmt, ...)
 #endif
 
 #ifdef ENABLE_FS_LOGGING

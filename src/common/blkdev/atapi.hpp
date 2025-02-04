@@ -18,11 +18,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/device.hpp"
-#include "common/storage/idebase.hpp"
+#include "common/blkdev/device.hpp"
+#include "common/blkdev/idebase.hpp"
 #include "common/util/templates.hpp"
 
-namespace storage {
+namespace blkdev {
 
 /* ATAPI (SCSI) command definitions */
 

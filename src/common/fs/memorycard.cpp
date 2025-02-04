@@ -16,10 +16,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/fs/memorycard.hpp"
 #include "common/fs/memorycardbase.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
@@ -303,7 +303,7 @@ bool MemoryCardProvider::_truncate(const char *name, bool purgeFirst) {
 	return deleted;
 }
 
-bool MemoryCardProvider::init(storage::Device &dev) {
+bool MemoryCardProvider::init(blkdev::Device &dev) {
 	if (type)
 		return false;
 	if (dev.sectorLength != MC_SECTOR_LENGTH)

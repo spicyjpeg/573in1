@@ -16,9 +16,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/ata.hpp"
-#include "common/storage/device.hpp"
-#include "common/storage/idebase.hpp"
+#include "common/blkdev/ata.hpp"
+#include "common/blkdev/device.hpp"
+#include "common/blkdev/idebase.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 
@@ -31,7 +31,7 @@
  * https://www.cs.utexas.edu/~dahlin/Classes/UGOS/reading/ide.html
  */
 
-namespace storage {
+namespace blkdev {
 
 static constexpr size_t _SECTOR_LENGTH = 512;
 
@@ -153,7 +153,7 @@ DeviceError ATADevice::enumerate(void) {
 	else
 		flags &= ~SUPPORTS_FLUSH;
 
-	LOG_STORAGE("drive %d is ATA", getDeviceIndex());
+	LOG_BLKDEV("drive %d is ATA", getDeviceIndex());
 	return _setup(block);
 }
 

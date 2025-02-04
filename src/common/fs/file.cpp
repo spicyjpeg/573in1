@@ -182,7 +182,7 @@ size_t Provider::loadBS(
 			// Reuse the file's buffer to store vertical slices received from
 			// the MDEC as they are uploaded to VRAM.
 			data.allocate(sliceLength);
-			mdec::feedBS(bsPtr, MDEC_CMD_FLAG_FORMAT_16BPP, false);
+			mdec::feedDecodedBS(bsPtr, MDEC_CMD_FLAG_FORMAT_16BPP, false);
 
 			gpu::RectWH slice;
 

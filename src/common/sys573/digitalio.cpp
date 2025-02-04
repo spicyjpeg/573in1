@@ -293,12 +293,14 @@ bool DigitalIOBoardDriver::loadBitstream(const uint8_t *data, size_t length) {
 			case _TAG_DATA:
 				tagLength = util::concat4(data[4], data[3], data[2], data[1]);
 				data     += 5;
+				length   -= 5;
 
 				return _loadRawBitstream(data, tagLength);
 
 			default:
 				tagLength = util::concat2(data[2], data[1]);
 				data     += 3;
+				length   -= 3;
 		}
 
 		data   += tagLength;

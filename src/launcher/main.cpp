@@ -16,13 +16,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/storage/ata.hpp"
-#include "common/storage/atapi.hpp"
-#include "common/storage/device.hpp"
+#include "common/blkdev/ata.hpp"
+#include "common/blkdev/atapi.hpp"
+#include "common/blkdev/device.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
-#include "common/util/templates.hpp"
 #include "common/args.hpp"
 #include "ps1/system.h"
 
@@ -51,9 +50,9 @@ static ExitCode _loadFromFlash(args::ExecutableLauncherArgs &args) {
 	return NO_ERROR;
 }
 
-static ExitCode _loadFromStorage(
+static ExitCode _loadFromBlockDevice(
 	args::ExecutableLauncherArgs &args,
-	storage::Device              &dev
+	blkdev::Device               &dev
 ) {
 	auto error = dev.enumerate();
 
@@ -61,7 +60,7 @@ static ExitCode _loadFromStorage(
 		LOG_APP(
 			"drive %d: %s",
 			args.deviceIndex,
-			storage::getErrorString(error)
+			blkdev::getErrorString(error)
 		);
 		return INIT_FAILED;
 	}
@@ -91,7 +90,7 @@ static ExitCode _loadFromStorage(
 			LOG_APP(
 				"drive %d: %s",
 				args.deviceIndex,
-				storage::getErrorString(error)
+				blkdev::getErrorString(error)
 			);
 			return READ_FAILED;
 		}
@@ -134,15 +133,15 @@ int main(int argc, const char **argv) {
 	switch (args.deviceType) {
 		case "ata"_h:
 			{
-				storage::ATADevice dev(args.deviceIndex);
-				code = _loadFromStorage(args, dev);
+				blkdev::ATADevice dev(args.deviceIndex);
+				code = _loadFromBlockDevice(args, dev);
 			};
 			break;
 
 		case "atapi"_h:
 			{
-				storage::ATAPIDevice dev(args.deviceIndex);
-				code = _loadFromStorage(args, dev);
+				blkdev::ATAPIDevice dev(args.deviceIndex);
+				code = _loadFromBlockDevice(args, dev);
 			};
 			break;
 

@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include "common/util/templates.hpp"
 
-namespace storage {
+namespace blkdev {
 
 /* CD-ROM definitions */
 

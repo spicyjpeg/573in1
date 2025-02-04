@@ -53,7 +53,7 @@ bool cartDetectWorker(App &app) {
 		app._cartDriver = cart::newCartDriver(app._cartDump);
 	}
 #else
-	_cartDriver = cart::newCartDriver(_cartDump);
+	app._cartDriver = cart::newCartDriver(app._cartDump);
 #endif
 
 	if (app._cartDump.chipType) {

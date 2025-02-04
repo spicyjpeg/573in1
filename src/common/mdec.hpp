@@ -18,9 +18,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/gpu.hpp"
+#include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 
 namespace mdec {
+
+static constexpr int MACROBLOCK_SIZE = 16;
 
 /* Basic API */
 
@@ -32,7 +36,7 @@ static inline bool isIdle(void) {
 	return !(MDEC1 & MDEC_STAT_BUSY);
 }
 
-static inline size_t feedBS(
+static inline size_t feedDecodedBS(
 	const uint32_t *data, uint32_t flags, bool wait = false
 ) {
 	size_t length = data[0] & MDEC_CMD_FLAG_LENGTH_BITMASK;
@@ -40,6 +44,33 @@ static inline size_t feedBS(
 	MDEC0 = MDEC_CMD_DECODE | length | flags;
 	return feed(&data[1], length, wait);
 }
+
+/* Asynchronous MDEC-to-VRAM image uploader */
+
+// The MDEC returns decoded macroblocks as a series of 16x16 RGB bitmaps. In
+// order to reshuffle them into a single image, each bitmap must be retrieved
+// from the MDEC and uploaded to VRAM separately. Due to the limited length and
+// overhead of each transfer, this task is best suited to a coroutine-like
+// polling implementation rather than using DMA and interrupts.
+class VRAMUploader {
+private:
+	int16_t   _x, _y;
+	size_t    _blockWidth;
+	gpu::Rect _clip;
+
+public:
+	VRAMUploader(
+		const gpu::Rect &rect,
+		GP1ColorDepth   colorDepth = GP1_COLOR_16BPP
+	);
+	VRAMUploader(
+		const gpu::RectWH &rect,
+		GP1ColorDepth     colorDepth = GP1_COLOR_16BPP
+	);
+
+	bool pollRowMajor(void);
+	bool pollColumnMajor(void);
+};
 
 /* MDEC bitstream decompressor */
 

@@ -146,8 +146,8 @@ class Opcode(IntEnum):
 	BNE        =  5 # Branch if not equal
 	BLEZ       =  6 # Branch if less than or equal to zero
 	BGTZ       =  7 # Branch if greater than zero
-	ADDI       =  8 # Add immediate signed
-	ADDIU      =  9 # Add immediate unsigned
+	ADDI       =  8 # Add immediate with trap
+	ADDIU      =  9 # Add immediate
 	SLTI       = 10 # Set if less than immediate signed
 	SLTIU      = 11 # Set if less than immediate unsigned
 	ANDI       = 12 # Bitwise AND immediate
@@ -163,8 +163,8 @@ class Opcode(IntEnum):
 	LBU        = 36 # Load byte unsigned
 	LHU        = 37 # Store halfword unsigned
 	LWR        = 38 # Load word right
-	SB         = 40 # Store byte signed
-	SH         = 41 # Store halfword signed
+	SB         = 40 # Store byte
+	SH         = 41 # Store halfword
 	SWL        = 42 # Store word left
 	SW         = 43 # Store word
 	SWR        = 46 # Store word right
@@ -190,10 +190,10 @@ class SubOpcode(IntEnum):
 	MULTU   = 25 # Multiply unsigned
 	DIV     = 26 # Divide signed
 	DIVU    = 27 # Divide unsigned
-	ADD     = 32 # Add register
-	ADDU    = 33 # Add register unsigned
-	SUB     = 34 # Subtract register
-	SUBU    = 35 # Subtract register unsigned
+	ADD     = 32 # Add register with trap
+	ADDU    = 33 # Add register
+	SUB     = 34 # Subtract register with trap
+	SUBU    = 35 # Subtract register
 	AND     = 36 # Bitwise AND register
 	OR      = 37 # Bitwise OR register
 	XOR     = 38 # Bitwise XOR register

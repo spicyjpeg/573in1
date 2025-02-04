@@ -18,8 +18,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
-#include "common/storage/device.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 
@@ -33,10 +33,10 @@ static constexpr size_t MAX_VFS_ALIASES      = 8;
 
 struct VFSMountPoint {
 public:
-	util::Hash      prefix;
-	size_t          pathOffset;
-	storage::Device *dev;
-	Provider        *provider;
+	util::Hash     prefix;
+	size_t         pathOffset;
+	blkdev::Device *dev;
+	Provider       *provider;
 };
 
 struct VFSAlias {

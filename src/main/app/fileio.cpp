@@ -15,13 +15,13 @@
  */
 
 #include <stddef.h>
+#include "common/blkdev/idebase.hpp"
+#include "common/blkdev/memorycard.hpp"
 #include "common/fs/fat.hpp"
 #include "common/fs/host.hpp"
 #include "common/fs/iso9660.hpp"
 #include "common/fs/memorycard.hpp"
 #include "common/fs/package.hpp"
-#include "common/storage/idebase.hpp"
-#include "common/storage/memorycard.hpp"
 #include "common/util/templates.hpp"
 #include "main/app/fileio.hpp"
 
@@ -112,7 +112,7 @@ int FileIOManager::mountIDE(void) {
 	int mounted = 0;
 
 	for (size_t i = 0; i < util::countOf(IDE_MOUNT_POINTS); i++) {
-		auto dev = storage::newIDEDevice(i);
+		auto dev = blkdev::newIDEDevice(i);
 
 		if (!dev)
 			continue;
@@ -129,7 +129,7 @@ int FileIOManager::mountIDE(void) {
 
 		// TODO: actually detect the filesystem, rather than assuming FAT or
 		// ISO9660 depending on drive type
-		if (dev->type == storage::ATAPI) {
+		if (dev->type == blkdev::ATAPI) {
 			auto iso = new fs::ISO9660Provider();
 			alias    = "cdrom:";
 
@@ -168,7 +168,7 @@ int FileIOManager::mountMemoryCards(void) {
 	int mounted = 0;
 
 	for (size_t i = 0; i < util::countOf(MC_MOUNT_POINTS); i++) {
-		auto dev = storage::newMemoryCardDevice(i);
+		auto dev = blkdev::newMemoryCardDevice(i);
 
 		if (!dev)
 			continue;
