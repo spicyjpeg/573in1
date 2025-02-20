@@ -154,7 +154,7 @@ void ZS01Packet::encodeReadRequest(ZS01Key &dataKey, uint8_t state) {
 void ZS01Packet::encodeWriteRequest(ZS01Key &dataKey, uint8_t state) {
 	LOG_CART_IO("addr=0x%02x", address);
 
-	command = ZS01_REQ_READ | ZS01_REQ_PRIVILEGED;
+	command = ZS01_REQ_WRITE | ZS01_REQ_PRIVILEGED;
 	updateCRC();
 
 	dataKey.encodePayload(data, sizeof(data), state);
