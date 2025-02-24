@@ -72,13 +72,13 @@ set(
 	blkdevSources
 	src/common/blkdev/ata.cpp
 	src/common/blkdev/atapi.cpp
+	src/common/blkdev/device.cpp
 	src/common/blkdev/idebase.cpp
 	src/common/blkdev/memorycard.cpp
 )
 set(
 	cartSources
 	src/common/cart/cart.cpp
-	src/common/cart/cartio.cpp
 	src/common/cart/x76.cpp
 	src/common/cart/zs01.cpp
 )
@@ -104,6 +104,7 @@ set(
 	src/common/nvram/bios.cpp
 	src/common/nvram/flash.cpp
 	src/common/nvram/flashdetect.cpp
+	src/common/nvram/region.cpp
 )
 
 set(

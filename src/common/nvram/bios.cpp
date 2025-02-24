@@ -19,6 +19,7 @@
 #include "common/nvram/bios.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
+#include "common/util/templates.hpp"
 #include "ps1/registers.h"
 #include "ps1/registers573.h"
 
@@ -129,7 +130,7 @@ bool getShellInfo(ShellInfo &output) {
 		if (!shell.validateHash())
 			continue;
 
-		__builtin_memcpy(&output, &shell, sizeof(ShellInfo));
+		util::copy(output, shell);
 		return true;
 	}
 

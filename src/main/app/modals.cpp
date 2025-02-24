@@ -404,7 +404,7 @@ int FileBrowserScreen::loadDirectory(
 			? (directories++)
 			: (files++);
 
-		__builtin_memcpy(ptr, &info, sizeof(fs::FileInfo));
+		util::copy(*ptr, info);
 	}
 
 	directory->close();

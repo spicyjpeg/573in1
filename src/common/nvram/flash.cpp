@@ -25,27 +25,10 @@
 
 namespace nvram {
 
-const char *const REGION_ERROR_NAMES[]{
-	"NO_ERROR",
-	"UNSUPPORTED_OP",
-	"NO_DEVICE",
-	"CHIP_TIMEOUT",
-	"CHIP_ERROR",
-	"VERIFY_MISMATCH",
-	"WRITE_PROTECTED"
-};
-
 static constexpr int _FLASH_WRITE_TIMEOUT = 10000000;
 static constexpr int _FLASH_ERASE_TIMEOUT = 20000000;
 
 /* Internal and PCMCIA flash base class */
-/*
-#if 0
-	ptrOffset      -= offset % getChipLength();
-#else
-	ptrOffset      &= ~(getChipLength() - 1);
-#endif
-*/
 
 static inline volatile uint16_t *_toFlashPtr(uint32_t ptrOffset) {
 	return reinterpret_cast<volatile uint16_t *>(DEV0_BASE | ptrOffset);

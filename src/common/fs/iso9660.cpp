@@ -421,7 +421,7 @@ bool ISO9660Provider::init(blkdev::Device &dev) {
 		}
 
 		_copyPVDString(volumeLabel, pvd->volume, sizeof(pvd->volume));
-		__builtin_memcpy(&_root, &(pvd->root), sizeof(_root));
+		util::copy(_root, pvd->root);
 
 		type     = ISO9660;
 		capacity = uint64_t(pvd->volumeLength.le) * _dev->sectorLength;

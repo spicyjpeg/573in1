@@ -313,7 +313,27 @@ enum OneWireCommand : uint8_t {
 	_CMD_SEARCH_ROM = 0xf0
 };
 
-bool OneWireDriver::readID(uint8_t *output) const {
+void OneWireID::updateChecksum(void) {
+	crc = util::dsCRC8(&familyCode, sizeof(OneWireID) - 1);
+}
+
+bool OneWireID::validateChecksum(void) const {
+	if (!familyCode || (familyCode == 0xff)) {
+		LOG_DATA("invalid 1-wire family 0x%02x", familyCode);
+		return false;
+	}
+
+	uint8_t value = util::dsCRC8(&familyCode, sizeof(OneWireID) - 1);
+
+	if (value != crc) {
+		LOG_DATA("mismatch, exp=0x%02x, got=0x%02x", value, crc);
+		return false;
+	}
+
+	return true;
+}
+
+bool OneWireDriver::readID(OneWireID *output) const {
 	util::CriticalSection sec;
 
 	if (!reset()) {
@@ -323,22 +343,12 @@ bool OneWireDriver::readID(uint8_t *output) const {
 
 	writeByte(_CMD_READ_ROM);
 
-	for (int i = 0; i < 8; i++)
-		output[i] = readByte();
+	auto ptr = reinterpret_cast<uint8_t *>(output);
 
-	auto code = output[0];
-	auto crc  = util::dsCRC8(output, 7);
+	for (int i = 8; i > 0; i--)
+		*(ptr++) = readByte();
 
-	if (!code || (code == 0xff)) {
-		LOG_IO("invalid 1-wire code 0x%02x", code);
-		return false;
-	}
-	if (crc != output[7]) {
-		LOG_IO("CRC mismatch, exp=0x%02x, got=0x%02x", crc, output[7]);
-		return false;
-	}
-
-	return true;
+	return output->validateChecksum();
 }
 
 }

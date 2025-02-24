@@ -47,19 +47,23 @@ static constexpr uint8_t _MAS_I2C_ADDR = 0x1d;
 bool MAS3507DDriver::_issueCommand(const uint8_t *data, size_t length) const {
 	if (!_i2c.startDeviceWrite(_MAS_I2C_ADDR)) {
 		_i2c.stop();
+
 		LOG_IO("chip not responding");
 		return false;
 	}
 
 	_i2c.writeByte(_MAS_PACKET_COMMAND);
+
 	if (!_i2c.getACK()) {
 		_i2c.stop();
+
 		LOG_IO("NACK while sending type");
 		return false;
 	}
 
 	if (!_i2c.writeBytes(data, length)) {
 		_i2c.stop();
+
 		LOG_IO("NACK while sending data");
 		return false;
 	}
@@ -74,19 +78,22 @@ bool MAS3507DDriver::_issueRead(uint8_t *data, size_t length) const {
 	// read packet and actually reading the data.
 	if (!_i2c.startDeviceWrite(_MAS_I2C_ADDR)) {
 		_i2c.stop();
+
 		LOG_IO("chip not responding");
 		return false;
 	}
 
 	_i2c.writeByte(_MAS_PACKET_READ);
+
 	if (!_i2c.getACK()) {
 		_i2c.stop();
+
 		LOG_IO("NACK while sending type");
 		return false;
 	}
-
 	if (!_i2c.startDeviceRead(_MAS_I2C_ADDR)) {
 		_i2c.stop();
+
 		LOG_IO("chip not responding");
 		return false;
 	}
@@ -107,7 +114,7 @@ int MAS3507DDriver::readFrameCount(void) const {
 }
 
 int MAS3507DDriver::readMemory(int bank, uint16_t offset) const {
-	uint8_t packet[6]{
+	const uint8_t packet[6]{
 		bank ? _MAS_CMD_READ_D1 : _MAS_CMD_READ_D0,
 		0,
 		0,
@@ -131,7 +138,7 @@ int MAS3507DDriver::readMemory(int bank, uint16_t offset) const {
 }
 
 bool MAS3507DDriver::writeMemory(int bank, uint16_t offset, int value) const {
-	uint8_t packet[10]{
+	const uint8_t packet[10]{
 		bank ? _MAS_CMD_WRITE_D1 : _MAS_CMD_WRITE_D0,
 		0,
 		0,
@@ -148,7 +155,7 @@ bool MAS3507DDriver::writeMemory(int bank, uint16_t offset, int value) const {
 }
 
 int MAS3507DDriver::readReg(uint8_t offset) const {
-	uint8_t packet[2]{
+	const uint8_t packet[2]{
 		uint8_t(((offset >> 4) & 0x0f) | _MAS_CMD_READ_REG),
 		uint8_t( (offset << 4) & 0xf0)
 	};
@@ -168,7 +175,7 @@ int MAS3507DDriver::readReg(uint8_t offset) const {
 }
 
 bool MAS3507DDriver::writeReg(uint8_t offset, int value) const {
-	uint8_t packet[4]{
+	const uint8_t packet[4]{
 		uint8_t(((offset >>  4) & 0x0f) | _MAS_CMD_WRITE_REG),
 		uint8_t(((value  >>  0) & 0x0f) | ((offset << 4) & 0xf0)),
 		uint8_t( (value  >> 12) & 0xff),
@@ -182,7 +189,7 @@ bool MAS3507DDriver::runFunction(uint16_t func) const {
 	if (func > 0x1fff)
 		return false;
 
-	uint8_t packet[2]{
+	const uint8_t packet[2]{
 		uint8_t((func >> 8) & 0xff),
 		uint8_t((func >> 0) & 0xff)
 	};

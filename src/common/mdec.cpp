@@ -138,6 +138,29 @@ size_t receive(void *data, size_t length, bool wait) {
 
 /* Asynchronous MDEC-to-VRAM image uploader */
 
+static void _uploadBlock(int16_t x, int16_t y, size_t blockWidth) {
+	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
+		__asm__ volatile("");
+
+	GPU_GP0 = gp0_vramWrite();
+	GPU_GP0 = gp0_xy(x, y);
+	GPU_GP0 = gp0_xy(blockWidth, MACROBLOCK_SIZE);
+
+	for (size_t i = blockWidth; i > 0; i -= 2) {
+		// In order to maximize efficiency, saturate the GP0 FIFO by copying
+		// 16 words (32 pixels in 16bpp mode) at a time.
+		while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
+			__asm__ volatile("");
+
+		for (int j = 4; j > 0; j--) {
+			GPU_GP0 = MDEC0;
+			GPU_GP0 = MDEC0;
+			GPU_GP0 = MDEC0;
+			GPU_GP0 = MDEC0;
+		}
+	}
+}
+
 VRAMUploader::VRAMUploader(const gpu::Rect &rect, GP1ColorDepth colorDepth) {
 	_x          = rect.x1;
 	_y          = rect.y1;
@@ -166,26 +189,7 @@ bool VRAMUploader::pollRowMajor(void) {
 		return false;
 
 	while (MDEC1 & MDEC_STAT_DREQ_OUT) {
-		while (!(GPU_GP1 & GP1_STAT_CMD_READY))
-			__asm__ volatile("");
-
-		GPU_GP0 = gp0_vramWrite();
-		GPU_GP0 = gp0_xy(_x, _y);
-		GPU_GP0 = gp0_xy(_blockWidth, MACROBLOCK_SIZE);
-
-		for (size_t i = _blockWidth; i > 0; i -= 2) {
-			// In order to maximize efficiency, saturate the GP0 FIFO by copying
-			// 16 words (32 pixels in 16bpp mode) at a time.
-			while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
-				__asm__ volatile("");
-
-			for (int j = 4; j > 0; j--) {
-				GPU_GP0 = MDEC0;
-				GPU_GP0 = MDEC0;
-				GPU_GP0 = MDEC0;
-				GPU_GP0 = MDEC0;
-			}
-		}
+		_uploadBlock(_x, _y, _blockWidth);
 
 		_x += _blockWidth;
 
@@ -203,24 +207,7 @@ bool VRAMUploader::pollColumnMajor(void) {
 		return false;
 
 	while (MDEC1 & MDEC_STAT_DREQ_OUT) {
-		while (!(GPU_GP1 & GP1_STAT_CMD_READY))
-			__asm__ volatile("");
-
-		GPU_GP0 = gp0_vramWrite();
-		GPU_GP0 = gp0_xy(_x, _y);
-		GPU_GP0 = gp0_xy(_blockWidth, MACROBLOCK_SIZE);
-
-		for (size_t i = _blockWidth; i > 0; i -= 2) {
-			while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
-				__asm__ volatile("");
-
-			for (int j = 4; j > 0; j--) {
-				GPU_GP0 = MDEC0;
-				GPU_GP0 = MDEC0;
-				GPU_GP0 = MDEC0;
-				GPU_GP0 = MDEC0;
-			}
-		}
+		_uploadBlock(_x, _y, _blockWidth);
 
 		_y += MACROBLOCK_SIZE;
 
@@ -366,9 +353,7 @@ static const BSHuffmanTable _HUFFMAN_TABLE{
 };
 
 void initBSHuffmanTable(void) {
-	auto table = reinterpret_cast<BSHuffmanTable *>(CACHE_BASE);
-
-	__builtin_memcpy(table, &_HUFFMAN_TABLE, sizeof(BSHuffmanTable));
+	util::copy(*reinterpret_cast<BSHuffmanTable *>(CACHE_BASE), _HUFFMAN_TABLE);
 }
 
 }

@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/string.hpp"
 #include "ps1/system.h"
 
 namespace bus {
@@ -138,6 +139,22 @@ public:
 
 /* Bitbanged 1-wire driver */
 
+class OneWireID {
+public:
+	uint8_t familyCode, id[6];
+	uint8_t crc;
+
+	inline size_t toString(char *output) const {
+		return util::hexToString(output, &familyCode, sizeof(OneWireID), '-');
+	}
+	inline size_t toSerialNumber(char *output) const {
+		return util::serialNumberToString(output, id);
+	}
+
+	void updateChecksum(void);
+	bool validateChecksum(void) const;
+};
+
 class OneWireDriver {
 private:
 	inline void _set(bool value, int delay) const {
@@ -154,7 +171,7 @@ public:
 	uint8_t readByte(void) const;
 	void writeByte(uint8_t value) const;
 
-	bool readID(uint8_t *output) const;
+	bool readID(OneWireID *output) const;
 };
 
 }

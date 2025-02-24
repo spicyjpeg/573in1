@@ -97,7 +97,7 @@ DeviceError ATADevice::_transfer(
 
 		// Data must be transferred one sector at a time as the drive may
 		// deassert DRQ between sectors.
-		for (size_t i = chunkLength; i; i--, ptr += _SECTOR_LENGTH) {
+		for (size_t i = chunkLength; i > 0; i--) {
 			auto error = _waitForDRQ();
 
 			if (error)
@@ -107,6 +107,8 @@ DeviceError ATADevice::_transfer(
 				_writeData(reinterpret_cast<const void *>(ptr), _SECTOR_LENGTH);
 			else
 				_readData(reinterpret_cast<void *>(ptr), _SECTOR_LENGTH);
+
+			ptr += _SECTOR_LENGTH;
 		}
 
 		lba   += chunkLength;

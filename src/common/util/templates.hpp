@@ -27,7 +27,7 @@ namespace util {
 template<typename T> static inline uint32_t sum(const T *data, size_t length) {
 	uint32_t value = 0;
 
-	for (; length; length--)
+	for (; length > 0; length--)
 		value += uint32_t(*(data++));
 
 	return value;
@@ -36,10 +36,23 @@ template<typename T> static inline uint32_t sum(const T *data, size_t length) {
 template<typename T> static inline T bitwiseXOR(const T *data, size_t length) {
 	T value = 0;
 
-	for (; length; length--)
+	for (; length > 0; length--)
 		value ^= *(data++);
 
 	return value;
+}
+
+template<typename T> static inline bool isEmpty(
+	const T *data,
+	size_t  length,
+	T       value = 0
+) {
+	for (; length > 0; length--) {
+		if (*(data++) != value)
+			return false;
+	}
+
+	return true;
 }
 
 template<typename T> static constexpr inline T min(T a, T b) {
@@ -53,8 +66,12 @@ template<typename T> static constexpr inline T max(T a, T b) {
 template<typename T> static constexpr inline T clamp(
 	T value, T minValue, T maxValue
 ) {
-	return (value < minValue) ? minValue :
-		((value > maxValue) ? maxValue : value);
+	if (value < minValue)
+		return minValue;
+	if (value > maxValue)
+		return maxValue;
+
+	return value;
 }
 
 template<typename T> static constexpr inline T rotateLeft(T value, int amount) {
@@ -87,8 +104,21 @@ template<typename T> static inline void clear(T &obj, uint8_t value = 0) {
 	__builtin_memset(&obj, value, sizeof(obj));
 }
 
+template<typename T> static inline void copy(T &dest, const T &source) {
+	static_assert(
+		sizeof(dest) == sizeof(source),
+		"source and destination sizes do not match"
+	);
+
+	__builtin_memcpy(&dest, &source, sizeof(source));
+}
+
 template<typename T> static constexpr inline size_t countOf(T &array) {
 	return sizeof(array) / sizeof(array[0]);
+}
+
+template<typename T> static constexpr inline auto *endOf(T &array) {
+	return &array[countOf(array)];
 }
 
 /* Concatenation and BCD conversion */

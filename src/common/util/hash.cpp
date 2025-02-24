@@ -209,7 +209,7 @@ static const MD5Round _MD5_ROUNDS[]{
 
 MD5::MD5(void)
 : _blockCount(0), _bufferLength(0) {
-	__builtin_memcpy(_state, _MD5_SEED, sizeof(_state));
+	util::copy(_state, _MD5_SEED);
 }
 
 void MD5::_flushBlock(const void *data) {

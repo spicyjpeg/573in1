@@ -27,18 +27,6 @@
 
 namespace blkdev {
 
-const char *const DEVICE_ERROR_NAMES[]{
-	"NO_ERROR",
-	"UNSUPPORTED_OP",
-	"NO_DRIVE",
-	"NOT_YET_READY",
-	"STATUS_TIMEOUT",
-	"CHECKSUM_MISMATCH",
-	"DRIVE_ERROR",
-	"DISC_ERROR",
-	"DISC_CHANGED"
-};
-
 /* IDE identification block utilities */
 
 static void _copyString(char *output, const uint16_t *input, size_t length) {
