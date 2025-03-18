@@ -52,7 +52,6 @@ App::App(ui::Context &ctx)
 
 App::~App(void) {
 	_unloadCartData();
-	_workerStack.destroy();
 }
 
 void App::_unloadCartData(void) {

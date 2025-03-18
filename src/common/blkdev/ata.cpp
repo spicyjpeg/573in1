@@ -73,7 +73,10 @@ DeviceError ATADevice::_setLBA(uint64_t lba, size_t count, int timeout) {
 }
 
 DeviceError ATADevice::_transfer(
-	uintptr_t ptr, uint64_t lba, size_t count, bool write
+	uintptr_t ptr,
+	uint64_t  lba,
+	size_t    count,
+	bool      write
 ) {
 	uint8_t cmd;
 	size_t  maxLength;
@@ -82,7 +85,7 @@ DeviceError ATADevice::_transfer(
 		cmd       = write ? ATA_WRITE_SECTORS_EXT : ATA_READ_SECTORS_EXT;
 		maxLength = 1 << 16;
 	} else {
-		cmd       = write ? ATA_WRITE_SECTORS : ATA_READ_SECTORS;
+		cmd       = write ? ATA_WRITE_SECTORS     : ATA_READ_SECTORS;
 		maxLength = 1 << 8;
 	}
 
@@ -180,6 +183,54 @@ DeviceError ATADevice::read(void *data, uint64_t lba, size_t count) {
 	return _transfer(reinterpret_cast<uintptr_t>(data), lba, count, false);
 }
 
+DeviceError ATADevice::readStream(
+	StreamCallback callback,
+	uint64_t       lba,
+	size_t         count,
+	void           *arg
+) {
+	if (!type)
+		return NO_DRIVE;
+
+	uint8_t cmd;
+	size_t  maxLength;
+
+	if (flags & SUPPORTS_EXT_LBA) {
+		cmd       = ATA_READ_SECTORS_EXT;
+		maxLength = 1 << 16;
+	} else {
+		cmd       = ATA_READ_SECTORS;
+		maxLength = 1 << 8;
+	}
+
+	while (count) {
+		size_t chunkLength = util::min(count, maxLength);
+		auto   error       = _setLBA(lba, chunkLength);
+
+		if (error)
+			return error;
+
+		_set(CS0_COMMAND, cmd);
+
+		for (size_t i = chunkLength; i > 0; i--) {
+			auto error = _waitForDRQ();
+
+			if (error)
+				return error;
+
+			uint8_t sector[_SECTOR_LENGTH];
+
+			_readData(sector, _SECTOR_LENGTH);
+			callback(sector, _SECTOR_LENGTH, arg);
+		}
+
+		lba   += chunkLength;
+		count -= chunkLength;
+	}
+
+	return _waitForIdle();
+}
+
 DeviceError ATADevice::write(const void *data, uint64_t lba, size_t count) {
 	util::assertAligned<uint32_t>(data);
 
@@ -187,6 +238,7 @@ DeviceError ATADevice::write(const void *data, uint64_t lba, size_t count) {
 		return NO_DRIVE;
 
 	return _transfer(reinterpret_cast<uintptr_t>(data), lba, count, true);
+
 }
 
 DeviceError ATADevice::trim(uint64_t lba, size_t count) {

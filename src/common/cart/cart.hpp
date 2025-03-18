@@ -90,8 +90,8 @@ public:
 		const uint8_t *oldKey
 	) { return UNSUPPORTED_OP; }
 
-	virtual CartError readID(bus::OneWireID *output);
-	virtual CartError readInternalID(bus::OneWireID *output) {
+	virtual CartError readID(bus::OneWireID &output);
+	virtual CartError readInternalID(bus::OneWireID &output) {
 		return UNSUPPORTED_OP;
 	}
 };

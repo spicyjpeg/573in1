@@ -169,7 +169,6 @@ bool nvramDumpWorker(App &app) {
 			entry.region.read(buffer.ptr, offset, chunkLength);
 
 			if (file->write(buffer.ptr, chunkLength) < chunkLength) {
-				buffer.destroy();
 				file->close();
 				delete file;
 
@@ -179,7 +178,6 @@ bool nvramDumpWorker(App &app) {
 			offset += chunkLength;
 		}
 
-		buffer.destroy();
 		file->close();
 		delete file;
 
@@ -333,8 +331,6 @@ bool nvramRestoreWorker(App &app) {
 				if (!error)
 					continue;
 
-				buffers.destroy();
-				chunkLengths.destroy();
 				file->close();
 				delete file;
 				delete driver;
@@ -357,8 +353,6 @@ bool nvramRestoreWorker(App &app) {
 		? "App.nvramRestoreWorker.overflow"_h
 		: "App.nvramRestoreWorker.success"_h;
 
-	buffers.destroy();
-	chunkLengths.destroy();
 	file->close();
 	delete file;
 	delete driver;
@@ -509,14 +503,12 @@ bool flashHeaderWriteWorker(App &app) {
 		}
 	}
 
-	buffer.destroy();
 	delete driver;
 
 	app._ctx.show(app._nvramInfoScreen, true);
 	return true;
 
 _flashError:
-	buffer.destroy();
 	delete driver;
 
 	app._messageScreen.setMessage(

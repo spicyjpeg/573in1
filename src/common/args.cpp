@@ -31,11 +31,12 @@ static constexpr int _DEFAULT_SCREEN_WIDTH  = 320;
 static constexpr int _DEFAULT_SCREEN_HEIGHT = 240;
 
 CommonArgs::CommonArgs(void)
+:
 #ifdef NDEBUG
-: baudRate(0) {}
+	baudRate(0) {}
 #else
-// Enable serial port logging by default in debug builds.
-: baudRate(_DEFAULT_BAUD_RATE) {}
+	// Enable serial port logging by default in debug builds.
+	baudRate(_DEFAULT_BAUD_RATE) {}
 #endif
 
 
@@ -64,8 +65,12 @@ bool CommonArgs::parseArgument(const char *arg) {
 }
 
 MainArgs::MainArgs(void)
-: screenWidth(_DEFAULT_SCREEN_WIDTH), screenHeight(_DEFAULT_SCREEN_HEIGHT),
-forceInterlace(false), resourcePtr(nullptr), resourceLength(0) {}
+:
+	screenWidth(_DEFAULT_SCREEN_WIDTH),
+	screenHeight(_DEFAULT_SCREEN_HEIGHT),
+	forceInterlace(false),
+	resourcePtr(nullptr),
+	resourceLength(0) {}
 
 bool MainArgs::parseArgument(const char *arg) {
 	if (!arg)
@@ -102,8 +107,15 @@ bool MainArgs::parseArgument(const char *arg) {
 }
 
 ExecutableLauncherArgs::ExecutableLauncherArgs(void)
-: loadAddress(nullptr), entryPoint(nullptr), initialGP(nullptr),
-stackTop(nullptr), deviceType(0), deviceIndex(0), numFragments(0), numArgs(0) {}
+:
+	loadAddress(nullptr),
+	entryPoint(nullptr),
+	initialGP(nullptr),
+	stackTop(nullptr),
+	deviceType(0),
+	deviceIndex(0),
+	numFragments(0),
+	numArgs(0) {}
 
 bool ExecutableLauncherArgs::parseArgument(const char *arg) {
 	if (!arg)

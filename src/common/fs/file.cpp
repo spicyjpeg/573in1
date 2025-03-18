@@ -156,7 +156,6 @@ size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 		loadLength += gpu::upload(image->vram, image->getData(), true);
 	}
 
-	data.destroy();
 	return loadLength;
 }
 
@@ -198,11 +197,8 @@ size_t Provider::loadBS(
 				slice.x    += 16;
 			}
 		}
-
-		buffer.destroy();
 	}
 
-	data.destroy();
 	return loadLength;
 }
 
@@ -225,7 +221,6 @@ size_t Provider::loadVAG(
 			true
 		);
 
-	data.destroy();
 	return loadLength;
 }
 
@@ -298,8 +293,6 @@ size_t Provider::saveVRAMBMP(const gpu::RectWH &rect, const char *path) {
 
 			length += file->write(buffer.ptr, lineLength);
 		}
-
-		buffer.destroy();
 	}
 
 	file->close();

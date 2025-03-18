@@ -20,7 +20,6 @@
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 #include "common/mdec.hpp"
-#include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "ps1/system.h"
 
@@ -28,14 +27,16 @@ namespace mdec {
 
 /* IDCT matrix and quantization table */
 
-static constexpr int16_t SF0 = 0x5a82; // cos(0/16 * pi) * sqrt(2)
-static constexpr int16_t SF1 = 0x7d8a; // cos(1/16 * pi) * 2
-static constexpr int16_t SF2 = 0x7641; // cos(2/16 * pi) * 2
-static constexpr int16_t SF3 = 0x6a6d; // cos(3/16 * pi) * 2
-static constexpr int16_t SF4 = 0x5a82; // cos(4/16 * pi) * 2
-static constexpr int16_t SF5 = 0x471c; // cos(5/16 * pi) * 2
-static constexpr int16_t SF6 = 0x30fb; // cos(6/16 * pi) * 2
-static constexpr int16_t SF7 = 0x18f8; // cos(7/16 * pi) * 2
+enum IDCTScaleFactor : int16_t {
+	SF0 = 0x5a82, // cos(0/16 * pi) * sqrt(2)
+	SF1 = 0x7d8a, // cos(1/16 * pi) * 2
+	SF2 = 0x7641, // cos(2/16 * pi) * 2
+	SF3 = 0x6a6d, // cos(3/16 * pi) * 2
+	SF4 = 0x5a82, // cos(4/16 * pi) * 2
+	SF5 = 0x471c, // cos(5/16 * pi) * 2
+	SF6 = 0x30fb, // cos(6/16 * pi) * 2
+	SF7 = 0x18f8  // cos(7/16 * pi) * 2
+};
 
 static const int16_t _IDCT_TABLE[]{
 	SF0,  SF0,  SF0,  SF0,  SF0,  SF0,  SF0,  SF0,
@@ -138,83 +139,44 @@ size_t receive(void *data, size_t length, bool wait) {
 
 /* Asynchronous MDEC-to-VRAM image uploader */
 
-static void _uploadBlock(int16_t x, int16_t y, size_t blockWidth) {
-	while (!(GPU_GP1 & GP1_STAT_CMD_READY))
-		__asm__ volatile("");
+VRAMUploader::VRAMUploader(int width, int height, GP1ColorDepth colorDepth)
+: _frameWidth(width) {
+	_currentSlice.w = colorDepth ? (MACROBLOCK_SIZE * 3 / 2) : MACROBLOCK_SIZE;
+	_currentSlice.h = height;
 
-	GPU_GP0 = gp0_vramWrite();
-	GPU_GP0 = gp0_xy(x, y);
-	GPU_GP0 = gp0_xy(blockWidth, MACROBLOCK_SIZE);
+	auto sliceLength = _currentSlice.w * _currentSlice.h * 2;
 
-	for (size_t i = blockWidth; i > 0; i -= 2) {
-		// In order to maximize efficiency, saturate the GP0 FIFO by copying
-		// 16 words (32 pixels in 16bpp mode) at a time.
-		while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
-			__asm__ volatile("");
-
-		for (int j = 4; j > 0; j--) {
-			GPU_GP0 = MDEC0;
-			GPU_GP0 = MDEC0;
-			GPU_GP0 = MDEC0;
-			GPU_GP0 = MDEC0;
-		}
-	}
+	_buffers[0].allocate(sliceLength);
+	_buffers[1].allocate(sliceLength);
 }
 
-VRAMUploader::VRAMUploader(const gpu::Rect &rect, GP1ColorDepth colorDepth) {
-	_x          = rect.x1;
-	_y          = rect.y1;
-	_blockWidth = colorDepth ? (MACROBLOCK_SIZE * 3 / 2) : MACROBLOCK_SIZE;
+void VRAMUploader::newFrame(int x, int y) {
+	receive(_buffers[0].ptr, _buffers[0].length);
 
-	_clip.x1 = rect.x1;
-	_clip.y1 = rect.y1;
-	_clip.x2 = rect.x2 + _blockWidth     - 1;
-	_clip.y2 = rect.y2 + MACROBLOCK_SIZE - 1;
-
+	_boundaryX      = x + _frameWidth;
+	_currentSlice.x = x;
+	_currentSlice.y = y;
+	_currentBuffer  = 0;
 }
 
-VRAMUploader::VRAMUploader(const gpu::RectWH &rect, GP1ColorDepth colorDepth) {
-	_x          = rect.x;
-	_y          = rect.y;
-	_blockWidth = colorDepth ? (MACROBLOCK_SIZE * 3 / 2) : MACROBLOCK_SIZE;
-
-	_clip.x1 = rect.x;
-	_clip.y1 = rect.y;
-	_clip.x2 = rect.x + rect.w + _blockWidth     - 1;
-	_clip.y2 = rect.y + rect.h + MACROBLOCK_SIZE - 1;
-}
-
-bool VRAMUploader::pollRowMajor(void) {
-	if (_y >= _clip.y2)
+bool VRAMUploader::poll(void) {
+	if (_currentSlice.x >= _boundaryX)
 		return false;
 
-	while (MDEC1 & MDEC_STAT_DREQ_OUT) {
-		_uploadBlock(_x, _y, _blockWidth);
+	if (
+		!(DMA_CHCR(DMA_MDEC_OUT) & DMA_CHCR_ENABLE) &&
+		!(DMA_CHCR(DMA_GPU)      & DMA_CHCR_ENABLE)
+	) {
+		auto &oldBuffer = _buffers[_currentBuffer];
+		auto &newBuffer = _buffers[_currentBuffer ^ 1];
 
-		_x += _blockWidth;
+		gpu::upload(_currentSlice, oldBuffer.ptr);
 
-		if (_x >= _clip.x2) {
-			_x  = _clip.x1;
-			_y += MACROBLOCK_SIZE;
-		}
-	}
+		_currentSlice.x += _currentSlice.w;
+		_currentBuffer  ^= 1;
 
-	return true;
-}
-
-bool VRAMUploader::pollColumnMajor(void) {
-	if (_x >= _clip.x2)
-		return false;
-
-	while (MDEC1 & MDEC_STAT_DREQ_OUT) {
-		_uploadBlock(_x, _y, _blockWidth);
-
-		_y += MACROBLOCK_SIZE;
-
-		if (_y >= _clip.y2) {
-			_y  = _clip.y1;
-			_x += _blockWidth;
-		}
+		if (_currentSlice.x < _boundaryX)
+			receive(newBuffer.ptr, newBuffer.length);
 	}
 
 	return true;
@@ -246,9 +208,9 @@ static constexpr inline uint32_t acl(int rl, int coeff, int length) {
 #define PAIR4(rl, coeff) AC4(rl, coeff), AC4(rl, -(coeff))
 #define PAIR8(rl, coeff) AC8(rl, coeff), AC8(rl, -(coeff))
 
-#define ACL2(rl, coeff, length)   acl (rl, coeff, length), acl (rl, coeff, length)
-#define ACL4(rl, coeff, length)   ACL2(rl, coeff, length), ACL2(rl, coeff, length)
-#define ACL8(rl, coeff, length)   ACL4(rl, coeff, length), ACL4(rl, coeff, length)
+#define ACL2(rl, coeff, length)   acl (rl, coeff, length), acl (rl, coeff,    length)
+#define ACL4(rl, coeff, length)   ACL2(rl, coeff, length), ACL2(rl, coeff,    length)
+#define ACL8(rl, coeff, length)   ACL4(rl, coeff, length), ACL4(rl, coeff,    length)
 #define PAIRL(rl, coeff, length)  acl (rl, coeff, length), acl (rl, -(coeff), length)
 #define PAIRL2(rl, coeff, length) ACL2(rl, coeff, length), ACL2(rl, -(coeff), length)
 #define PAIRL4(rl, coeff, length) ACL4(rl, coeff, length), ACL4(rl, -(coeff), length)
@@ -257,8 +219,8 @@ static constexpr inline uint32_t acl(int rl, int coeff, int length) {
 struct BSHuffmanTable {
 public:
 	uint16_t ac0[2];
-	uint32_t ac2[8],  ac3 [64];
-	uint16_t ac4[8],  ac5 [8],  ac7 [16], ac8 [32];
+	uint32_t ac2[8],  ac3[64];
+	uint16_t ac4[8],  ac5[8],   ac7 [16], ac8[32];
 	uint16_t ac9[32], ac10[32], ac11[32], ac12[32];
 
 	uint8_t dcValues[128], dcLengths[9];

@@ -72,9 +72,6 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 
 		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
-		while (!(GPU_GP1 & GP1_STAT_WRITE_READY))
-			__asm__ volatile("");
-
 		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
 		DMA_BCR (DMA_GPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 		DMA_CHCR(DMA_GPU) = 0
@@ -117,9 +114,6 @@ size_t download(const RectWH &rect, void *data, bool wait) {
 
 		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_READ);
 
-		while (!(GPU_GP1 & GP1_STAT_READ_READY))
-			__asm__ volatile("");
-
 		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
 		DMA_BCR (DMA_GPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 		DMA_CHCR(DMA_GPU) = 0
@@ -134,10 +128,35 @@ size_t download(const RectWH &rect, void *data, bool wait) {
 	return length * _DMA_CHUNK_SIZE * 4;
 }
 
+void sendLinkedList(const void *data, bool wait) {
+	util::assertAligned<uint32_t>(data);
+
+	if (!waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT))
+		return;
+
+	{
+		util::CriticalSection sec;
+
+		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
+
+		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+		DMA_CHCR(DMA_GPU) = 0
+			| DMA_CHCR_WRITE
+			| DMA_CHCR_MODE_LIST
+			| DMA_CHCR_ENABLE;
+	}
+
+	if (wait)
+		waitForDMATransfer(DMA_GPU, _DMA_TIMEOUT);
+}
+
 /* Rendering context */
 
 void Context::_applyResolution(
-	VideoMode mode, bool forceInterlace, int shiftX, int shiftY
+	VideoMode mode,
+	bool      forceInterlace,
+	int       shiftX,
+	int       shiftY
 ) const {
 	GP1HorizontalRes hres;
 	GP1VerticalRes   vres;
@@ -180,7 +199,8 @@ void Context::_applyResolution(
 }
 
 void Context::flip(void) {
-	auto &oldBuffer = _drawBuffer(), &newBuffer = _dispBuffer();
+	auto &oldBuffer = _buffers[_currentBuffer];
+	auto &newBuffer = _buffers[_currentBuffer ^ 1];
 
 	// Ensure the GPU has finished drawing the previous frame.
 	while (!isIdle())
@@ -201,23 +221,22 @@ void Context::flip(void) {
 		}
 	}
 
-	*_currentListPtr = gp0_endTag(0);
-	_currentListPtr  = newBuffer.displayList;
-	_currentBuffer  ^= 1;
-
 	GPU_GP1 = gp1_fbOffset(newBuffer.clip.x1, newBuffer.clip.y1);
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
-	DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(oldBuffer.displayList);
-	DMA_CHCR(DMA_GPU) = 0
-		| DMA_CHCR_WRITE
-		| DMA_CHCR_MODE_LIST
-		| DMA_CHCR_ENABLE;
+	sendLinkedList(oldBuffer.displayList);
+
+	*_currentListPtr = gp0_endTag(0);
+	_currentListPtr  = newBuffer.displayList;
+	_currentBuffer  ^= 1;
 }
 
 void Context::setResolution(
-	VideoMode mode, int _width, int _height, bool forceInterlace,
-	bool sideBySide
+	VideoMode mode,
+	int       _width,
+	int       _height,
+	bool      forceInterlace,
+	bool      sideBySide
 ) {
 	util::CriticalSection sec;
 
@@ -254,14 +273,17 @@ uint32_t *Context::newPacket(size_t length) {
 	auto ptr        = _currentListPtr;
 	_currentListPtr = &ptr[length + 1];
 
-	assert(_currentListPtr <= &_drawBuffer().displayList[DISPLAY_LIST_SIZE]);
+	assert(
+		_currentListPtr <=
+		&(_buffers[_currentBuffer].displayList[DISPLAY_LIST_SIZE])
+	);
 
 	*(ptr++) = gp0_tag(length, _currentListPtr);
 	return ptr;
 }
 
 void Context::newLayer(int x, int y, int drawWidth, int drawHeight) {
-	auto &clip = _drawBuffer().clip;
+	auto &clip = _buffers[_currentBuffer].clip;
 
 	x += clip.x1;
 	y += clip.y1;
@@ -298,7 +320,12 @@ void Context::setBlendMode(BlendMode blendMode, bool dither) {
 }
 
 void Context::drawRect(
-	int x, int y, int width, int height, Color color, bool blend
+	int   x,
+	int   y,
+	int   width,
+	int   height,
+	Color color,
+	bool  blend
 ) {
 	auto cmd = newPacket(3);
 
@@ -308,7 +335,13 @@ void Context::drawRect(
 }
 
 void Context::drawGradientRectH(
-	int x, int y, int width, int height, Color left, Color right, bool blend
+	int   x,
+	int   y,
+	int   width,
+	int   height,
+	Color left,
+	Color right,
+	bool  blend
 ) {
 	auto cmd = newPacket(8);
 
@@ -323,7 +356,13 @@ void Context::drawGradientRectH(
 }
 
 void Context::drawGradientRectV(
-	int x, int y, int width, int height, Color top, Color bottom, bool blend
+	int   x,
+	int   y,
+	int   width,
+	int   height,
+	Color top,
+	Color bottom,
+	bool  blend
 ) {
 	auto cmd = newPacket(8);
 
@@ -338,8 +377,14 @@ void Context::drawGradientRectV(
 }
 
 void Context::drawGradientRectD(
-	int x, int y, int width, int height, Color top, Color middle, Color bottom,
-	bool blend
+	int   x,
+	int   y,
+	int   width,
+	int   height,
+	Color top,
+	Color middle,
+	Color bottom,
+	bool  blend
 ) {
 	auto cmd = newPacket(8);
 
@@ -356,7 +401,9 @@ void Context::drawGradientRectD(
 /* Image class */
 
 void Image::initFromVRAMRect(
-	const RectWH &rect, ColorDepth colorDepth, BlendMode blendMode
+	const RectWH &rect,
+	ColorDepth   colorDepth,
+	BlendMode    blendMode
 ) {
 	int shift = 2 - int(colorDepth);
 
@@ -382,7 +429,12 @@ bool Image::initFromTIMHeader(const TIMHeader &header, BlendMode blendMode) {
 }
 
 void Image::drawScaled(
-	Context &ctx, int x, int y, int w, int h, bool blend
+	Context &ctx,
+	int     x,
+	int     y,
+	int     w,
+	int     h,
+	bool    blend
 ) const {
 	int x2 = x + w, u2 = u + width;
 	int y2 = y + h, v2 = v + height;
@@ -444,13 +496,18 @@ static void _loadQRCode(Image &output, int x, int y, const uint32_t *qrCode) {
 }
 
 bool generateQRCode(
-	Image &output, int x, int y, const char *str, qrcodegen_Ecc ecc
+	Image         &output,
+	int           x,
+	int           y,
+	const char    *str,
+	qrcodegen_Ecc ecc
 ) {
 	uint32_t qrCode[qrcodegen_BUFFER_LEN_MAX];
 	uint32_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
 
 	auto segment = qrcodegen_makeAlphanumeric(
-		str, reinterpret_cast<uint8_t *>(tempBuffer)
+		str,
+		reinterpret_cast<uint8_t *>(tempBuffer)
 	);
 
 	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode))
@@ -461,14 +518,20 @@ bool generateQRCode(
 }
 
 bool generateQRCode(
-	Image &output, int x, int y, const uint8_t *data, size_t length,
+	Image         &output,
+	int           x,
+	int           y,
+	const uint8_t *data,
+	size_t        length,
 	qrcodegen_Ecc ecc
 ) {
 	uint32_t qrCode[qrcodegen_BUFFER_LEN_MAX];
 	uint32_t tempBuffer[qrcodegen_BUFFER_LEN_MAX];
 
 	auto segment = qrcodegen_makeBytes(
-		data, length, reinterpret_cast<uint8_t *>(tempBuffer)
+		data,
+		length,
+		reinterpret_cast<uint8_t *>(tempBuffer)
 	);
 
 	if (!qrcodegen_encodeSegments(&segment, 1, ecc, tempBuffer, qrCode))

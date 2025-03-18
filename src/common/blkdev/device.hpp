@@ -45,6 +45,8 @@ public:
 
 static constexpr size_t MAX_SECTOR_LENGTH = 2048;
 
+using StreamCallback = void (*)(const void *data, size_t length, void *arg);
+
 enum DeviceType : uint8_t {
 	NONE        = 0,
 	ATA         = 1,
@@ -102,6 +104,12 @@ public:
 	virtual DeviceError read(void *data, uint64_t lba, size_t count) {
 		return UNSUPPORTED_OP;
 	}
+	virtual DeviceError readStream(
+		StreamCallback callback,
+		uint64_t       lba,
+		size_t         count,
+		void           *arg
+	);
 	virtual DeviceError write(const void *data, uint64_t lba, size_t count) {
 		return UNSUPPORTED_OP;
 	}

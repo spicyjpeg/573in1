@@ -131,8 +131,8 @@ public:
 	CartError writeConfig(const uint8_t *config, const uint8_t *key);
 	CartError setKey(const uint8_t *newKey, const uint8_t *oldKey);
 
-	CartError readID(bus::OneWireID *output);
-	CartError readInternalID(bus::OneWireID *output);
+	CartError readID(bus::OneWireID &output);
+	CartError readInternalID(bus::OneWireID &output);
 };
 
 }

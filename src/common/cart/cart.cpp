@@ -25,7 +25,7 @@ namespace cart {
 
 /* Base security cartridge driver class */
 
-CartError Cart::readID(bus::OneWireID *output) {
+CartError Cart::readID(bus::OneWireID &output) {
 	return sys573::cartDS2401.readID(output)
 		? NO_ERROR
 		: NO_DEVICE;

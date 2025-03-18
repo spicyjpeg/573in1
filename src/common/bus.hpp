@@ -171,7 +171,7 @@ public:
 	uint8_t readByte(void) const;
 	void writeByte(uint8_t value) const;
 
-	bool readID(OneWireID *output) const;
+	bool readID(OneWireID &output) const;
 };
 
 }

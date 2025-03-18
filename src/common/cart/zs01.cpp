@@ -336,7 +336,7 @@ CartError ZS01Cart::setKey(const uint8_t *newKey, const uint8_t *oldKey) {
 	return _transact(packet, packet);
 }
 
-CartError ZS01Cart::readID(bus::OneWireID *output) {
+CartError ZS01Cart::readID(bus::OneWireID &output) {
 	ZS01Packet packet;
 
 	packet.setRead(ZS01_ADDR_DS2401_ID);
@@ -347,11 +347,11 @@ CartError ZS01Cart::readID(bus::OneWireID *output) {
 	if (error)
 		return error;
 
-	__builtin_memcpy(output, packet.data, sizeof(bus::OneWireID));
-	return output->validateChecksum() ? NO_ERROR : INVALID_ID;
+	__builtin_memcpy(&output, packet.data, sizeof(bus::OneWireID));
+	return output.validateChecksum() ? NO_ERROR : INVALID_ID;
 }
 
-CartError ZS01Cart::readInternalID(bus::OneWireID *output) {
+CartError ZS01Cart::readInternalID(bus::OneWireID &output) {
 	ZS01Packet packet;
 
 	packet.setRead(ZS01_ADDR_ZS01_ID);
@@ -362,8 +362,8 @@ CartError ZS01Cart::readInternalID(bus::OneWireID *output) {
 	if (error)
 		return error;
 
-	__builtin_memcpy(output, packet.data, sizeof(bus::OneWireID));
-	return output->validateChecksum() ? NO_ERROR : INVALID_ID;
+	__builtin_memcpy(&output, packet.data, sizeof(bus::OneWireID));
+	return output.validateChecksum() ? NO_ERROR : INVALID_ID;
 }
 
 }

@@ -374,11 +374,9 @@ bool ISO9660Provider::_getRecord(
 		path      += nameLength;
 		auto found = _getRecord(output, *record, path);
 
-		records.destroy();
 		return found;
 	}
 
-	records.destroy();
 	LOG_FS("not found: %s", path);
 	return false;
 }

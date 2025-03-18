@@ -265,8 +265,6 @@ bool executableWorker(App &app) {
 				))
 					continue;
 
-				fragments.destroy();
-
 				app._messageScreen.setMessage(
 					MESSAGE_ERROR,
 					WSTR("App.executableWorker.fragmentError"),

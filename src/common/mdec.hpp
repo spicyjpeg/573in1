@@ -18,13 +18,18 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 
 namespace mdec {
 
-static constexpr int MACROBLOCK_SIZE = 16;
+static constexpr int    MACROBLOCK_SIZE         = 16;
+static constexpr size_t MACROBLOCK_LENGTH_16BPP =
+	MACROBLOCK_SIZE * MACROBLOCK_SIZE * 2;
+static constexpr size_t MACROBLOCK_LENGTH_24BPP =
+	MACROBLOCK_SIZE * MACROBLOCK_SIZE * 3;
 
 /* Basic API */
 
@@ -33,11 +38,16 @@ size_t feed(const void *data, size_t length, bool wait = false);
 size_t receive(void *data, size_t length, bool wait = false);
 
 static inline bool isIdle(void) {
-	return !(MDEC1 & MDEC_STAT_BUSY);
+	return (
+		!(DMA_CHCR(DMA_MDEC_IN) & DMA_CHCR_ENABLE) &&
+		(MDEC1 & MDEC_STAT_BUSY)
+	);
 }
 
 static inline size_t feedDecodedBS(
-	const uint32_t *data, uint32_t flags, bool wait = false
+	const uint32_t *data,
+	uint32_t       flags,
+	bool           wait = false
 ) {
 	size_t length = data[0] & MDEC_CMD_FLAG_LENGTH_BITMASK;
 
@@ -47,29 +57,23 @@ static inline size_t feedDecodedBS(
 
 /* Asynchronous MDEC-to-VRAM image uploader */
 
-// The MDEC returns decoded macroblocks as a series of 16x16 RGB bitmaps. In
-// order to reshuffle them into a single image, each bitmap must be retrieved
-// from the MDEC and uploaded to VRAM separately. Due to the limited length and
-// overhead of each transfer, this task is best suited to a coroutine-like
-// polling implementation rather than using DMA and interrupts.
 class VRAMUploader {
 private:
-	int16_t   _x, _y;
-	size_t    _blockWidth;
-	gpu::Rect _clip;
+	util::Data _buffers[2];
+	int        _currentBuffer;
+
+	int16_t     _frameWidth, _boundaryX;
+	gpu::RectWH _currentSlice;
 
 public:
 	VRAMUploader(
-		const gpu::Rect &rect,
-		GP1ColorDepth   colorDepth = GP1_COLOR_16BPP
-	);
-	VRAMUploader(
-		const gpu::RectWH &rect,
-		GP1ColorDepth     colorDepth = GP1_COLOR_16BPP
+		int           width,
+		int           height,
+		GP1ColorDepth colorDepth = GP1_COLOR_16BPP
 	);
 
-	bool pollRowMajor(void);
-	bool pollColumnMajor(void);
+	void newFrame(int x, int y);
+	bool poll(void);
 };
 
 /* MDEC bitstream decompressor */
@@ -95,11 +99,18 @@ enum BSDecompressorError {
 	DECODE_ERROR = 2
 };
 
+class BSDecompressor;
+
 extern "C" BSDecompressorError _bsDecompressorStart(
-	void *_this, uint32_t *output, size_t outputLength, const void *input
+	BSDecompressor *_this,
+	uint32_t       *output,
+	size_t         outputLength,
+	const void     *input
 );
 extern "C" BSDecompressorError _bsDecompressorResume(
-	void *_this, uint32_t *output, size_t outputLength
+	BSDecompressor *_this,
+	uint32_t       *output,
+	size_t         outputLength
 );
 
 class BSDecompressor {
@@ -117,7 +128,9 @@ protected:
 
 public:
 	inline BSDecompressorError decompress(
-		uint32_t *output, const void *input, size_t outputLength
+		uint32_t   *output,
+		const void *input,
+		size_t     outputLength
 	) {
 		return _bsDecompressorStart(this, output, outputLength, input);
 	}

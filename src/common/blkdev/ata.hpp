@@ -82,9 +82,7 @@ enum ATATransferModeFlag : uint8_t {
 class ATADevice : public IDEDevice {
 private:
 	DeviceError _setLBA(uint64_t lba, size_t count, int timeout = 0);
-	DeviceError _transfer(
-		uintptr_t ptr, uint64_t lba, size_t count, bool write
-	);
+	DeviceError _transfer(uintptr_t ptr, uint64_t lba, size_t count, bool write);
 
 public:
 	inline ATADevice(int index)
@@ -95,6 +93,12 @@ public:
 	void handleInterrupt(void);
 
 	DeviceError read(void *data, uint64_t lba, size_t count);
+	DeviceError readStream(
+		StreamCallback callback,
+		uint64_t       lba,
+		size_t         count,
+		void           *arg
+	);
 	DeviceError write(const void *data, uint64_t lba, size_t count);
 	DeviceError trim(uint64_t lba, size_t count);
 	DeviceError flushCache(void);

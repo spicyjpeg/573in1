@@ -297,7 +297,7 @@ DeviceError ATAPIDevice::read(void *data, uint64_t lba, size_t count) {
 	auto ptr = reinterpret_cast<uintptr_t>(data);
 
 	for (; count; count--) {
-		auto error = _waitForDRQ();
+		error = _waitForDRQ();
 
 		if (error)
 			return error;
@@ -306,6 +306,40 @@ DeviceError ATAPIDevice::read(void *data, uint64_t lba, size_t count) {
 
 		_readData(reinterpret_cast<void *>(ptr), chunkLength);
 		ptr += chunkLength;
+	}
+
+	return _waitForIdle();
+}
+
+DeviceError ATAPIDevice::readStream(
+	StreamCallback callback,
+	uint64_t       lba,
+	size_t         count,
+	void           *arg
+) {
+	if (!type)
+		return NO_DRIVE;
+
+	ATAPIPacket packet;
+
+	packet.setRead(lba, count);
+
+	auto error = _issuePacket(packet, _SECTOR_LENGTH);
+
+	if (error)
+		return error;
+
+	for (; count; count--) {
+		error = _waitForDRQ();
+
+		if (error)
+			return error;
+
+		uint8_t sector[_SECTOR_LENGTH];
+		size_t  chunkLength = _getCylinder();
+
+		_readData(sector, chunkLength);
+		callback(sector, chunkLength, arg);
 	}
 
 	return _waitForIdle();

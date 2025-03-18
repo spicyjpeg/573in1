@@ -52,6 +52,30 @@ uint32_t BCDMSF::toLBA(void) const {
 		+ util::decodeBCD(frame);
 }
 
+/* Base block device class */
+
+// This is a fallback implementation of readStream() used if the device class
+// does not provide a more efficient one.
+DeviceError Device::readStream(
+	StreamCallback callback,
+	uint64_t       lba,
+	size_t         count,
+	void           *arg
+) {
+	uint8_t sector[MAX_SECTOR_LENGTH];
+
+	for (; count > 0; count--) {
+		auto error = read(sector, lba++, 1);
+
+		if (error)
+			return error;
+
+		callback(sector, sectorLength, arg);
+	}
+
+	return NO_ERROR;
+}
+
 /* Utilities */
 
 const char *const DEVICE_ERROR_NAMES[]{

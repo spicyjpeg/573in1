@@ -41,16 +41,12 @@ public:
 	int16_t x, y, w, h;
 };
 
-struct RectRB {
-public:
-	int16_t x, y, r, b;
-};
-
 /* Basic API */
 
 static inline bool isIdle(void) {
 	return (
-		!(DMA_CHCR(DMA_GPU) & DMA_CHCR_ENABLE) && (GPU_GP1 & GP1_STAT_CMD_READY)
+		!(DMA_CHCR(DMA_GPU) & DMA_CHCR_ENABLE) &&
+		(GPU_GP1 & GP1_STAT_CMD_READY)
 	);
 }
 
@@ -61,6 +57,7 @@ static inline void enableDisplay(bool enable) {
 void init(void);
 size_t upload(const RectWH &rect, const void *data, bool wait = false);
 size_t download(const RectWH &rect, void *data, bool wait = false);
+void sendLinkedList(const void *data, bool wait = false);
 
 /* Rendering context */
 
@@ -81,24 +78,22 @@ private:
 
 	uint32_t _lastTexpage;
 
-	inline Buffer &_drawBuffer(void) {
-		return _buffers[_currentBuffer];
-	}
-	inline Buffer &_dispBuffer(void) {
-		return _buffers[_currentBuffer ^ 1];
-	}
-
 	void _applyResolution(
-		VideoMode mode, bool forceInterlace = false, int shiftX = 0,
-		int shiftY = 0
+		VideoMode mode,
+		bool      forceInterlace = false,
+		int       shiftX = 0,
+		int       shiftY = 0
 	) const;
 
 public:
 	int width, height, refreshRate;
 
 	inline Context(
-		VideoMode mode, int width, int height, bool forceInterlace = false,
-		bool sideBySide = false
+		VideoMode mode,
+		int       width,
+		int       height,
+		bool      forceInterlace = false,
+		bool      sideBySide = false
 	) : _lastTexpage(0) {
 		setResolution(mode, width, height, forceInterlace, sideBySide);
 	}
@@ -119,17 +114,27 @@ public:
 		drawRect(rect.x, rect.y, rect.w, rect.h, color, blend);
 	}
 	inline void drawGradientRectH(
-		RectWH &rect, Color left, Color right, bool blend = false
+		RectWH &rect,
+		Color  left,
+		Color  right,
+		bool   blend = false
 	) {
 		drawGradientRectH(rect.x, rect.y, rect.w, rect.h, left, right, blend);
 	}
 	inline void drawGradientRectV(
-		RectWH &rect, Color top, Color bottom, bool blend = false
+		RectWH &rect,
+		Color  top,
+		Color  bottom,
+		bool   blend = false
 	) {
 		drawGradientRectV(rect.x, rect.y, rect.w, rect.h, top, bottom, blend);
 	}
 	inline void drawGradientRectD(
-		RectWH &rect, Color top, Color middle, Color bottom, bool blend = false
+		RectWH &rect,
+		Color  top,
+		Color  middle,
+		Color  bottom,
+		bool   blend = false
 	) {
 		drawGradientRectD(
 			rect.x, rect.y, rect.w, rect.h, top, middle, bottom, blend
@@ -145,8 +150,11 @@ public:
 	}
 
 	void setResolution(
-		VideoMode mode, int width, int height, bool forceInterlace = false,
-		bool sideBySide = false
+		VideoMode mode,
+		int       width,
+		int       height,
+		bool      forceInterlace = false,
+		bool      sideBySide     = false
 	);
 	void flip(void);
 
@@ -156,19 +164,40 @@ public:
 	void setBlendMode(BlendMode blendMode, bool dither = false);
 
 	void drawRect(
-		int x, int y, int width, int height, Color color, bool blend = false
+		int   x,
+		int   y,
+		int   width,
+		int   height,
+		Color color,
+		bool  blend = false
 	);
 	void drawGradientRectH(
-		int x, int y, int width, int height, Color left, Color right,
-		bool blend = false
+		int   x,
+		int   y,
+		int   width,
+		int   height,
+		Color left,
+		Color right,
+		bool  blend = false
 	);
 	void drawGradientRectV(
-		int x, int y, int width, int height, Color top, Color bottom,
-		bool blend = false
+		int   x,
+		int   y,
+		int   width,
+		int   height,
+		Color top,
+		Color bottom,
+		bool  blend = false
 	);
 	void drawGradientRectD(
-		int x, int y, int width, int height, Color top, Color middle,
-		Color bottom, bool blend = false
+		int   x,
+		int   y,
+		int   width,
+		int   height,
+		Color top,
+		Color middle,
+		Color bottom,
+		bool  blend = false
 	);
 };
 
@@ -225,14 +254,21 @@ public:
 	: width(0), height(0) {}
 
 	void initFromVRAMRect(
-		const RectWH &rect, ColorDepth colorDepth,
-		BlendMode blendMode = GP0_BLEND_SEMITRANS
+		const RectWH &rect,
+		ColorDepth   colorDepth,
+		BlendMode    blendMode = GP0_BLEND_SEMITRANS
 	);
 	bool initFromTIMHeader(
-		const TIMHeader &header, BlendMode blendMode = GP0_BLEND_SEMITRANS
+		const TIMHeader &header,
+		BlendMode       blendMode = GP0_BLEND_SEMITRANS
 	);
 	void drawScaled(
-		Context &ctx, int x, int y, int w, int h, bool blend = false
+		Context &ctx,
+		int     x,
+		int     y,
+		int     w,
+		int     h,
+		bool    blend = false
 	) const;
 	void draw(Context &ctx, int x, int y, bool blend = false) const;
 };
@@ -240,11 +276,18 @@ public:
 /* QR code encoder */
 
 bool generateQRCode(
-	Image &output, int x, int y, const char *str,
+	Image         &output,
+	int           x,
+	int           y,
+	const char    *str,
 	qrcodegen_Ecc ecc = qrcodegen_Ecc_MEDIUM
 );
 bool generateQRCode(
-	Image &output, int x, int y, const uint8_t *data, size_t length,
+	Image         &output,
+	int           x,
+	int           y,
+	const uint8_t *data,
+	size_t        length,
 	qrcodegen_Ecc ecc = qrcodegen_Ecc_MEDIUM
 );
 

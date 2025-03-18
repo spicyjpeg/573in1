@@ -257,6 +257,12 @@ public:
 	void handleInterrupt(void);
 
 	DeviceError read(void *data, uint64_t lba, size_t count);
+	DeviceError readStream(
+		StreamCallback callback,
+		uint64_t       lba,
+		size_t         count,
+		void           *arg
+	);
 
 	DeviceError goIdle(bool standby = false);
 	DeviceError eject(bool close = false);

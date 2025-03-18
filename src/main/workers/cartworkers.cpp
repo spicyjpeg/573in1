@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "common/bus.hpp"
 #include "common/fs/file.hpp"
 #include "common/sys573/ioboard.hpp"
 #include "common/util/hash.hpp"
@@ -117,7 +118,10 @@ _cartInitDone:
 
 		if (!ready)
 			goto _done;
-		if (!app._ioBoard->ds2401->readID(app._cartDump.systemID.data))
+
+		auto id = reinterpret_cast<bus::OneWireID *>(&app._cartDump.systemID);
+
+		if (!app._ioBoard->ds2401->readID(*id))
 			LOG_APP("XID error");
 	}
 
