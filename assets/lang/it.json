@@ -52,7 +52,7 @@
 		},
 		"cartDumpWorker": {
 			"save":    "Salvataggio dump in corso...\nNon spegnere il 573 o rimuovere dischi.",
-			"success": "Il dump della security cart e dei suoi ID è stato salvato. Usa lo script decodeDump.py fornito con 573in1 per visualizzare e decodificare il dump.\n\nFile: %s",
+			"success": "Il dump della security cart e dei suoi ID è stato salvato. Usa lo script decodeCartDump.py fornito con 573in1 per visualizzare e decodificare il dump.\n\nFile: %s",
 			"error":   "Si è verificato un errore durante il salvataggio del dump. Spegni il 573 e assicurati che il dispositivo sia connesso al bus IDE, abbia i jumper appropriati e sia formattato con una sola partizione FAT16, FAT32 o exFAT.\n\nFile: %s\nPremi il pulsante Test per mostrare i log di debug."
 		},
 		"executableWorker": {
@@ -656,7 +656,7 @@
 
 	"QRCodeScreen": {
 		"title":  "▸ Dump security cart",
-		"prompt": "Scansiona il codice e usa lo script decodeDump.py fornito con 573in1 per decodificare la stringa risultante. Torna indietro con ▭."
+		"prompt": "Scansiona il codice e usa lo script decodeCartDump.py fornito con 573in1 per decodificare la stringa risultante. Torna indietro con ▭."
 	},
 
 	"ReflashGameScreen": {

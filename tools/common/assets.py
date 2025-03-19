@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# 573in1 - Copyright (C) 2022-2024 spicyjpeg
+# 573in1 - Copyright (C) 2022-2025 spicyjpeg
 #
 # 573in1 is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -27,6 +27,38 @@ from .util   import \
 	HashTableBuilder, StringBlobBuilder, colorFromString, hashData, \
 	roundUpToMultiple
 
+## Simple image quantizer
+
+# Pillow's built-in quantize() method will use different algorithms, some of
+# which are broken, depending on whether the input image has an alpha channel.
+# As a workaround, non-indexed-color images are "quantized" (with no dithering -
+# images with more colors than allowed are rejected) manually instead.
+def toIndexedImage(imageObj: Image.Image, numColors: int) -> Image.Image:
+	if imageObj.mode == "P":
+		return imageObj
+	if imageObj.mode not in ( "RGB", "RGBA" ):
+		imageObj = imageObj.convert("RGBA")
+
+	image: ndarray = numpy.asarray(imageObj, "B")
+	clut, image    = numpy.unique(
+		image.reshape(( imageObj.width * imageObj.height, image.shape[2] )),
+		return_inverse = True,
+		axis           = 0
+	)
+
+	if clut.shape[0] > numColors:
+		raise RuntimeError(
+			f"source image contains {clut.shape[0]} unique colors (must be "
+			f"{numColors} or less)"
+		)
+
+	image = image.astype("B").reshape(( imageObj.height, imageObj.width ))
+
+	newImageObj: Image.Image = Image.fromarray(image, "P")
+
+	newImageObj.putpalette(clut, imageObj.mode)
+	return newImageObj
+
 ## .TIM image converter
 
 _TIM_HEADER_STRUCT:  Struct = Struct("< 2I")
@@ -41,7 +73,7 @@ _UPPER_ALPHA_BOUND: int = 0xe0
 _TRANSPARENT_COLOR: int = 0x0000
 _BLACK_COLOR:       int = 0x0421
 
-def _convertRGBAto16(inputData: ndarray) -> ndarray:
+def _to16bpp(inputData: ndarray) -> ndarray:
 	source: ndarray = inputData.astype("<H")
 
 	r:    ndarray = ((source[:, :, 0] * 249) + 1014) >> 11
@@ -68,36 +100,43 @@ def _convertRGBAto16(inputData: ndarray) -> ndarray:
 	return data.reshape(source.shape[:-1])
 
 def convertIndexedImage(imageObj: Image.Image) -> tuple[ndarray, ndarray]:
-	# PIL/Pillow doesn't provide a proper way to get the number of colors in a
-	# palette, so here's an extremely ugly hack.
-	colorDepth: int   = { "RGB": 3, "RGBA": 4 }[imageObj.palette.mode]
-	clutData:   bytes = imageObj.palette.tobytes()
-	numColors:  int   = len(clutData) // colorDepth
+	# Pillow has basically no support at all for palette manipulation, so nasty
+	# hacks are required here.
+	colorDepth: int = {
+		"RGB":  3,
+		"RGBA": 4
+	}[imageObj.palette.mode]
 
-	clut: ndarray = _convertRGBAto16(
-		numpy.frombuffer(clutData, "B").reshape(( 1, numColors, colorDepth ))
-	)
+	clut:      ndarray = numpy.frombuffer(imageObj.palette.tobytes(), "B")
+	numColors: int     = clut.shape[0] // colorDepth
 
-	# Pad the palette to 16 or 256 colors.
+	# Pad the palette to 16 or 256 colors after converting it to 16bpp.
+	clut           = _to16bpp(clut.reshape(( 1, numColors, colorDepth )))
 	padAmount: int = (16 if (numColors <= 16) else 256) - numColors
+
 	if padAmount:
 		clut = numpy.c_[ clut, numpy.zeros(( 1, padAmount ), "<H") ]
 
 	image: ndarray = numpy.asarray(imageObj, "B")
+
 	if image.shape[1] % 2:
-		image = numpy.c_[ image, numpy.zeros((image.shape[0], 1 ), "B") ]
+		image = numpy.c_[ image, numpy.zeros((imageObj.height, 1 ), "B") ]
 
 	# Pack two pixels into each byte for 4bpp images.
 	if numColors <= 16:
 		image = image[:, 0::2] | (image[:, 1::2] << 4)
 
 		if image.shape[1] % 2:
-			image = numpy.c_[ image, numpy.zeros(( image.shape[0], 1 ), "B") ]
+			image = numpy.c_[ image, numpy.zeros(( imageObj.height, 1 ), "B") ]
 
 	return image, clut
 
 def generateIndexedTIM(
-	imageObj: Image.Image, ix: int, iy: int, cx: int, cy: int
+	imageObj: Image.Image,
+	ix:       int,
+	iy:       int,
+	cx:       int,
+	cy:       int
 ) -> bytearray:
 	if (ix < 0) or (ix > 1023) or (iy < 0) or (iy > 1023):
 		raise ValueError("image X/Y coordinates must be in 0-1023 range")
@@ -139,7 +178,8 @@ _METRICS_HEADER_MAGIC:  bytes  = b"573fmetr"
 _METRICS_ENTRY_STRUCT:  Struct = Struct("< 2I")
 
 def generateFontMetrics(
-	metrics: Mapping[str, Any], numBuckets: int = 256
+	metrics:    Mapping[str, Any],
+	numBuckets: int = 256
 ) -> bytearray:
 	spaceWidth:     int = int(metrics["spaceWidth"])
 	tabWidth:       int = int(metrics["tabWidth"])
@@ -244,7 +284,8 @@ _STRING_TABLE_ENTRY_STRUCT:  Struct = Struct("< I 2H")
 _STRING_TABLE_ALIGNMENT:     int    = 4
 
 def _walkStringTree(
-		strings: Mapping[str, Any], prefix: str = ""
+	strings: Mapping[str, Any],
+	prefix:  str = ""
 ) -> Generator[tuple[int, bytes], None, None]:
 	for key, value in strings.items():
 		fullKey: str = prefix + key
@@ -256,7 +297,8 @@ def _walkStringTree(
 			yield from _walkStringTree(value, f"{fullKey}.")
 
 def generateStringTable(
-	strings: Mapping[str, Any], numBuckets: int = 256
+	strings:    Mapping[str, Any],
+	numBuckets: int = 256
 ) -> bytearray:
 	hashTable: HashTableBuilder  = HashTableBuilder(numBuckets)
 	blob:      StringBlobBuilder = StringBlobBuilder(_STRING_TABLE_ALIGNMENT)
@@ -352,7 +394,8 @@ class PackageIndexEntry:
 	nameOffset:   int = 0
 
 def generatePackageIndex(
-	files: Mapping[str, PackageIndexEntry], alignment: int = 2048,
+	files:      Mapping[str, PackageIndexEntry],
+	alignment:  int = 2048,
 	numBuckets: int = 256
 ) -> bytearray:
 	hashTable: HashTableBuilder  = HashTableBuilder(numBuckets)

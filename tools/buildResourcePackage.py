@@ -61,13 +61,10 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 			cx: int = int(asset["clutPos"] ["x"])
 			cy: int = int(asset["clutPos"] ["y"])
 
-			image: Image.Image = Image.open(sourceDir / asset["source"])
-			image.load()
-
-			if image.mode != "P":
-				image = image.quantize(
-					int(asset.get("quantize", 16)), dither = Image.NONE
-				)
+			image: Image.Image = toIndexedImage(
+				Image.open(sourceDir / asset["source"]),
+				int(asset.get("quantize", 16))
+			)
 
 			return generateIndexedTIM(image, ix, iy, cx, cy)
 

@@ -52,7 +52,7 @@
 		},
 		"cartDumpWorker": {
 			"save":    "Saving cartridge dump...\nDo not turn off the 573 or unplug drives.",
-			"success": "A dump of the cartridge and all its identifiers has been successfully saved. The dump can be decoded and viewed using the decodeDump.py script provided with 573in1.\n\nFile: %s",
+			"success": "A dump of the cartridge and all its identifiers has been successfully saved. The dump can be decoded and viewed using the decodeCartDump.py script provided with 573in1.\n\nFile: %s",
 			"error":   "An error occurred while saving the dump. Turn off the system and make sure the drive is connected to the IDE bus, appropriately configured as primary or secondary and formatted with a single FAT16, FAT32 or exFAT partition.\n\nFile: %s\nPress the Test button to view debug logs."
 		},
 		"executableWorker": {
@@ -656,7 +656,7 @@
 
 	"QRCodeScreen": {
 		"title":  "▸ Cartridge dump",
-		"prompt": "Scan this code and paste the resulting string into the decodeDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press ▭ to go back."
+		"prompt": "Scan this code and paste the resulting string into the decodeCartDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press ▭ to go back."
 	},
 
 	"ReflashGameScreen": {

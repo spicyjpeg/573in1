@@ -23,7 +23,8 @@ namespace sys573 {
 
 /* Analog I/O board class */
 
-static constexpr uint32_t _ANALOG_IO_LIGHT_ORDER = 0x02467531;
+static constexpr uint32_t _ANALOG_IO_LIGHT_ORDER1 = 0x02467531;
+static constexpr uint32_t _ANALOG_IO_LIGHT_ORDER2 = 0x0123;
 
 AnalogIOBoardDriver::AnalogIOBoardDriver(void) {
 	type = IO_ANALOG;
@@ -32,23 +33,36 @@ AnalogIOBoardDriver::AnalogIOBoardDriver(void) {
 void AnalogIOBoardDriver::setLightOutputs(uint32_t bits) const {
 	bits = ~bits;
 
-	// Due to how traces are routed on the analog I/O PCB, the bit order of each
-	// bank is scrambled and must be changed from 7-6-5-4-3-2-1-0 to
+	// Due to how traces are routed on the analog I/O PCB, the first 3 banks'
+	// bit order is scrambled and must be changed from 7-6-5-4-3-2-1-0 to
 	// 0-2-4-6-7-5-3-1.
-	uint32_t order     = _ANALOG_IO_LIGHT_ORDER;
-	uint32_t reordered = 0;
+	uint32_t reordered1 = 0;
+	uint32_t order      = _ANALOG_IO_LIGHT_ORDER1;
 
-	for (int i = 8; i; i--) {
-		reordered |= (bits & 0x01010101) << (order & 15);
+	for (int i = 8; i > 0; i--) {
+		reordered1 |= (bits & 0x010101) << (order & 15);
 
 		bits  >>= 1;
 		order >>= 4;
 	}
 
-	SYS573A_LIGHTS_A = (reordered >>  0) & 0xff;
-	SYS573A_LIGHTS_B = (reordered >>  8) & 0xff;
-	SYS573A_LIGHTS_C = (reordered >> 16) & 0xff;
-	SYS573A_LIGHTS_D = (reordered >> 24) & 0xff;
+	bits >>= 16;
+
+	// The last bank's bit order is reversed from 3-2-1-0 to 0-1-2-3.
+	uint32_t reordered2 = 0;
+	order               = _ANALOG_IO_LIGHT_ORDER2;
+
+	for (int i = 4; i > 0; i--) {
+		reordered2 |= (bits & 1) << (order & 15);
+
+		bits  >>= 1;
+		order >>= 4;
+	}
+
+	SYS573A_LIGHTS_A = (reordered1 >>  0) & 0xff;
+	SYS573A_LIGHTS_B = (reordered1 >>  8) & 0xff;
+	SYS573A_LIGHTS_C = (reordered1 >> 16) & 0xff;
+	SYS573A_LIGHTS_D = (reordered2 >>  0);
 }
 
 /* Kick & Kick I/O board class */
