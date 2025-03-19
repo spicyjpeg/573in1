@@ -14,6 +14,7 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "common/blkdev/idebase.hpp"
 #include <stddef.h>
 #include <stdint.h>
 #include "common/blkdev/ata.hpp"
@@ -246,7 +247,7 @@ enum IDESignature : uint16_t {
 static constexpr int _SRST_SET_DELAY   = 5000;
 static constexpr int _SRST_CLEAR_DELAY = 50000;
 
-IDEDevice *newIDEDevice(int index) {
+IDEDevice *_newIDEDevice(int index) {
 #if 0
 	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] =
 		CS1_DEVICE_CTRL_IEN | CS1_DEVICE_CTRL_SRST;
@@ -285,7 +286,7 @@ IDEDevice *newIDEDevice(int index) {
 
 			default:
 				LOG_BLKDEV("drive %d: invalid type 0x%04x", index, sig);
-				return nullptr;
+				return new IDEDevice(index);
 		}
 
 		auto error = dev->enumerate();
@@ -293,14 +294,25 @@ IDEDevice *newIDEDevice(int index) {
 		if (error) {
 			LOG_BLKDEV("drive %d: %s", index, getErrorString(error));
 			delete dev;
-			return nullptr;
+			return new IDEDevice(index);
 		}
 
 		return dev;
 	}
 
 	LOG_BLKDEV("drive %d timeout", index);
-	return nullptr;
+	return new IDEDevice(index);
+}
+
+/* Device singleton */
+
+IDEDevice &ideDevice(int index) {
+	static IDEDevice *devices[2]{ nullptr, nullptr };
+
+	if (!devices[index])
+		devices[index] = _newIDEDevice(index);
+
+	return *devices[index];
 }
 
 }

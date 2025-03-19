@@ -81,7 +81,7 @@ void init(void) {
 		SPU_DATA = 0;
 
 	SPU_CTRL = SPU_CTRL_XFER_WRITE | SPU_CTRL_ENABLE;
-	_waitForStatus(SPU_CTRL_XFER_BITMASK | SPU_STAT_BUSY, SPU_CTRL_XFER_WRITE);
+	_waitForStatus(SPU_STAT_XFER_BITMASK | SPU_STAT_BUSY, SPU_STAT_XFER_WRITE);
 	delayMicroseconds(100);
 
 	SPU_CTRL = SPU_CTRL_UNMUTE | SPU_CTRL_ENABLE;
@@ -168,12 +168,12 @@ size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
 	uint16_t ctrlReg = SPU_CTRL & ~SPU_CTRL_XFER_BITMASK;
 
 	SPU_CTRL = ctrlReg;
-	_waitForStatus(SPU_CTRL_XFER_BITMASK, 0);
+	_waitForStatus(SPU_STAT_XFER_BITMASK, 0);
 
 	SPU_DMA_CTRL = 4;
 	SPU_ADDR     = offset / 8;
 	SPU_CTRL     = ctrlReg | SPU_CTRL_XFER_DMA_WRITE;
-	_waitForStatus(SPU_CTRL_XFER_BITMASK, SPU_CTRL_XFER_DMA_WRITE);
+	_waitForStatus(SPU_STAT_XFER_BITMASK, SPU_STAT_XFER_DMA_WRITE);
 
 	DMA_MADR(DMA_SPU) = reinterpret_cast<uint32_t>(data);
 	DMA_BCR (DMA_SPU) = util::concat4(_DMA_CHUNK_SIZE, length);
@@ -204,12 +204,12 @@ size_t download(uint32_t offset, void *data, size_t length, bool wait) {
 	uint16_t ctrlReg = SPU_CTRL & ~SPU_CTRL_XFER_BITMASK;
 
 	SPU_CTRL = ctrlReg;
-	_waitForStatus(SPU_CTRL_XFER_BITMASK, 0);
+	_waitForStatus(SPU_STAT_XFER_BITMASK, 0);
 
 	SPU_DMA_CTRL = 4;
 	SPU_ADDR     = offset / 8;
 	SPU_CTRL     = ctrlReg | SPU_CTRL_XFER_DMA_READ;
-	_waitForStatus(SPU_CTRL_XFER_BITMASK, SPU_CTRL_XFER_DMA_READ);
+	_waitForStatus(SPU_STAT_XFER_BITMASK, SPU_STAT_XFER_DMA_READ);
 
 	DMA_MADR(DMA_SPU) = reinterpret_cast<uint32_t>(data);
 	DMA_BCR (DMA_SPU) = util::concat4(_DMA_CHUNK_SIZE, length);

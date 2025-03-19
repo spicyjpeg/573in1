@@ -25,15 +25,13 @@ namespace blkdev {
 /* PS1 memory card block device class */
 
 class MemoryCardDevice : public Device {
-	friend MemoryCardDevice *newMemoryCardDevice(int index);
-
 private:
 	uint8_t _lastStatus;
 
+public:
 	inline MemoryCardDevice(int index)
 	: Device(index * IS_SECONDARY) {}
 
-public:
 	DeviceError enumerate(void);
 	DeviceError poll(void);
 
@@ -41,6 +39,6 @@ public:
 	DeviceError write(const void *data, uint64_t lba, size_t count);
 };
 
-MemoryCardDevice *newMemoryCardDevice(int index);
+extern MemoryCardDevice memoryCards[2];
 
 }

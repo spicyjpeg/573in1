@@ -109,7 +109,10 @@ void AutobootScreen::update(ui::Context &ctx) {
 	time = (time / ctx.gpuCtx.refreshRate) + 1;
 
 	snprintf(
-		_buttonText, sizeof(_buttonText), STR("AutobootScreen.cancel"), time
+		_buttonText,
+		sizeof(_buttonText),
+		STR("AutobootScreen.cancel"),
+		time
 	);
 
 	if (ctx.buttons.pressed(ui::BTN_START))
@@ -211,10 +214,7 @@ const char *MainMenuScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 void MainMenuScreen::cartInfo(ui::Context &ctx) {
-	if (APP->_cartDriver)
-		ctx.show(APP->_cartInfoScreen, false, true);
-	else
-		APP->_runWorker(&cartDetectWorker, true);
+	APP->_runWorker(&cartDetectWorker, true);
 }
 
 void MainMenuScreen::nvramInfo(ui::Context &ctx) {

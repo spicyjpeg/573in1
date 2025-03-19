@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"
 #include "vendor/qrcodegen.h"
@@ -61,13 +62,10 @@ void sendLinkedList(const void *data, bool wait = false);
 
 /* Rendering context */
 
-static constexpr size_t DISPLAY_LIST_SIZE = 0x4000;
-static constexpr size_t LAYER_STACK_SIZE  = 16;
-
 struct Buffer {
 public:
-	Rect     clip;
-	uint32_t displayList[DISPLAY_LIST_SIZE];
+	Rect       clip;
+	util::Data displayList;
 };
 
 class Context {
@@ -88,15 +86,6 @@ private:
 public:
 	int width, height, refreshRate;
 
-	inline Context(
-		VideoMode mode,
-		int       width,
-		int       height,
-		bool      forceInterlace = false,
-		bool      sideBySide = false
-	) : _lastTexpage(0) {
-		setResolution(mode, width, height, forceInterlace, sideBySide);
-	}
 	inline void getVRAMClipRect(RectWH &output) const {
 		auto &clip = _buffers[_currentBuffer ^ 1].clip;
 
@@ -149,6 +138,13 @@ public:
 		drawRect(0, 0, width, height, color, true);
 	}
 
+	Context(
+		VideoMode mode,
+		int       width,
+		int       height,
+		bool      forceInterlace = false,
+		bool      sideBySide     = false
+	);
 	void setResolution(
 		VideoMode mode,
 		int       width,

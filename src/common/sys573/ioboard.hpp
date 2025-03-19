@@ -35,13 +35,9 @@ enum IOBoardType {
 };
 
 class IOBoardDriver {
-public:
-	IOBoardType type;
-	size_t      extMemoryLength;
+	friend IOBoardDriver *_newIOBoardDriver(void);
 
-	const bus::OneWireDriver *ds2401, *ds2433;
-	const bus::UARTDriver    *serial[2];
-
+protected:
 	inline IOBoardDriver(void)
 	:
 		type(IO_NONE),
@@ -52,6 +48,14 @@ public:
 		serial[0] = nullptr;
 		serial[1] = nullptr;
 	}
+
+public:
+	IOBoardType type;
+	size_t      extMemoryLength;
+
+	const bus::OneWireDriver *ds2401, *ds2433;
+	const bus::UARTDriver    *serial[2];
+
 
 	virtual bool isReady(void) const { return true; }
 	virtual bool loadBitstream(const uint8_t *data, size_t length) {
@@ -68,32 +72,43 @@ public:
 /* I/O board classes */
 
 class AnalogIOBoardDriver : public IOBoardDriver {
-public:
+	friend IOBoardDriver *_newIOBoardDriver(void);
+
+private:
 	AnalogIOBoardDriver(void);
 
+public:
 	void setLightOutputs(uint32_t bits) const;
 };
 
 class KickIOBoardDriver : public IOBoardDriver {
-public:
+	friend IOBoardDriver *_newIOBoardDriver(void);
+
+private:
 	KickIOBoardDriver(void);
 };
 
 class FishingReelIOBoardDriver : public IOBoardDriver {
-public:
+	friend IOBoardDriver *_newIOBoardDriver(void);
+
+private:
 	FishingReelIOBoardDriver(void);
 };
 
 class KaraokeIOBoardDriver : public IOBoardDriver {
-public:
+	friend IOBoardDriver *_newIOBoardDriver(void);
+
+private:
 	KaraokeIOBoardDriver(void);
 };
 
 class GunManiaIOBoardDriver : public IOBoardDriver {
-public:
+	friend IOBoardDriver *_newIOBoardDriver(void);
+
+private:
 	GunManiaIOBoardDriver(void);
 };
 
-IOBoardDriver *newIOBoardDriver(void);
+IOBoardDriver &ioBoard(void);
 
 }

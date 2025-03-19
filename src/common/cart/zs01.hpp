@@ -104,15 +104,17 @@ public:
 /* ZS01 security cartridge driver */
 
 class ZS01Cart : public Cart {
+	friend Cart *_newCartDriver(const bus::I2CDriver &i2c);
+
 private:
 	uint8_t _scramblerState;
+
+	inline ZS01Cart(const bus::I2CDriver &i2c)
+	: Cart(i2c, ZS01, 112) {}
 
 	CartError _transact(const ZS01Packet &request, ZS01Packet &response);
 
 public:
-	inline ZS01Cart(const bus::I2CDriver &i2c)
-	: Cart(i2c, ZS01, 112) {}
-
 	CartError read(
 		void          *data,
 		uint16_t      lba,

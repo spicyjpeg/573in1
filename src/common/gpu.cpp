@@ -152,6 +152,8 @@ void sendLinkedList(const void *data, bool wait) {
 
 /* Rendering context */
 
+static constexpr size_t _DISPLAY_LIST_SIZE = 0x4000;
+
 void Context::_applyResolution(
 	VideoMode mode,
 	bool      forceInterlace,
@@ -198,37 +200,17 @@ void Context::_applyResolution(
 	GPU_GP1 = gp1_fbRangeV(y - offsetY, y + offsetY);
 }
 
-void Context::flip(void) {
-	auto &oldBuffer = _buffers[_currentBuffer];
-	auto &newBuffer = _buffers[_currentBuffer ^ 1];
+Context::Context(
+	VideoMode mode,
+	int       width,
+	int       height,
+	bool      forceInterlace,
+	bool      sideBySide
+) : _lastTexpage(0) {
+	_buffers[0].displayList.allocate<uint32_t>(_DISPLAY_LIST_SIZE);
+	_buffers[1].displayList.allocate<uint32_t>(_DISPLAY_LIST_SIZE);
 
-	// Ensure the GPU has finished drawing the previous frame.
-	while (!isIdle())
-		__asm__ volatile("");
-
-	// The GPU will take some additional time to toggle between odd and even
-	// fields in interlaced mode.
-	if (GPU_GP1 & GP1_STAT_FB_INTERLACE) {
-		for (;;) {
-			auto status    = GPU_GP1;
-			auto drawField = (status / GP1_STAT_DRAW_FIELD_ODD) & 1;
-			auto dispField = (status / GP1_STAT_DISP_FIELD_ODD) & 1;
-
-			if (drawField == dispField)
-				continue;
-			if (drawField == uint32_t(_currentBuffer))
-				break;
-		}
-	}
-
-	GPU_GP1 = gp1_fbOffset(newBuffer.clip.x1, newBuffer.clip.y1);
-	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
-
-	sendLinkedList(oldBuffer.displayList);
-
-	*_currentListPtr = gp0_endTag(0);
-	_currentListPtr  = newBuffer.displayList;
-	_currentBuffer  ^= 1;
+	setResolution(mode, width, height, forceInterlace, sideBySide);
 }
 
 void Context::setResolution(
@@ -262,11 +244,44 @@ void Context::setResolution(
 		clip.y2 = clip.y1 + _height - 1;
 	}
 
-	_currentListPtr = _buffers[0].displayList;
+	_currentListPtr = _buffers[0].displayList.as<uint32_t>();
 	_currentBuffer  = 0;
 
 	flip();
 	_applyResolution(mode, forceInterlace);
+}
+
+void Context::flip(void) {
+	auto &oldBuffer = _buffers[_currentBuffer];
+	auto &newBuffer = _buffers[_currentBuffer ^ 1];
+
+	// Ensure the GPU has finished drawing the previous frame.
+	while (!isIdle())
+		__asm__ volatile("");
+
+	// The GPU will take some additional time to toggle between odd and even
+	// fields in interlaced mode.
+	if (GPU_GP1 & GP1_STAT_FB_INTERLACE) {
+		for (;;) {
+			auto status    = GPU_GP1;
+			auto drawField = (status / GP1_STAT_DRAW_FIELD_ODD) & 1;
+			auto dispField = (status / GP1_STAT_DISP_FIELD_ODD) & 1;
+
+			if (drawField == dispField)
+				continue;
+			if (drawField == uint32_t(_currentBuffer))
+				break;
+		}
+	}
+
+	GPU_GP1 = gp1_fbOffset(newBuffer.clip.x1, newBuffer.clip.y1);
+	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
+
+	sendLinkedList(oldBuffer.displayList.ptr);
+
+	*_currentListPtr = gp0_endTag(0);
+	_currentListPtr  = newBuffer.displayList.as<uint32_t>();
+	_currentBuffer  ^= 1;
 }
 
 uint32_t *Context::newPacket(size_t length) {
@@ -275,7 +290,7 @@ uint32_t *Context::newPacket(size_t length) {
 
 	assert(
 		_currentListPtr <=
-		&(_buffers[_currentBuffer].displayList[DISPLAY_LIST_SIZE])
+		(_buffers[_currentBuffer].displayList.as<uint32_t>() + _DISPLAY_LIST_SIZE)
 	);
 
 	*(ptr++) = gp0_tag(length, _currentListPtr);

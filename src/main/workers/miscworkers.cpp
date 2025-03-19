@@ -18,17 +18,13 @@
 #include <stdint.h>
 #include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
-#include "common/nvram/flashdetect.hpp"
 #include "common/sys573/base.hpp"
-#include "common/sys573/ioboard.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 #include "common/rom.hpp"
 #include "main/app/app.hpp"
-#include "main/cart/cartio.hpp"
 #include "main/workers/miscworkers.hpp"
-#include "ps1/registers573.h"
 #include "ps1/system.h"
 
 static const rom::Region *const _AUTOBOOT_REGIONS[]{
@@ -92,14 +88,6 @@ bool startupWorker(App &app) {
 		}
 	}
 #endif
-
-	// If autoboot fails or is skipped, proceed to discover and initialize all
-	// other hardware.
-	app._ioBoard    = sys573::newIOBoardDriver();
-	app._cartDriver = cart::newCartDriver(app._cartDump);
-	app._flash      = nvram::newFlashRegion(SYS573_BANK_FLASH);
-	app._pcmcia[0]  = nvram::newFlashRegion(SYS573_BANK_PCMCIA1);
-	app._pcmcia[1]  = nvram::newFlashRegion(SYS573_BANK_PCMCIA2);
 
 	app._ctx.show(app._warningScreen);
 	return true;

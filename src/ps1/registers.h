@@ -370,22 +370,20 @@ typedef enum {
 /* MDEC */
 
 typedef enum {
-	MDEC_CMD_NOP             = 0 << 29,
-	MDEC_CMD_DECODE          = 1 << 29,
-	MDEC_CMD_SET_QUANT_TABLE = 2 << 29,
-	MDEC_CMD_SET_IDCT_TABLE  = 3 << 29
-} MDECCommand;
-
-typedef enum {
-	MDEC_CMD_FLAG_LENGTH_BITMASK = 0xffff <<  0, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_USE_CHROMA     =      1 <<  0, // MDEC_CMD_SET_QUANT_TABLE
-	MDEC_CMD_FLAG_SIGNED         =      1 << 25, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_16BPP_MASK     =      1 << 26, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_FORMAT_BITMASK =      3 << 27, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_FORMAT_4BPP    =      0 << 27, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_FORMAT_8BPP    =      1 << 27, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_FORMAT_24BPP   =      2 << 27, // MDEC_CMD_DECODE
-	MDEC_CMD_FLAG_FORMAT_16BPP   =      3 << 27  // MDEC_CMD_DECODE
+	MDEC_CMD_LENGTH_BITMASK     = 0xffff <<  0, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_USE_CHROMA         =      1 <<  0, // MDEC_CMD_OP_SET_QUANT_TABLE
+	MDEC_CMD_SIGNED             =      1 << 25, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_16BPP_MASK         =      1 << 26, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_FORMAT_BITMASK     =      3 << 27, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_FORMAT_4BPP        =      0 << 27, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_FORMAT_8BPP        =      1 << 27, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_FORMAT_24BPP       =      2 << 27, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_FORMAT_16BPP       =      3 << 27, // MDEC_CMD_OP_DECODE
+	MDEC_CMD_OP_BITMASK         =      7 << 31,
+	MDEC_CMD_OP_NOP             =      0 << 29,
+	MDEC_CMD_OP_DECODE          =      1 << 29,
+	MDEC_CMD_OP_SET_QUANT_TABLE =      2 << 29,
+	MDEC_CMD_OP_SET_IDCT_TABLE  =      3 << 29
 } MDECCommandFlag;
 
 typedef enum {

@@ -168,6 +168,8 @@ public:
 /* IDE (ATA/ATAPI) block device class */
 
 class IDEDevice : public Device {
+	friend IDEDevice *_newIDEDevice(int index);
+
 private:
 	void _handleError(void);
 
@@ -217,6 +219,6 @@ protected:
 	DeviceError _waitForDRQ(int timeout = 0, bool ignoreError = false);
 };
 
-IDEDevice *newIDEDevice(int index);
+IDEDevice &ideDevice(int index);
 
 }

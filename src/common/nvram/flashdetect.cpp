@@ -125,7 +125,7 @@ static const FlashChipInfo _FLASH_CHIPS[]{
 static constexpr size_t _DUMMY_SECTORS_PER_CHIP = 1;
 static constexpr size_t _DUMMY_SECTOR_LENGTH    = 0x10000;
 
-FlashRegion *newFlashRegion(int bank) {
+FlashRegion *_newFlashRegion(int bank) {
 	sys573::setFlashBank(bank);
 	_issueReset();
 
@@ -227,6 +227,29 @@ FlashRegion *newFlashRegion(int bank) {
 		numBanks,
 		bank
 	);
+}
+
+/* Flash region singletons */
+
+FlashRegion &flash(void) {
+	static FlashRegion *region = nullptr;
+
+	if (!region)
+		region = _newFlashRegion(SYS573_BANK_FLASH);
+
+	return *region;
+}
+
+FlashRegion &pcmcia(int card) {
+	static FlashRegion *regions[2]{ nullptr, nullptr };
+
+	if (!regions[card])
+		regions[card] = _newFlashRegion(
+			SYS573_BANK_PCMCIA1 +
+			(SYS573_BANK_PCMCIA2 - SYS573_BANK_PCMCIA1) * card
+		);
+
+	return *regions[card];
 }
 
 }

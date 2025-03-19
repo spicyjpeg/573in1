@@ -30,6 +30,8 @@ static constexpr uint32_t _DUMMY_SECTOR_LBA = 0x3f;
 
 /* PS1 memory card block device class */
 
+MemoryCardDevice memoryCards[2]{ (0), (1) };
+
 DeviceError MemoryCardDevice::enumerate(void) {
 	type         = MEMORY_CARD;
 	capacity     = _CAPACITY;
@@ -201,21 +203,6 @@ DeviceError MemoryCardDevice::write(
 			);
 			return DRIVE_ERROR;
 	}
-}
-
-/* Device constructor */
-
-MemoryCardDevice *newMemoryCardDevice(int index) {
-	auto dev   = new MemoryCardDevice(index);
-	auto error = dev->enumerate();
-
-	if (error) {
-		LOG_BLKDEV("card %d: %s", index, getErrorString(error));
-		delete dev;
-		return nullptr;
-	}
-
-	return dev;
 }
 
 }

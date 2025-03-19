@@ -25,14 +25,16 @@ namespace sys573 {
 /* Digital I/O board class */
 
 class DigitalIOBoardDriver : public IOBoardDriver {
+	friend IOBoardDriver *_newIOBoardDriver(void);
+
 private:
+	DigitalIOBoardDriver(void);
+
 	bool _loadRawBitstream(const uint8_t *data, size_t length) const;
 	void _initFPGA(void) const;
 	bool _initMP3(void) const;
 
 public:
-	DigitalIOBoardDriver(void);
-
 	bool isReady(void) const;
 	bool loadBitstream(const uint8_t *data, size_t length);
 

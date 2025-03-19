@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/templates.hpp"
 #include "common/bus.hpp"
 
 namespace cart {
@@ -47,21 +48,23 @@ enum CartError {
 };
 
 class Cart {
+	friend Cart *_newCartDriver(const bus::I2CDriver &i2c);
+
 protected:
 	const bus::I2CDriver &_i2c;
 
-public:
-	ChipType type;
-	uint16_t capacity;
-
 	inline Cart(
 		const bus::I2CDriver &i2c,
-		ChipType             _type,
-		uint16_t             _capacity
+		ChipType             _type     = NONE,
+		uint16_t             _capacity = 0
 	) :
 		_i2c(i2c),
 		type(_type),
 		capacity(_capacity) {}
+
+public:
+	ChipType type;
+	uint16_t capacity;
 
 	virtual CartError read(
 		void          *data,
@@ -96,8 +99,7 @@ public:
 	}
 };
 
-Cart *newCartDriver(const bus::I2CDriver &i2c);
-Cart *newCartDriver(void);
+Cart &cart(void);
 
 /* Utilities */
 

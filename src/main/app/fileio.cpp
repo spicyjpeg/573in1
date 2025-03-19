@@ -112,11 +112,9 @@ int FileIOManager::mountIDE(void) {
 	int mounted = 0;
 
 	for (size_t i = 0; i < util::countOf(IDE_MOUNT_POINTS); i++) {
-		auto dev = blkdev::newIDEDevice(i);
+		auto &dev = blkdev::ideDevice(i);
 
-		if (!dev)
-			continue;
-		if (!(dev->type))
+		if (!dev.type)
 			continue;
 
 		auto       mp = newMountPoint(IDE_MOUNT_POINTS[i]);
@@ -125,15 +123,15 @@ int FileIOManager::mountIDE(void) {
 		if (!mp)
 			continue;
 
-		mp->dev = dev;
+		mp->dev = &dev;
 
 		// TODO: actually detect the filesystem, rather than assuming FAT or
 		// ISO9660 depending on drive type
-		if (dev->type == blkdev::ATAPI) {
+		if (dev.type == blkdev::ATAPI) {
 			auto iso = new fs::ISO9660Provider();
 			alias    = "cdrom:";
 
-			if (iso->init(*dev))
+			if (iso->init(dev))
 				mp->provider = iso;
 			else
 				delete iso;
@@ -141,7 +139,7 @@ int FileIOManager::mountIDE(void) {
 			auto fat = new fs::FATProvider();
 			alias    = "hdd:";
 
-			if (fat->init(*dev, i))
+			if (fat->init(dev, i))
 				mp->provider = fat;
 			else
 				delete fat;
@@ -168,11 +166,9 @@ int FileIOManager::mountMemoryCards(void) {
 	int mounted = 0;
 
 	for (size_t i = 0; i < util::countOf(MC_MOUNT_POINTS); i++) {
-		auto dev = blkdev::newMemoryCardDevice(i);
+		auto &dev = blkdev::memoryCards[i];
 
-		if (!dev)
-			continue;
-		if (!(dev->type))
+		if (dev.enumerate())
 			continue;
 
 		auto mp = newMountPoint(MC_MOUNT_POINTS[i]);
@@ -180,10 +176,10 @@ int FileIOManager::mountMemoryCards(void) {
 		if (!mp)
 			continue;
 
-		mp->dev       = dev;
+		mp->dev       = &dev;
 		auto provider = new fs::MemoryCardProvider();
 
-		if (!provider->init(*dev))
+		if (!provider->init(dev))
 			mp->provider = provider;
 		else
 			delete provider;

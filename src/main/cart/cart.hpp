@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/cart/cart.hpp"
 #include "common/util/string.hpp"
 #include "common/util/templates.hpp"
 #include "common/rom.hpp"
@@ -25,13 +26,6 @@
 namespace cart {
 
 /* Definitions */
-
-enum ChipType : uint8_t {
-	NONE    = 0,
-	X76F041 = 1,
-	X76F100 = 2,
-	ZS01    = 3
-};
 
 enum DumpFlag : uint8_t {
 	DUMP_HAS_SYSTEM_ID   = 1 << 0,

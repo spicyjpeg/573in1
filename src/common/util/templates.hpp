@@ -24,7 +24,10 @@ namespace util {
 
 /* Misc. template utilities */
 
-template<typename T> static inline uint32_t sum(const T *data, size_t length) {
+template<typename T> static constexpr inline uint32_t sum(
+	const T *data,
+	size_t  length
+) {
 	uint32_t value = 0;
 
 	for (; length > 0; length--)
@@ -33,7 +36,10 @@ template<typename T> static inline uint32_t sum(const T *data, size_t length) {
 	return value;
 }
 
-template<typename T> static inline T bitwiseXOR(const T *data, size_t length) {
+template<typename T> static constexpr inline T bitwiseXOR(
+	const T *data,
+	size_t  length
+) {
 	T value = 0;
 
 	for (; length > 0; length--)
@@ -42,7 +48,7 @@ template<typename T> static inline T bitwiseXOR(const T *data, size_t length) {
 	return value;
 }
 
-template<typename T> static inline bool isEmpty(
+template<typename T> static constexpr inline bool isEmpty(
 	const T *data,
 	size_t  length,
 	T       value = 0
@@ -64,7 +70,9 @@ template<typename T> static constexpr inline T max(T a, T b) {
 }
 
 template<typename T> static constexpr inline T clamp(
-	T value, T minValue, T maxValue
+	T value,
+	T minValue,
+	T maxValue
 ) {
 	if (value < minValue)
 		return minValue;
@@ -84,13 +92,15 @@ template<typename T> static constexpr inline T rotateRight(T value, int amount) 
 
 // These shall only be used with unsigned types.
 template<typename T> static constexpr inline T truncateToMultiple(
-	T value, T length
+	T value,
+	T length
 ) {
 	return value - (value % length);
 }
 
 template<typename T> static constexpr inline T roundUpToMultiple(
-	T value, T length
+	T value,
+	T length
 ) {
 	T diff = value % length;
 	return diff ? (value - diff + length) : value;
@@ -105,11 +115,6 @@ template<typename T> static inline void clear(T &obj, uint8_t value = 0) {
 }
 
 template<typename T> static inline void copy(T &dest, const T &source) {
-	static_assert(
-		sizeof(dest) == sizeof(source),
-		"source and destination sizes do not match"
-	);
-
 	__builtin_memcpy(&dest, &source, sizeof(source));
 }
 
@@ -243,7 +248,7 @@ public:
 	inline RingBuffer(void)
 	: _head(0), _tail(0), length(0) {}
 
-	inline T *pushItem(void) volatile {
+	inline T *pushItem(void) {
 		if (length >= N)
 			return nullptr;
 
@@ -253,7 +258,7 @@ public:
 
 		return &_items[i];
 	}
-	inline T *popItem(void) volatile {
+	inline T *popItem(void) {
 		if (!length)
 			return nullptr;
 
@@ -275,7 +280,7 @@ public:
 
 /* Character concatenation operator */
 
-static constexpr inline uint32_t operator""_c(
+static consteval inline uint32_t operator""_c(
 	const char *const literal, size_t length
 ) {
 	return util::concat4(

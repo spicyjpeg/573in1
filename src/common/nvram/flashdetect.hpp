@@ -17,11 +17,13 @@
 #pragma once
 
 #include "common/nvram/flash.hpp"
+#include "common/util/templates.hpp"
 
 namespace nvram {
 
-/* Flash region constructor */
+/* Flash region singletons */
 
-FlashRegion *newFlashRegion(int bank);
+FlashRegion &flash(void);
+FlashRegion &pcmcia(int card);
 
 }

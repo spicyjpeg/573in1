@@ -128,9 +128,9 @@ GunManiaIOBoardDriver::GunManiaIOBoardDriver(void) {
 	ds2401 = &_gunManiaIODS2401;
 }
 
-/* I/O board detection and constructor */
+/* I/O board detection and singleton */
 
-IOBoardDriver *newIOBoardDriver(void) {
+IOBoardDriver *_newIOBoardDriver(void) {
 	// The digital I/O board can be detected by checking the CPLD status
 	// register. This will work even if no bitstream is loaded in the FPGA.
 	uint16_t mask  = 0
@@ -171,6 +171,15 @@ IOBoardDriver *newIOBoardDriver(void) {
 	// registers are write-only. However it is safe to assume one is present (if
 	// not, writes to the light outputs will simply go nowhere).
 	return new AnalogIOBoardDriver();
+}
+
+IOBoardDriver &ioBoard(void) {
+	static IOBoardDriver *driver = nullptr;
+
+	if (!driver)
+		driver = _newIOBoardDriver();
+
+	return *driver;
 }
 
 }

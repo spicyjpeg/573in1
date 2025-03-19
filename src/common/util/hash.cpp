@@ -23,9 +23,8 @@ namespace util {
 
 /* String hashing (http://www.cse.yorku.ca/~oz/hash.html) */
 
-Hash hash(const char *str, char terminator) {
-	auto _str  = reinterpret_cast<const uint8_t *>(str);
-	Hash value = 0;
+Hash hash(const char *str, char terminator, Hash value) {
+	auto _str = reinterpret_cast<const uint8_t *>(str);
 
 	while (*_str && (*_str != terminator))
 		value = Hash(*(_str++)) + (value << 6) + (value << 16) - value;
@@ -33,9 +32,7 @@ Hash hash(const char *str, char terminator) {
 	return value;
 }
 
-Hash hash(const uint8_t *data, size_t length) {
-	Hash value = 0;
-
+Hash hash(const uint8_t *data, size_t length, Hash value) {
 	for (; length > 0; length--)
 		value = Hash(*(data++)) + (value << 6) + (value << 16) - value;
 
@@ -65,7 +62,9 @@ void ZIPCRC32::init(void) {
 }
 
 uint32_t ZIPCRC32::update(
-	const uint8_t *data, size_t length, uint32_t crc
+	const uint8_t *data,
+	size_t        length,
+	uint32_t      crc
 ) const {
 	crc = ~crc;
 

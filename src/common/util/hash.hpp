@@ -26,20 +26,8 @@ namespace util {
 
 using Hash = uint32_t;
 
-template<typename T> static constexpr inline Hash hash(
-	const T *const data, size_t length = -1, Hash value = 0
-) {
-	if (*data && length)
-		return hash(
-			&data[1], length - 1,
-			Hash(*data) + (value << 6) + (value << 16) - value
-		);
-
-	return value;
-}
-
-Hash hash(const char *str, char terminator = 0);
-Hash hash(const uint8_t *data, size_t length);
+Hash hash(const char *str, char terminator = 0, Hash value = 0);
+Hash hash(const uint8_t *data, size_t length, Hash value = 0);
 
 /* Hash table parser */
 
@@ -107,8 +95,14 @@ public:
 
 /* String hashing operator */
 
-static constexpr inline util::Hash operator""_h(
-	const char *const literal, size_t length
+static consteval inline util::Hash operator""_h(
+	const char *literal,
+	size_t     length
 ) {
-	return util::hash(literal, length);
+	util::Hash value = 0;
+
+	for (; length > 0; length--)
+		value = util::Hash(*(literal++)) + (value << 6) + (value << 16) - value;
+
+	return value;
 }

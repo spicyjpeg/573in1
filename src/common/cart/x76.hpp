@@ -26,10 +26,13 @@ namespace cart {
 /* X76F041 and X76F100 security cartridge drivers */
 
 class X76F041Cart : public Cart {
-public:
+	friend Cart *_newCartDriver(const bus::I2CDriver &i2c);
+
+private:
 	inline X76F041Cart(const bus::I2CDriver &i2c)
 	: Cart(i2c, X76F041, 512) {}
 
+public:
 	CartError read(
 		void          *data,
 		uint16_t      lba,
@@ -50,10 +53,13 @@ public:
 };
 
 class X76F100Cart : public Cart {
-public:
+	friend Cart *_newCartDriver(const bus::I2CDriver &i2c);
+
+private:
 	inline X76F100Cart(const bus::I2CDriver &i2c)
 	: Cart(i2c, X76F100, 112) {}
 
+public:
 	CartError read(
 		void          *data,
 		uint16_t      lba,

@@ -49,9 +49,9 @@ static inline size_t feedDecodedBS(
 	uint32_t       flags,
 	bool           wait = false
 ) {
-	size_t length = data[0] & MDEC_CMD_FLAG_LENGTH_BITMASK;
+	size_t length = data[0] & MDEC_CMD_LENGTH_BITMASK;
 
-	MDEC0 = MDEC_CMD_DECODE | length | flags;
+	MDEC0 = MDEC_CMD_OP_DECODE | length | flags;
 	return feed(&data[1], length, wait);
 }
 

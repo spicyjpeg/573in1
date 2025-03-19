@@ -31,7 +31,7 @@ CartError Cart::readID(bus::OneWireID &output) {
 		: NO_DEVICE;
 }
 
-/* Security cartridge detection and constructor */
+/* Security cartridge detection and singleton */
 
 enum ChipIdentifier : uint32_t {
 	_ID_X76F041 = 0x55aa5519,
@@ -39,7 +39,12 @@ enum ChipIdentifier : uint32_t {
 	_ID_ZS01    = 0x5a530001
 };
 
-Cart *newCartDriver(const bus::I2CDriver &i2c) {
+Cart *_newCartDriver(const bus::I2CDriver &i2c) {
+	if (!sys573::getCartInsertionStatus()) {
+		LOG_CART("DSR not asserted");
+		return new Cart(i2c);
+	}
+
 	// The X76F041/X76F100 and ZS01 use different reset sequences and output
 	// their IDs in different bit orders.
 	auto zs01ID = sys573::cartI2C.resetZS01();
@@ -60,17 +65,17 @@ Cart *newCartDriver(const bus::I2CDriver &i2c) {
 
 		default:
 			LOG_CART("unknown X76 ID: 0x%08x", x76ID);
-			return nullptr;
+			return new Cart(i2c);
 	}
 }
 
-Cart *newCartDriver(void) {
-	if (!sys573::getCartInsertionStatus()) {
-		LOG_CART("DSR not asserted");
-		return nullptr;
-	}
+Cart &cart(void) {
+	static Cart *driver = nullptr;
 
-	return newCartDriver(sys573::cartI2C);
+	if (!driver)
+		driver = _newCartDriver(sys573::cartI2C);
+
+	return *driver;
 }
 
 /* Utilities */

@@ -45,8 +45,6 @@ App::App(ui::Context &ctx)
 	_logOverlay(_logBuffer),
 #endif
 	_ctx(ctx),
-	_ioBoard(nullptr),
-	_cartDriver(nullptr),
 	_cartParser(nullptr),
 	_identified(nullptr) {}
 
@@ -55,10 +53,6 @@ App::~App(void) {
 }
 
 void App::_unloadCartData(void) {
-	if (_cartDriver) {
-		delete _cartDriver;
-		_cartDriver = nullptr;
-	}
 	if (_cartParser) {
 		delete _cartParser;
 		_cartParser = nullptr;

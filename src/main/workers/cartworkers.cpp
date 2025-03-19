@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/bus.hpp"
+#include "common/cart/cart.hpp"
 #include "common/fs/file.hpp"
 #include "common/sys573/ioboard.hpp"
 #include "common/util/hash.hpp"
@@ -25,9 +26,6 @@
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"
 #include "main/app/app.hpp"
-#include "main/cart/cart.hpp"
-#include "main/cart/cartdata.hpp"
-#include "main/cart/cartio.hpp"
 #include "main/workers/cartworkers.hpp"
 
 static const char *const _CARTDB_PATHS[cart::NUM_CHIP_TYPES]{
@@ -43,27 +41,13 @@ bool cartDetectWorker(App &app) {
 	app._unloadCartData();
 	app._qrCodeScreen.valid = false;
 
-#ifdef ENABLE_DUMMY_CART_DRIVER
-	if (!cart::dummyDriverDump.chipType)
-		app._fileIO.loadStruct(cart::dummyDriverDump, "res:/data/dummy.dmp");
-
-	if (cart::dummyDriverDump.chipType) {
-		LOG_APP("using dummy cart driver");
-		app._cartDriver = new cart::DummyDriver(app._cartDump);
-	} else {
-		app._cartDriver = cart::newCartDriver(app._cartDump);
-	}
-#else
-	app._cartDriver = cart::newCartDriver(app._cartDump);
-#endif
-
 	if (app._cartDump.chipType) {
-		auto error = app._cartDriver->readCartID();
+		auto error = cart::UNSUPPORTED_OP; // TODO: implement
 
 		if (error)
 			LOG_APP("SID error [%s]", cart::getErrorString(error));
 
-		error = app._cartDriver->readPublicData();
+		error = cart::UNSUPPORTED_OP; // TODO: implement
 
 		if (error)
 			LOG_APP("read error [%s]", cart::getErrorString(error));
@@ -104,16 +88,15 @@ bool cartDetectWorker(App &app) {
 _cartInitDone:
 	app._workerStatusScreen.setMessage(WSTR("App.cartDetectWorker.readDigitalIO"));
 
-	if (app._ioBoard->type == sys573::IO_DIGITAL) {
+	auto &io = sys573::ioBoard();
+
+	if (io.type == sys573::IO_DIGITAL) {
 		util::Data bitstream;
 
 		if (!app._fileIO.loadData(bitstream, "data/fpga.bit"))
 			goto _done;
 
-		bool ready = app._ioBoard->loadBitstream(
-			bitstream.as<uint8_t>(),
-			bitstream.length
-		);
+		bool ready = io.loadBitstream(bitstream.as<uint8_t>(), bitstream.length);
 		bitstream.destroy();
 
 		if (!ready)
@@ -121,7 +104,7 @@ _cartInitDone:
 
 		auto id = reinterpret_cast<bus::OneWireID *>(&app._cartDump.systemID);
 
-		if (!app._ioBoard->ds2401->readID(*id))
+		if (!io.ds2401->readID(*id))
 			LOG_APP("XID error");
 	}
 
@@ -142,7 +125,7 @@ bool cartUnlockWorker(App &app) {
 
 	app._qrCodeScreen.valid = false;
 
-	auto error = app._cartDriver->readPrivateData();
+	auto error = cart::UNSUPPORTED_OP; // TODO: implement
 
 	if (error) {
 		app._messageScreen.setMessage(
@@ -262,7 +245,7 @@ bool cartWriteWorker(App &app) {
 	app._workerStatusScreen.setMessage(WSTR("App.cartWriteWorker.write"));
 
 	uint8_t key[8];
-	auto    error = app._cartDriver->writeData();
+	auto    error = cart::UNSUPPORTED_OP; // TODO: implement
 
 	if (!error)
 		app._identified->copyKeyTo(key);
@@ -317,7 +300,7 @@ bool cartRestoreWorker(App &app) {
 
 	{
 		app._workerStatusScreen.setMessage(WSTR("App.cartRestoreWorker.setDataKey"));
-		auto error = app._cartDriver->setDataKey(newDump.dataKey);
+		auto error = cart::UNSUPPORTED_OP; // TODO: implement
 
 		if (error) {
 			LOG_APP("key error [%s]", cart::getErrorString(error));
@@ -330,7 +313,7 @@ bool cartRestoreWorker(App &app) {
 				app._cartDump.copyConfigFrom(newDump.config);
 
 			app._workerStatusScreen.setMessage(WSTR("App.cartRestoreWorker.write"));
-			error = app._cartDriver->writeData();
+			error = cart::UNSUPPORTED_OP; // TODO: implement
 		}
 
 		cartDetectWorker(app);
@@ -423,13 +406,20 @@ bool cartReflashWorker(App &app) {
 	app._cartParser->flush();
 
 	app._workerStatusScreen.setMessage(WSTR("App.cartReflashWorker.setDataKey"));
-	auto error = app._cartDriver->setDataKey(app._selectedEntry->dataKey);
+
+	auto &driver = cart::cart();
+	auto error   = driver.setKey(
+		app._selectedEntry->dataKey,
+		app._cartDump.dataKey
+	);
 
 	if (error) {
 		LOG_APP("key error [%s]", cart::getErrorString(error));
 	} else {
+		util::copy(app._cartDump.dataKey, app._selectedEntry->dataKey);
+
 		app._workerStatusScreen.setMessage(WSTR("App.cartReflashWorker.write"));
-		error = app._cartDriver->writeData();
+		error = cart::UNSUPPORTED_OP; // TODO: implement
 	}
 
 	cartDetectWorker(app);
@@ -450,7 +440,7 @@ bool cartReflashWorker(App &app) {
 bool cartEraseWorker(App &app) {
 	app._workerStatusScreen.setMessage(WSTR("App.cartEraseWorker.erase"));
 
-	auto error = app._cartDriver->erase();
+	auto error = cart::cart().erase(app._cartDump.dataKey);
 
 	cartDetectWorker(app);
 

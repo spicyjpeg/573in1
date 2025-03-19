@@ -130,7 +130,7 @@ set(
 	${vendorSources}
 	${commonSources}
 	${blkdevSources}
-	#${cartSources}
+	${cartSources}
 	${exthwSources}
 	${fsSources}
 	${nvramSources}
@@ -149,8 +149,6 @@ set(
 	src/main/app/threads.cpp
 	src/main/cart/cart.cpp     # TODO: remove
 	src/main/cart/cartdata.cpp # TODO: remove
-	src/main/cart/cartio.cpp   # TODO: remove
-	src/main/cart/zs01.cpp     # TODO: remove
 	src/main/workers/cartworkers.cpp
 	src/main/workers/miscworkers.cpp
 	src/main/workers/nvramworkers.cpp
@@ -163,9 +161,12 @@ set(
 set(
 	launcherSources
 	${ps1Sources}
-	${blkdevSources}
 	${sys573Sources}
 	${utilSources}
+	src/common/blkdev/ata.cpp
+	src/common/blkdev/atapi.cpp
+	src/common/blkdev/device.cpp
+	src/common/blkdev/idebase.cpp
 	src/common/args.cpp
 	src/launcher/exchandler.s
 	src/launcher/main.cpp

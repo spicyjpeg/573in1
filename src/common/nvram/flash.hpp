@@ -33,7 +33,7 @@ static constexpr uint32_t FLASH_EXECUTABLE_OFFSET = 0x24;
 /* Internal and PCMCIA flash base class */
 
 class FlashRegion : public Region {
-	friend FlashRegion *newFlashRegion(int bank);
+	friend FlashRegion *_newFlashRegion(int bank);
 
 private:
 	int _bank;
@@ -82,7 +82,7 @@ enum JEDECFlashStatusFlag : uint8_t {
 };
 
 class JEDEC8FlashRegion : public FlashRegion {
-	friend FlashRegion *newFlashRegion(int bank);
+	friend FlashRegion *_newFlashRegion(int bank);
 
 protected:
 	inline JEDEC8FlashRegion(
@@ -109,7 +109,7 @@ public:
 };
 
 class JEDEC16FlashRegion : public JEDEC8FlashRegion {
-	friend FlashRegion *newFlashRegion(int bank);
+	friend FlashRegion *_newFlashRegion(int bank);
 
 private:
 	inline JEDEC16FlashRegion(
@@ -155,7 +155,7 @@ enum IntelFlashStatusFlag : uint8_t {
 };
 
 class Intel8FlashRegion : public FlashRegion {
-	friend FlashRegion *newFlashRegion(int bank);
+	friend FlashRegion *_newFlashRegion(int bank);
 
 protected:
 	inline Intel8FlashRegion(
@@ -182,7 +182,7 @@ public:
 };
 
 class Intel16FlashRegion : public Intel8FlashRegion {
-	friend FlashRegion *newFlashRegion(int bank);
+	friend FlashRegion *_newFlashRegion(int bank);
 
 private:
 	inline Intel16FlashRegion(

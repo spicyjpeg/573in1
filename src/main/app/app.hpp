@@ -18,8 +18,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/nvram/flash.hpp"
-#include "common/sys573/ioboard.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
 #include "main/app/cartactions.hpp"
@@ -33,7 +31,6 @@
 #include "main/app/threads.hpp"
 #include "main/cart/cart.hpp"
 #include "main/cart/cartdata.hpp"
-#include "main/cart/cartio.hpp"
 #include "main/formats.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
@@ -184,10 +181,6 @@ private:
 	cart::ROMHeaderDump _romHeaderDump;
 	cart::CartDB        _cartDB;
 	cart::ROMHeaderDB   _romHeaderDB;
-
-	sys573::IOBoardDriver *_ioBoard;
-	cart::Driver          *_cartDriver;
-	nvram::FlashRegion    *_flash, *_pcmcia[2];
 
 	cart::CartParser        *_cartParser;
 	const cart::CartDBEntry *_identified, *_selectedEntry;
