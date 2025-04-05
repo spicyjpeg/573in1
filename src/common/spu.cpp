@@ -284,10 +284,10 @@ Channel Sound::play(uint16_t left, uint16_t right, Channel ch) const {
 void Stream::_configureIRQ(void) const {
 	uint16_t ctrlReg = SPU_CTRL;
 
-	// Disable the IRQ if an underrun occurs.
-	// TODO: handle this in a slightly better way
 	if (!_bufferedChunks) {
+#if 0
 		SPU_CTRL = ctrlReg & ~SPU_CTRL_IRQ_ENABLE;
+#endif
 		return;
 	}
 
@@ -312,15 +312,22 @@ void Stream::_configureIRQ(void) const {
 }
 
 Stream::Stream(void)
-: _channelMask(0), offset(0), interleave(0), numChunks(0), sampleRate(0),
-channels(0) {
+:
+	_channelMask(0),
+	offset(0),
+	interleave(0),
+	numChunks(0),
+	sampleRate(0),
+	channels(0) {
 	resetBuffer();
 }
 
 bool Stream::initFromVAGHeader(
-	const VAGHeader &header, uint32_t _offset, size_t _numChunks
+	const VAGHeader &header,
+	uint32_t        _offset,
+	size_t          _numChunks
 ) {
-	if (isPlaying())
+	if (getChannelMask())
 		return false;
 	if (!header.validateInterleavedMagic())
 		return false;
@@ -336,7 +343,7 @@ bool Stream::initFromVAGHeader(
 }
 
 ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
-	if (isPlaying() || !_bufferedChunks)
+	if (getChannelMask() || !_bufferedChunks)
 		return 0;
 
 	mask &= ALL_CHANNELS;
@@ -372,17 +379,17 @@ ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
 	}
 
 	_channelMask = mask;
+	handleInterrupt();
+
 	SPU_FLAG_ON1 = (mask >>  0) & 0xffff;
 	SPU_FLAG_ON2 = (mask >> 16) & 0xffff;
-
-	handleInterrupt();
 	return mask;
 }
 
 void Stream::stop(void) {
 	util::CriticalSection sec;
 
-	if (!isPlaying())
+	if (!getChannelMask())
 		return;
 
 	SPU_CTRL &= ~SPU_CTRL_IRQ_ENABLE;
@@ -394,7 +401,7 @@ void Stream::stop(void) {
 }
 
 void Stream::handleInterrupt(void) {
-	if (!isPlaying())
+	if (!getChannelMask())
 		return;
 
 	// Disabling the IRQ is always required in order to acknowledge it.
@@ -424,7 +431,7 @@ size_t Stream::feed(const void *data, size_t length) {
 		_bufferedChunks++;
 	}
 
-	if (isPlaying())
+	if (getChannelMask())
 		_configureIRQ();
 
 	flushWriteQueue();

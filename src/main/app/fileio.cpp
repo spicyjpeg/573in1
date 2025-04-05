@@ -63,8 +63,14 @@ void FileIOManager::init(void) {
 #ifdef ENABLE_PCDRV
 	auto mp = newMountPoint("host:");
 
-	if (mp)
-		mp->provider = new fs::HostProvider();
+	if (mp) {
+		auto provider = new fs::HostProvider();
+		mp->provider  = provider;
+
+#if 0
+		provider->init();
+#endif
+	}
 #endif
 }
 

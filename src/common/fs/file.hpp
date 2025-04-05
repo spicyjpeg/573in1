@@ -21,6 +21,7 @@
 #include "common/util/templates.hpp"
 #include "common/gpu.hpp"
 #include "common/spu.hpp"
+#include "ps1/gpucmd.h"
 
 namespace fs {
 
@@ -160,7 +161,11 @@ public:
 		int        maxIndex = 9999
 	);
 
-	size_t loadTIM(gpu::Image &output, const char *path);
+	size_t loadTIM(
+		gpu::Image     &output,
+		const char     *path,
+		gpu::BlendMode blendMode = GP0_BLEND_SEMITRANS
+	);
 	size_t loadBS(gpu::Image &output, const gpu::RectWH &rect, const char *path);
 	size_t loadVAG(spu::Sound &output, uint32_t offset, const char *path);
 	size_t saveVRAMBMP(const gpu::RectWH &rect, const char *path);

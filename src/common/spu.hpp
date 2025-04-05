@@ -109,7 +109,8 @@ public:
 	uint16_t sampleRate, length;
 
 	inline Channel play(
-		uint16_t left = MAX_VOLUME, uint16_t right = MAX_VOLUME
+		uint16_t left  = MAX_VOLUME,
+		uint16_t right = MAX_VOLUME
 	) const {
 		return play(left, right, getFreeChannel());
 	}
@@ -140,19 +141,15 @@ public:
 		stop();
 	}
 	inline ChannelMask start(
-		uint16_t left = MAX_VOLUME, uint16_t right = MAX_VOLUME
+		uint16_t left  = MAX_VOLUME,
+		uint16_t right = MAX_VOLUME
 	) {
 		return start(left, right, getFreeChannels(channels));
 	}
-	inline bool isPlaying(void) const {
+	inline ChannelMask getChannelMask(void) const {
 		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-		return (_channelMask != 0);
-	}
-	inline bool isUnderrun(void) const {
-		__atomic_signal_fence(__ATOMIC_ACQUIRE);
-
-		return !_bufferedChunks;
+		return _channelMask;
 	}
 
 	inline size_t getChunkLength(void) const {
@@ -165,10 +162,17 @@ public:
 		size_t playingChunk = _channelMask ? 1 : 0;
 		return numChunks - (_bufferedChunks + playingChunk);
 	}
+	inline bool isUnderrun(void) const {
+		__atomic_signal_fence(__ATOMIC_ACQUIRE);
+
+		return !_bufferedChunks;
+	}
 
 	Stream(void);
 	bool initFromVAGHeader(
-		const VAGHeader &header, uint32_t _offset, size_t _numChunks
+		const VAGHeader &header,
+		uint32_t        _offset,
+		size_t          _numChunks
 	);
 	ChannelMask start(uint16_t left, uint16_t right, ChannelMask mask);
 	void stop(void);

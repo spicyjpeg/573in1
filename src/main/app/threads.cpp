@@ -1,5 +1,5 @@
 /*
- * 573in1 - Copyright (C) 2022-2024 spicyjpeg
+ * 573in1 - Copyright (C) 2022-2025 spicyjpeg
  *
  * 573in1 is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -15,19 +15,20 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 #include "common/fs/file.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/spu.hpp"
-#include "ps1/system.h"
 #include "main/app/threads.hpp"
+#include "ps1/system.h"
 
 /* Audio stream thread */
 
 static constexpr size_t _STREAM_THREAD_STACK_SIZE = 0x2000;
 
-static constexpr size_t _STREAM_BUFFERED_CHUNKS = 8;
-static constexpr size_t _STREAM_MIN_FEED_CHUNKS = 4;
+static constexpr size_t _STREAM_BUFFERED_CHUNKS = 16;
+static constexpr size_t _STREAM_MIN_FEED_CHUNKS = 8;
 
 void _streamMain(void *arg0, void *arg1) {
 	auto obj     = reinterpret_cast<AudioStreamManager *>(arg0);
@@ -39,16 +40,14 @@ void _streamMain(void *arg0, void *arg1) {
 	for (;;) {
 		__atomic_signal_fence(__ATOMIC_ACQUIRE);
 
-		if (obj->_status == AUDIO_STREAM_STOP) {
-			stream.stop();
+		if (obj->_request == AUDIO_STREAM_STOP)
 			break;
-		}
 
 		// Keep yielding to the worker thread until the stream's FIFO has
 		// enough space for the new chunks.
 		auto numChunks = stream.getFreeChunkCount();
 
-		if (numChunks < _STREAM_MIN_FEED_CHUNKS) {
+		if (numChunks <= _STREAM_MIN_FEED_CHUNKS) {
 			switchThread(obj->_yieldTo);
 			forceThreadSwitch();
 			continue;
@@ -59,13 +58,13 @@ void _streamMain(void *arg0, void *arg1) {
 		if (length >= chunkLength) {
 			stream.feed(buffer.ptr, length);
 
-			if (!stream.isPlaying())
+			if (!stream.getChannelMask())
 				stream.start();
-		} else if (obj->_status == AUDIO_STREAM_LOOP) {
+		} else if (obj->_request == AUDIO_STREAM_PLAY_LOOPING) {
 			obj->_file->seek(spu::INTERLEAVED_VAG_BODY_OFFSET);
-		} else {
-			// Wait for any leftover data in the FIFO to finish playing,
-			// then stop playback.
+		} else if (obj->_request == AUDIO_STREAM_PLAY_ONCE) {
+			// Wait for any leftover data in the FIFO to finish playing, then
+			// stop playback.
 			while (!stream.isUnderrun()) {
 				switchThread(obj->_yieldTo);
 				forceThreadSwitch();
@@ -76,8 +75,7 @@ void _streamMain(void *arg0, void *arg1) {
 	}
 
 	// Do nothing and yield until the stream is restarted.
-	obj->_status = AUDIO_STREAM_IDLE;
-	flushWriteQueue();
+	stream.stop();
 
 	for (;;) {
 		switchThread(obj->_yieldTo);
@@ -97,12 +95,13 @@ void AudioStreamManager::_closeFile(void) {
 }
 
 void AudioStreamManager::_startThread(
-	fs::File *file, AudioStreamStatus status
+	AudioStreamRequest request,
+	fs::File           *file
 ) {
 	util::CriticalSection sec;
 
-	_file   = file;
-	_status = status;
+	_request = request;
+	_file    = file;
 
 	if (!_stack.ptr) {
 		_stack.allocate(_STREAM_THREAD_STACK_SIZE);
@@ -117,7 +116,7 @@ void AudioStreamManager::_startThread(
 }
 
 bool AudioStreamManager::play(fs::File *file, bool loop) {
-	if (isActive())
+	if (_stream.getChannelMask())
 		stop();
 
 	spu::VAGHeader header;
@@ -135,24 +134,33 @@ bool AudioStreamManager::play(fs::File *file, bool loop) {
 	size_t ramBufferLength = chunkLength * _STREAM_MIN_FEED_CHUNKS;
 
 	if (!_stream.initFromVAGHeader(
-		header, spu::SPU_RAM_END - spuBufferLength, _STREAM_BUFFERED_CHUNKS
+		header,
+		spu::SPU_RAM_END - spuBufferLength,
+		_STREAM_BUFFERED_CHUNKS
 	))
 		return false;
 	if (!_buffer.allocate(ramBufferLength))
 		return false;
 
-	_startThread(file, loop ? AUDIO_STREAM_LOOP : AUDIO_STREAM_PLAY_ONCE);
+	_startThread(
+		loop ? AUDIO_STREAM_PLAY_LOOPING : AUDIO_STREAM_PLAY_ONCE,
+		file
+	);
+
+	while (!_stream.getChannelMask())
+		yield();
+
 	return true;
 }
 
 void AudioStreamManager::stop(void) {
-	if (!isActive())
+	if (!_stream.getChannelMask())
 		return;
 
-	_status = AUDIO_STREAM_STOP;
+	_request = AUDIO_STREAM_STOP;
 	flushWriteQueue();
 
-	while (isActive())
+	while (_stream.getChannelMask())
 		yield();
 
 	_closeFile();

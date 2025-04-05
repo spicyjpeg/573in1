@@ -246,9 +246,7 @@ public:
 	uint16_t u, v, width, height;
 	uint16_t texpage, palette;
 
-	inline Image(void)
-	: width(0), height(0) {}
-
+	Image(void);
 	void initFromVRAMRect(
 		const RectWH &rect,
 		ColorDepth   colorDepth,

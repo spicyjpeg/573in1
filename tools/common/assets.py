@@ -16,6 +16,7 @@
 
 from collections.abc import Generator, Mapping, Sequence
 from dataclasses     import dataclass
+from enum            import IntFlag
 from struct          import Struct
 from typing          import Any, Callable
 
@@ -61,6 +62,13 @@ def toIndexedImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 
 ## .TIM image converter
 
+class TIMHeaderFlag(IntFlag):
+	COLOR_BITMASK = 3 << 0
+	COLOR_4BPP    = 0 << 0
+	COLOR_8BPP    = 1 << 0
+	COLOR_16BPP   = 2 << 0
+	HAS_PALETTE   = 1 << 3
+
 _TIM_HEADER_STRUCT:  Struct = Struct("< 2I")
 _TIM_SECTION_STRUCT: Struct = Struct("< I 4H")
 _TIM_HEADER_VERSION: int    = 0x10
@@ -73,33 +81,38 @@ _UPPER_ALPHA_BOUND: int = 0xe0
 _TRANSPARENT_COLOR: int = 0x0000
 _BLACK_COLOR:       int = 0x0421
 
-def _to16bpp(inputData: ndarray) -> ndarray:
+def _to16bpp(inputData: ndarray, forceSTP: bool) -> ndarray:
 	source: ndarray = inputData.astype("<H")
+	r:      ndarray = ((source[:, :, 0] * 249) + 1014) >> 11
+	g:      ndarray = ((source[:, :, 1] * 249) + 1014) >> 11
+	b:      ndarray = ((source[:, :, 2] * 249) + 1014) >> 11
 
-	r:    ndarray = ((source[:, :, 0] * 249) + 1014) >> 11
-	g:    ndarray = ((source[:, :, 1] * 249) + 1014) >> 11
-	b:    ndarray = ((source[:, :, 2] * 249) + 1014) >> 11
-	data: ndarray = r | (g << 5) | (b << 10)
+	solid:           ndarray = r | (g << 5) | (b << 10)
+	semitransparent: ndarray = solid | (1 << 15)
 
-	data = numpy.where(data != _TRANSPARENT_COLOR, data, _BLACK_COLOR)
+	data: ndarray = numpy.full_like(solid, _TRANSPARENT_COLOR)
 
 	if source.shape[2] == 4:
 		alpha: ndarray = source[:, :, 3]
+	else:
+		alpha: ndarray = numpy.full(source.shape[:-1], 0xff, "B")
 
-		data = numpy.select(
-			(
-				alpha > _UPPER_ALPHA_BOUND, # Leave as-is
-				alpha > _LOWER_ALPHA_BOUND  # Set semitransparency flag
-			), (
-				data,
-				data | (1 << 15)
-			),
-			_TRANSPARENT_COLOR
+	numpy.copyto(data, semitransparent, where = (alpha > _LOWER_ALPHA_BOUND))
+
+	if not forceSTP:
+		numpy.copyto(data, solid, where = (alpha > _UPPER_ALPHA_BOUND))
+		numpy.copyto(
+			data,
+			_BLACK_COLOR,
+			where = (alpha > _UPPER_ALPHA_BOUND) & (solid == _TRANSPARENT_COLOR)
 		)
 
-	return data.reshape(source.shape[:-1])
+	return data
 
-def convertIndexedImage(imageObj: Image.Image) -> tuple[ndarray, ndarray]:
+def convertIndexedImage(
+	imageObj: Image.Image,
+	forceSTP: bool = False
+) -> tuple[ndarray, ndarray]:
 	# Pillow has basically no support at all for palette manipulation, so nasty
 	# hacks are required here.
 	colorDepth: int = {
@@ -107,11 +120,12 @@ def convertIndexedImage(imageObj: Image.Image) -> tuple[ndarray, ndarray]:
 		"RGBA": 4
 	}[imageObj.palette.mode]
 
-	clut:      ndarray = numpy.frombuffer(imageObj.palette.tobytes(), "B")
+	clut:      ndarray = numpy.frombuffer(imageObj.palette.palette, "B")
 	numColors: int     = clut.shape[0] // colorDepth
 
 	# Pad the palette to 16 or 256 colors after converting it to 16bpp.
-	clut           = _to16bpp(clut.reshape(( 1, numColors, colorDepth )))
+	clut           = clut.reshape(( 1, numColors, colorDepth ))
+	clut           = _to16bpp(clut, forceSTP)
 	padAmount: int = (16 if (numColors <= 16) else 256) - numColors
 
 	if padAmount:
@@ -120,7 +134,7 @@ def convertIndexedImage(imageObj: Image.Image) -> tuple[ndarray, ndarray]:
 	image: ndarray = numpy.asarray(imageObj, "B")
 
 	if image.shape[1] % 2:
-		image = numpy.c_[ image, numpy.zeros((imageObj.height, 1 ), "B") ]
+		image = numpy.c_[ image, numpy.zeros(( imageObj.height, 1 ), "B") ]
 
 	# Pack two pixels into each byte for 4bpp images.
 	if numColors <= 16:
@@ -131,30 +145,63 @@ def convertIndexedImage(imageObj: Image.Image) -> tuple[ndarray, ndarray]:
 
 	return image, clut
 
-def generateIndexedTIM(
+def generateRawTIM(
 	imageObj: Image.Image,
-	ix:       int,
-	iy:       int,
-	cx:       int,
-	cy:       int
+	imageX:   int,
+	imageY:   int,
+	forceSTP: bool = False
 ) -> bytearray:
-	if (ix < 0) or (ix > 1023) or (iy < 0) or (iy > 1023):
+	if (imageX < 0) or (imageX > 1023) or (imageY < 0) or (imageY > 1023):
 		raise ValueError("image X/Y coordinates must be in 0-1023 range")
-	if (cx < 0) or (cx > 1023) or (cy < 0) or (cy > 1023):
-		raise ValueError("palette X/Y coordinates must be in 0-1023 range")
 
-	image, clut     = convertIndexedImage(imageObj)
+	image: ndarray = numpy.asarray(imageObj, "B")
+	image          = _to16bpp(image, forceSTP)
+
 	data: bytearray = bytearray()
-
-	data += _TIM_HEADER_STRUCT.pack(
+	data           += _TIM_HEADER_STRUCT.pack(
 		_TIM_HEADER_VERSION,
-		0x8 if (clut.size <= 16) else 0x9
+		TIMHeaderFlag.COLOR_16BPP
 	)
 
 	data += _TIM_SECTION_STRUCT.pack(
+		_TIM_SECTION_STRUCT.size + image.size,
+		imageX,
+		imageY,
+		image.shape[1] // 2,
+		image.shape[0]
+	)
+	data.extend(image)
+
+	return data
+
+def generateIndexedTIM(
+	imageObj: Image.Image,
+	imageX:   int,
+	imageY:   int,
+	clutX:    int,
+	clutY:    int,
+	forceSTP: bool = False
+) -> bytearray:
+	if (imageX < 0) or (imageX > 1023) or (imageY < 0) or (imageY > 1023):
+		raise ValueError("image X/Y coordinates must be in 0-1023 range")
+	if (clutX < 0) or (clutX > 1023) or (clutY < 0) or (clutY > 1023):
+		raise ValueError("palette X/Y coordinates must be in 0-1023 range")
+
+	image, clut          = convertIndexedImage(imageObj, forceSTP)
+	flags: TIMHeaderFlag = TIMHeaderFlag.HAS_PALETTE
+
+	if clut.size <= 16:
+		flags |= TIMHeaderFlag.COLOR_4BPP
+	else:
+		flags |= TIMHeaderFlag.COLOR_8BPP
+
+	data: bytearray = bytearray()
+	data           += _TIM_HEADER_STRUCT.pack(_TIM_HEADER_VERSION, flags)
+
+	data += _TIM_SECTION_STRUCT.pack(
 		_TIM_SECTION_STRUCT.size + clut.size * 2,
-		cx,
-		cy,
+		clutX,
+		clutY,
 		clut.shape[1],
 		clut.shape[0]
 	)
@@ -162,8 +209,8 @@ def generateIndexedTIM(
 
 	data += _TIM_SECTION_STRUCT.pack(
 		_TIM_SECTION_STRUCT.size + image.size,
-		ix,
-		iy,
+		imageX,
+		imageY,
 		image.shape[1] // 2,
 		image.shape[0]
 	)

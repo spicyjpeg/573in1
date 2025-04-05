@@ -196,7 +196,11 @@ void ButtonState::update(void) {
 /* UI context */
 
 Context::Context(gpu::Context &gpuCtx, void *screenData)
-: _currentScreen(0), gpuCtx(gpuCtx), time(0), screenData(screenData) {
+:
+	_currentScreen(0),
+	gpuCtx(gpuCtx),
+	time(0),
+	screenData(screenData) {
 	util::clear(_screens);
 	util::clear(backgrounds);
 	util::clear(overlays);

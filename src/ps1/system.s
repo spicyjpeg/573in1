@@ -193,9 +193,9 @@ _exceptionHandler:
 
 .set IO_BASE, 0xbf801000
 
-.set TIMER2_VALUE,  IO_BASE | 0x120
-.set TIMER2_CTRL,   IO_BASE | 0x124
-.set TIMER2_RELOAD, IO_BASE | 0x128
+.set TIMER0_VALUE,  IO_BASE | 0x100
+.set TIMER0_CTRL,   IO_BASE | 0x104
+.set TIMER0_RELOAD, IO_BASE | 0x108
 
 .section .text.delayMicroseconds, "ax", @progbits
 .global delayMicroseconds
@@ -217,9 +217,9 @@ delayMicroseconds:
 	# loop and returning.
 	addiu $a0, -(6 + 1 + 2 + 4 + 2)
 
-	# TIMER2_CTRL = 0;
+	# TIMER0_CTRL = 0;
 	lui   $v1, %hi(IO_BASE)
-	sh    $0,  %lo(TIMER2_CTRL)($v1)
+	sh    $0,  %lo(TIMER0_CTRL)($v1)
 
 	# Wait for up to 0xff00 cycles at a time (resetting the timer and waiting
 	# for it to count up each time), as the counter is only 16 bits wide. We
@@ -231,16 +231,16 @@ delayMicroseconds:
 	li    $a2, 0xff00 + 3
 
 .LlongDelay: # for (; cycles > 0xff00; cycles -= (0xff00 + 3)) {
-	# TIMER2_VALUE = 0;
-	sh    $0,  %lo(TIMER2_VALUE)($v1)
+	# TIMER0_VALUE = 0;
+	sh    $0,  %lo(TIMER0_VALUE)($v1)
 	li    $v0, 0
 
 .LlongDelayLoop:
-	# while (TIMER2_VALUE < 0xff00);
+	# while (TIMER0_VALUE < 0xff00);
 	nop
 	slt   $v0, $v0, $a1
 	bnez  $v0, .LlongDelayLoop
-	lhu   $v0, %lo(TIMER2_VALUE)($v1)
+	lhu   $v0, %lo(TIMER0_VALUE)($v1)
 
 	slt   $v0, $a1, $a0
 	bnez  $v0, .LlongDelay
@@ -249,16 +249,16 @@ delayMicroseconds:
 .LshortDelay: # }
 	# Run the last busy loop once less than 0xff00 cycles are remaining.
 
-	# TIMER2_VALUE = 0;
-	sh    $0,  %lo(TIMER2_VALUE)($v1)
+	# TIMER0_VALUE = 0;
+	sh    $0,  %lo(TIMER0_VALUE)($v1)
 	li    $v0, 0
 
 .LshortDelayLoop:
-	# while (TIMER2_VALUE < cycles);
+	# while (TIMER0_VALUE < cycles);
 	nop
 	slt   $v0, $v0, $a0
 	bnez  $v0, .LshortDelayLoop
-	lhu   $v0, %lo(TIMER2_VALUE)($v1)
+	lhu   $v0, %lo(TIMER0_VALUE)($v1)
 
 	# return;
 	jr    $ra

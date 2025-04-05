@@ -137,7 +137,11 @@ bool Provider::getNumberedPath(
 	return true;
 }
 
-size_t Provider::loadTIM(gpu::Image &output, const char *path) {
+size_t Provider::loadTIM(
+	gpu::Image     &output,
+	const char     *path,
+	gpu::BlendMode blendMode
+) {
 	util::Data data;
 	size_t     loadLength = 0;
 
@@ -146,7 +150,7 @@ size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 
 	auto header = data.as<gpu::TIMHeader>();
 
-	if (output.initFromTIMHeader(*header)) {
+	if (output.initFromTIMHeader(*header, blendMode)) {
 		auto image = header->getImage();
 		auto clut  = header->getCLUT();
 
@@ -160,7 +164,9 @@ size_t Provider::loadTIM(gpu::Image &output, const char *path) {
 }
 
 size_t Provider::loadBS(
-	gpu::Image &output, const gpu::RectWH &rect, const char *path
+	gpu::Image        &output,
+	const gpu::RectWH &rect,
+	const char        *path
 ) {
 	util::Data data;
 	size_t     loadLength = 0;
@@ -203,7 +209,9 @@ size_t Provider::loadBS(
 }
 
 size_t Provider::loadVAG(
-	spu::Sound &output, uint32_t offset, const char *path
+	spu::Sound &output,
+	uint32_t   offset,
+	const char *path
 ) {
 	// Sounds should be decompressed and uploaded to the SPU one chunk at a
 	// time, but whatever.

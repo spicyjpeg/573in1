@@ -226,7 +226,7 @@ void Context::setResolution(
 	height      = _height;
 	refreshRate = mode ? 50 : 60;
 
-	for (int fb = 1; fb >= 0; fb--) {
+	for (int fb = 0; fb < 2; fb++) {
 		auto &clip = _buffers[fb].clip;
 
 		if (_height > 256) {
@@ -242,6 +242,11 @@ void Context::setResolution(
 
 		clip.x2 = clip.x1 + _width  - 1;
 		clip.y2 = clip.y1 + _height - 1;
+	}
+
+	for (auto &buffer : _buffers) {
+		auto ptr = buffer.displayList.as<uint32_t>();
+		*ptr     = gp0_endTag(0);
 	}
 
 	_currentListPtr = _buffers[0].displayList.as<uint32_t>();
@@ -274,14 +279,15 @@ void Context::flip(void) {
 		}
 	}
 
+	*_currentListPtr = gp0_endTag(0);
+
 	GPU_GP1 = gp1_fbOffset(newBuffer.clip.x1, newBuffer.clip.y1);
 	GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
 	sendLinkedList(oldBuffer.displayList.ptr);
 
-	*_currentListPtr = gp0_endTag(0);
-	_currentListPtr  = newBuffer.displayList.as<uint32_t>();
-	_currentBuffer  ^= 1;
+	_currentListPtr = newBuffer.displayList.as<uint32_t>();
+	_currentBuffer ^= 1;
 }
 
 uint32_t *Context::newPacket(size_t length) {
@@ -414,6 +420,15 @@ void Context::drawGradientRectD(
 }
 
 /* Image class */
+
+Image::Image(void)
+:
+	u(0),
+	v(0),
+	width(0),
+	height(0),
+	texpage(0),
+	palette(0) {}
 
 void Image::initFromVRAMRect(
 	const RectWH &rect,

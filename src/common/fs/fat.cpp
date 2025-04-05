@@ -53,27 +53,27 @@ static const char *const _FATFS_ERROR_NAMES[]{
 /* FAT file and directory classes */
 
 size_t FATFile::read(void *output, size_t length) {
-	size_t actualLength;
-	auto   error = f_read(&_fd, output, length, &actualLength);
+	UINT actualLength;
+	auto error = f_read(&_fd, output, length, &actualLength);
 
 	if (error) {
 		LOG_FS("%s", _FATFS_ERROR_NAMES[error]);
 		return 0;
 	}
 
-	return uint64_t(actualLength);
+	return actualLength;
 }
 
 size_t FATFile::write(const void *input, size_t length) {
-	size_t actualLength;
-	auto   error = f_write(&_fd, input, length, &actualLength);
+	UINT actualLength;
+	auto error = f_write(&_fd, input, length, &actualLength);
 
 	if (error) {
 		LOG_FS("%s", _FATFS_ERROR_NAMES[error]);
 		return 0;
 	}
 
-	return uint64_t(actualLength);
+	return actualLength;
 }
 
 uint64_t FATFile::seek(uint64_t offset) {
@@ -192,13 +192,14 @@ bool FATProvider::getFileInfo(FileInfo &output, const char *path) {
 }
 
 bool FATProvider::getFileFragments(
-	FileFragmentTable &output, const char *path
+	FileFragmentTable &output,
+	const char        *path
 ) {
 	FIL  fd;
 	auto error = f_open(&_fs, &fd, path, READ);
 
 	if (!error) {
-		size_t length;
+		UINT length;
 
 		// Note that this function is not normally part of FatFs.
 		error = f_getlbas(&fd, nullptr, 0, &length);
@@ -290,7 +291,10 @@ extern "C" DSTATUS disk_status(PDRV_t drive) {
 }
 
 extern "C" DRESULT disk_read(
-	PDRV_t drive, uint8_t *data, LBA_t lba, size_t count
+	PDRV_t  drive,
+	uint8_t *data,
+	LBA_t   lba,
+	UINT    count
 ) {
 	auto dev = reinterpret_cast<blkdev::Device *>(drive);
 
@@ -298,7 +302,10 @@ extern "C" DRESULT disk_read(
 }
 
 extern "C" DRESULT disk_write(
-	PDRV_t drive, const uint8_t *data, LBA_t lba, size_t count
+	PDRV_t        drive,
+	const uint8_t *data,
+	LBA_t         lba,
+	UINT          count
 ) {
 	auto dev = reinterpret_cast<blkdev::Device *>(drive);
 

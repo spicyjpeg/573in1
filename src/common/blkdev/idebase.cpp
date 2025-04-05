@@ -91,8 +91,6 @@ int IDEIdentifyBlock::getHighestPIOMode(void) const {
 
 void IDEDevice::_readData(void *data, size_t length) const {
 #if 0
-	sys573::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
-#else
 	length = (length + 1) / 2;
 
 	util::assertAligned<uint16_t>(data);
@@ -101,13 +99,13 @@ void IDEDevice::_readData(void *data, size_t length) const {
 
 	for (; length > 0; length--)
 		*(ptr++) = SYS573_IDE_CS0_BASE[CS0_DATA];
+#else
+	sys573::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
 #endif
 }
 
 void IDEDevice::_writeData(const void *data, size_t length) const {
 #if 0
-	sys573::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
-#else
 	length = (length + 1) / 2;
 
 	util::assertAligned<uint16_t>(data);
@@ -116,6 +114,8 @@ void IDEDevice::_writeData(const void *data, size_t length) const {
 
 	for (; length > 0; length--)
 		SYS573_IDE_CS0_BASE[CS0_DATA] = *(ptr++);
+#else
+	sys573::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
 #endif
 }
 
@@ -248,13 +248,11 @@ static constexpr int _SRST_SET_DELAY   = 5000;
 static constexpr int _SRST_CLEAR_DELAY = 50000;
 
 IDEDevice *_newIDEDevice(int index) {
-#if 0
 	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] =
 		CS1_DEVICE_CTRL_IEN | CS1_DEVICE_CTRL_SRST;
 	delayMicroseconds(_SRST_SET_DELAY);
 	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] = CS1_DEVICE_CTRL_IEN;
 	delayMicroseconds(_SRST_CLEAR_DELAY);
-#endif
 
 	if (index)
 		SYS573_IDE_CS0_BASE[CS0_DEVICE_SEL] = CS0_DEVICE_SEL_SECONDARY;
