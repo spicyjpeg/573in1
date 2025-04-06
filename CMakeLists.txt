@@ -19,7 +19,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.0
+	VERSION      1.0.1
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )

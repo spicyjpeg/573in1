@@ -29,6 +29,19 @@ namespace ui {
 
 static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 	{
+		// MAP_START_ONLY
+		0,
+		0,
+		0
+			| io::JAMMA_P1_START
+#if 0
+			// DDR Solo has the player 2 start button hardwired to ground.
+			| io::JAMMA_P2_START
+#endif
+			| io::JAMMA_TEST
+			| io::JAMMA_SERVICE,
+		0
+	}, {
 		// MAP_JOYSTICK
 		0
 			| io::JAMMA_P1_LEFT
@@ -76,7 +89,9 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 		0,
 		0
 			| io::JAMMA_P1_START
+#if 0
 			| io::JAMMA_P2_START
+#endif
 			| io::JAMMA_TEST
 			| io::JAMMA_SERVICE,
 		0
@@ -84,7 +99,7 @@ static const uint32_t _BUTTON_MAPPINGS[NUM_BUTTON_MAPS][NUM_BUTTONS]{
 };
 
 ButtonState::ButtonState(void)
-: _buttonMap(MAP_JOYSTICK), _held(0), _prevHeld(0), _longHeld(0),
+: _buttonMap(MAP_START_ONLY), _held(0), _prevHeld(0), _longHeld(0),
 _prevLongHeld(0), _pressed(0), _released(0), _longPressed(0), _longReleased(0),
 _repeatTimer(0) {}
 

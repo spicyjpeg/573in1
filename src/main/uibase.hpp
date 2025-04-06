@@ -100,7 +100,7 @@ static constexpr int SCROLL_AMOUNT = 32;
 /* Button state manager */
 
 static constexpr int NUM_BUTTONS     = 4;
-static constexpr int NUM_BUTTON_MAPS = 6;
+static constexpr int NUM_BUTTON_MAPS = 7;
 static constexpr int REPEAT_DELAY    = 30;
 
 enum Button {
@@ -111,12 +111,13 @@ enum Button {
 };
 
 enum ButtonMap {
-	MAP_JOYSTICK      = 0,
-	MAP_DDR_CAB       = 1,
-	MAP_DDR_SOLO_CAB  = 2,
-	MAP_DM_CAB        = 3,
-	MAP_DMX_CAB       = 4,
-	MAP_SINGLE_BUTTON = 5  // Used when selecting button mapping
+	MAP_START_ONLY    = 0, // Used in warning and autoboot screens
+	MAP_JOYSTICK      = 1,
+	MAP_DDR_CAB       = 2,
+	MAP_DDR_SOLO_CAB  = 3,
+	MAP_DM_CAB        = 4,
+	MAP_DMX_CAB       = 5,
+	MAP_SINGLE_BUTTON = 6  // Used when selecting button mapping
 };
 
 class ButtonState {

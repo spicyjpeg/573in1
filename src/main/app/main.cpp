@@ -41,6 +41,7 @@ void WarningScreen::show(ui::Context &ctx, bool goBack) {
 	_buttonText[0] = 0;
 
 	MessageBoxScreen::show(ctx, goBack);
+	ctx.buttons.setButtonMap(ui::MAP_START_ONLY);
 }
 
 void WarningScreen::update(ui::Context &ctx) {
@@ -90,6 +91,7 @@ void AutobootScreen::show(ui::Context &ctx, bool goBack) {
 		);
 
 	MessageBoxScreen::show(ctx, goBack);
+	ctx.buttons.setButtonMap(ui::MAP_START_ONLY);
 }
 
 void AutobootScreen::update(ui::Context &ctx) {

@@ -101,8 +101,7 @@
 				"dataFormat": "extended",
 				"yearField":  "19-98",
 
-				"hasSpecification": true,
-				"gx706Workaround":  true
+				"hasSpecification": true
 			}
 		},
 		{
