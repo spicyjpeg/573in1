@@ -259,5 +259,3 @@ def findFlashFunctions(exe: PSEXEAnalyzer) -> dict[str, int]:
 			"resetChip"
 		)
 	)
-
-# TODO: find ddr stage io init

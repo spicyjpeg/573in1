@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from collections.abc import ByteString, Generator
+from collections.abc import Generator
 from struct          import Struct
 from typing          import Any, BinaryIO, TextIO
 
@@ -121,7 +121,7 @@ class PSEXEAnalyzer:
 
 	def findBytes(
 		self,
-		data:      ByteString,
+		data:      bytes | bytearray,
 		start:     int | None = None,
 		stop:      int | None = None,
 		alignment: int        = 4
@@ -151,7 +151,7 @@ class PSEXEAnalyzer:
 
 	def findSingleMatch(
 		self,
-		data:      ByteString,
+		data:      bytes | bytearray,
 		start:     int | None = None,
 		stop:      int | None = None,
 		alignment: int        = 4

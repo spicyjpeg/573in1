@@ -20,7 +20,7 @@ __author__  = "spicyjpeg"
 
 import json
 from argparse        import ArgumentParser, FileType, Namespace
-from collections.abc import ByteString, Mapping
+from collections.abc import Mapping
 from pathlib         import Path
 from typing          import Any
 
@@ -38,7 +38,7 @@ def getJSONObject(asset: Mapping[str, Any], sourceDir: Path, key: str) -> dict:
 	with open(sourceDir / asset["source"], "rt", encoding = "utf-8") as file:
 		return json.load(file)
 
-def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
+def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> bytes | bytearray:
 	match asset.get("type", "file").strip():
 		case "empty":
 			return bytes(int(asset.get("size", 0)))
@@ -61,7 +61,7 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> ByteString:
 			cx: int = int(asset["clutPos"] ["x"])
 			cy: int = int(asset["clutPos"] ["y"])
 
-			image: Image.Image = toIndexedImage(
+			image: Image.Image = quantizeImage(
 				Image.open(sourceDir / asset["source"]),
 				int(asset.get("quantize", 16))
 			)
@@ -170,8 +170,8 @@ def main():
 	fileData: bytearray                    = bytearray()
 
 	for asset in configFile["resources"]:
-		name: str        = asset["name"]
-		data: ByteString = processAsset(asset, sourceDir)
+		name: str               = asset["name"]
+		data: bytes | bytearray = processAsset(asset, sourceDir)
 
 		if data and args.export:
 			args.export.mkdir(parents = True, exist_ok = True)

@@ -15,12 +15,11 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from collections.abc import ByteString
-from dataclasses     import dataclass
-from enum            import IntEnum, IntFlag
-from struct          import Struct
-from typing          import Self
-from zlib            import decompress
+from dataclasses import dataclass
+from enum        import IntEnum, IntFlag
+from struct      import Struct
+from typing      import Self
+from zlib        import decompress
 
 from .util import decodeBase41
 
@@ -101,7 +100,7 @@ class CartDump:
 		return CartDump.fromBinary(decompress(dump))
 
 	@staticmethod
-	def fromBinary(data: ByteString) -> Self:
+	def fromBinary(data: bytes | bytearray) -> Self:
 		(
 			magic,
 			chipType,
@@ -151,7 +150,7 @@ _MAME_ZS01_DUMP_STRUCT:      Struct = Struct("< 4x 8s 8s 8s 112s")
 _MAME_ZS01_OLD_DUMP_STRUCT1: Struct = Struct("< 4x 8s 8s 8s 112s 3984x")
 _MAME_ZS01_OLD_DUMP_STRUCT2: Struct = Struct("< 4x 8s 8s 112s 3984x")
 
-def parseMAMECartDump(dump: ByteString) -> CartDump:
+def parseMAMECartDump(dump: bytes | bytearray) -> CartDump:
 	match int.from_bytes(dump[0:4], "big"), len(dump):
 		case 0x1955aa55, _MAME_X76F041_DUMP_STRUCT.size:
 			writeKey, readKey, configKey, config, data = \

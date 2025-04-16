@@ -15,8 +15,7 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import json, logging, re
-from collections.abc import \
-	ByteString, Generator, Iterable, Iterator, Mapping, Sequence
+from collections.abc import Generator, Iterable, Iterator, Mapping, Sequence
 from dataclasses     import dataclass, field
 from functools       import reduce
 from hashlib         import md5
@@ -71,7 +70,7 @@ def hexdumpToFile(data: Sequence[int], output: TextIO, width: int = 16):
 
 		output.write(f"  {i:04x}: {hexLine} |{asciiLine}|\n")
 
-def serialNumberToString(_id: ByteString) -> str:
+def serialNumberToString(_id: bytes | bytearray) -> str:
 	value: int = int.from_bytes(_id[1:7], "little")
 
 	#if value >= 100000000:
@@ -144,7 +143,7 @@ def checksum16(
 
 	return (sum(values) & 0xffff) ^ (0xffff if invert else 0)
 
-def shortenedMD5(data: ByteString) -> bytearray:
+def shortenedMD5(data: bytes | bytearray) -> bytearray:
 	hashed: bytes     = md5(data).digest()
 	output: bytearray = bytearray(8)
 
@@ -157,7 +156,7 @@ def shortenedMD5(data: ByteString) -> bytearray:
 
 _CRC8_POLY: int = 0x8c
 
-def dsCRC8(data: ByteString) -> int:
+def dsCRC8(data: bytes | bytearray) -> int:
 	crc: int = 0
 
 	for byte in data:
@@ -172,7 +171,7 @@ def dsCRC8(data: ByteString) -> int:
 
 	return crc & 0xff
 
-def sidCRC16(data: ByteString, width: int = 16) -> int:
+def sidCRC16(data: bytes | bytearray, width: int = 16) -> int:
 	crc: int = 0
 
 	for i, byte in enumerate(data):
@@ -422,12 +421,12 @@ class HashTableBuilder:
 
 class StringBlobBuilder:
 	def __init__(self, alignment: int = 1):
-		self._alignment: int                   = alignment
-		self._offsets:   dict[ByteString, int] = {}
+		self._alignment: int              = alignment
+		self._offsets:   dict[bytes, int] = {}
 
 		self.data: bytearray = bytearray()
 
-	def addString(self, string: ByteString) -> int:
+	def addString(self, string: bytes) -> int:
 		# If the same string is already in the blob, return its offset without
 		# adding new data.
 		offset: int | None = self._offsets.get(string, None)

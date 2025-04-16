@@ -14,9 +14,8 @@
 # You should have received a copy of the GNU General Public License along with
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
-from collections.abc import ByteString
-from dataclasses     import dataclass
-from enum            import IntEnum
+from dataclasses import dataclass
+from enum        import IntEnum
 
 from .util import decodeSigned, encodeSigned
 
@@ -480,7 +479,7 @@ def encodeJR(rs: Register) -> bytes:
 
 ## Instruction decoder
 
-def parseInstruction(address: int, data: ByteString) -> Instruction:
+def parseInstruction(address: int, data: bytes | bytearray) -> Instruction:
 	inst: int = int.from_bytes(data[0:4], "little")
 
 	imm5:  int = (inst >>  6) & 0x1f

@@ -34,15 +34,18 @@ from .util   import \
 # which are broken, depending on whether the input image has an alpha channel.
 # As a workaround, non-indexed-color images are "quantized" (with no dithering -
 # images with more colors than allowed are rejected) manually instead.
-def toIndexedImage(imageObj: Image.Image, numColors: int) -> Image.Image:
+def quantizeImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 	if imageObj.mode == "P":
 		return imageObj
 	if imageObj.mode not in ( "RGB", "RGBA" ):
 		imageObj = imageObj.convert("RGBA")
 
-	image: ndarray = numpy.asarray(imageObj, "B")
+	image: ndarray = numpy.asarray(imageObj, "B").reshape((
+		imageObj.width * imageObj.height,
+		image.shape[2]
+	))
 	clut, image    = numpy.unique(
-		image.reshape(( imageObj.width * imageObj.height, image.shape[2] )),
+		image,
 		return_inverse = True,
 		axis           = 0
 	)
@@ -53,12 +56,14 @@ def toIndexedImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 			f"{numColors} or less)"
 		)
 
-	image = image.astype("B").reshape(( imageObj.height, imageObj.width ))
+	image               = image.astype("B").reshape((
+		imageObj.height,
+		imageObj.width
+	))
+	newObj: Image.Image = Image.fromarray(image, "P")
 
-	newImageObj: Image.Image = Image.fromarray(image, "P")
-
-	newImageObj.putpalette(clut, imageObj.mode)
-	return newImageObj
+	newObj.putpalette(clut.tobytes(), imageObj.mode)
+	return newObj
 
 ## .TIM image converter
 
@@ -80,6 +85,19 @@ _UPPER_ALPHA_BOUND: int = 0xe0
 # pixels must be changed to dark gray to prevent them from becoming transparent.
 _TRANSPARENT_COLOR: int = 0x0000
 _BLACK_COLOR:       int = 0x0421
+
+def _getImagePalette(imageObj: Image.Image) -> ndarray:
+	clut: ndarray = numpy.array(imageObj.getpalette("RGBA"), "B")
+	clut          = clut.reshape(( clut.shape[0] // 4, 4 ))
+
+	# Pillow's PNG decoder does not handle indexed color images with alpha
+	# correctly, so a workaround is needed here to manually integrate the
+	# contents of the image's "tRNs" chunk into the palette.
+	if "transparency" in imageObj.info:
+		alpha: bytes = imageObj.info["transparency"]
+		clut[:, 3]   = numpy.frombuffer(alpha.ljust(clut.shape[0], b"\xff"))
+
+	return clut
 
 def _to16bpp(inputData: ndarray, forceSTP: bool) -> ndarray:
 	source: ndarray = inputData.astype("<H")
@@ -113,20 +131,13 @@ def convertIndexedImage(
 	imageObj: Image.Image,
 	forceSTP: bool = False
 ) -> tuple[ndarray, ndarray]:
-	# Pillow has basically no support at all for palette manipulation, so nasty
-	# hacks are required here.
-	colorDepth: int = {
-		"RGB":  3,
-		"RGBA": 4
-	}[imageObj.palette.mode]
-
-	clut:      ndarray = numpy.frombuffer(imageObj.palette.palette, "B")
-	numColors: int     = clut.shape[0] // colorDepth
+	clut:      ndarray = _getImagePalette(imageObj)
+	numColors: int     = clut.shape[0]
+	padAmount: int     = (16 if (numColors <= 16) else 256) - numColors
 
 	# Pad the palette to 16 or 256 colors after converting it to 16bpp.
-	clut           = clut.reshape(( 1, numColors, colorDepth ))
-	clut           = _to16bpp(clut, forceSTP)
-	padAmount: int = (16 if (numColors <= 16) else 256) - numColors
+	clut = clut.reshape(( 1, numColors, 4 ))
+	clut = _to16bpp(clut, forceSTP)
 
 	if padAmount:
 		clut = numpy.c_[ clut, numpy.zeros(( 1, padAmount ), "<H") ]

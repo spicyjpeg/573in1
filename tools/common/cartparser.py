@@ -19,7 +19,6 @@ from collections.abc import Sequence
 from dataclasses     import dataclass
 from itertools       import product
 from struct          import Struct
-from typing          import ByteString
 
 from .cart   import *
 from .gamedb import *
@@ -31,7 +30,7 @@ from .util   import \
 class ParserError(Exception):
 	pass
 
-def _unscrambleRTCRAM(data: ByteString) -> bytearray:
+def _unscrambleRTCRAM(data: bytes | bytearray) -> bytearray:
 	# Some early games "scramble" RTC RAM by (possibly accidentally?)
 	# interpreting the data to be written as an array of 16-bit big endian
 	# values, then expanding them to 32-bit little endian.
@@ -46,14 +45,14 @@ def _unscrambleRTCRAM(data: ByteString) -> bytearray:
 
 	return output
 
-def _isEmpty(data: ByteString) -> bool:
+def _isEmpty(data: bytes | bytearray) -> bool:
 	for byte in data:
 		if byte and (byte != 0xff):
 			return False
 
 	return True
 
-def _validateCustomID(data: ByteString) -> bool:
+def _validateCustomID(data: bytes | bytearray) -> bool:
 	if not sum(data):
 		return False
 
@@ -66,7 +65,7 @@ def _validateCustomID(data: ByteString) -> bool:
 		f"checksum mismatch: expected {checksum:#04x}, got {data[7]:#04x}"
 	)
 
-def _validateDS2401ID(data: ByteString) -> bool:
+def _validateDS2401ID(data: bytes | bytearray) -> bool:
 	if not sum(data):
 		return False
 	if not data[0] or (data[0] == 0xff):
@@ -81,7 +80,7 @@ def _validateDS2401ID(data: ByteString) -> bool:
 
 ## Header checksum detection
 
-def detectChecksum(data: ByteString, checksum: int) -> ChecksumFlag:
+def detectChecksum(data: bytes | bytearray, checksum: int) -> ChecksumFlag:
 	# Steering/Handle Champ has no checksum in its flash header, despite
 	# otherwise having one in RTC RAM.
 	if not checksum:
@@ -174,7 +173,7 @@ class DetectedHeader:
 	publicIDOffset:  int | None = None
 
 def detectHeader(
-	data:          ByteString,
+	data:          bytes | bytearray,
 	privateOffset: int,
 	publicOffset:  int
 ) -> DetectedHeader:
@@ -201,8 +200,9 @@ def detectHeader(
 		flagList: str      = \
 			"|".join(flag.name for flag in header.headerFlags) or "0"
 
-		buffer: ByteString = unscrambledData if scrambled      else data
-		offset: int | None = publicOffset    if usesPublicArea else privateOffset
+		buffer: bytes | bytearray = unscrambledData if scrambled else data
+		offset: int | None        = \
+			publicOffset if usesPublicArea else privateOffset
 
 		if (offset < 0) or (offset >= len(buffer)):
 			logging.debug(f"  <{flagList}>: header offset out of bounds")
@@ -309,7 +309,7 @@ class DetectedIdentifiers:
 	idFlags:  IdentifierFlag = IdentifierFlag(0)
 
 def detectPrivateIDs(
-	data:            ByteString,
+	data:            bytes | bytearray,
 	privateOffset:   int,
 	dummyAreaOffset: int
 ) -> DetectedIdentifiers:
@@ -326,7 +326,7 @@ def detectPrivateIDs(
 	offset: int = privateOffset
 
 	if (dummyAreaOffset >= 0) and (dummyAreaOffset < len(data)):
-		dummyArea: ByteString = \
+		dummyArea: bytes | bytearray = \
 			data[dummyAreaOffset:dummyAreaOffset + _PRIVATE_ID_STRUCT.size]
 
 		if sum(dummyArea):
@@ -374,7 +374,10 @@ def detectPrivateIDs(
 
 	return ids
 
-def detectPublicIDs(data: ByteString, publicOffset: int) -> DetectedIdentifiers:
+def detectPublicIDs(
+	data:         bytes | bytearray,
+	publicOffset: int
+) -> DetectedIdentifiers:
 	ids: DetectedIdentifiers = DetectedIdentifiers()
 
 	mid, xid = _PUBLIC_ID_STRUCT.unpack_from(data, publicOffset)
@@ -396,7 +399,10 @@ class DetectedSignature:
 	signatureField: bytes         = b""
 	signatureFlags: SignatureFlag = SignatureFlag(0)
 
-def detectSignature(data: ByteString, publicOffset: int) -> DetectedSignature:
+def detectSignature(
+	data:         bytes | bytearray,
+	publicOffset: int
+) -> DetectedSignature:
 	sig: DetectedSignature = DetectedSignature()
 
 	installSig, padding = _SIGNATURE_STRUCT.unpack_from(data, publicOffset)
