@@ -230,7 +230,7 @@ bool ISO9660File::_loadSector(uint32_t lba) {
 }
 
 size_t ISO9660File::read(void *output, size_t length) {
-	auto ptr    = reinterpret_cast<uintptr_t>(output);
+	auto ptr    = uintptr_t(output);
 	auto offset = uint32_t(_offset);
 
 	// Do not read any data past the end of the file.
@@ -349,7 +349,7 @@ bool ISO9660Provider::_getRecord(
 		return false;
 
 	// Iterate over all records in the directory.
-	auto ptr     = reinterpret_cast<uintptr_t>(records.ptr);
+	auto ptr     = uintptr_t(records.ptr);
 	auto dataEnd = ptr + root.length.le;
 
 	while (ptr < dataEnd) {
@@ -486,7 +486,7 @@ Directory *ISO9660Provider::openDirectory(const char *path) {
 		return nullptr;
 	}
 
-	dir->_ptr     = reinterpret_cast<uintptr_t>(dir->_records.ptr);
+	dir->_ptr     = uintptr_t(dir->_records.ptr);
 	dir->_dataEnd = dir->_ptr + record.length.le;
 	return dir;
 }

@@ -294,7 +294,7 @@ DeviceError ATAPIDevice::read(void *data, uint64_t lba, size_t count) {
 
 	// Data must be transferred one sector at a time as the drive may deassert
 	// DRQ between sectors.
-	auto ptr = reinterpret_cast<uintptr_t>(data);
+	auto ptr = uintptr_t(data);
 
 	for (; count; count--) {
 		error = _waitForDRQ();

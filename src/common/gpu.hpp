@@ -209,7 +209,7 @@ public:
 	}
 	inline const TIMSectionHeader *getNextSection(void) const {
 		return reinterpret_cast<const TIMSectionHeader *>(
-			reinterpret_cast<uintptr_t>(this) + length
+			uintptr_t(this) + length
 		);
 	}
 };

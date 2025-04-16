@@ -76,10 +76,10 @@ extern Logger logger;
 #define LOG_APP(fmt, ...)
 #endif
 
-#ifdef ENABLE_CART_DATA_LOGGING
-#define LOG_CART_DATA(fmt, ...) LOG("data", fmt __VA_OPT__(,) __VA_ARGS__)
+#ifdef ENABLE_GAMEDB_LOGGING
+#define LOG_GAMEDB(fmt, ...) LOG("gamedb", fmt __VA_OPT__(,) __VA_ARGS__)
 #else
-#define LOG_CART_DATA(fmt, ...)
+#define LOG_GAMEDB(fmt, ...)
 #endif
 
 #ifdef ENABLE_IO_LOGGING

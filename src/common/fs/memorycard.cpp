@@ -31,7 +31,8 @@ static constexpr int _MUTEX_TIMEOUT = 30000000;
 /* Utilities */
 
 static void _recordToFileInfo(
-	FileInfo &output, const MemoryCardRecord &record
+	FileInfo               &output,
+	const MemoryCardRecord &record
 ) {
 	__builtin_strncpy(output.name, record.name, sizeof(output.name));
 	output.size       = record.length;
@@ -107,7 +108,7 @@ bool MemoryCardFile::_extend(size_t targetSize) {
 }
 
 size_t MemoryCardFile::read(void *output, size_t length) {
-	auto ptr    = reinterpret_cast<uintptr_t>(output);
+	auto ptr    = uintptr_t(output);
 	auto offset = uint32_t(_offset);
 
 #if 0
@@ -155,7 +156,7 @@ size_t MemoryCardFile::read(void *output, size_t length) {
 }
 
 size_t MemoryCardFile::write(const void *input, size_t length) {
-	auto ptr    = reinterpret_cast<uintptr_t>(input);
+	auto ptr    = uintptr_t(input);
 	auto offset = uint32_t(_offset);
 
 	_extend(size_t(size) + length);
@@ -343,7 +344,9 @@ bool MemoryCardProvider::init(blkdev::Device &dev) {
 	if (!dev.read(&config, MC_LBA_NOCASH_CONFIG, 1)) {
 		if (config.validateMagic() && config.validateChecksum())
 			__builtin_strncpy(
-				volumeLabel, config.cardLabel, sizeof(volumeLabel)
+				volumeLabel,
+				config.cardLabel,
+				sizeof(volumeLabel)
 			);
 	}
 
@@ -404,7 +407,8 @@ bool MemoryCardProvider::getFileInfo(FileInfo &output, const char *path) {
 }
 
 bool MemoryCardProvider::getFileFragments(
-	FileFragmentTable &output, const char *path
+	FileFragmentTable &output,
+	const char        *path
 ) {
 	while ((*path == '/') || (*path == '\\'))
 		path++;

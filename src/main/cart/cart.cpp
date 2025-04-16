@@ -36,7 +36,7 @@ bool Identifier::validateChecksum(void) const {
 	uint8_t value = (util::sum(data, 7) & 0xff) ^ 0xff;
 
 	if (value != data[7]) {
-		LOG_CART_DATA("mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
+		LOG_CART("mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
 		return false;
 	}
 
@@ -49,14 +49,14 @@ void Identifier::updateDSCRC(void) {
 
 bool Identifier::validateDSCRC(void) const {
 	if (!data[0] || (data[0] == 0xff)) {
-		LOG_CART_DATA("invalid 1-wire prefix 0x%02x", data[0]);
+		LOG_CART("invalid 1-wire prefix 0x%02x", data[0]);
 		return false;
 	}
 
 	uint8_t value = util::dsCRC8(data, 7);
 
 	if (value != data[7]) {
-		LOG_CART_DATA("mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
+		LOG_CART("mismatch, exp=0x%02x, got=0x%02x", value, data[7]);
 		return false;
 	}
 
@@ -149,11 +149,11 @@ size_t CartDump::toQRString(char *output) const {
 	);
 
 	if (error) {
-		LOG_CART_DATA("%s", _MINIZ_ERROR_NAMES[error - MZ_VERSION_ERROR]);
+		LOG_CART("%s", _MINIZ_ERROR_NAMES[error - MZ_VERSION_ERROR]);
 		return 0;
 	}
 
-	LOG_CART_DATA(
+	LOG_CART(
 		"compressed size: %d bytes (%d%%)", compLength,
 		compLength * 100 / uncompLength
 	);

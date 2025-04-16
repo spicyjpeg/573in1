@@ -40,7 +40,8 @@ def quantizeImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 	if imageObj.mode not in ( "RGB", "RGBA" ):
 		imageObj = imageObj.convert("RGBA")
 
-	image: ndarray = numpy.asarray(imageObj, "B").reshape((
+	image: ndarray = numpy.asarray(imageObj, "B")
+	image          = image.reshape((
 		imageObj.width * imageObj.height,
 		image.shape[2]
 	))

@@ -68,7 +68,7 @@ void IdentifierSet::updateTraceID(
 			traceID.data[5] = 7;
 			traceID.data[6] = 3;
 
-			LOG_CART_DATA("prefix=0x81");
+			LOG_CART("prefix=0x81");
 			break;
 
 		case TID_82_BIG_ENDIAN:
@@ -91,7 +91,7 @@ void IdentifierSet::updateTraceID(
 				traceID.data[2] = checksum >> 8;
 			}
 
-			LOG_CART_DATA("prefix=0x82, checksum=0x%04x", checksum);
+			LOG_CART("prefix=0x82, checksum=0x%04x", checksum);
 			break;
 	}
 
@@ -129,7 +129,7 @@ bool BasicHeader::validateChecksum(bool invert) const {
 
 	value = (value & 0xff) ^ mask;
 	if (value != checksum) {
-		LOG_CART_DATA("mismatch, exp=0x%02x, got=0x%02x", value, checksum);
+		LOG_CART("mismatch, exp=0x%02x, got=0x%02x", value, checksum);
 		return false;
 	}
 
@@ -149,7 +149,7 @@ bool ExtendedHeader::validateChecksum(bool invert) const {
 
 	value = (value & 0xffff) ^ mask;
 	if (value != checksum) {
-		LOG_CART_DATA("mismatch, exp=0x%04x, got=0x%04x", value, checksum);
+		LOG_CART("mismatch, exp=0x%04x, got=0x%04x", value, checksum);
 		return false;
 	}
 
@@ -168,11 +168,11 @@ bool CartParser::validate(void) {
 	char region[8];
 
 	if (getRegion(region) < REGION_MIN_LENGTH) {
-		LOG_CART_DATA("region is too short: %s", region);
+		LOG_CART("region is too short: %s", region);
 		return false;
 	}
 	if (!isValidRegion(region)) {
-		LOG_CART_DATA("invalid region: %s", region);
+		LOG_CART("invalid region: %s", region);
 		return false;
 	}
 
@@ -183,7 +183,7 @@ bool CartParser::validate(void) {
 		uint8_t flags = (id->getFlags() ^ flags) & _IDENTIFIER_FLAG_MASK;
 
 		if (flags) {
-			LOG_CART_DATA("flags do not match, value=%02x", flags);
+			LOG_CART("flags do not match, value=%02x", flags);
 			return false;
 		}
 	}
@@ -366,11 +366,11 @@ bool ROMHeaderParser::validate(void) {
 	char region[8];
 
 	if (getRegion(region) < REGION_MIN_LENGTH) {
-		LOG_CART_DATA("region is too short: %s", region);
+		LOG_CART("region is too short: %s", region);
 		return false;
 	}
 	if (!isValidRegion(region)) {
-		LOG_CART_DATA("invalid region: %s", region);
+		LOG_CART("invalid region: %s", region);
 		return false;
 	}
 
@@ -475,7 +475,7 @@ bool ExtendedROMHeaderParser::validate(void) {
 		_calculateSignature(signature);
 
 		if (__builtin_memcmp(signature, _getSignature(), sizeof(signature))) {
-			LOG_CART_DATA("signature mismatch");
+			LOG_CART("signature mismatch");
 			return false;
 		}
 	}
@@ -648,14 +648,14 @@ CartParser *newCartParser(CartDump &dump) {
 #endif
 		auto parser  = newCartParser(dump, format.format, format.flags);
 
-		LOG_CART_DATA("trying as %s", format.name);
+		LOG_CART("trying as %s", format.name);
 		if (parser->validate())
 			return parser;
 
 		delete parser;
 	}
 
-	LOG_CART_DATA("unrecognized data format");
+	LOG_CART("unrecognized data format");
 	return nullptr;
 }
 
@@ -680,14 +680,14 @@ ROMHeaderParser *newROMHeaderParser(ROMHeaderDump &dump) {
 #endif
 		auto parser  = newROMHeaderParser(dump, format.format, format.flags);
 
-		LOG_CART_DATA("trying as %s", format.name);
+		LOG_CART("trying as %s", format.name);
 		if (parser->validate())
 			return parser;
 
 		delete parser;
 	}
 
-	LOG_CART_DATA("unrecognized data format");
+	LOG_CART("unrecognized data format");
 	return nullptr;
 }
 
@@ -717,7 +717,7 @@ template<typename T> const T *DB<T>::lookup(
 		int  diff  = entry->compare(code, region);
 
 		if (!diff) {
-			LOG_CART_DATA("%s %s found", code, region);
+			LOG_CART("%s %s found", code, region);
 			return entry;
 		}
 
@@ -727,7 +727,7 @@ template<typename T> const T *DB<T>::lookup(
 			high = &entry[-1];
 	}
 
-	LOG_CART_DATA("%s %s not found", code, region);
+	LOG_CART("%s %s not found", code, region);
 	return nullptr;
 }
 

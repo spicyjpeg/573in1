@@ -428,7 +428,7 @@ void DateEntryScreen::update(Context &ctx) {
 			value = _date.year;
 		else
 			value = *reinterpret_cast<uint8_t *>(
-				reinterpret_cast<uintptr_t>(&_date) + field.offset
+				uintptr_t(&_date) + field.offset
 			);
 
 		if (
@@ -458,7 +458,7 @@ void DateEntryScreen::update(Context &ctx) {
 			_date.year = value;
 		else
 			*reinterpret_cast<uint8_t *>(
-				reinterpret_cast<uintptr_t>(&_date) + field.offset
+				uintptr_t(&_date) + field.offset
 			) = value;
 
 		// The day field must be fixed up after any date change.

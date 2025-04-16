@@ -43,7 +43,7 @@ uint32_t FlashRegion::_getPtrOffset(uint32_t offset) const {
 }
 
 void FlashRegion::read(void *data, uint32_t offset, size_t length) const {
-	auto ptr = reinterpret_cast<uintptr_t>(data);
+	auto ptr = uintptr_t(data);
 
 	while (length > 0) {
 		auto ptrOffset  = _getPtrOffset(offset);

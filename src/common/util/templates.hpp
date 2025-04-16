@@ -107,7 +107,7 @@ template<typename T> static constexpr inline T roundUpToMultiple(
 }
 
 template<typename T, typename X> static inline void assertAligned(X *ptr) {
-	assert(!(reinterpret_cast<uintptr_t>(ptr) % alignof(T)));
+	assert(!(uintptr_t(ptr) % alignof(T)));
 }
 
 template<typename T> static inline void clear(T &obj, uint8_t value = 0) {

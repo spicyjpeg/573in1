@@ -28,7 +28,7 @@ namespace ui {
 /* Public constants */
 
 static constexpr int NUM_UI_COLORS = 18;
-static constexpr int NUM_UI_SOUNDS = 8;
+static constexpr int NUM_UI_SOUNDS = 9;
 
 enum Color {
 	COLOR_DEFAULT    =  0,
@@ -53,13 +53,14 @@ enum Color {
 
 enum Sound {
 	SOUND_STARTUP      = 0,
-	SOUND_ABOUT_SCREEN = 1,
-	SOUND_ALERT        = 2,
-	SOUND_MOVE         = 3,
-	SOUND_ENTER        = 4,
-	SOUND_EXIT         = 5,
-	SOUND_CLICK        = 6,
-	SOUND_SCREENSHOT   = 7
+	SOUND_STARTUP_ALT  = 1,
+	SOUND_ABOUT_SCREEN = 2,
+	SOUND_ALERT        = 3,
+	SOUND_MOVE         = 4,
+	SOUND_ENTER        = 5,
+	SOUND_EXIT         = 6,
+	SOUND_CLICK        = 7,
+	SOUND_SCREENSHOT   = 8
 };
 
 enum AnimationSpeed {

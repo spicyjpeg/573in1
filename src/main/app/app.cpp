@@ -28,7 +28,6 @@
 #include "main/app/app.hpp"
 #include "main/app/fileio.hpp"
 #include "main/app/threads.hpp"
-#include "main/cart/cart.hpp"
 #include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
 #include "ps1/system.h"
@@ -106,14 +105,15 @@ void App::_updateOverlays(void) {
 /* App filesystem functions */
 
 static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
-	"res:/assets/sounds/startup.vag",   // ui::SOUND_STARTUP
-	"res:/assets/sounds/about.vag",     // ui::SOUND_ABOUT_SCREEN
-	"res:/assets/sounds/alert.vag",     // ui::SOUND_ALERT
-	"res:/assets/sounds/move.vag",      // ui::SOUND_MOVE
-	"res:/assets/sounds/enter.vag",     // ui::SOUND_ENTER
-	"res:/assets/sounds/exit.vag",      // ui::SOUND_EXIT
-	"res:/assets/sounds/click.vag",     // ui::SOUND_CLICK
-	"res:/assets/sounds/screenshot.vag" // ui::SOUND_SCREENSHOT
+	"res:/assets/sounds/startup.vag",    // ui::SOUND_STARTUP
+	"res:/assets/sounds/startupalt.vag", // ui::SOUND_STARTUP_ALT
+	"res:/assets/sounds/about.vag",      // ui::SOUND_ABOUT_SCREEN
+	"res:/assets/sounds/alert.vag",      // ui::SOUND_ALERT
+	"res:/assets/sounds/move.vag",       // ui::SOUND_MOVE
+	"res:/assets/sounds/enter.vag",      // ui::SOUND_ENTER
+	"res:/assets/sounds/exit.vag",       // ui::SOUND_EXIT
+	"res:/assets/sounds/click.vag",      // ui::SOUND_CLICK
+	"res:/assets/sounds/screenshot.vag"  // ui::SOUND_SCREENSHOT
 };
 
 void App::_loadResources(void) {
@@ -278,8 +278,16 @@ void App::_runWorker(bool (*func)(App &app), bool playSound) {
 	_runWorker(&startupWorker);
 	_setupInterrupts();
 
+	util::Date date;
+
+	sys573::getRTCTime(date);
+
+	auto &sound = ((date.month == 11) && (date.day == 20))
+		? _ctx.sounds[ui::SOUND_STARTUP_ALT]
+		: _ctx.sounds[ui::SOUND_STARTUP];
+
 	_splashOverlay.show(_ctx);
-	_ctx.sounds[ui::SOUND_STARTUP].play();
+	sound.play();
 
 	for (;;) {
 		_ctx.update();

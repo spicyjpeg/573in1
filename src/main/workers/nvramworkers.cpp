@@ -88,8 +88,7 @@ bool nvramChecksumWorker(App &app) {
 		uint32_t offset = 0;
 		uint32_t crc    = 0;
 		auto     crcPtr = reinterpret_cast<uint32_t *>(
-			reinterpret_cast<uintptr_t>(&app._checksumScreen.values) +
-			entry.crcOffset
+			uintptr_t(&app._checksumScreen.values) + entry.crcOffset
 		);
 
 		app._workerStatusScreen.setMessage(WSTRH(entry.crcPrompt));

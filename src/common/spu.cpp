@@ -415,7 +415,7 @@ void Stream::handleInterrupt(void) {
 size_t Stream::feed(const void *data, size_t length) {
 	util::CriticalSection sec;
 
-	auto ptr         = reinterpret_cast<uintptr_t>(data);
+	auto ptr         = uintptr_t(data);
 	auto chunkLength = getChunkLength();
 
 	length = util::min(length, getFreeChunkCount() * chunkLength);

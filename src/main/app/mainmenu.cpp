@@ -121,7 +121,7 @@ void AutobootScreen::update(ui::Context &ctx) {
 		ctx.show(APP->_warningScreen, false, true);
 }
 
-static const util::Hash _MAPPING_NAMES[]{
+static const util::Hash _MAPPING_NAMES[ui::NUM_BUTTON_MAPS - 2]{
 	"ButtonMappingScreen.joystick"_h,
 	"ButtonMappingScreen.ddrCab"_h,
 	"ButtonMappingScreen.ddrSoloCab"_h,
@@ -140,7 +140,7 @@ void ButtonMappingScreen::show(ui::Context &ctx, bool goBack) {
 	_prompt     = STR("ButtonMappingScreen.prompt");
 	_itemPrompt = STR("ButtonMappingScreen.itemPrompt");
 
-	_listLength = ui::NUM_BUTTON_MAPS - 1;
+	_listLength = util::countOf(_MAPPING_NAMES);
 
 	ListScreen::show(ctx, goBack);
 	ctx.buttons.setButtonMap(ui::MAP_SINGLE_BUTTON);
@@ -150,7 +150,9 @@ void ButtonMappingScreen::update(ui::Context &ctx) {
 	ListScreen::update(ctx);
 
 	if (ctx.buttons.pressed(ui::BTN_START)) {
-		ctx.buttons.setButtonMap(ui::ButtonMap(_activeItem));
+		auto map = ui::ButtonMap(ui::MAP_JOYSTICK + _activeItem);
+
+		ctx.buttons.setButtonMap(map);
 		ctx.show(APP->_mainMenuScreen, false, true);
 	}
 }

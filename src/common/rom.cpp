@@ -421,7 +421,7 @@ bool getShellInfo(ShellInfo &output) {
 		if (!shell.validateHash())
 			continue;
 
-		__builtin_memcpy(&output, &shell, sizeof(ShellInfo));
+		util::copy(output, shell);
 		return true;
 	}
 

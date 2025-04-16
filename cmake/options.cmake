@@ -57,8 +57,9 @@ set(
 	CACHE BOOL "Log messages from application code"
 )
 set(
-	ENABLE_CART_DATA_LOGGING ON
-	CACHE BOOL "Log messages from security cartridge data parsers and builders"
+	ENABLE_GAMEDB_LOGGING ON
+	CACHE BOOL "Log messages from game-specific cartridge and NVRAM data \
+parsers/builders"
 )
 set(
 	ENABLE_IO_LOGGING ON
@@ -80,13 +81,6 @@ set(
 	ENABLE_FS_LOGGING ON
 	CACHE BOOL "Log messages from filesystem drivers"
 )
-
-set(
-	ENABLE_DUMMY_CART_DRIVER OFF
-	CACHE BOOL "Enable support for simulating a dummy security cartridge (if \
-data/dummy.dmp is present in the resource package)"
-)
-
 set(
 	ENABLE_ARGV_PARSER OFF
 	CACHE BOOL "Pass any command-line arguments given to the boot stub (using \
@@ -109,18 +103,17 @@ set(
 
 set(
 	mainOptions
-	$<$<BOOL:${ENABLE_LOG_BUFFER}       >:ENABLE_LOG_BUFFER=1>
-	$<$<BOOL:${ENABLE_APP_LOGGING}      >:ENABLE_APP_LOGGING=1>
-	$<$<BOOL:${ENABLE_CART_DATA_LOGGING}>:ENABLE_CART_DATA_LOGGING=1>
-	$<$<BOOL:${ENABLE_IO_LOGGING}       >:ENABLE_IO_LOGGING=1>
-	$<$<BOOL:${ENABLE_CART_LOGGING}     >:ENABLE_CART_LOGGING=1>
-	$<$<BOOL:${ENABLE_NVRAM_LOGGING}    >:ENABLE_NVRAM_LOGGING=1>
-	$<$<BOOL:${ENABLE_BLKDEV_LOGGING}   >:ENABLE_BLKDEV_LOGGING=1>
-	$<$<BOOL:${ENABLE_FS_LOGGING}       >:ENABLE_FS_LOGGING=1>
-	$<$<BOOL:${ENABLE_DUMMY_CART_DRIVER}>:ENABLE_DUMMY_CART_DRIVER=1>
-	$<$<BOOL:${ENABLE_AUTOBOOT}         >:ENABLE_AUTOBOOT=1>
-	$<$<BOOL:${ENABLE_PCDRV}            >:ENABLE_PCDRV=1>
-	$<$<BOOL:${ENABLE_PS1_CONTROLLER}   >:ENABLE_PS1_CONTROLLER=1>
+	$<$<BOOL:${ENABLE_LOG_BUFFER}    >:ENABLE_LOG_BUFFER=1>
+	$<$<BOOL:${ENABLE_APP_LOGGING}   >:ENABLE_APP_LOGGING=1>
+	$<$<BOOL:${ENABLE_GAMEDB_LOGGING}>:ENABLE_GAMEDB_LOGGING=1>
+	$<$<BOOL:${ENABLE_IO_LOGGING}    >:ENABLE_IO_LOGGING=1>
+	$<$<BOOL:${ENABLE_CART_LOGGING}  >:ENABLE_CART_LOGGING=1>
+	$<$<BOOL:${ENABLE_NVRAM_LOGGING} >:ENABLE_NVRAM_LOGGING=1>
+	$<$<BOOL:${ENABLE_BLKDEV_LOGGING}>:ENABLE_BLKDEV_LOGGING=1>
+	$<$<BOOL:${ENABLE_FS_LOGGING}    >:ENABLE_FS_LOGGING=1>
+	$<$<BOOL:${ENABLE_AUTOBOOT}      >:ENABLE_AUTOBOOT=1>
+	$<$<BOOL:${ENABLE_PCDRV}         >:ENABLE_PCDRV=1>
+	$<$<BOOL:${ENABLE_PS1_CONTROLLER}>:ENABLE_PS1_CONTROLLER=1>
 )
 set(
 	subExecutableOptions

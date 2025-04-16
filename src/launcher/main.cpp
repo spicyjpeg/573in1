@@ -65,7 +65,7 @@ static ExitCode _loadFromBlockDevice(
 		return INIT_FAILED;
 	}
 
-	auto ptr         = reinterpret_cast<uintptr_t>(args.loadAddress);
+	auto ptr         = uintptr_t(args.loadAddress);
 	auto fragment    = args.fragments;
 	auto skipSectors = util::EXECUTABLE_BODY_OFFSET / dev.sectorLength;
 

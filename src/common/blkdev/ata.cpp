@@ -180,7 +180,7 @@ DeviceError ATADevice::read(void *data, uint64_t lba, size_t count) {
 	if (!type)
 		return NO_DRIVE;
 
-	return _transfer(reinterpret_cast<uintptr_t>(data), lba, count, false);
+	return _transfer(uintptr_t(data), lba, count, false);
 }
 
 DeviceError ATADevice::readStream(
@@ -237,7 +237,7 @@ DeviceError ATADevice::write(const void *data, uint64_t lba, size_t count) {
 	if (!type)
 		return NO_DRIVE;
 
-	return _transfer(reinterpret_cast<uintptr_t>(data), lba, count, true);
+	return _transfer(uintptr_t(data), lba, count, true);
 
 }
 

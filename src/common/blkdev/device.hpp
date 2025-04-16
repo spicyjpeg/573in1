@@ -131,7 +131,7 @@ static inline const char *getErrorString(DeviceError error) {
 }
 
 template<typename X> static inline bool isBufferAligned(X *ptr) {
-	return !(reinterpret_cast<uintptr_t>(ptr) % alignof(uint32_t));
+	return !(uintptr_t(ptr) % alignof(uint32_t));
 }
 
 }
