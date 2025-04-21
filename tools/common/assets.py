@@ -15,10 +15,10 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 from collections.abc import Generator, Mapping, Sequence
-from dataclasses     import dataclass
-from enum            import IntFlag
+from dataclasses     import dataclass, field
+from enum            import IntEnum, IntFlag
 from struct          import Struct
-from typing          import Any, Callable
+from typing          import Any, Callable, Self
 
 import numpy
 from numpy   import ndarray
@@ -28,15 +28,17 @@ from .util   import \
 	HashTableBuilder, StringBlobBuilder, colorFromString, hashData, \
 	roundUpToMultiple
 
-## Simple image quantizer
+## Input image handling
 
 # Pillow's built-in quantize() method will use different algorithms, some of
 # which are broken, depending on whether the input image has an alpha channel.
-# As a workaround, non-indexed-color images are "quantized" (with no dithering -
-# images with more colors than allowed are rejected) manually instead.
+# As a workaround, all images are "quantized" (with no dithering - images with
+# more colors than allowed are rejected) manually instead. This conversion is
+# performed on indexed color images as well in order to normalize their
+# palettes.
 def quantizeImage(imageObj: Image.Image, numColors: int) -> Image.Image:
-	if imageObj.mode == "P":
-		return imageObj
+	#if imageObj.mode == "P":
+		#return imageObj
 	if imageObj.mode not in ( "RGB", "RGBA" ):
 		imageObj = imageObj.convert("RGBA")
 
@@ -66,27 +68,6 @@ def quantizeImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 	newObj.putpalette(clut.tobytes(), imageObj.mode)
 	return newObj
 
-## .TIM image converter
-
-class TIMHeaderFlag(IntFlag):
-	COLOR_BITMASK = 3 << 0
-	COLOR_4BPP    = 0 << 0
-	COLOR_8BPP    = 1 << 0
-	COLOR_16BPP   = 2 << 0
-	HAS_PALETTE   = 1 << 3
-
-_TIM_HEADER_STRUCT:  Struct = Struct("< 2I")
-_TIM_SECTION_STRUCT: Struct = Struct("< I 4H")
-_TIM_HEADER_VERSION: int    = 0x10
-
-_LOWER_ALPHA_BOUND: int = 0x20
-_UPPER_ALPHA_BOUND: int = 0xe0
-
-# Color 0x0000 is interpreted by the PS1 GPU as fully transparent, so black
-# pixels must be changed to dark gray to prevent them from becoming transparent.
-_TRANSPARENT_COLOR: int = 0x0000
-_BLACK_COLOR:       int = 0x0421
-
 def _getImagePalette(imageObj: Image.Image) -> ndarray:
 	clut: ndarray = numpy.array(imageObj.getpalette("RGBA"), "B")
 	clut          = clut.reshape(( clut.shape[0] // 4, 4 ))
@@ -100,11 +81,21 @@ def _getImagePalette(imageObj: Image.Image) -> ndarray:
 
 	return clut
 
-def _to16bpp(inputData: ndarray, forceSTP: bool) -> ndarray:
+## RGBA to 16bpp colorspace conversion
+
+_LOWER_ALPHA_BOUND: int = 32
+_UPPER_ALPHA_BOUND: int = 224
+
+# Color 0x0000 is interpreted by the PS1 GPU as fully transparent, so black
+# pixels must be changed to dark gray to prevent them from becoming transparent.
+_TRANSPARENT_COLOR: int = 0x0000
+_BLACK_COLOR:       int = 0x0421
+
+def _to16bpp(inputData: ndarray, forceSTP: bool = False) -> ndarray:
 	source: ndarray = inputData.astype("<H")
-	r:      ndarray = ((source[:, :, 0] * 249) + 1014) >> 11
-	g:      ndarray = ((source[:, :, 1] * 249) + 1014) >> 11
-	b:      ndarray = ((source[:, :, 2] * 249) + 1014) >> 11
+	r:      ndarray = ((source[:, :, 0] * 31) + 127) // 255
+	g:      ndarray = ((source[:, :, 1] * 31) + 127) // 255
+	b:      ndarray = ((source[:, :, 2] * 31) + 127) // 255
 
 	solid:           ndarray = r | (g << 5) | (b << 10)
 	semitransparent: ndarray = solid | (1 << 15)
@@ -116,19 +107,22 @@ def _to16bpp(inputData: ndarray, forceSTP: bool) -> ndarray:
 	else:
 		alpha: ndarray = numpy.full(source.shape[:-1], 0xff, "B")
 
-	numpy.copyto(data, semitransparent, where = (alpha > _LOWER_ALPHA_BOUND))
+	numpy.copyto(data, semitransparent, where = (alpha >= _LOWER_ALPHA_BOUND))
 
 	if not forceSTP:
-		numpy.copyto(data, solid, where = (alpha > _UPPER_ALPHA_BOUND))
+		numpy.copyto(data, solid, where = (alpha >= _UPPER_ALPHA_BOUND))
 		numpy.copyto(
 			data,
 			_BLACK_COLOR,
-			where = (alpha > _UPPER_ALPHA_BOUND) & (solid == _TRANSPARENT_COLOR)
+			where = (
+				(alpha >= _UPPER_ALPHA_BOUND) &
+				(solid == _TRANSPARENT_COLOR)
+			)
 		)
 
 	return data
 
-def convertIndexedImage(
+def _convertIndexedImage(
 	imageObj: Image.Image,
 	forceSTP: bool = False
 ) -> tuple[ndarray, ndarray]:
@@ -141,94 +135,207 @@ def convertIndexedImage(
 	clut = _to16bpp(clut, forceSTP)
 
 	if padAmount:
-		clut = numpy.c_[ clut, numpy.zeros(( 1, padAmount ), "<H") ]
+		clut = numpy.c_[
+			clut,
+			numpy.zeros(( 1, padAmount ), "<H")
+		]
 
 	image: ndarray = numpy.asarray(imageObj, "B")
 
 	if image.shape[1] % 2:
-		image = numpy.c_[ image, numpy.zeros(( imageObj.height, 1 ), "B") ]
+		image = numpy.c_[
+			image,
+			numpy.zeros(( imageObj.height, 1 ), "B")
+		]
 
 	# Pack two pixels into each byte for 4bpp images.
 	if numColors <= 16:
 		image = image[:, 0::2] | (image[:, 1::2] << 4)
 
 		if image.shape[1] % 2:
-			image = numpy.c_[ image, numpy.zeros(( imageObj.height, 1 ), "B") ]
+			image = numpy.c_[
+				image,
+				numpy.zeros(( imageObj.height, 1 ), "B")
+			]
 
 	return image, clut
 
-def generateRawTIM(
-	imageObj: Image.Image,
-	imageX:   int,
-	imageY:   int,
-	forceSTP: bool = False
-) -> bytearray:
-	if (imageX < 0) or (imageX > 1023) or (imageY < 0) or (imageY > 1023):
-		raise ValueError("image X/Y coordinates must be in 0-1023 range")
+## .TIM file generator
 
-	image: ndarray = numpy.asarray(imageObj, "B")
-	image          = _to16bpp(image, forceSTP)
+class TIMColorDepth(IntEnum):
+	COLOR_4BPP  = 0
+	COLOR_8BPP  = 1
+	COLOR_16BPP = 2
 
-	data: bytearray = bytearray()
-	data           += _TIM_HEADER_STRUCT.pack(
-		_TIM_HEADER_VERSION,
-		TIMHeaderFlag.COLOR_16BPP
-	)
+class TIMHeaderFlag(IntFlag):
+	COLOR_BITMASK = 3 << 0
+	HAS_PALETTE   = 1 << 3
 
-	data += _TIM_SECTION_STRUCT.pack(
-		_TIM_SECTION_STRUCT.size + image.size,
-		imageX,
-		imageY,
-		image.shape[1] // 2,
-		image.shape[0]
-	)
-	data.extend(image)
+_TIM_HEADER_STRUCT:  Struct = Struct("< 2I")
+_TIM_SECTION_STRUCT: Struct = Struct("< I 4H")
+_TIM_HEADER_VERSION: int    = 0x10
+_CLT_HEADER_VERSION: int    = 0x11
+_PXL_HEADER_VERSION: int    = 0x12
 
-	return data
+@dataclass
+class TIMSection:
+	x:    int
+	y:    int
+	data: ndarray = field(repr = False)
 
-def generateIndexedTIM(
-	imageObj: Image.Image,
-	imageX:   int,
-	imageY:   int,
-	clutX:    int,
-	clutY:    int,
-	forceSTP: bool = False
-) -> bytearray:
-	if (imageX < 0) or (imageX > 1023) or (imageY < 0) or (imageY > 1023):
-		raise ValueError("image X/Y coordinates must be in 0-1023 range")
-	if (clutX < 0) or (clutX > 1023) or (clutY < 0) or (clutY > 1023):
-		raise ValueError("palette X/Y coordinates must be in 0-1023 range")
+	@staticmethod
+	def parse(
+		data:      bytes | bytearray,
+		offset:    int = 0,
+		pixelSize: int = 2
+	) -> tuple[int, Self]:
+		(
+			endOffset,
+			x,
+			y,
+			width,
+			height
+		) = _TIM_SECTION_STRUCT.unpack_from(data, offset)
 
-	image, clut          = convertIndexedImage(imageObj, forceSTP)
-	flags: TIMHeaderFlag = TIMHeaderFlag.HAS_PALETTE
+		data    = data[offset + _TIM_SECTION_STRUCT.size:offset + endOffset]
+		offset += endOffset
 
-	if clut.size <= 16:
-		flags |= TIMHeaderFlag.COLOR_4BPP
-	else:
-		flags |= TIMHeaderFlag.COLOR_8BPP
+		if len(data) != (width * height * 2):
+			raise RuntimeError("section length does not match image size")
 
-	data: bytearray = bytearray()
-	data           += _TIM_HEADER_STRUCT.pack(_TIM_HEADER_VERSION, flags)
+		image: ndarray = numpy.frombuffer(
+			data,
+			"<H" if (pixelSize == 2) else "B"
+		).reshape((
+			height,
+			(width * pixelSize) // 2
+		))
 
-	data += _TIM_SECTION_STRUCT.pack(
-		_TIM_SECTION_STRUCT.size + clut.size * 2,
-		clutX,
-		clutY,
-		clut.shape[1],
-		clut.shape[0]
-	)
-	data.extend(clut)
+		return offset, TIMSection(x, y, image)
 
-	data += _TIM_SECTION_STRUCT.pack(
-		_TIM_SECTION_STRUCT.size + image.size,
-		imageX,
-		imageY,
-		image.shape[1] // 2,
-		image.shape[0]
-	)
-	data.extend(image)
+	def serialize(self) -> bytes:
+		if (self.x < 0) or (self.x > 1023) or (self.y < 0) or (self.y > 1023):
+			raise ValueError("section X/Y coordinates must be in 0-1023 range")
 
-	return data
+		data: bytes = self.data.tobytes()
+
+		if len(data) % 4:
+			raise RuntimeError("section data should be aligned to 4 bytes")
+
+		return _TIM_SECTION_STRUCT.pack(
+			_TIM_SECTION_STRUCT.size + len(data),
+			self.x,
+			self.y,
+			(self.data.shape[1] * self.data.itemsize) // 2,
+			self.data.shape[0]
+		) + data
+
+@dataclass
+class TIMImage:
+	colorDepth: TIMColorDepth
+	image:      TIMSection | None = None
+	clut:       TIMSection | None = None
+
+	@staticmethod
+	def fromRawImage(
+		imageObj: Image.Image,
+		imageX:   int,
+		imageY:   int,
+		forceSTP: bool = False
+	) -> Self:
+		image: ndarray = numpy.asarray(imageObj, "B")
+		image          = _to16bpp(image, forceSTP)
+
+		return TIMImage(
+			TIMColorDepth.COLOR_16BPP,
+			TIMSection(imageX, imageY, image)
+		)
+
+	@staticmethod
+	def fromIndexedImage(
+		imageObj: Image.Image,
+		imageX:   int,
+		imageY:   int,
+		clutX:    int,
+		clutY:    int,
+		forceSTP: bool = False
+	) -> Self:
+		image, clut = _convertIndexedImage(imageObj, forceSTP)
+
+		if clut.size <= 16:
+			colorDepth: TIMColorDepth = TIMColorDepth.COLOR_4BPP
+		else:
+			colorDepth: TIMColorDepth = TIMColorDepth.COLOR_8BPP
+
+		return TIMImage(
+			colorDepth,
+			TIMSection(imageX, imageY, image),
+			TIMSection(clutX,  clutY,  clut)
+		)
+
+	@staticmethod
+	def parse(data: bytes | bytearray, offset: int = 0) -> Self:
+		version, flags = _TIM_HEADER_STRUCT.unpack_from(data, offset)
+		offset        += _TIM_HEADER_STRUCT.size
+
+		if version == _TIM_HEADER_VERSION:
+			hasImage: bool = True
+			hasCLUT:  bool = bool(flags & TIMHeaderFlag.HAS_PALETTE)
+		else:
+			hasImage: bool = (version == _PXL_HEADER_VERSION)
+			hasCLUT:  bool = (version == _CLT_HEADER_VERSION)
+
+			if not (hasImage or hasCLUT):
+				raise ValueError(f"invalid .TIM file version: {version:#x}")
+
+		colorDepth: TIMColorDepth = \
+			TIMColorDepth(flags & TIMHeaderFlag.COLOR_BITMASK)
+		pixelSize:  int           = \
+			2 if (colorDepth == TIMColorDepth.COLOR_16BPP) else 1
+
+		tim: TIMImage = TIMImage(colorDepth)
+
+		if hasCLUT:
+			offset, tim.clut  = TIMSection.parse(data, offset, 2)
+		if hasImage:
+			offset, tim.image = TIMSection.parse(data, offset, pixelSize)
+
+		return tim
+
+	def serialize(self) -> bytearray:
+		match self.colorDepth, self.image, self.clut:
+			case _, None, None:
+				raise ValueError("at least one section is required")
+
+			case TIMColorDepth.COLOR_4BPP | TIMColorDepth.COLOR_8BPP, _, None:
+				version: int = _PXL_HEADER_VERSION
+				flags:   int = int(self.colorDepth)
+
+			case TIMColorDepth.COLOR_4BPP | TIMColorDepth.COLOR_8BPP, None, _:
+				version: int = _CLT_HEADER_VERSION
+				flags:   int = int(TIMColorDepth.COLOR_16BPP)
+
+			case TIMColorDepth.COLOR_4BPP | TIMColorDepth.COLOR_8BPP, _, _:
+				version: int = _TIM_HEADER_VERSION
+				flags:   int = \
+					int(self.colorDepth) | int(TIMHeaderFlag.HAS_PALETTE)
+
+			case TIMColorDepth.COLOR_16BPP, _, None:
+				version: int = _TIM_HEADER_VERSION
+				flags:   int = int(TIMColorDepth.COLOR_16BPP)
+
+			case TIMColorDepth.COLOR_16BPP, _, _:
+				raise ValueError("16bpp images cannot have a palette section")
+
+		data: bytearray = bytearray()
+		data           += _TIM_HEADER_STRUCT.pack(version, flags)
+
+		if self.clut  is not None:
+			data += self.clut.serialize()
+		if self.image is not None:
+			data += self.image.serialize()
+
+		return data
 
 ## Font metrics generator
 
@@ -426,7 +533,7 @@ def generateGameDB(gamedb: Mapping[str, Any]) -> bytearray:
 		name: bytes    = game.name.encode("utf-8") + b"\0"
 
 		games.append(game)
-		gameListData += game.toBinary(blobOffset + blob.addString(name))
+		gameListData += game.serialize(blobOffset + blob.addString(name))
 
 	for sortOrder in _GAMEDB_SORT_ORDERS:
 		indices: list[int] = \

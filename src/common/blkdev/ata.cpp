@@ -123,15 +123,25 @@ DeviceError ATADevice::_transfer(
 
 /* ATA block device class */
 
-static constexpr int _DETECT_TIMEOUT = 2500000;
+static constexpr int _DETECT_TIMEOUT = 2000000;
 
 DeviceError ATADevice::enumerate(void) {
+	IDEIdentifyBlock block;
+
+	// CF cards can be configured for either 8- or 16-bit data transfers. While
+	// a CF card in an IDE adapter is supposed to default to 16-bit mode in
+	// order to maintain compatibility, some cards seem to always start up in
+	// 8-bit mode and need to be switched over manually.
+	_set(CS0_FEATURES, ATA_FEATURE_8BIT_DATA | ATA_FEATURE_DISABLE);
+	_set(CS0_COMMAND,  ATA_SET_FEATURES);
+
+	if (_waitForIdle(false, _DETECT_TIMEOUT, true))
+		return NO_DRIVE;
+
 	// NOTE: the primary drive may respond to all secondary drive register
 	// accesses, with the exception of command writes, if no secondary drive is
 	// actually present. A strict timeout is used in the commands below in order
 	// to prevent blocking for too long.
-	IDEIdentifyBlock block;
-
 	_set(CS0_COMMAND, ATA_IDENTIFY);
 
 	if (_waitForDRQ(_DETECT_TIMEOUT))
@@ -263,10 +273,11 @@ DeviceError ATADevice::flushCache(void) {
 	if (error)
 		return error;
 
-	_set(
-		CS0_COMMAND,
-		(flags & SUPPORTS_EXT_LBA) ? ATA_FLUSH_CACHE_EXT : ATA_FLUSH_CACHE
-	);
+	auto cmd = (flags & SUPPORTS_EXT_LBA)
+		? ATA_FLUSH_CACHE_EXT
+		: ATA_FLUSH_CACHE;
+
+	_set(CS0_COMMAND, cmd);
 	return _waitForIdle();
 }
 
@@ -281,7 +292,11 @@ DeviceError ATADevice::goIdle(bool standby) {
 	if (error)
 		return error;
 
-	_set(CS0_COMMAND, standby ? ATA_STANDBY_IMMEDIATE : ATA_IDLE_IMMEDIATE);
+	auto cmd = standby
+		? ATA_STANDBY_IMMEDIATE
+		: ATA_IDLE_IMMEDIATE;
+
+	_set(CS0_COMMAND, cmd);
 	return _waitForIdle();
 }
 

@@ -56,17 +56,20 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> bytes | bytearray
 				return file.read()
 
 		case "tim":
-			ix: int = int(asset["imagePos"]["x"])
-			iy: int = int(asset["imagePos"]["y"])
-			cx: int = int(asset["clutPos"] ["x"])
-			cy: int = int(asset["clutPos"] ["y"])
-
 			image: Image.Image = quantizeImage(
 				Image.open(sourceDir / asset["source"]),
 				int(asset.get("quantize", 16))
 			)
+			tim:   TIMImage    = TIMImage.fromIndexedImage(
+				image,
+				int(asset["imagePos"]["x"]),
+				int(asset["imagePos"]["y"]),
+				int(asset["clutPos"] ["x"]),
+				int(asset["clutPos"] ["y"]),
+				bool(asset.get("forceSTP", False))
+			)
 
-			return generateIndexedTIM(image, ix, iy, cx, cy)
+			return tim.serialize()
 
 		case "metrics":
 			return generateFontMetrics(

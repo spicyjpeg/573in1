@@ -58,7 +58,14 @@ void installCustomExceptionHandler(VoidFunction func) {
 	__builtin_memcpy(BIOS_EXC_VECTOR, func, 16);
 	flushCache();
 
-	DMA_DPCR = 0x0bbbbbbb;
+	DMA_DPCR = 0
+		| DMA_DPCR_CH_PRIORITY(DMA_MDEC_IN,  3) | DMA_DPCR_CH_ENABLE(DMA_MDEC_IN)
+		| DMA_DPCR_CH_PRIORITY(DMA_MDEC_OUT, 3) | DMA_DPCR_CH_ENABLE(DMA_MDEC_OUT)
+		| DMA_DPCR_CH_PRIORITY(DMA_GPU,      3) | DMA_DPCR_CH_ENABLE(DMA_GPU)
+		| DMA_DPCR_CH_PRIORITY(DMA_CDROM,    3) | DMA_DPCR_CH_ENABLE(DMA_CDROM)
+		| DMA_DPCR_CH_PRIORITY(DMA_SPU,      3) | DMA_DPCR_CH_ENABLE(DMA_SPU)
+		| DMA_DPCR_CH_PRIORITY(DMA_PIO,      3) | DMA_DPCR_CH_ENABLE(DMA_PIO)
+		| DMA_DPCR_CH_PRIORITY(DMA_OTC,      3) | DMA_DPCR_CH_ENABLE(DMA_OTC);
 	DMA_DICR = DMA_DICR_IRQ_ENABLE;
 
 	// Ensure interrupt masking is set up properly and the GTE is enabled at the

@@ -51,7 +51,7 @@ void init(void) {
 		| (9 << 16) // Number of address lines
 		| (0 << 24) // DMA read/write delay
 		| BIU_CTRL_DMA_DELAY;
-	DMA_DPCR     |= DMA_DPCR_ENABLE << (DMA_SPU * 4);
+	DMA_DPCR     |= DMA_DPCR_CH_ENABLE(DMA_SPU);
 
 	SPU_CTRL = 0;
 	_waitForStatus(0x3f, 0);

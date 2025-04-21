@@ -61,148 +61,172 @@ DeviceError MemoryCardDevice::poll(void) {
 }
 
 DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
-	pad::PortLock lock(pad::ports[getDeviceIndex()], pad::ADDR_MEMORY_CARD);
+	auto &port = pad::ports[getDeviceIndex()];
+	auto ptr   = reinterpret_cast<uint8_t *>(data);
 
-	if (!lock.locked)
-		return NO_DRIVE;
+	for (; count > 0; count--, ptr += _SECTOR_LENGTH) {
+		pad::PortLock lock(port, pad::ADDR_MEMORY_CARD);
 
-	uint8_t lbaHigh = (lba >> 8) & 0xff;
-	uint8_t lbaLow  = (lba >> 0) & 0xff;
+		if (!lock.locked)
+			return NO_DRIVE;
 
-	const uint8_t request[9]{
-		pad::CMD_READ_SECTOR, 0, 0, lbaHigh, lbaLow, 0, 0, 0, 0
-	};
-	uint8_t response[9];
+		const uint8_t request[9]{
+			pad::CMD_READ_SECTOR,
+			0,
+			0,
+			uint8_t((lba >> 8) & 0xff),
+			uint8_t((lba >> 0) & 0xff),
+			0,
+			0,
+			0,
+			0
+		};
+		uint8_t response[9];
 
-	if (pad::exchangeBytes(
-		request,
-		response,
-		sizeof(request),
-		sizeof(response),
-		true
-	) < sizeof(response))
-		return STATUS_TIMEOUT;
+		if (pad::exchangeBytes(
+			request,
+			response,
+			sizeof(request),
+			sizeof(response),
+			true
+		) < sizeof(response))
+			return STATUS_TIMEOUT;
 
-	if (
-		(response[2] != pad::PREFIX_MEMORY_CARD) ||
-		(response[7] != lbaHigh) ||
-		(response[8] != lbaLow)
-	)
-		return COMMAND_ERROR;
+		if (
+			(response[2] != pad::PREFIX_MEMORY_CARD) ||
+			(response[7] != request[3]) ||
+			(response[8] != request[4])
+		)
+			return COMMAND_ERROR;
 
-	_lastStatus = response[0];
+		_lastStatus = response[0];
 
-	auto ptr = reinterpret_cast<uint8_t *>(data);
+		if (pad::exchangeBytes(
+			nullptr,
+			ptr,
+			0,
+			_SECTOR_LENGTH,
+			true
+		) < _SECTOR_LENGTH)
+			return STATUS_TIMEOUT;
 
-	if (pad::exchangeBytes(
-		nullptr,
-		ptr,
-		0,
-		_SECTOR_LENGTH,
-		true
-	) < _SECTOR_LENGTH)
-		return STATUS_TIMEOUT;
+		uint8_t ackResponse[2];
 
-	uint8_t ackResponse[2];
+		if (pad::exchangeBytes(
+			nullptr,
+			ackResponse,
+			0,
+			sizeof(ackResponse)
+		) < sizeof(ackResponse))
+			return STATUS_TIMEOUT;
 
-	if (pad::exchangeBytes(
-		nullptr,
-		ackResponse,
-		0,
-		sizeof(ackResponse)
-	) < sizeof(ackResponse))
-		return STATUS_TIMEOUT;
+		if (ackResponse[1] != 'G') {
+			LOG_BLKDEV(
+				"card error, code=0x%02x, st=0x%02x",
+				ackResponse[1],
+				_lastStatus
+			);
+			return DRIVE_ERROR;
+		}
 
-	if (ackResponse[1] != 'G') {
-		LOG_BLKDEV(
-			"card error, code=0x%02x, st=0x%02x", ackResponse[1], _lastStatus
-		);
-		return DRIVE_ERROR;
-	}
+		uint8_t checksum = 0
+			^ request[3]
+			^ request[4]
+			^ util::bitwiseXOR(ptr, _SECTOR_LENGTH);
 
-	uint8_t checksum = 0
-		^ lbaHigh
-		^ lbaLow
-		^ util::bitwiseXOR(ptr, _SECTOR_LENGTH);
-
-	if (checksum != ackResponse[0]) {
-		LOG_BLKDEV(
-			"mismatch, exp=0x%02x, got=0x%02x", checksum, ackResponse[0]
-		);
-		return CHECKSUM_MISMATCH;
+		if (checksum != ackResponse[0]) {
+			LOG_BLKDEV(
+				"mismatch, exp=0x%02x, got=0x%02x",
+				checksum,
+				ackResponse[0]
+			);
+			return CHECKSUM_MISMATCH;
+		}
 	}
 
 	return NO_ERROR;
 }
 
 DeviceError MemoryCardDevice::write(
-	const void *data, uint64_t lba, size_t count
+	const void *data,
+	uint64_t   lba,
+	size_t     count
 ) {
-	pad::PortLock lock(pad::ports[getDeviceIndex()], pad::ADDR_MEMORY_CARD);
+	auto &port = pad::ports[getDeviceIndex()];
+	auto ptr   = reinterpret_cast<const uint8_t *>(data);
 
-	if (!lock.locked)
-		return NO_DRIVE;
+	for (; count > 0; count--, ptr += _SECTOR_LENGTH) {
+		pad::PortLock lock(port, pad::ADDR_MEMORY_CARD);
 
-	uint8_t lbaHigh = (lba >> 8) & 0xff;
-	uint8_t lbaLow  = (lba >> 0) & 0xff;
+		if (!lock.locked)
+			return NO_DRIVE;
 
-	const uint8_t request[5]{ pad::CMD_WRITE_SECTOR, 0, 0, lbaHigh, lbaLow };
-	uint8_t       response[5];
+		const uint8_t request[5]{
+			pad::CMD_WRITE_SECTOR,
+			0,
+			0,
+			uint8_t((lba >> 8) & 0xff),
+			uint8_t((lba >> 0) & 0xff)
+		};
+		uint8_t response[5];
 
-	if (pad::exchangeBytes(
-		request,
-		response,
-		sizeof(request),
-		sizeof(response),
-		true
-	) < sizeof(response))
-		return STATUS_TIMEOUT;
+		if (pad::exchangeBytes(
+			request,
+			response,
+			sizeof(request),
+			sizeof(response),
+			true
+		) < sizeof(response))
+			return STATUS_TIMEOUT;
 
-	if (response[2] != pad::PREFIX_MEMORY_CARD)
-		return COMMAND_ERROR;
+		if (response[2] != pad::PREFIX_MEMORY_CARD)
+			return COMMAND_ERROR;
 
-	_lastStatus = response[0];
+		_lastStatus = response[0];
 
-	auto    ptr      = reinterpret_cast<const uint8_t *>(data);
-	uint8_t checksum = 0
-		^ lbaHigh
-		^ lbaLow
-		^ util::bitwiseXOR(ptr, _SECTOR_LENGTH);
+		uint8_t checksum = 0
+			^ request[3]
+			^ request[4]
+			^ util::bitwiseXOR(ptr, _SECTOR_LENGTH);
 
-	if (pad::exchangeBytes(
-		ptr,
-		nullptr,
-		_SECTOR_LENGTH,
-		_SECTOR_LENGTH,
-		true
-	) < _SECTOR_LENGTH)
-		return STATUS_TIMEOUT;
+		if (pad::exchangeBytes(
+			ptr,
+			nullptr,
+			_SECTOR_LENGTH,
+			_SECTOR_LENGTH,
+			true
+		) < _SECTOR_LENGTH)
+			return STATUS_TIMEOUT;
 
-	uint8_t ackResponse[4];
+		uint8_t ackResponse[4];
 
-	if (pad::exchangeBytes(
-		&checksum,
-		ackResponse,
-		sizeof(checksum),
-		sizeof(ackResponse)
-	) < sizeof(ackResponse))
-		return STATUS_TIMEOUT;
+		if (pad::exchangeBytes(
+			&checksum,
+			ackResponse,
+			sizeof(checksum),
+			sizeof(ackResponse)
+		) < sizeof(ackResponse))
+			return STATUS_TIMEOUT;
 
-	switch (ackResponse[3]) {
-		case 'G':
-			return NO_ERROR;
+		switch (ackResponse[3]) {
+			case 'G':
+				break;
 
-		case 'N':
-			LOG_BLKDEV("card reported mismatch, sent=0x%02x", checksum);
-			return CHECKSUM_MISMATCH;
+			case 'N':
+				LOG_BLKDEV("card reported mismatch, sent=0x%02x", checksum);
+				return CHECKSUM_MISMATCH;
 
-		default:
-			LOG_BLKDEV(
-				"card error, code=0x%02x, st=0x%02x", ackResponse[3],
-				_lastStatus
-			);
-			return DRIVE_ERROR;
+			default:
+				LOG_BLKDEV(
+					"card error, code=0x%02x, st=0x%02x",
+					ackResponse[3],
+					_lastStatus
+				);
+				return DRIVE_ERROR;
+		}
 	}
+
+	return NO_ERROR;
 }
 
 }

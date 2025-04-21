@@ -434,7 +434,7 @@ class ROMHeaderInfo:
 			}
 		)
 
-	def toBinary(self) -> bytes:
+	def serialize(self) -> bytes:
 		return ROM_HEADER_INFO_STRUCT.pack(
 			self.signatureField,
 			self.yearField,
@@ -487,7 +487,7 @@ class CartInfo:
 			}
 		)
 
-	def toBinary(self) -> bytes:
+	def serialize(self) -> bytes:
 		return CART_INFO_STRUCT.pack(
 			self.dataKey,
 			self.yearField,
@@ -582,7 +582,7 @@ class GameInfo:
 			}
 		)
 
-	def toBinary(self, nameOffset: int) -> bytes:
+	def serialize(self, nameOffset: int) -> bytes:
 		if len(self.specifications) > _MAX_SPECIFICATIONS:
 			raise ValueError(
 				f"entry can only have up to {_MAX_SPECIFICATIONS} "
@@ -608,8 +608,8 @@ class GameInfo:
 			self.pcmcia1,
 			self.pcmcia2,
 			self.flags,
-			self.rtcHeader  .toBinary() if self.rtcHeader   else b"",
-			self.flashHeader.toBinary() if self.flashHeader else b"",
-			self.installCart.toBinary() if self.installCart else b"",
-			self.gameCart   .toBinary() if self.gameCart    else b""
+			self.rtcHeader  .serialize() if self.rtcHeader   else b"",
+			self.flashHeader.serialize() if self.flashHeader else b"",
+			self.installCart.serialize() if self.installCart else b"",
+			self.gameCart   .serialize() if self.gameCart    else b""
 		)

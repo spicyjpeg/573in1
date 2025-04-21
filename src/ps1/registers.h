@@ -194,12 +194,9 @@ typedef enum {
 	DMA_CHCR_PAUSE            = 1 << 29  // Burst mode only
 } DMACHCRFlag;
 
-typedef enum {
-	DMA_DPCR_PRIORITY_BITMASK = 7 << 0,
-	DMA_DPCR_PRIORITY_MIN     = 7 << 0,
-	DMA_DPCR_PRIORITY_MAX     = 0 << 0,
-	DMA_DPCR_ENABLE           = 1 << 3
-} DMADPCRFlag;
+#define DMA_DPCR_CH_PRIORITY_BITMASK(N)   (7              << (4 * (N)))
+#define DMA_DPCR_CH_PRIORITY(N, priority) ((priority & 7) << (4 * (N)))
+#define DMA_DPCR_CH_ENABLE(N)             ((1 << 3)       << (4 * (N)))
 
 typedef enum {
 	DMA_DICR_CH_MODE_BITMASK   = 0x7f <<  0,
@@ -210,9 +207,9 @@ typedef enum {
 	DMA_DICR_IRQ               =    1 << 31
 } DMADICRFlag;
 
-#define DMA_DICR_CH_MODE(dma)   (1 << ((dma) +  0))
-#define DMA_DICR_CH_ENABLE(dma) (1 << ((dma) + 16))
-#define DMA_DICR_CH_STAT(dma)   (1 << ((dma) + 24))
+#define DMA_DICR_CH_MODE(N)   (1 << ((N) +  0))
+#define DMA_DICR_CH_ENABLE(N) (1 << ((N) + 16))
+#define DMA_DICR_CH_STAT(N)   (1 << ((N) + 24))
 
 #define DMA_MADR(N) _MMIO32((IO_BASE | 0x080) + (16 * (N)))
 #define DMA_BCR(N)  _MMIO32((IO_BASE | 0x084) + (16 * (N)))

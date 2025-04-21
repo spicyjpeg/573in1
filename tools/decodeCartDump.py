@@ -23,7 +23,7 @@ from argparse        import ArgumentParser, FileType, Namespace
 from collections.abc import Mapping
 from typing          import TextIO
 
-from common.cart import *
+from common.cart import CartDump, ChipType, DumpFlag
 from common.util import serialNumberToString, hexdumpToFile
 
 ## Dump parser
@@ -114,7 +114,7 @@ def main():
 			data: bytes = file.read()
 
 		try:
-			dump: CartDump = CartDump.fromBinary(data)
+			dump: CartDump = CartDump.parse(data)
 		except:
 			dump: CartDump = CartDump.fromQRString(data.decode("utf-8"))
 	elif args.data:
@@ -127,7 +127,7 @@ def main():
 
 	if args.export:
 		with args.export as file:
-			file.write(dump.toBinary())
+			file.write(dump.serialize())
 
 if __name__ == "__main__":
 	main()

@@ -52,9 +52,28 @@ public:
 	}
 };
 
+/* Package file class */
+
+// The current implementation supports random access on uncompressed files only.
+// Compressed entries must be read using loadData().
+class PackageFile : public File {
+	friend class PackageProvider;
+
+private:
+	File          *_package;
+	const uint8_t *_blob;
+	uint64_t      _startOffset;
+
+	uint64_t _offset;
+
+public:
+	size_t read(void *output, size_t length);
+	uint64_t seek(uint64_t offset);
+	uint64_t tell(void) const;
+};
+
 /* Package filesystem provider */
 
-// The current implementation only supports loading an entire file at once.
 class PackageProvider : public Provider {
 private:
 	util::Data _index;
@@ -69,6 +88,7 @@ public:
 
 	bool getFileInfo(FileInfo &output, const char *path);
 
+	File *openFile(const char *path, uint32_t flags);
 	size_t loadData(util::Data &output, const char *path);
 	size_t loadData(void *output, size_t length, const char *path);
 };

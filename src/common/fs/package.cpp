@@ -24,6 +24,37 @@
 
 namespace fs {
 
+/* Package file class */
+
+size_t PackageFile::read(void *output, size_t length) {
+	// Do not read any data past the end of the file.
+	length = util::min<size_t>(length, size_t(size) - size_t(_offset));
+
+	if (_package) {
+		auto fileOffset = _startOffset + _offset;
+
+		if (_package->seek(fileOffset) != fileOffset)
+			return 0;
+
+		length = _package->read(output, length);
+	} else {
+		__builtin_memcpy(output, &_blob[_offset], length);
+	}
+
+	_offset += length;
+	return length;
+}
+
+uint64_t PackageFile::seek(uint64_t offset) {
+	_offset = util::min(offset, size);
+
+	return _offset;
+}
+
+uint64_t PackageFile::tell(void) const {
+	return _offset;
+}
+
 /* Package filesystem provider */
 
 const PackageIndexEntry *PackageProvider::_getEntry(const char *path) const {
@@ -131,6 +162,36 @@ bool PackageProvider::getFileInfo(FileInfo &output, const char *path) {
 	output.attributes = READ_ONLY | ARCHIVE;
 
 	return true;
+}
+
+File *PackageProvider::openFile(const char *path, uint32_t flags) {
+	auto blob  = _index.as<uint8_t>();
+	auto entry = _getEntry(path);
+
+	if (!entry)
+		return nullptr;
+	if (entry->compLength) {
+		LOG_FS("%s is compressed", path);
+		return nullptr;
+	}
+
+	auto file = new PackageFile();
+
+	if (_file) {
+		// Package on disk
+		file->_package     = _file;
+		file->_blob        = nullptr;
+		file->_startOffset = entry->offset;
+	} else {
+		// Package in RAM
+		file->_package     = nullptr;
+		file->_blob        = &blob[entry->offset];
+		file->_startOffset = 0;
+	}
+
+	file->_offset = 0;
+	file->size    = entry->uncompLength;
+	return file;
 }
 
 size_t PackageProvider::loadData(util::Data &output, const char *path) {

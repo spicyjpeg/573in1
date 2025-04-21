@@ -34,8 +34,8 @@ static constexpr int _DMA_TIMEOUT    = 10000;
 
 void init(void) {
 	DMA_DPCR |= 0
-		| (DMA_DPCR_ENABLE << (DMA_GPU * 4))
-		| (DMA_DPCR_ENABLE << (DMA_OTC * 4));
+		| DMA_DPCR_CH_ENABLE(DMA_GPU)
+		| DMA_DPCR_CH_ENABLE(DMA_OTC);
 
 	TIMER_CTRL(0) = TIMER_CTRL_EXT_CLOCK;
 	TIMER_CTRL(1) = TIMER_CTRL_EXT_CLOCK;

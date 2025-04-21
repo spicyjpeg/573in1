@@ -19,14 +19,14 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/cmake/toolchain.cmake")
 project(
 	573in1
 	LANGUAGES    C CXX ASM
-	VERSION      1.0.5
+	VERSION      1.0.6
 	DESCRIPTION  "Konami System 573 maintenance tool"
 	HOMEPAGE_URL "https://github.com/spicyjpeg/573in1"
 )
 
 include(cmake/options.cmake)
 include(cmake/setup.cmake)
-include(cmake/virtualenv.cmake)
+include(cmake/tools.cmake)
 
 ## Source files
 
@@ -220,31 +220,13 @@ target_compile_definitions(
 
 ## Main executables
 
-function(addPS1Executable name address stackTop)
-	add_executable     (${name} ${ARGN})
-	target_link_options(${name} PRIVATE -Ttext=0x${address})
-
-	add_custom_command(
-		TARGET     ${name} POST_BUILD
-		BYPRODUCTS "${name}.psexe"
-		COMMAND
-			"${Python3_EXECUTABLE}"
-			"${PROJECT_SOURCE_DIR}/tools/convertExecutable.py"
-			-r "${RELEASE_INFO}"
-			-s 0x${stackTop}
-			"$<TARGET_FILE:${name}>"
-			"${name}.psexe"
-		VERBATIM
-	)
-endfunction()
-
 # IMPORTANT: these addresses assume the boot executable's size (including code,
 # heap and stack allocations as well as the resource package, but excluding the
 # executable header) is 576 KB (0x90000 bytes) or less, and that each launcher's
 # size is 12 KB (0x3000 bytes) or less.
-addPS1Executable(main             800a0000 801dfff0 ${mainSources})
-addPS1Executable(launcher801fd000 801fd000 801ffff0)
-addPS1Executable(launcher803fd000 803fd000 803ffff0)
+addPS1ExecutableAdv(main             0x800a0000 0x801dfff0 "" ${mainSources})
+addPS1ExecutableAdv(launcher801fd000 0x801fd000 0x801ffff0 "")
+addPS1ExecutableAdv(launcher803fd000 0x803fd000 0x803ffff0 "")
 
 add_library(launcher OBJECT ${launcherSources})
 add_library(bootStub OBJECT ${bootStubSources})
@@ -283,7 +265,7 @@ function(addBuildVariant name resourceName)
 		VERBATIM
 	)
 
-	addPS1Executable(${name} 80010000 0)
+	addPS1ExecutableAdv(${name} 0x80010000 0 "${RELEASE_INFO}")
 	addBinaryFileWithSize(
 		${name} _resourcePackage _resourcePackageLength
 		"${PROJECT_BINARY_DIR}/${resourceName}.pkg"

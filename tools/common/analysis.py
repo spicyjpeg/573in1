@@ -43,7 +43,7 @@ def _getPCMCIACardSize(path: Path, card: int) -> int | None:
 def _loadCartDump(path: Path) -> CartDump | None:
 	try:
 		with open(path, "rb") as file:
-			return parseMAMECartDump(file.read())
+			return CartDump.fromMAMEDump(file.read())
 	except FileNotFoundError:
 		return None
 

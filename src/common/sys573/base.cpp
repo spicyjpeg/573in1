@@ -48,7 +48,7 @@ void init(void) {
 		| (23 << 16) // Number of address lines
 		| ( 4 << 24) // DMA read/write delay
 		| BIU_CTRL_DMA_DELAY;
-	DMA_DPCR     |= DMA_DPCR_ENABLE << (DMA_PIO * 4);
+	DMA_DPCR     |= DMA_DPCR_CH_ENABLE(DMA_PIO);
 
 #if 0
 	// Revision D of the main board has footprints for either eight 8-bit RAM

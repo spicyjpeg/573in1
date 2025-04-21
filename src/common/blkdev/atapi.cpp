@@ -218,19 +218,19 @@ DeviceError ATAPIDevice::_issuePacket(
 
 /* ATAPI block device class */
 
-static constexpr int _DETECT_TIMEOUT = 2500000;
+static constexpr int _DETECT_TIMEOUT = 2000000;
 
 DeviceError ATAPIDevice::enumerate(void) {
 	// NOTE: the primary drive may respond to all secondary drive register
 	// accesses, with the exception of command writes, if no secondary drive is
 	// actually present. A strict timeout is used in the commands below in order
 	// to prevent blocking for too long.
-	IDEIdentifyBlock block;
-
 	_set(CS0_COMMAND, ATA_IDENTIFY_PACKET);
 
 	if (_waitForDRQ(_DETECT_TIMEOUT))
 		return NO_DRIVE;
+
+	IDEIdentifyBlock block;
 
 	_readData(&block, sizeof(IDEIdentifyBlock));
 
@@ -245,7 +245,6 @@ DeviceError ATAPIDevice::enumerate(void) {
 		return UNSUPPORTED_OP;
 	}
 
-	// TODO: actually fetch the capacity from the drive
 	type         = ATAPI;
 	flags       |= READ_ONLY;
 	capacity     = 0;
@@ -360,8 +359,9 @@ DeviceError ATAPIDevice::eject(bool close) {
 		return NO_DRIVE;
 
 	ATAPIPacket packet;
-	auto        mode =
-		close ? START_STOP_MODE_CLOSE_TRAY : START_STOP_MODE_OPEN_TRAY;
+	auto        mode = close
+		? START_STOP_MODE_CLOSE_TRAY
+		: START_STOP_MODE_OPEN_TRAY;
 
 	packet.setStartStopUnit(mode);
 	return _issuePacket(packet);

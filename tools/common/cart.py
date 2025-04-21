@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# 573in1 - Copyright (C) 2022-2024 spicyjpeg
+# 573in1 - Copyright (C) 2022-2025 spicyjpeg
 #
 # 573in1 is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -15,7 +15,7 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum        import IntEnum, IntFlag
 from struct      import Struct
 from typing      import Self
@@ -73,17 +73,23 @@ _CHIP_SIZES: dict[ChipType, ChipSize] = {
 _QR_STRING_REGEX: re.Pattern = \
 	re.compile(r"573::([0-9A-Z+-./:]+)::", re.IGNORECASE)
 
+_MAME_X76F041_DUMP_STRUCT:   Struct = Struct("< 4x 8s 8s 8s 8s 512s")
+_MAME_X76F100_DUMP_STRUCT:   Struct = Struct("< 4x 8s 8s 112s")
+_MAME_ZS01_DUMP_STRUCT:      Struct = Struct("< 4x 8s 8s 8s 112s")
+_MAME_ZS01_OLD_DUMP_STRUCT1: Struct = Struct("< 4x 8s 8s 8s 112s 3984x")
+_MAME_ZS01_OLD_DUMP_STRUCT2: Struct = Struct("< 4x 8s 8s 112s 3984x")
+
 @dataclass
 class CartDump:
 	chipType: ChipType
 	flags:    DumpFlag
 
-	systemID: bytes
-	cartID:   bytes
-	zsID:     bytes
-	dataKey:  bytes
-	config:   bytes
-	data:     bytes
+	systemID: bytes = field(repr = False)
+	cartID:   bytes = field(repr = False)
+	zsID:     bytes = field(repr = False)
+	dataKey:  bytes = field(repr = False)
+	config:   bytes = field(repr = False)
+	data:     bytes = field(repr = False)
 
 	def getChipSize(self) -> ChipSize:
 		return _CHIP_SIZES[self.chipType]
@@ -97,10 +103,98 @@ class CartDump:
 
 		dump: bytearray = decodeBase41(qrString.group(1).upper())
 
-		return CartDump.fromBinary(decompress(dump))
+		return CartDump.parse(decompress(dump))
 
 	@staticmethod
-	def fromBinary(data: bytes | bytearray) -> Self:
+	def fromMAMEDump(dump: bytes | bytearray) -> Self:
+		chipID: int = int.from_bytes(dump[0:4], "big")
+
+		match chipID, len(dump):
+			case 0x1955aa55, _MAME_X76F041_DUMP_STRUCT.size:
+				(
+					writeKey,
+					readKey,
+					configKey,
+					config,
+					data
+				) = _MAME_X76F041_DUMP_STRUCT.unpack(dump)
+
+				chipType: ChipType = ChipType.X76F041
+				dataKey:  bytes    = configKey
+
+			case 0x1900aa55, _MAME_X76F100_DUMP_STRUCT.size:
+				(
+					writeKey,
+					readKey,
+					data
+				) = _MAME_X76F100_DUMP_STRUCT.unpack(dump)
+
+				if writeKey != readKey:
+					raise RuntimeError(
+						"X76F100 dumps with different read and write keys are "
+						"not supported"
+					)
+
+				chipType: ChipType     = ChipType.X76F100
+				dataKey:  bytes        = writeKey
+				config:   bytes | None = None
+
+				# Even though older versions of MAME emulate X76F100 cartridges
+				# for games that support them, no actual X76F100 cartridges seem
+				# to exist.
+				raise RuntimeError("X76F100 cartridge dumps are not supported")
+
+			case 0x5a530001, _MAME_ZS01_DUMP_STRUCT.size:
+				(
+					commandKey,
+					dataKey,
+					config,
+					data
+				) = _MAME_ZS01_DUMP_STRUCT.unpack(dump)
+
+				chipType: ChipType = ChipType.ZS01
+
+			case 0x5a530001, _MAME_ZS01_OLD_DUMP_STRUCT1.size:
+				(
+					commandKey,
+					dataKey,
+					config,
+					data
+				) = _MAME_ZS01_OLD_DUMP_STRUCT1.unpack(dump)
+
+				chipType: ChipType = ChipType.ZS01
+
+			case 0x5a530001, _MAME_ZS01_OLD_DUMP_STRUCT2.size:
+				(
+					commandKey,
+					dataKey,
+					data
+				) = _MAME_ZS01_OLD_DUMP_STRUCT2.unpack(dump)
+
+				chipType: ChipType     = ChipType.ZS01
+				config:   bytes | None = None
+
+			case _, length:
+				raise RuntimeError(
+					f"unknown chip ID: {chipID:#010x} (dump length: {length:#x})"
+				)
+
+		return CartDump(
+			chipType,
+			0
+				| (DumpFlag.DUMP_CONFIG_OK if config else 0)
+				| DumpFlag.DUMP_PUBLIC_DATA_OK
+				| DumpFlag.DUMP_PRIVATE_DATA_OK,
+			b"",
+			b"",
+			b"",
+			dataKey,
+			config or b"",
+			data
+		)
+
+	@staticmethod
+	def parse(data: bytes | bytearray) -> Self:
 		(
 			magic,
 			chipType,
@@ -130,7 +224,7 @@ class CartDump:
 			data[offset:offset + length]
 		)
 
-	def toBinary(self) -> bytes:
+	def serialize(self) -> bytes:
 		return _CART_DUMP_HEADER_STRUCT.pack(
 			_CART_DUMP_HEADER_MAGIC,
 			self.chipType,
@@ -142,81 +236,6 @@ class CartDump:
 			self.config
 		) + self.data
 
-## MAME NVRAM cartridge dump parser
-
-_MAME_X76F041_DUMP_STRUCT:   Struct = Struct("< 4x 8s 8s 8s 8s 512s")
-_MAME_X76F100_DUMP_STRUCT:   Struct = Struct("< 4x 8s 8s 112s")
-_MAME_ZS01_DUMP_STRUCT:      Struct = Struct("< 4x 8s 8s 8s 112s")
-_MAME_ZS01_OLD_DUMP_STRUCT1: Struct = Struct("< 4x 8s 8s 8s 112s 3984x")
-_MAME_ZS01_OLD_DUMP_STRUCT2: Struct = Struct("< 4x 8s 8s 112s 3984x")
-
-def parseMAMECartDump(dump: bytes | bytearray) -> CartDump:
-	match int.from_bytes(dump[0:4], "big"), len(dump):
-		case 0x1955aa55, _MAME_X76F041_DUMP_STRUCT.size:
-			writeKey, readKey, configKey, config, data = \
-				_MAME_X76F041_DUMP_STRUCT.unpack(dump)
-
-			chipType: ChipType = ChipType.X76F041
-			dataKey:  bytes    = configKey
-
-		case 0x1900aa55, _MAME_X76F100_DUMP_STRUCT.size:
-			writeKey, readKey, data = \
-				_MAME_X76F100_DUMP_STRUCT.unpack(dump)
-
-			if writeKey != readKey:
-				raise RuntimeError(
-					"X76F100 dumps with different read and write keys are not "
-					"supported"
-				)
-
-			chipType: ChipType     = ChipType.X76F100
-			dataKey:  bytes        = writeKey
-			config:   bytes | None = None
-
-			# Even though older versions of MAME emulate X76F100 cartridges for
-			# games that support them, no actual X76F100 cartridges seem to
-			# exist.
-			raise RuntimeError("X76F100 cartridge dumps are not supported")
-
-		case 0x5a530001, _MAME_ZS01_DUMP_STRUCT.size:
-			commandKey, dataKey, config, data = \
-				_MAME_ZS01_DUMP_STRUCT.unpack(dump)
-
-			chipType: ChipType = ChipType.ZS01
-
-		case 0x5a530001, _MAME_ZS01_OLD_DUMP_STRUCT1.size:
-			commandKey, dataKey, config, data = \
-				_MAME_ZS01_OLD_DUMP_STRUCT1.unpack(dump)
-
-			chipType: ChipType = ChipType.ZS01
-
-		case 0x5a530001, _MAME_ZS01_OLD_DUMP_STRUCT2.size:
-			commandKey, dataKey, data = \
-				_MAME_ZS01_OLD_DUMP_STRUCT2.unpack(dump)
-
-			chipType: ChipType     = ChipType.ZS01
-			config:   bytes | None = None
-
-		case magic, length:
-			raise RuntimeError(
-				f"unknown chip type {magic:#010x}, dump length {length:#x}"
-			)
-
-	return CartDump(
-		chipType,
-		0
-			| (DumpFlag.DUMP_CONFIG_OK if config else 0)
-			| DumpFlag.DUMP_PUBLIC_DATA_OK
-			| DumpFlag.DUMP_PRIVATE_DATA_OK,
-		b"",
-		b"",
-		b"",
-		dataKey,
-		config or b"",
-		data
-	)
-
-
 ## Flash and RTC header dump structure
 
 _ROM_HEADER_DUMP_HEADER_STRUCT: Struct = Struct("< H x B 8s 32s")
@@ -226,8 +245,8 @@ _ROM_HEADER_DUMP_HEADER_MAGIC:  int    = 0x573e
 class ROMHeaderDump:
 	flags: DumpFlag
 
-	systemID: bytes
-	data:     bytes
+	systemID: bytes = field(repr = False)
+	data:     bytes = field(repr = False)
 
 	def serialize(self) -> bytes:
 		return _ROM_HEADER_DUMP_HEADER_STRUCT.pack(

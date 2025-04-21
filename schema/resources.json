@@ -168,6 +168,11 @@
 										"maximum": 1023
 									}
 								}
+							},
+							"forceSTP": {
+								"title":       "Force semitransparency flag",
+								"description": "If true, all opaque pixels in the generated image will have the semitransparency (blending) flag set. Useful when drawing the image using additive or subtractive blending.",
+								"type":        "boolean"
 							}
 						}
 					},
