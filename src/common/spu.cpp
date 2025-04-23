@@ -175,7 +175,7 @@ size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
 	SPU_CTRL     = ctrlReg | SPU_CTRL_XFER_DMA_WRITE;
 	_waitForStatus(SPU_STAT_XFER_BITMASK, SPU_STAT_XFER_DMA_WRITE);
 
-	DMA_MADR(DMA_SPU) = reinterpret_cast<uint32_t>(data);
+	DMA_MADR(DMA_SPU) = uint32_t(data);
 	DMA_BCR (DMA_SPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 	DMA_CHCR(DMA_SPU) = 0
 		| DMA_CHCR_WRITE
@@ -211,7 +211,7 @@ size_t download(uint32_t offset, void *data, size_t length, bool wait) {
 	SPU_CTRL     = ctrlReg | SPU_CTRL_XFER_DMA_READ;
 	_waitForStatus(SPU_STAT_XFER_BITMASK, SPU_STAT_XFER_DMA_READ);
 
-	DMA_MADR(DMA_SPU) = reinterpret_cast<uint32_t>(data);
+	DMA_MADR(DMA_SPU) = uint32_t(data);
 	DMA_BCR (DMA_SPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 	DMA_CHCR(DMA_SPU) = 0
 		| DMA_CHCR_READ

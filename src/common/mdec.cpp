@@ -98,7 +98,7 @@ size_t feed(const void *data, size_t length, bool wait) {
 	if (!waitForDMATransfer(DMA_MDEC_IN, _DMA_TIMEOUT))
 		return 0;
 
-	DMA_MADR(DMA_MDEC_IN) = reinterpret_cast<uint32_t>(data);
+	DMA_MADR(DMA_MDEC_IN) = uint32_t(data);
 	DMA_BCR (DMA_MDEC_IN) = util::concat4(_DMA_CHUNK_SIZE_IN, length);
 	DMA_CHCR(DMA_MDEC_IN) = 0
 		| DMA_CHCR_WRITE
@@ -124,7 +124,7 @@ size_t receive(void *data, size_t length, bool wait) {
 	if (!waitForDMATransfer(DMA_MDEC_OUT, _DMA_TIMEOUT))
 		return 0;
 
-	DMA_MADR(DMA_MDEC_OUT) = reinterpret_cast<uint32_t>(data);
+	DMA_MADR(DMA_MDEC_OUT) = uint32_t(data);
 	DMA_BCR (DMA_MDEC_OUT) = util::concat4(_DMA_CHUNK_SIZE_OUT, length);
 	DMA_CHCR(DMA_MDEC_OUT) = 0
 		| DMA_CHCR_READ

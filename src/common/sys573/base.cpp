@@ -98,9 +98,9 @@ size_t doDMARead(
 	// as the BIU will realign the address by masking off the bottommost N bits
 	// (where N is the number of address lines used) and replace them with the
 	// respective CPU address bits.
-	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(source) & 0x1fffffff;
+	BIU_DEV0_ADDR = uint32_t(source) & 0x1fffffff;
 
-	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
+	DMA_MADR(DMA_PIO) = uint32_t(data);
 	DMA_BCR (DMA_PIO) = length;
 	DMA_CHCR(DMA_PIO) = 0
 		| DMA_CHCR_READ
@@ -127,9 +127,9 @@ size_t doDMAWrite(
 	if (!waitForDMATransfer(DMA_PIO, _DMA_TIMEOUT))
 		return 0;
 
-	BIU_DEV0_ADDR = reinterpret_cast<uint32_t>(dest) & 0x1fffffff;
+	BIU_DEV0_ADDR = uint32_t(dest) & 0x1fffffff;
 
-	DMA_MADR(DMA_PIO) = reinterpret_cast<uint32_t>(data);
+	DMA_MADR(DMA_PIO) = uint32_t(data);
 	DMA_BCR (DMA_PIO) = length;
 	DMA_CHCR(DMA_PIO) = 0
 		| DMA_CHCR_WRITE

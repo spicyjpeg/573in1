@@ -19,6 +19,7 @@
 #include "common/blkdev/ata.hpp"
 #include "common/blkdev/atapi.hpp"
 #include "common/blkdev/device.hpp"
+#include "common/blkdev/ps1cdrom.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
@@ -116,7 +117,7 @@ int main(int argc, const char **argv) {
 	for (; argc > 0; argc--)
 		args.parseArgument(*(argv++));
 
-#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_STORAGE_LOGGING) || defined(ENABLE_FS_LOGGING)
+#if defined(ENABLE_APP_LOGGING) || defined(ENABLE_BLKDEV_LOGGING) || defined(ENABLE_FS_LOGGING)
 	util::logger.setupSyslog(args.baudRate);
 #endif
 
@@ -145,6 +146,10 @@ int main(int argc, const char **argv) {
 			};
 			break;
 
+		case "cdrom"_h:
+			code = _loadFromBlockDevice(args, blkdev::cdrom);
+			break;
+
 		case "flash"_h:
 			code = _loadFromFlash(args);
 			break;
@@ -159,7 +164,9 @@ int main(int argc, const char **argv) {
 
 	// Launch the executable.
 	util::ExecutableLoader loader(
-		args.entryPoint, args.initialGP, args.stackTop
+		args.entryPoint,
+		args.initialGP,
+		args.stackTop
 	);
 
 	auto executableArg = args.executableArgs;

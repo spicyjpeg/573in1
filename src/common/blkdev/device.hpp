@@ -51,7 +51,8 @@ enum DeviceType : uint8_t {
 	NONE        = 0,
 	ATA         = 1,
 	ATAPI       = 2,
-	MEMORY_CARD = 3
+	PS1_CDROM   = 3,
+	MEMORY_CARD = 4
 };
 
 enum DeviceFlag : uint8_t {

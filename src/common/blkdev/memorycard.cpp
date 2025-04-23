@@ -34,8 +34,8 @@ MemoryCardDevice memoryCards[2]{ (0), (1) };
 
 DeviceError MemoryCardDevice::enumerate(void) {
 	type         = MEMORY_CARD;
-	capacity     = _CAPACITY;
 	sectorLength = _SECTOR_LENGTH;
+	capacity     = _CAPACITY;
 
 	return poll();
 }
@@ -64,7 +64,7 @@ DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
 	auto &port = pad::ports[getDeviceIndex()];
 	auto ptr   = reinterpret_cast<uint8_t *>(data);
 
-	for (; count > 0; count--, ptr += _SECTOR_LENGTH) {
+	for (; count > 0; count--) {
 		pad::PortLock lock(port, pad::ADDR_MEMORY_CARD);
 
 		if (!lock.locked)
@@ -142,6 +142,8 @@ DeviceError MemoryCardDevice::read(void *data, uint64_t lba, size_t count) {
 			);
 			return CHECKSUM_MISMATCH;
 		}
+
+		ptr += _SECTOR_LENGTH;
 	}
 
 	return NO_ERROR;
@@ -155,7 +157,7 @@ DeviceError MemoryCardDevice::write(
 	auto &port = pad::ports[getDeviceIndex()];
 	auto ptr   = reinterpret_cast<const uint8_t *>(data);
 
-	for (; count > 0; count--, ptr += _SECTOR_LENGTH) {
+	for (; count > 0; count--) {
 		pad::PortLock lock(port, pad::ADDR_MEMORY_CARD);
 
 		if (!lock.locked)
@@ -224,6 +226,8 @@ DeviceError MemoryCardDevice::write(
 				);
 				return DRIVE_ERROR;
 		}
+
+		ptr += _SECTOR_LENGTH;
 	}
 
 	return NO_ERROR;

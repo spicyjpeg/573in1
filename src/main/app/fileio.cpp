@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include "common/blkdev/idebase.hpp"
 #include "common/blkdev/memorycard.hpp"
+#include "common/blkdev/ps1cdrom.hpp"
 #include "common/fs/fat.hpp"
 #include "common/fs/host.hpp"
 #include "common/fs/iso9660.hpp"
@@ -113,7 +114,8 @@ void FileIOManager::closeResourceFile(void) {
 }
 
 int FileIOManager::mountIDE(void) {
-	unmountIDE();
+	for (auto prefix : IDE_MOUNT_POINTS)
+		deleteMountPoint(prefix);
 
 	int mounted = 0;
 
@@ -161,13 +163,33 @@ int FileIOManager::mountIDE(void) {
 	return mounted;
 }
 
-void FileIOManager::unmountIDE(void) {
-	for (auto prefix : IDE_MOUNT_POINTS)
-		deleteMountPoint(prefix);
+bool FileIOManager::mountPS1CDROM(void) {
+	deleteMountPoint("ps1cd:");
+
+	if (blkdev::cdrom.enumerate())
+		return false;
+
+	auto mp = newMountPoint("ps1cd:");
+
+	if (!mp)
+		return false;
+
+	mp->dev = &blkdev::cdrom;
+	addAlias("cdrom:", mp);
+
+	auto iso = new fs::ISO9660Provider();
+
+	if (iso->init(blkdev::cdrom))
+		mp->provider = iso;
+	else
+		delete iso;
+
+	return true;
 }
 
 int FileIOManager::mountMemoryCards(void) {
-	unmountMemoryCards();
+	for (auto prefix : MC_MOUNT_POINTS)
+		deleteMountPoint(prefix);
 
 	int mounted = 0;
 
@@ -190,14 +212,20 @@ int FileIOManager::mountMemoryCards(void) {
 		else
 			delete provider;
 
-		addAlias("mc", mp);
+		addAlias("mc:", mp);
 		mounted++;
 	}
 
 	return mounted;
 }
 
-void FileIOManager::unmountMemoryCards(void) {
+void FileIOManager::unmountAll(void) {
+	closeResourceFile();
+
+	for (auto prefix : IDE_MOUNT_POINTS)
+		deleteMountPoint(prefix);
 	for (auto prefix : MC_MOUNT_POINTS)
 		deleteMountPoint(prefix);
+
+	deleteMountPoint("ps1cd:");
 }

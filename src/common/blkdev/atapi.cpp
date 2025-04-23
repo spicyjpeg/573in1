@@ -247,7 +247,6 @@ DeviceError ATAPIDevice::enumerate(void) {
 
 	type         = ATAPI;
 	flags       |= READ_ONLY;
-	capacity     = 0;
 	sectorLength = _SECTOR_LENGTH;
 
 	if (

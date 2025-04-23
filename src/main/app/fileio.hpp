@@ -46,8 +46,7 @@ public:
 	void closeResourceFile(void);
 
 	int mountIDE(void);
-	void unmountIDE(void);
+	bool mountPS1CDROM(void);
 	int mountMemoryCards(void);
-	void unmountMemoryCards(void);
-
+	void unmountAll(void);
 };

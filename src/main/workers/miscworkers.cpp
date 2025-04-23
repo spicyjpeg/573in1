@@ -95,11 +95,14 @@ bool startupWorker(App &app) {
 
 bool fileInitWorker(App &app) {
 	app._workerStatusScreen.setMessage(WSTR("App.fileInitWorker.unmount"));
-	app._fileIO.closeResourceFile();
-	app._fileIO.unmountIDE();
+	app._fileIO.unmountAll();
 
 	app._workerStatusScreen.setMessage(WSTR("App.fileInitWorker.mount"));
 	app._fileIO.mountIDE();
+	app._fileIO.mountPS1CDROM();
+#if 0
+	app._fileIO.mountMemoryCards();
+#endif
 
 	app._workerStatusScreen.setMessage(WSTR("App.fileInitWorker.loadResources"));
 	if (app._fileIO.loadResourceFile(EXTERNAL_DATA_DIR "/resource.pkg"))
@@ -132,9 +135,10 @@ static const Launcher _LAUNCHERS[]{
 };
 
 static const char *const _DEVICE_TYPES[]{
-	"none", // blkdev::NONE
-	"ata",  // blkdev::ATA
-	"atapi" // blkdev::ATAPI
+	"none",  // blkdev::NONE
+	"ata",   // blkdev::ATA
+	"atapi", // blkdev::ATAPI
+	"cdrom"  // blkdev::PS1_CDROM
 };
 
 bool executableWorker(App &app) {
@@ -270,8 +274,7 @@ bool executableWorker(App &app) {
 		// All destructors must be invoked manually as we are not returning to
 		// main() before starting the new executable.
 		app._unloadCartData();
-		app._fileIO.closeResourceFile();
-		app._fileIO.unmountIDE();
+		app._fileIO.unmountAll();
 
 		LOG_APP("jumping to launcher");
 		uninstallExceptionHandler();
@@ -328,8 +331,7 @@ bool rebootWorker(App &app) {
 	app._workerStatusScreen.setMessage(WSTR("App.rebootWorker.reboot"));
 
 	app._unloadCartData();
-	app._fileIO.closeResourceFile();
-	app._fileIO.unmountIDE();
+	app._fileIO.unmountAll();
 
 	app._workerFlags |= WORKER_REBOOT;
 	flushWriteQueue();

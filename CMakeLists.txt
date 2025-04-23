@@ -75,6 +75,7 @@ set(
 	src/common/blkdev/device.cpp
 	src/common/blkdev/idebase.cpp
 	src/common/blkdev/memorycard.cpp
+	src/common/blkdev/ps1cdrom.cpp
 )
 set(
 	cartSources

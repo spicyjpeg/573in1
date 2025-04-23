@@ -330,6 +330,10 @@
 			"name":  "💿 %s: %s",
 			"error": "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Your drive may also be incompatible with the ATAPI driver used by 573in1.\n\nPress the Test button to view debug logs."
 		},
+		"cdrom": {
+			"name":  "💿 %s",
+			"error": "Failed to initialize the CD-ROM drive or access the filesystem on it. Ensure a disc is inserted and formatted with a valid ISO9660 filesystem. Note that Japanese PS1 models cannot read unofficial discs without a modchip or disc swapping.\n\nPress the Test button to view debug logs."
+		},
 		"memoryCard": {
 			"name":  "💾 Slot %d: %s",
 			"error": "Failed to initialize the memory card or access the filesystem on it. Make sure the card is inserted properly and has been formatted at least once.\n\nPress the Test button to view debug logs."

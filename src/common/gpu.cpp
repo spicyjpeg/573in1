@@ -72,7 +72,7 @@ size_t upload(const RectWH &rect, const void *data, bool wait) {
 
 		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
-		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+		DMA_MADR(DMA_GPU) = uint32_t(data);
 		DMA_BCR (DMA_GPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 		DMA_CHCR(DMA_GPU) = 0
 			| DMA_CHCR_WRITE
@@ -114,7 +114,7 @@ size_t download(const RectWH &rect, void *data, bool wait) {
 
 		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_READ);
 
-		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+		DMA_MADR(DMA_GPU) = uint32_t(data);
 		DMA_BCR (DMA_GPU) = util::concat4(_DMA_CHUNK_SIZE, length);
 		DMA_CHCR(DMA_GPU) = 0
 			| DMA_CHCR_READ
@@ -139,7 +139,7 @@ void sendLinkedList(const void *data, bool wait) {
 
 		GPU_GP1 = gp1_dmaRequestMode(GP1_DREQ_GP0_WRITE);
 
-		DMA_MADR(DMA_GPU) = reinterpret_cast<uint32_t>(data);
+		DMA_MADR(DMA_GPU) = uint32_t(data);
 		DMA_CHCR(DMA_GPU) = 0
 			| DMA_CHCR_WRITE
 			| DMA_CHCR_MODE_LIST

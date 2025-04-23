@@ -100,7 +100,7 @@ void IDEDevice::_readData(void *data, size_t length) const {
 	for (; length > 0; length--)
 		*(ptr++) = SYS573_IDE_CS0_BASE[CS0_DATA];
 #else
-	sys573::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
+	sys573::doDMARead(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length, true);
 #endif
 }
 
@@ -115,7 +115,7 @@ void IDEDevice::_writeData(const void *data, size_t length) const {
 	for (; length > 0; length--)
 		SYS573_IDE_CS0_BASE[CS0_DATA] = *(ptr++);
 #else
-	sys573::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length);
+	sys573::doDMAWrite(&SYS573_IDE_CS0_BASE[CS0_DATA], data, length, true);
 #endif
 }
 

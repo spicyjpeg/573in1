@@ -126,6 +126,7 @@ static const util::Hash _DEVICE_ERROR_STRINGS[]{
 	"FilePickerScreen.host.error"_h,      // blkdev::NONE
 	"FilePickerScreen.ata.error"_h,       // blkdev::ATA
 	"FilePickerScreen.atapi.error"_h,     // blkdev::ATAPI
+	"FilePickerScreen.cdrom.error"_h,     // blkdev::PS1_CDROM
 	"FilePickerScreen.memoryCard.error"_h // blkdev::MEMORY_CARD
 };
 
@@ -172,6 +173,17 @@ void FilePickerScreen::_addDevice(
 					sizeof(entry.name),
 					STRH(name),
 					mp.dev->model,
+					label
+				);
+				return;
+
+			case blkdev::PS1_CDROM:
+				entry.prefix = "ps1cd:";
+
+				snprintf(
+					entry.name,
+					sizeof(entry.name),
+					STR("FilePickerScreen.cdrom.name"),
 					label
 				);
 				return;
