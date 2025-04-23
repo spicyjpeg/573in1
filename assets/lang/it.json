@@ -4,6 +4,19 @@
 		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭."
 	},
 
+	"AnalogTestScreen": {
+		"title":  "▸ Test input analogici",
+		"prompt": "▸ Tieni premuto ▭ per uscire.",
+
+		"header": {
+			"singleEnded":  "Modalità asimmetrica:\n",
+			"differential": "Modalità differenziale:\n"
+		},
+
+		"singleEnded":  "  Da input %d a ground:\t%3d\n",
+		"differential": "  Da input %d a input %d:\t%3d\n"
+	},
+
 	"App": {
 		"startupWorker": {
 			"ideInit":  "Inizializzazione bus IDE in corso...\nNon spegnere il 573 o rimuovere dischi.",
@@ -614,7 +627,8 @@
 		"prompt": "▸ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
 
 		"bios": {
-			"header": "BIOS:\n",
+			"header":     "BIOS:\n",
+			"noBootFile": "nessuno (solo boot da flash)",
 
 			"kernelInfo": {
 				"sony":     "  Tipo kernel:\tkernel PlayStation\n  Versione kernel:\t%s\n  Data kernel:\t%04X-%02X-%02X\n",
@@ -699,7 +713,11 @@
 
 		"jammaTest": {
 			"name":   "Test pulsanti e input JAMMA",
-			"prompt": "Mostra lo stato di tutti i pulsanti e degli altri input collegati al connettore JAMMA."
+			"prompt": "Mostra lo stato di tutti i pulsanti e di altri input collegati al connettore JAMMA."
+		},
+		"analogTest": {
+			"name":   "Test input analogici",
+			"prompt": "Mostra lo stato di tutti i controlli collegati alla porta di input analogica."
 		},
 		"audioTest": {
 			"name":   "Test output audio e amplificatore",

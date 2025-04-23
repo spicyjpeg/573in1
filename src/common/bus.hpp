@@ -101,7 +101,9 @@ public:
 
 	void readBytes(uint8_t *data, size_t length) const;
 	bool writeBytes(
-		const uint8_t *data, size_t length, int lastACKDelay = 0
+		const uint8_t *data,
+		size_t        length,
+		int           lastACKDelay = 0
 	) const;
 
 	uint32_t resetX76(void) const;

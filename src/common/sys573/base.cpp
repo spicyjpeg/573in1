@@ -143,7 +143,17 @@ size_t doDMAWrite(
 	return length * 4;
 }
 
-/* JAMMA and RTC functions */
+/* JAMMA, ADC and RTC functions */
+
+enum ADCCommandFlag : uint8_t {
+	_ADC_CMD_START_BIT = 1 << 0,
+	_ADC_CMD_SGL_DIF   = 1 << 1,
+	_ADC_CMD_ODD_SIGN  = 1 << 2,
+	_ADC_CMD_SELECT    = 1 << 3
+};
+
+static constexpr int _ADC_START_DELAY = 20;
+static constexpr int _ADC_BUS_DELAY   = 20;
 
 JAMMAInputMask getJAMMAInputs(void) {
 	JAMMAInputMask inputs;
@@ -156,14 +166,58 @@ JAMMAInputMask getJAMMAInputs(void) {
 	return inputs ^ 0x1fffffff;
 }
 
+uint8_t getAnalogInput(AnalogInput pin) {
+	setMiscOutput(MISC_OUT_ADC_CLK, false);
+	setMiscOutput(MISC_OUT_ADC_CS,  true);
+
+	setMiscOutput(MISC_OUT_ADC_CS, false);
+	delayMicroseconds(_ADC_START_DELAY);
+
+	uint8_t cmd = 0
+		| _ADC_CMD_START_BIT
+		| ((pin & 3) << 2);
+
+	if (pin < ANALOG_IN_CH0P_CH1N)
+		cmd |= _ADC_CMD_SGL_DIF;
+
+	for (int i = 5; i; i--) { // LSB first
+		setMiscOutput(MISC_OUT_ADC_DI, cmd & 1);
+		cmd >>= 1;
+
+		delayMicroseconds(_ADC_BUS_DELAY);
+		setMiscOutput(MISC_OUT_ADC_CLK, true);
+		delayMicroseconds(_ADC_BUS_DELAY);
+		setMiscOutput(MISC_OUT_ADC_CLK, false);
+	}
+
+	uint8_t value = 0;
+
+	for (int i = 8; i > 0; i--) { // MSB first
+		delayMicroseconds(_ADC_BUS_DELAY);
+		setMiscOutput(MISC_OUT_ADC_CLK, true);
+
+		value <<= 1;
+		value  |= (SYS573_MISC_IN2 / SYS573_MISC_IN2_ADC_DO) & 1;
+
+		delayMicroseconds(_ADC_BUS_DELAY);
+		setMiscOutput(MISC_OUT_ADC_CLK, false);
+	}
+
+	setMiscOutput(MISC_OUT_ADC_CS, false);
+	delayMicroseconds(_ADC_BUS_DELAY);
+
+	return value;
+}
+
 void getRTCTime(util::Date &output) {
-	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_READ;
+	uint16_t ctrlReg = SYS573_RTC_CTRL & ~SYS573_RTC_CTRL_READ;
+	SYS573_RTC_CTRL  = ctrlReg | SYS573_RTC_CTRL_READ;
 
 	auto second = SYS573_RTC_SECOND, minute = SYS573_RTC_MINUTE;
 	auto hour   = SYS573_RTC_HOUR,   day    = SYS573_RTC_DAY;
 	auto month  = SYS573_RTC_MONTH,  year   = SYS573_RTC_YEAR;
 
-	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_READ;
+	SYS573_RTC_CTRL = ctrlReg;
 
 	output.year   = util::decodeBCD(year);   // 0-99
 	output.month  = util::decodeBCD(month);  // 1-12
@@ -186,7 +240,8 @@ void setRTCTime(const util::Date &value, bool stop) {
 	int minute  = util::encodeBCD(value.minute);
 	int second  = util::encodeBCD(value.second);
 
-	SYS573_RTC_CTRL |= SYS573_RTC_CTRL_WRITE;
+	uint16_t ctrlReg = SYS573_RTC_CTRL & ~SYS573_RTC_CTRL_WRITE;
+	SYS573_RTC_CTRL  = ctrlReg | SYS573_RTC_CTRL_WRITE;
 
 	SYS573_RTC_SECOND  = second
 		| (stop ? SYS573_RTC_SECOND_STOP : 0);
@@ -200,7 +255,7 @@ void setRTCTime(const util::Date &value, bool stop) {
 	SYS573_RTC_MONTH   = month;
 	SYS573_RTC_YEAR    = year;
 
-	SYS573_RTC_CTRL &= ~SYS573_RTC_CTRL_WRITE;
+	SYS573_RTC_CTRL = ctrlReg;
 }
 
 bool isRTCBatteryLow(void) {
@@ -217,28 +272,28 @@ bool CartI2CDriver::_getSDA(void) const {
 
 void CartI2CDriver::_setSDA(bool value) const {
 	// SDA is open-drain so it is toggled by tristating the pin.
-	setCartOutput(CART_OUTPUT_SDA, false);
+	setCartOutput(CART_OUT_SDA, false);
 	setCartSDADirection(value ^ 1);
 }
 
 void CartI2CDriver::_setSCL(bool value) const {
-	setCartOutput(CART_OUTPUT_SCL, value);
+	setCartOutput(CART_OUT_SCL, value);
 }
 
 void CartI2CDriver::_setCS(bool value) const {
-	setCartOutput(CART_OUTPUT_CS, value);
+	setCartOutput(CART_OUT_CS, value);
 }
 
 void CartI2CDriver::_setReset(bool value) const {
-	setCartOutput(CART_OUTPUT_RESET, value);
+	setCartOutput(CART_OUT_RESET, value);
 }
 
 bool CartDS2401Driver::_get(void) const {
-	return getCartInput(CART_INPUT_DS2401);
+	return getCartInput(CART_IN_DS2401);
 }
 
 void CartDS2401Driver::_set(bool value) const {
-	setCartOutput(CART_OUTPUT_DS2401, value ^ 1);
+	setCartOutput(CART_OUT_DS2401, value ^ 1);
 }
 
 const bus::SIO1Driver  cartSerial;

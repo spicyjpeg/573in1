@@ -45,7 +45,7 @@ size_t UARTDriver::readBytes(uint8_t *data, size_t length, int timeout) const {
 }
 
 void UARTDriver::writeBytes(const uint8_t *data, size_t length) const {
-	for (; length; length--)
+	for (; length > 0; length--)
 		writeByte(*(data++));
 }
 
@@ -161,9 +161,12 @@ void I2CDriver::sendACK(bool ack) const {
 uint8_t I2CDriver::readByte(void) const {
 	uint8_t value = 0;
 
-	for (int i = 7; i >= 0; i--) { // MSB first
-		_setSCL(true,  _I2C_BUS_DELAY);
-		value |= _getSDA() << i;
+	for (int i = 8; i > 0; i--) { // MSB first
+		_setSCL(true, _I2C_BUS_DELAY);
+
+		value <<= 1;
+		value  |= _getSDA();
+
 		_setSCL(false, _I2C_BUS_DELAY);
 	}
 
@@ -172,8 +175,10 @@ uint8_t I2CDriver::readByte(void) const {
 }
 
 void I2CDriver::writeByte(uint8_t value) const {
-	for (int i = 7; i >= 0; i--) { // MSB first
-		_setSDA((value >> i) & 1);
+	for (int i = 8; i > 0; i--) { // MSB first
+		_setSDA((value >> 7) & 1);
+		value <<= 1;
+
 		_setSCL(true,  _I2C_BUS_DELAY);
 		_setSCL(false, _I2C_BUS_DELAY);
 	}
@@ -182,7 +187,7 @@ void I2CDriver::writeByte(uint8_t value) const {
 }
 
 void I2CDriver::readBytes(uint8_t *data, size_t length) const {
-	for (; length; length--) {
+	for (; length > 0; length--) {
 		*(data++) = readByte();
 
 		if (length > 1)
@@ -191,9 +196,11 @@ void I2CDriver::readBytes(uint8_t *data, size_t length) const {
 }
 
 bool I2CDriver::writeBytes(
-	const uint8_t *data, size_t length, int lastACKDelay
+	const uint8_t *data,
+	size_t        length,
+	int           lastACKDelay
 ) const {
-	for (; length; length--) {
+	for (; length > 0; length--) {
 		writeByte(*(data++));
 
 		if (length == 1)
@@ -218,9 +225,12 @@ uint32_t I2CDriver::resetX76(void) const {
 	_setSCL  (false, _I2C_BUS_DELAY);
 	_setReset(false, _I2C_RESET_DELAY);
 
-	for (int i = 0; i < 32; i++) { // LSB first
-		_setSCL(true,  _I2C_BUS_DELAY);
-		value |= _getSDA() << i;
+	for (int i = 32; i > 0; i--) { // LSB first
+		_setSCL(true, _I2C_BUS_DELAY);
+
+		value >>= 1;
+		value  |= _getSDA() << 31;
+
 		_setSCL(false, _I2C_BUS_DELAY);
 	}
 
@@ -245,8 +255,10 @@ uint32_t I2CDriver::resetZS01(void) const {
 	_setSCL  (true,  _I2C_BUS_DELAY);
 	_setSCL  (false, _I2C_BUS_DELAY);
 
-	for (int i = 31; i >= 0; i--) { // MSB first
-		value |= _getSDA() << i;
+	for (int i = 32; i > 0; i--) { // MSB first
+		value <<= 1;
+		value  |= _getSDA();
+
 		_setSCL(true,  _I2C_BUS_DELAY);
 		_setSCL(false, _I2C_BUS_DELAY);
 	}
@@ -282,10 +294,13 @@ bool OneWireDriver::reset(void) const {
 uint8_t OneWireDriver::readByte(void) const {
 	uint8_t value = 0;
 
-	for (int i = 0; i < 8; i++) { // LSB first
+	for (int i = 8; i > 0; i--) { // LSB first
 		_set(false, _DS_READ_LOW_TIME);
 		_set(true,  _DS_READ_SAMPLE_DELAY);
-		value |= _get() << i;
+
+		value >>= 1;
+		value  |= _get() << 7;
+
 		delayMicroseconds(_DS_READ_DELAY);
 	}
 

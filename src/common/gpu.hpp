@@ -55,6 +55,10 @@ static inline void enableDisplay(bool enable) {
 	GPU_GP1 = gp1_dispBlank(!enable);
 }
 
+static inline VideoMode getVideoMode(void) {
+	return VideoMode((GPU_GP1 / GP1_STAT_FB_MODE_BITMASK) & 1);
+}
+
 void init(void);
 size_t upload(const RectWH &rect, const void *data, bool wait = false);
 size_t download(const RectWH &rect, void *data, bool wait = false);

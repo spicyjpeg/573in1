@@ -41,6 +41,10 @@ static const TestMenuEntry _TEST_MENU_ENTRIES[]{
 		.prompt = "TestMenuScreen.jammaTest.prompt"_h,
 		.target = &TestMenuScreen::jammaTest
 	}, {
+		.name   = "TestMenuScreen.analogTest.name"_h,
+		.prompt = "TestMenuScreen.analogTest.prompt"_h,
+		.target = &TestMenuScreen::analogTest
+	}, {
 		.name   = "TestMenuScreen.audioTest.name"_h,
 		.prompt = "TestMenuScreen.audioTest.prompt"_h,
 		.target = &TestMenuScreen::audioTest
@@ -61,6 +65,10 @@ const char *TestMenuScreen::_getItemName(ui::Context &ctx, int index) const {
 
 void TestMenuScreen::jammaTest(ui::Context &ctx) {
 	ctx.show(APP->_jammaTestScreen, false, true);
+}
+
+void TestMenuScreen::analogTest(ui::Context &ctx) {
+	ctx.show(APP->_analogTestScreen, false, true);
 }
 
 void TestMenuScreen::audioTest(ui::Context &ctx) {
@@ -177,6 +185,49 @@ void JAMMATestScreen::update(ui::Context &ctx) {
 		ctx.show(APP->_testMenuScreen, true, true);
 }
 
+void AnalogTestScreen::show(ui::Context &ctx, bool goBack) {
+	_title  = STR("AnalogTestScreen.title");
+	_body   = _bodyText;
+	_prompt = STR("AnalogTestScreen.prompt");
+
+	_bodyText[0] = 0;
+
+	TextScreen::show(ctx, goBack);
+}
+
+void AnalogTestScreen::update(ui::Context &ctx) {
+	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
+
+	_PRINT(STR("AnalogTestScreen.header.singleEnded"));
+
+	for (int i = 0; i < 4; i++) {
+		auto value = sys573::getAnalogInput(sys573::AnalogInput(i));
+
+		_PRINT(STR("AnalogTestScreen.singleEnded"), i, value);
+	}
+
+	_PRINTLN();
+	_PRINT(STR("AnalogTestScreen.header.differential"));
+
+	for (int i = 0; i < 4; i++) {
+		auto value = sys573::getAnalogInput(
+			sys573::AnalogInput(sys573::ANALOG_IN_CH0P_CH1N + i)
+		);
+
+		_PRINT(STR("AnalogTestScreen.differential"), i, i ^ 1, value);
+	}
+
+	*(--ptr) = 0;
+#if 0
+	LOG_APP("%d buffer bytes free", end - ptr);
+
+	TextScreen::update(ctx);
+#endif
+
+	if (ctx.buttons.longPressed(ui::BTN_START))
+		ctx.show(APP->_testMenuScreen, true, true);
+}
+
 struct AudioTestEntry {
 public:
 	util::Hash name;
@@ -273,7 +324,9 @@ static constexpr gpu::Color _BACKGROUND_COLOR = 0x000000;
 static constexpr gpu::Color _FOREGROUND_COLOR = 0xffffff;
 
 void TestPatternScreen::_drawTextOverlay(
-	ui::Context &ctx, const char *title, const char *prompt
+	ui::Context &ctx,
+	const char  *title,
+	const char  *prompt
 ) const {
 	int screenWidth  = ctx.gpuCtx.width  - ui::SCREEN_MARGIN_X * 2;
 	int screenHeight = ctx.gpuCtx.height - ui::SCREEN_MARGIN_Y * 2;
@@ -451,6 +504,8 @@ void GeometryScreen::draw(ui::Context &ctx, bool active) const {
 	}
 
 	_drawTextOverlay(
-		ctx, STR("GeometryScreen.title"), STR("GeometryScreen.prompt")
+		ctx,
+		STR("GeometryScreen.title"),
+		STR("GeometryScreen.prompt")
 	);
 }

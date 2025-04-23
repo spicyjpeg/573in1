@@ -27,6 +27,7 @@ protected:
 
 public:
 	void jammaTest(ui::Context &ctx);
+	void analogTest(ui::Context &ctx);
 	void audioTest(ui::Context &ctx);
 	void colorIntensity(ui::Context &ctx);
 	void geometry(ui::Context &ctx);
@@ -38,6 +39,15 @@ public:
 /* Test submenus */
 
 class JAMMATestScreen : public ui::TextScreen {
+private:
+	char _bodyText[2048];
+
+public:
+	void show(ui::Context &ctx, bool goBack = false);
+	void update(ui::Context &ctx);
+};
+
+class AnalogTestScreen : public ui::TextScreen {
 private:
 	char _bodyText[2048];
 

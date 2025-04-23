@@ -133,6 +133,7 @@ private:
 	// tests.cpp
 	friend class TestMenuScreen;
 	friend class JAMMATestScreen;
+	friend class AnalogTestScreen;
 	friend class AudioTestScreen;
 	friend class TestPatternScreen;
 	friend class ColorIntensityScreen;
@@ -140,6 +141,7 @@ private:
 
 	TestMenuScreen       _testMenuScreen;
 	JAMMATestScreen      _jammaTestScreen;
+	AnalogTestScreen     _analogTestScreen;
 	AudioTestScreen      _audioTestScreen;
 	ColorIntensityScreen _colorIntensityScreen;
 	GeometryScreen       _geometryScreen;

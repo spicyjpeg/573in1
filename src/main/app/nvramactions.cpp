@@ -61,7 +61,10 @@ void NVRAMInfoScreen::show(ui::Context &ctx, bool goBack) {
 	nvram::ShellInfo shell;
 
 	if (nvram::getShellInfo(shell)) {
-		if (shell.bootFileName)
+		if (!shell.bootFileName)
+			shell.bootFileName = STR("NVRAMInfoScreen.bios.noBootFile");
+
+		if (shell.headerHash)
 			_PRINT(
 				STR("NVRAMInfoScreen.bios.shellInfo.konami"),
 				shell.name,

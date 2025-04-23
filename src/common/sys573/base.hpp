@@ -68,15 +68,15 @@ enum JAMMAInputFlag : uint32_t {
 };
 
 enum CartInputPin {
-	CART_INPUT_DS2401 = 6
+	CART_IN_DS2401 = 6
 };
 
 enum CartOutputPin {
-	CART_OUTPUT_SDA    = 0,
-	CART_OUTPUT_SCL    = 1,
-	CART_OUTPUT_CS     = 2,
-	CART_OUTPUT_RESET  = 3,
-	CART_OUTPUT_DS2401 = 4
+	CART_OUT_SDA    = 0,
+	CART_OUT_SCL    = 1,
+	CART_OUT_CS     = 2,
+	CART_OUT_RESET  = 3,
+	CART_OUT_DS2401 = 4
 };
 
 enum MiscOutputPin {
@@ -89,6 +89,17 @@ enum MiscOutputPin {
 	MISC_OUT_CDDA_ENABLE = 6,
 	MISC_OUT_SPU_ENABLE  = 7,
 	MISC_OUT_JVS_RESET   = 8
+};
+
+enum AnalogInput {
+	ANALOG_IN_CH0       = 0,
+	ANALOG_IN_CH1       = 1,
+	ANALOG_IN_CH2       = 2,
+	ANALOG_IN_CH3       = 3,
+	ANALOG_IN_CH0P_CH1N = 4,
+	ANALOG_IN_CH1P_CH0N = 5,
+	ANALOG_IN_CH2P_CH3N = 6,
+	ANALOG_IN_CH3P_CH2N = 7
 };
 
 /* Inputs */
@@ -167,9 +178,10 @@ size_t doDMAWrite(
 	bool          wait = false
 );
 
-/* JAMMA and RTC functions */
+/* JAMMA, ADC and RTC functions */
 
 JAMMAInputMask getJAMMAInputs(void);
+uint8_t getAnalogInput(AnalogInput pin);
 void getRTCTime(util::Date &output);
 void setRTCTime(const util::Date &value, bool stop = false);
 bool isRTCBatteryLow(void);

@@ -116,6 +116,13 @@ static const ShellInfo _KONAMI_SHELLS[]{
 			DEV2_BASE | 0x40000
 		)
 	}, {
+		.name         = "899A01",
+		.bootFileName = nullptr,
+		.headerHash   = 0xecdeaad0,
+		.header       = reinterpret_cast<const util::ExecutableHeader *>(
+			DEV2_BASE | 0x40000
+		)
+	}, {
 		.name         = "700B01",
 		.bootFileName = reinterpret_cast<const char *>(DEV2_BASE | 0x61334),
 		.headerHash   = 0xb257d3b5,
@@ -150,6 +157,8 @@ bool getShellInfo(ShellInfo &output) {
 			reinterpret_cast<const uint8_t *>(header),
 			sizeof(util::ExecutableHeader)
 		);
+#else
+		output.headerHash   = 0;
 #endif
 		output.header       = header;
 		return true;
