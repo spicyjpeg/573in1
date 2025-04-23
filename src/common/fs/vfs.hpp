@@ -62,7 +62,9 @@ public:
 		return deleteMountPoint(getMountPoint(path));
 	}
 	inline bool addAlias(
-		const char *prefix, const char *path, bool force = false
+		const char *prefix,
+		const char *path,
+		bool       force = false
 	) {
 		return addAlias(prefix, getMountPoint(path), force);
 	}

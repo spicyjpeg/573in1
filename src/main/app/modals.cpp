@@ -131,10 +131,13 @@ static const util::Hash _DEVICE_ERROR_STRINGS[]{
 };
 
 void FilePickerScreen::_addDevice(
-	ui::Context &ctx, const fs::VFSMountPoint &mp
+	ui::Context       &ctx,
+	fs::VFSMountPoint &mp
 ) {
-	auto       &entry = _entries[_listLength++];
-	const char *label;
+	auto &entry = _entries[_listLength++];
+	entry.mp    = &mp;
+
+	const char *label = "";
 
 	if (mp.provider) {
 		switch (mp.provider->type) {
@@ -153,8 +156,6 @@ void FilePickerScreen::_addDevice(
 		}
 
 		label = mp.provider->volumeLabel;
-	} else {
-		label = "";
 	}
 
 	if (mp.dev) {
@@ -231,7 +232,7 @@ void FilePickerScreen::reloadAndShow(ui::Context &ctx) {
 	for (auto &mp : APP->_fileIO.mountPoints) {
 		if (!mp.dev)
 			continue;
-		if (!mp.dev->poll())
+		if (mp.dev->poll() != blkdev::DISC_CHANGED)
 			continue;
 
 		APP->_messageScreen.previousScreens[MESSAGE_ERROR] = this;
@@ -278,8 +279,9 @@ void FilePickerScreen::update(ui::Context &ctx) {
 				? entry.mp->dev->type
 				: blkdev::NONE;
 
-			int count =
-				APP->_fileBrowserScreen.loadDirectory(ctx, entry.prefix);
+			int count = entry.mp->provider
+				? APP->_fileBrowserScreen.loadDirectory(ctx, entry.prefix)
+				: -1;
 
 			if (count > 0) {
 				ctx.show(APP->_fileBrowserScreen, false, true);
@@ -365,7 +367,9 @@ const char *FileBrowserScreen::_getItemName(ui::Context &ctx, int index) const {
 }
 
 int FileBrowserScreen::loadDirectory(
-	ui::Context &ctx, const char *path, bool updateCurrent
+	ui::Context &ctx,
+	const char  *path,
+	bool        updateCurrent
 ) {
 	_unloadDirectory();
 

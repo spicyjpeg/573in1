@@ -168,6 +168,7 @@ set(
 	src/common/blkdev/atapi.cpp
 	src/common/blkdev/device.cpp
 	src/common/blkdev/idebase.cpp
+	src/common/blkdev/ps1cdrom.cpp
 	src/common/args.cpp
 	src/launcher/exchandler.s
 	src/launcher/main.cpp
@@ -224,10 +225,10 @@ target_compile_definitions(
 # IMPORTANT: these addresses assume the boot executable's size (including code,
 # heap and stack allocations as well as the resource package, but excluding the
 # executable header) is 576 KB (0x90000 bytes) or less, and that each launcher's
-# size is 12 KB (0x3000 bytes) or less.
+# size is 16 KB (0x4000 bytes) or less.
 addPS1ExecutableAdv(main             0x800a0000 0x801dfff0 "" ${mainSources})
-addPS1ExecutableAdv(launcher801fd000 0x801fd000 0x801ffff0 "")
-addPS1ExecutableAdv(launcher803fd000 0x803fd000 0x803ffff0 "")
+addPS1ExecutableAdv(launcher801fc000 0x801fc000 0x801ffff0 "")
+addPS1ExecutableAdv(launcher803fc000 0x803fc000 0x803ffff0 "")
 
 add_library(launcher OBJECT ${launcherSources})
 add_library(bootStub OBJECT ${bootStubSources})
@@ -236,8 +237,8 @@ target_link_libraries(main     PUBLIC mainFlags)
 target_link_libraries(launcher PUBLIC subExecutableFlags)
 target_link_libraries(bootStub PUBLIC subExecutableFlags)
 
-target_link_libraries(launcher801fd000 PUBLIC launcher)
-target_link_libraries(launcher803fd000 PUBLIC launcher)
+target_link_libraries(launcher801fc000 PUBLIC launcher)
+target_link_libraries(launcher803fc000 PUBLIC launcher)
 
 ## Boot stubs and resource packages
 
@@ -260,8 +261,8 @@ function(addBuildVariant name resourceName)
 			${resourceName}.json
 			${assetList}
 			main.psexe
-			launcher801fd000.psexe
-			launcher803fd000.psexe
+			launcher801fc000.psexe
+			launcher803fc000.psexe
 		COMMENT "Building ${name} resource package"
 		VERBATIM
 	)

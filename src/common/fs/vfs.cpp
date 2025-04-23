@@ -74,7 +74,9 @@ bool VFSProvider::deleteMountPoint(VFSMountPoint *mp) {
 }
 
 bool VFSProvider::addAlias(
-	const char *prefix, VFSMountPoint *target, bool force
+	const char    *prefix,
+	VFSMountPoint *target,
+	bool          force
 ) {
 	auto     hash       = util::hash(prefix, VFS_PREFIX_SEPARATOR);
 	VFSAlias *allocated = nullptr;
@@ -129,77 +131,107 @@ VFSMountPoint *VFSProvider::getMountPoint(const char *path) {
 bool VFSProvider::getFileInfo(FileInfo &output, const char *path) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->getFileInfo(output, &path[mp->pathOffset])
-		: false;
+	if (!mp)
+		return false;
+	if (!mp->provider)
+		return false;
+
+	return mp->provider->getFileInfo(output, &path[mp->pathOffset]);
 }
 
 bool VFSProvider::getFileFragments(
-	FileFragmentTable &output, const char *path
+	FileFragmentTable &output,
+	const char        *path
 ) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->getFileFragments(output, &path[mp->pathOffset])
-		: false;
+	if (!mp)
+		return false;
+	if (!mp->provider)
+		return false;
+
+	return mp->provider->getFileFragments(output, &path[mp->pathOffset]);
 }
 
 Directory *VFSProvider::openDirectory(const char *path) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->openDirectory(&path[mp->pathOffset])
-		: nullptr;
+	if (!mp)
+		return nullptr;
+	if (!mp->provider)
+		return nullptr;
+
+	return mp->provider->openDirectory(&path[mp->pathOffset]);
 }
 
 bool VFSProvider::createDirectory(const char *path) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->createDirectory(&path[mp->pathOffset])
-		: false;
+	if (!mp)
+		return false;
+	if (!mp->provider)
+		return false;
+
+	return mp->provider->createDirectory(&path[mp->pathOffset]);
 }
 
 File *VFSProvider::openFile(const char *path, uint32_t flags) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->openFile(&path[mp->pathOffset], flags)
-		: nullptr;
+	if (!mp)
+		return nullptr;
+	if (!mp->provider)
+		return nullptr;
+
+	return mp->provider->openFile(&path[mp->pathOffset], flags);
 }
 
 bool VFSProvider::deleteFile(const char *path) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->deleteFile(&path[mp->pathOffset])
-		: false;
+	if (!mp)
+		return false;
+	if (!mp->provider)
+		return false;
+
+	return mp->provider->deleteFile(&path[mp->pathOffset]);
 }
 
 size_t VFSProvider::loadData(util::Data &output, const char *path) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->loadData(output, &path[mp->pathOffset])
-		: 0;
+	if (!mp)
+		return 0;
+	if (!mp->provider)
+		return 0;
+
+	return mp->provider->loadData(output, &path[mp->pathOffset]);
 }
 
 size_t VFSProvider::loadData(void *output, size_t length, const char *path) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->loadData(output, length, &path[mp->pathOffset])
-		: 0;
+	if (!mp)
+		return 0;
+	if (!mp->provider)
+		return 0;
+
+	return mp->provider->loadData(output, length, &path[mp->pathOffset]);
 }
 
 size_t VFSProvider::saveData(
-	const void *input, size_t length, const char *path
+	const void *input,
+	size_t     length,
+	const char *path
 ) {
 	auto mp = getMountPoint(path);
 
-	return mp
-		? mp->provider->saveData(input, length, &path[mp->pathOffset])
-		: 0;
+	if (!mp)
+		return 0;
+	if (!mp->provider)
+		return 0;
+
+	return mp->provider->saveData(input, length, &path[mp->pathOffset]);
 }
 
 }

@@ -331,7 +331,7 @@
 			"error": "Impossibile inizializzare l'unità o accedere al filesystem del disco. Assicurati che un disco sia inserito e formattato come ISO9660. Il lettore ottico potrebbe anche essere incompatibile con il driver ATAPI usato da 573in1.\n\nPremi il pulsante Test per mostrare i log di debug."
 		},
 		"cdrom": {
-			"name":  "💿 %s",
+			"name":  "💿 CD-ROM: %s",
 			"error": "Impossibile inizializzare l'unità o accedere al filesystem del disco. Assicurati che un disco sia inserito e formattato come ISO9660. Nota che le PS1 giapponesi non possono leggere dischi non ufficiali senza un modchip o uno swap da un disco originale.\n\nPremi il pulsante Test per mostrare i log di debug."
 		},
 		"memoryCard": {

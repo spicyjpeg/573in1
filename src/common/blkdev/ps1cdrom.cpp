@@ -109,8 +109,10 @@ DeviceError PS1CDROMDevice::_waitForIRQ(CDROMIRQType type) {
 		? _ACKNOWLEDGE_TIMEOUT
 		: _COMPLETE_TIMEOUT;
 
-	if (!waitForInterrupt(IRQ_CDROM, timeout))
+	if (!waitForInterrupt(IRQ_CDROM, timeout)) {
+		LOG_BLKDEV("timeout, exp=%s", _IRQ_NAMES[type]);
 		return STATUS_TIMEOUT;
+	}
 
 	// A delay is required in order for the flags to stabilize on older console
 	// revisions that run the CD-ROM microcontroller from an independent clock.
@@ -142,9 +144,8 @@ DeviceError PS1CDROMDevice::_issueCommand(
 ) {
 	while (CDROM_HSTS & CDROM_HSTS_BUSYSTS)
 		__asm__ volatile("");
-	while (CDROM_HSTS & CDROM_HSTS_RSLRRDY)
-		CDROM_RDDATA;
 
+	IRQ_STAT      = ~(1 << IRQ_CDROM);
 	CDROM_ADDRESS = 1;
 	CDROM_HCLRCTL = 0
 		| CDROM_HCLRCTL_CLRINT_BITMASK
@@ -293,7 +294,7 @@ DeviceError PS1CDROMDevice::enumerate(void) {
 
 	auto error = _issueCommand(CDROM_CMD_INIT, nullptr, 0, true);
 
-	if (error)
+	if (error && (error != DISC_CHANGED))
 		return error;
 
 	type         = PS1_CDROM;
@@ -301,11 +302,16 @@ DeviceError PS1CDROMDevice::enumerate(void) {
 	sectorLength = _SECTOR_LENGTH;
 
 	_issueUnlock();
-	return poll();
+	return NO_ERROR;
 }
 
 DeviceError PS1CDROMDevice::poll(void) {
-	return _issueCommand(CDROM_CMD_NOP);
+	auto error = _issueCommand(CDROM_CMD_NOP);
+
+	if (error)
+		return error;
+
+	return _statusToError(lastStatusData);
 }
 
 void PS1CDROMDevice::handleInterrupt(void) {

@@ -95,7 +95,7 @@ private:
 
 	FilePickerEntry _entries[fs::MAX_VFS_MOUNT_POINTS];
 
-	void _addDevice(ui::Context &ctx, const fs::VFSMountPoint &mp);
+	void _addDevice(ui::Context &ctx, fs::VFSMountPoint &mp);
 
 protected:
 	const char *_getItemName(ui::Context &ctx, int index) const;
@@ -131,7 +131,9 @@ public:
 	char selectedPath[fs::MAX_PATH_LENGTH];
 
 	int loadDirectory(
-		ui::Context &ctx, const char *path, bool updateCurrent = true
+		ui::Context &ctx,
+		const char  *path,
+		bool        updateCurrent = true
 	);
 
 	void show(ui::Context &ctx, bool goBack = false);

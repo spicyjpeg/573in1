@@ -387,15 +387,18 @@ bool ISO9660Provider::init(blkdev::Device &dev) {
 
 	// Locate and parse the primary volume descriptor.
 	size_t numPVDSectors = util::min(
-		sizeof(ISOPrimaryVolumeDesc) / _dev->sectorLength, size_t(1)
+		sizeof(ISOPrimaryVolumeDesc) / dev.sectorLength,
+		size_t(1)
 	);
 
 	for (
-		uint32_t lba = _VOLUME_DESC_START_LBA; lba < _VOLUME_DESC_END_LBA; lba++
+		uint32_t lba = _VOLUME_DESC_START_LBA;
+		lba < _VOLUME_DESC_END_LBA;
+		lba++
 	) {
 		uint8_t pvdBuffer[blkdev::MAX_SECTOR_LENGTH];
 
-		if (_dev->read(pvdBuffer, lba, numPVDSectors))
+		if (dev.read(pvdBuffer, lba, numPVDSectors))
 			return false;
 
 		auto pvd = reinterpret_cast<const ISOPrimaryVolumeDesc *>(pvdBuffer);
@@ -413,7 +416,7 @@ bool ISO9660Provider::init(blkdev::Device &dev) {
 			LOG_FS("unsupported ISO version 0x%02x", pvd->isoVersion);
 			return false;
 		}
-		if (pvd->sectorLength.le != _dev->sectorLength) {
+		if (pvd->sectorLength.le != dev.sectorLength) {
 			LOG_FS("mismatching ISO sector size: %d", pvd->sectorLength.le);
 			return false;
 		}
@@ -422,7 +425,7 @@ bool ISO9660Provider::init(blkdev::Device &dev) {
 		util::copy(_root, pvd->root);
 
 		type     = ISO9660;
-		capacity = uint64_t(pvd->volumeLength.le) * _dev->sectorLength;
+		capacity = uint64_t(pvd->volumeLength.le) * dev.sectorLength;
 		_dev     = &dev;
 
 		LOG_FS("mounted ISO: %s", volumeLabel);

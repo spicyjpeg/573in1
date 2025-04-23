@@ -65,13 +65,15 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 
 	char *ptr = _bodyText, *end = &_bodyText[sizeof(_bodyText)];
 
+	// TODO: show information on the PS1 CD-ROM's ISO9660 filesystem as well
 	for (int i = 0; i < 2; i++) {
 		auto &header = _IDE_INFO_HEADERS[i];
 		auto mp      = APP->_fileIO.getMountPoint(IDE_MOUNT_POINTS[i]);
 
-		// Device information
-		auto dev = mp->dev;
+		auto dev      = mp ? mp->dev      : nullptr;
+		auto provider = mp ? mp->provider : nullptr;
 
+		// Device information
 		_PRINT(STRH(header.device));
 
 		if (dev) {
@@ -106,34 +108,31 @@ void IDEInfoScreen::show(ui::Context &ctx, bool goBack) {
 		_PRINTLN();
 
 		// Filesystem information
-		auto provider = mp->provider;
+		if (provider) {
+			if (provider->type == fs::ISO9660) {
+				_PRINT(STRH(header.iso9660));
 
-		if (!provider)
-			continue;
+				_PRINT(
+					STR("IDEInfoScreen.iso9660.info"),
+					provider->volumeLabel,
+					provider->capacity / 0x100000
+				);
+			} else {
+				_PRINT(STRH(header.fat));
 
-		if (provider->type == fs::ISO9660) {
-			_PRINT(STRH(header.iso9660));
+				_PRINT(
+					STR("IDEInfoScreen.fat.info"),
+					_FAT_TYPES[provider->type],
+					provider->volumeLabel,
+					provider->serialNumber >> 16,
+					provider->serialNumber & 0xffff,
+					provider->capacity       / 0x100000,
+					provider->getFreeSpace() / 0x100000
+				);
+			}
 
-			_PRINT(
-				STR("IDEInfoScreen.iso9660.info"),
-				provider->volumeLabel,
-				provider->capacity / 0x100000
-			);
-		} else {
-			_PRINT(STRH(header.fat));
-
-			_PRINT(
-				STR("IDEInfoScreen.fat.info"),
-				_FAT_TYPES[provider->type],
-				provider->volumeLabel,
-				provider->serialNumber >> 16,
-				provider->serialNumber & 0xffff,
-				provider->capacity       / 0x100000,
-				provider->getFreeSpace() / 0x100000
-			);
+			_PRINTLN();
 		}
-
-		_PRINTLN();
 	}
 
 	*(--ptr) = 0;

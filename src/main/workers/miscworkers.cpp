@@ -124,13 +124,13 @@ public:
 // none of the launchers overlap the main binary.
 static const Launcher _LAUNCHERS[]{
 	{
-		.path       = "res:/binaries/launcher801fd000.psexe",
-		.loadOffset = 0x801fd000,
-		.length     = 0x3000
+		.path       = "res:/binaries/launcher801fc000.psexe",
+		.loadOffset = 0x801fc000,
+		.length     = 0x4000
 	}, {
-		.path       = "res:/binaries/launcher803fd000.psexe",
-		.loadOffset = 0x803fd000,
-		.length     = 0x3000
+		.path       = "res:/binaries/launcher803fc000.psexe",
+		.loadOffset = 0x803fc000,
+		.length     = 0x4000
 	}
 };
 
@@ -299,7 +299,13 @@ bool atapiEjectWorker(App &app) {
 
 	auto mp = app._fileIO.getMountPoint("cdrom:");
 
-	if (!mp || !mp->dev) {
+	if (mp) {
+		if (!mp->dev)
+			mp = nullptr;
+		if (mp->dev->type != blkdev::ATAPI)
+			mp = nullptr;
+	}
+	if (!mp) {
 		app._messageScreen.setMessage(
 			MESSAGE_ERROR,
 			WSTR("App.atapiEjectWorker.noDrive")

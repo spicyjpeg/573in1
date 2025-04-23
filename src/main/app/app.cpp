@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "common/blkdev/ps1cdrom.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
@@ -183,15 +184,22 @@ void _appInterruptHandler(void *arg0, void *arg1) {
 			switchThread(nullptr);
 	}
 
+#if 0
+	if (acknowledgeInterrupt(IRQ_CDROM))
+		blkdev::cdrom.handleInterrupt();
+#endif
+
 	if (acknowledgeInterrupt(IRQ_SPU))
 		app->_audioStream.handleInterrupt();
 
+#if 0
 	if (acknowledgeInterrupt(IRQ_PIO)) {
 		for (auto &mp : app->_fileIO.mountPoints) {
 			if (mp.dev)
 				mp.dev->handleInterrupt();
 		}
 	}
+#endif
 }
 
 void _workerMain(void *arg0, void *arg1) {
@@ -214,8 +222,7 @@ void App::_setupInterrupts(void) {
 
 	IRQ_MASK = 0
 		| (1 << IRQ_VSYNC)
-		| (1 << IRQ_SPU)
-		| (1 << IRQ_PIO);
+		| (1 << IRQ_SPU);
 	enableInterrupts();
 }
 
