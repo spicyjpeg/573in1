@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 
@@ -207,10 +208,6 @@ public:
 
 class StringTable : public util::Data {
 public:
-	inline const char *operator[](util::Hash id) const {
-		return get(id);
-	}
-
 	const char *get(util::Hash id) const;
 	size_t format(char *buffer, size_t length, util::Hash id, ...) const;
 };

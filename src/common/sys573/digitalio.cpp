@@ -140,14 +140,14 @@ private:
 		if (value)
 			_digitalIOI2CReg |= SYS573D_FPGA_MP3_I2C_SDA;
 		else
-			_digitalIOI2CReg &= ~SYS573D_FPGA_MP3_I2C_SCL;
+			_digitalIOI2CReg &= ~SYS573D_FPGA_MP3_I2C_SDA;
 
 		SYS573D_FPGA_MP3_I2C = _digitalIOI2CReg;
 	}
 
 	void _setSCL(bool value) const {
 		if (value)
-			_digitalIOI2CReg |= SYS573D_FPGA_MP3_I2C_SDA;
+			_digitalIOI2CReg |= SYS573D_FPGA_MP3_I2C_SCL;
 		else
 			_digitalIOI2CReg &= ~SYS573D_FPGA_MP3_I2C_SCL;
 
@@ -156,8 +156,7 @@ private:
 		// The MAS3507D makes extensive use of clock stretching as part of its
 		// protocol, so waiting until it deasserts SCL is needed here.
 		while (
-			(SYS573D_FPGA_MP3_I2C ^ _digitalIOI2CReg)
-				& SYS573D_FPGA_MP3_I2C_SCL
+			(SYS573D_FPGA_MP3_I2C ^ _digitalIOI2CReg) & SYS573D_FPGA_MP3_I2C_SCL
 		)
 			__asm__ volatile("");
 	}

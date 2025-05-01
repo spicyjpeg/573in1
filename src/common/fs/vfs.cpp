@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include "common/fs/file.hpp"
 #include "common/fs/vfs.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"

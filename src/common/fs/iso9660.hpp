@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/templates.hpp"
 
 namespace fs {
@@ -227,7 +228,9 @@ private:
 
 	bool _readData(util::Data &output, uint32_t lba, size_t numSectors) const;
 	bool _getRecord(
-		ISORecordBuffer &output, const ISORecord &root, const char *path
+		ISORecordBuffer &output,
+		const ISORecord &root,
+		const char      *path
 	) const;
 
 public:

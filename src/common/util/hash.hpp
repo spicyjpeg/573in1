@@ -32,7 +32,9 @@ Hash hash(const uint8_t *data, size_t length, Hash value = 0);
 /* Hash table parser */
 
 template<typename T> static inline const T *getHashTableEntry(
-	const T *table, size_t numBuckets, Hash id
+	const T *table,
+	size_t  numBuckets,
+	Hash    id
 ) {
 #if 0
 	auto index = id % NB;
@@ -61,7 +63,8 @@ private:
 
 public:
 	[[gnu::always_inline]] inline uint32_t update(
-		uint8_t value, uint32_t crc
+		uint8_t  value,
+		uint32_t crc
 	) const {
 		return (crc >> 8) ^ _table[(crc ^ value) & 0xff];
 	}

@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/string.hpp"
 #include "common/util/templates.hpp"
@@ -60,10 +61,6 @@ public:
 
 class FontMetrics : public util::Data {
 public:
-	inline CharacterSize operator[](util::UTF8CodePoint id) const {
-		return get(id);
-	}
-
 	CharacterSize get(util::UTF8CodePoint id) const;
 };
 

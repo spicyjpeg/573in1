@@ -20,8 +20,8 @@
 #include <stdint.h>
 #include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
-#include "common/util/templates.hpp"
 
 namespace fs {
 

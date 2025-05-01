@@ -18,7 +18,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "common/util/templates.hpp"
+#include "common/util/containers.hpp"
 #include "common/gpu.hpp"
 #include "ps1/gpucmd.h"
 #include "ps1/registers.h"

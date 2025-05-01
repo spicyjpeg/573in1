@@ -19,6 +19,7 @@
 #include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/sys573/base.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/log.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"

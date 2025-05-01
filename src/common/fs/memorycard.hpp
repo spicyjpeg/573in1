@@ -21,6 +21,7 @@
 #include "common/blkdev/device.hpp"
 #include "common/fs/file.hpp"
 #include "common/fs/memorycardbase.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
 

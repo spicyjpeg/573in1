@@ -18,9 +18,11 @@
 #include <stdint.h>
 #include "common/fs/file.hpp"
 #include "common/fs/package.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/string.hpp"
+#include "common/util/templates.hpp"
 
 namespace fs {
 
@@ -110,10 +112,10 @@ bool PackageProvider::init(const void *packageData, size_t length) {
 
 	auto header = reinterpret_cast<const PackageIndexHeader *>(packageData);
 
-	_file               = nullptr;
-	_index.ptr          = reinterpret_cast<void *>(uintptr_t(packageData));
-	_index.length       = header->indexLength;
-	_index.destructible = false;
+	_file             = nullptr;
+	_index.ptr        = reinterpret_cast<void *>(uintptr_t(packageData));
+	_index.length     = header->indexLength;
+	_index.destructor = nullptr;
 
 	type     = PACKAGE_MEMORY;
 	capacity = length - header->indexLength;
@@ -255,9 +257,9 @@ size_t PackageProvider::loadData(util::Data &output, const char *path) {
 			);
 		} else {
 			// Package in RAM, file not compressed (return in-place pointer)
-			output.ptr          = &blob[offset];
-			output.length       = uncompLength;
-			output.destructible = false;
+			output.ptr        = &blob[offset];
+			output.length     = uncompLength;
+			output.destructor = nullptr;
 		}
 	}
 

@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 #include "common/fs/file.hpp"
-#include "common/util/templates.hpp"
+#include "common/util/containers.hpp"
 #include "common/spu.hpp"
 #include "ps1/system.h"
 

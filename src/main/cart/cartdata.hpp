@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "common/util/templates.hpp"
+#include "common/util/containers.hpp"
 #include "main/cart/cart.hpp"
 
 namespace cart {
@@ -133,6 +133,7 @@ public:
 	inline CartParser(CartDump &dump, uint8_t flags = 0)
 	: _dump(dump), flags(flags) {}
 
+	virtual ~CartParser(void) {}
 	virtual size_t getCode(char *output) const { return 0; }
 	virtual void setCode(const char *input) {}
 	virtual size_t getRegion(char *output) const { return 0; }
@@ -218,6 +219,7 @@ public:
 	inline ROMHeaderParser(ROMHeaderDump &dump, uint8_t flags = 0)
 	: _dump(dump), flags(flags) {}
 
+	virtual ~ROMHeaderParser(void) {}
 	virtual size_t getCode(char *output) const { return 0; }
 	virtual void setCode(const char *input) {}
 	virtual size_t getRegion(char *output) const { return 0; }
@@ -328,9 +330,6 @@ public:
 
 template<typename T> class DB : public util::Data {
 public:
-	inline const T *operator[](int index) const {
-		return get(index);
-	}
 	inline size_t getNumEntries(void) const {
 		return length / sizeof(T);
 	}

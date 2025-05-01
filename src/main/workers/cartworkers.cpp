@@ -21,6 +21,7 @@
 #include "common/cart/cart.hpp"
 #include "common/fs/file.hpp"
 #include "common/sys573/ioboard.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"

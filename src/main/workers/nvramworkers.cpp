@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "common/fs/file.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/hash.hpp"
 #include "common/util/templates.hpp"
 #include "common/defs.hpp"

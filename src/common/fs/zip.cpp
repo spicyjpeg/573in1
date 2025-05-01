@@ -18,8 +18,8 @@
 #include <stdint.h>
 #include "common/fs/file.hpp"
 #include "common/fs/zip.hpp"
+#include "common/util/containers.hpp"
 #include "common/util/log.hpp"
-#include "common/util/templates.hpp"
 #include "vendor/miniz.h"
 
 namespace fs {
@@ -122,7 +122,10 @@ bool ZIPProvider::init(File *file) {
 	_zip.m_pIO_opaque       = reinterpret_cast<void *>(file);
 	_zip.m_pNeeds_keepalive = nullptr;
 	_zip.m_pRead            = [](
-		void *opaque, uint64_t offset, void *output, size_t length
+		void     *opaque,
+		uint64_t offset,
+		void     *output,
+		size_t   length
 	) -> size_t {
 		auto file = reinterpret_cast<File *>(opaque);
 
@@ -219,7 +222,10 @@ size_t ZIPProvider::loadData(util::Data &output, const char *path) {
 
 	output.destroy();
 	output.ptr = mz_zip_reader_extract_file_to_heap(
-		&_zip, path, &(output.length), 0
+		&_zip,
+		path,
+		&(output.length),
+		0
 	);
 
 	if (!output.ptr) {
@@ -229,7 +235,7 @@ size_t ZIPProvider::loadData(util::Data &output, const char *path) {
 		return 0;
 	}
 
-	output.destructible = true;
+	output.destructor = &mz_free;
 	return output.length;
 }
 

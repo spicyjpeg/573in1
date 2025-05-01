@@ -98,6 +98,7 @@ public:
 		return (flags / IS_SECONDARY) & 1;
 	}
 
+	virtual ~Device(void) {}
 	virtual DeviceError enumerate(void) { return UNSUPPORTED_OP; }
 	virtual DeviceError poll(void) { return UNSUPPORTED_OP; }
 	virtual void handleInterrupt(void) {}

@@ -117,6 +117,7 @@ set(
 )
 set(
 	utilSources
+	src/common/util/containers.cpp
 	src/common/util/hash.cpp
 	src/common/util/log.cpp
 	src/common/util/misc.cpp
@@ -190,10 +191,6 @@ set(
 	-Wall
 	-Wextra
 	-Wno-unused-parameter
-	$<$<COMPILE_LANGUAGE:CXX>:
-		-Wno-pmf-conversions
-		-Wno-delete-non-virtual-dtor
-	>
 )
 
 add_library(mainFlags          INTERFACE)

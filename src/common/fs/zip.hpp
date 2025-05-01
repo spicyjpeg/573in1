@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "common/fs/file.hpp"
+#include "common/util/containers.hpp"
 #include "vendor/miniz.h"
 
 namespace fs {
