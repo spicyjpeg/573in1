@@ -188,17 +188,18 @@ void softReset(void);
  * @brief Injects a temporary patch into the BIOS in order to make it skip
  * running the shell (i.e. displaying the startup screen) and load the boot
  * executable from the CD-ROM immediately, then jumps to its entry point. Shall
- * only be called if all the following conditions are met:
+ * only be called if the following conditions are met:
  *
  * - the platform is a standard PS1 and not for instance a development kit or
  *   arcade board, which have significant differences in their BIOS;
- * - the BIOS ROM in use is one of Sony's official implementations, rather than
- *   a custom one such as OpenBIOS or the no$psx BIOS;
  * - a valid disc containing a boot executable is already present in the CD-ROM
  *   drive.
  *
- * Attempting to perform a soft reboot under other circumstances will result in
- * an unrecoverable crash. This function does not return.
+ * Attempting to perform a fast reboot under other circumstances will result in
+ * an unrecoverable crash. Fast booting is also incompatible with unofficial
+ * BIOS ROMs such as OpenBIOS or the no$psx BIOS; this function will fall back
+ * to a soft reset if a non-Sony kernel is detected. This function does not
+ * return.
  */
 void softFastReboot(void);
 
