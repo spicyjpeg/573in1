@@ -1,4 +1,4 @@
-# ps1-bare-metal - (C) 2023 spicyjpeg
+# ps1-bare-metal - (C) 2023-2025 spicyjpeg
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -17,10 +17,9 @@
 
 ## Exception handler
 
-.set BADV,  $8
-.set SR,    $12
-.set CAUSE, $13
-.set EPC,   $14
+.set COP0_BADVADDR, $8
+.set COP0_CAUSE,    $13
+.set COP0_EPC,      $14
 
 .set COP0_CAUSE_EXC_BITMASK, 31 << 2
 .set COP0_CAUSE_EXC_SYS,      8 << 2
@@ -39,7 +38,7 @@ _exceptionVector:
 	# would destroy their contents and corrupt the current thread's state.
 	lw    $k0, %gprel(currentThread)($gp)
 	j     _exceptionHandler
-	mfc0  $k1, EPC
+	mfc0  $k1, COP0_EPC
 	nop
 
 .section .text._exceptionHandler, "ax", @progbits
@@ -89,10 +88,11 @@ _exceptionHandler:
 	# Check bits 2-6 of the CAUSE register to determine what triggered the
 	# exception. If it was caused by a syscall, increment EPC to make sure
 	# returning to the thread won't trigger another syscall.
-	mfc0  $v0, CAUSE
+	mfc0  $v0, COP0_CAUSE
 	lw    $v1, %gprel(interruptHandler)($gp)
 
-	# int code = CAUSE & COP0_CAUSE_EXC_BITMASK;
+	# uint32_t cause = cop0_getReg(COP0_CAUSE);
+	# int      code  = cause & COP0_CAUSE_EXC_BITMASK;
 	andi  $v0, COP0_CAUSE_EXC_BITMASK
 	beqz  $v0, .LisInterrupt
 	li    $at, COP0_CAUSE_EXC_SYS
@@ -100,13 +100,15 @@ _exceptionHandler:
 	beq   $v0, $at, .LisSyscall
 	lw    $a0, %gprel(interruptHandlerArg0)($gp)
 
-.LisOtherException: # if ((code != INT) && (code != SYS)) {
+.LisOtherException: # if ((code != COP0_CAUSE_EXC_INT) && (code != COP0_CAUSE_EXC_SYS)) {
 	# If the exception was not triggered by a syscall nor by an interrupt call
 	# _unhandledException(), which will then display information about the
 	# exception and lock up.
 	sw    $k1, 0x00($k0)
 
-	mfc0  $a1, BADV # _unhandledException((CAUSE >> 2) & 0x1f, BADV)
+	# uint32_t badv = cop0_getReg(COP0_BADVADDR);
+	# _unhandledException(code >> 2, badv);
+	mfc0  $a1, COP0_BADVADDR
 	srl   $a0, $v0, 2
 	jal   _unhandledException
 	addiu $sp, -8
@@ -120,7 +122,8 @@ _exceptionHandler:
 	# instruction was a GTE opcode and increment EPC to avoid executing it again
 	# if that is the case. This is a workaround for a hardware bug.
 
-	# if ((code == INT) && ((*EPC >> 25) == 0x25)) EPC += 4;
+	# if ((code == COP0_CAUSE_EXC_INT) && ((*EPC >> 25) == 0x25))
+	#     EPC += 4;
 	lw    $v0, 0($k1)
 	li    $at, 0x25
 	srl   $v0, 25
@@ -128,7 +131,8 @@ _exceptionHandler:
 	lw    $a0, %gprel(interruptHandlerArg0)($gp)
 
 .LisSyscall:
-	# if (code == SYS) EPC += 4;
+	# if (code == COP0_CAUSE_EXC_SYS)
+	#     EPC += 4;
 	addiu $k1, 4
 
 .LskipEPCIncrement:
@@ -188,6 +192,40 @@ _exceptionHandler:
 
 	jr    $k1
 	rfe
+
+## Fast reboot stubs
+
+.set COP0_DCIC, $7
+
+.section .text._fastRebootBreakVector, "ax", @progbits
+.global _fastRebootBreakVector
+.type _fastRebootBreakVector, @function
+
+_fastRebootBreakVector:
+	# When performing a fast reboot (i.e. forcing the BIOS to skip running the
+	# shell and move immediately onto booting the CD-ROM), this 16-byte stub is
+	# going to be placed at the address the CPU jumps to when a COP0 breakpoint
+	# is hit (0x80000040). The breakpoint will be configured to trip when the
+	# BIOS tries to relocate the shell to RAM; once that stage is reached the
+	# code below will proceed to acknowledge and remove the breakpoint, then
+	# hijack the control flow and force the copying function to return before
+	# anything is copied.
+	mtc0  $0, COP0_DCIC
+	jr    $ra
+	rfe
+	nop
+
+.section .text._fastRebootDummyShell, "ax", @progbits
+.global _fastRebootDummyShell
+.type _fastRebootDummyShell, @function
+
+_fastRebootDummyShell:
+	# As the COP0 breakpoint will not prevent the BIOS from attempting to run
+	# the shell it "loaded", this dummy function will be copied in its place.
+	# This is the simplest possible implementation of a shell: once it returns,
+	# the kernel will proceed to launch the boot executable on the CD-ROM.
+	jr    $ra
+	nop
 
 ## Delay functions
 
@@ -281,7 +319,8 @@ delayMicrosecondsBusy:
 	addiu $a0, -(6 + 1 + 2)
 
 .Lloop:
-	# while (cycles > 0) cycles -= 2;
+	# while (cycles > 0)
+	#     cycles -= 2;
 	bgtz  $a0, .Lloop
 	addiu $a0, -2
 

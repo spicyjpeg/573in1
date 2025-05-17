@@ -53,6 +53,9 @@ public:
 	RegionError flushErase(uint32_t offset);
 };
 
+extern BIOSRegion bios;
+extern RTCRegion  rtc;
+
 /* BIOS ROM headers */
 
 class SonyKernelHeader {

@@ -100,7 +100,7 @@ function(addBinaryFile target name path)
 		CONFIGURE
 		OUTPUT  "${asmFile}"
 		CONTENT [[
-.section .data.${name}, "aw"
+.section .rodata.${name}, "a"
 .balign 8
 
 .global ${name}

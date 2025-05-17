@@ -27,6 +27,9 @@ namespace nvram {
 
 /* BIOS ROM and RTC RAM drivers */
 
+BIOSRegion bios;
+RTCRegion  rtc;
+
 void BIOSRegion::read(void *data, uint32_t offset, size_t length) const {
 	__builtin_memcpy(
 		data,

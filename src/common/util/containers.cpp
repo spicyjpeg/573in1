@@ -17,7 +17,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "common/util/containers.hpp"
-#include "common/util/templates.hpp"
 
 namespace util {
 
@@ -60,30 +59,6 @@ void Data::destroy(void) {
 	ptr        = nullptr;
 	length     = 0;
 	destructor = nullptr;
-}
-
-/* Delegate class (callable/lambda invoker) */
-
-Delegate::Delegate(void)
-:
-	_invoker(nullptr),
-	_destructor(nullptr) {}
-
-void Delegate::destroy(void) {
-	_invoker = nullptr;
-
-	if (_destructor) {
-		_destructor(_obj);
-		_destructor = nullptr;
-	}
-}
-
-bool Delegate::invoke(void) {
-	if (!_invoker)
-		return false;
-
-	_invoker(_obj);
-	return true;
 }
 
 }

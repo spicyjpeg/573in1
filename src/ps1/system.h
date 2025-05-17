@@ -96,7 +96,11 @@ __attribute__((always_inline)) static inline void flushWriteQueue(void) {
  * @param stack Pointer to last 8 bytes in the stack
  */
 __attribute__((always_inline)) static inline void initThread(
-	Thread *thread, ArgFunction func, void *arg0, void *arg1, void *stack
+	Thread      *thread,
+	ArgFunction func,
+	void        *arg0,
+	void        *arg1,
+	void        *stack
 ) {
 	register uint32_t gp __asm__("gp");
 
@@ -108,6 +112,15 @@ __attribute__((always_inline)) static inline void initThread(
 	thread->fp = (uint32_t) stack;
 	thread->ra = 0;
 }
+
+/**
+ * @brief Disables all interrupts at the COP0 side, clears any currently pending
+ * IRQs, aborts all DMA transfers and clears all currently enabled IRQ sources
+ * and DMA IRQs. This function must be called prior to handing control over to
+ * the kernel or a different executable; it is called automatically by
+ * uninstallExceptionHandler(), softReset() and softFastReboot().
+ */
+void resetInterrupts(void);
 
 /**
  * @brief Disables the exception handler provided by the BIOS, replaces it with
@@ -170,6 +183,24 @@ void flushCache(void);
  * @brief Jumps to the entry point in the BIOS. This function does not return.
  */
 void softReset(void);
+
+/**
+ * @brief Injects a temporary patch into the BIOS in order to make it skip
+ * running the shell (i.e. displaying the startup screen) and load the boot
+ * executable from the CD-ROM immediately, then jumps to its entry point. Shall
+ * only be called if all the following conditions are met:
+ *
+ * - the platform is a standard PS1 and not for instance a development kit or
+ *   arcade board, which have significant differences in their BIOS;
+ * - the BIOS ROM in use is one of Sony's official implementations, rather than
+ *   a custom one such as OpenBIOS or the no$psx BIOS;
+ * - a valid disc containing a boot executable is already present in the CD-ROM
+ *   drive.
+ *
+ * Attempting to perform a soft reboot under other circumstances will result in
+ * an unrecoverable crash. This function does not return.
+ */
+void softFastReboot(void);
 
 /**
  * @brief Blocks for (roughly) the specified number of microseconds. This

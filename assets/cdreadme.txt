@@ -3,10 +3,10 @@
                       ##         ##     ##          .###
                       '####.    ##'   ###'            ##
                           ##   ##'      ##  | |\ |    ##
-                      #####'   ##   #####.  | | \|  ######
+                      #####'   ##   #####'  | | \|  ######
 
                      - Konami System 573 maintenance tool -
-                                 Version {PROJECT_VERSION}
+                                 Version ${PROJECT_VERSION}
 
 [ Usage ]
 

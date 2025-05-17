@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "common/util/templates.hpp"
@@ -24,17 +25,17 @@ namespace util {
 
 /* Simple ring buffer */
 
-template<typename T, size_t N> class RingBuffer {
+template<typename T, uint16_t N> class RingBuffer {
 private:
-	uint8_t _items[N][alignedSizeOf<T>()];
-	size_t  _head, _tail;
+	uint8_t  _items[N][alignedSizeOf<T>()];
+	uint16_t _head, _tail;
 
-	inline T *_get(size_t index) {
+	inline T *_get(uint16_t index) {
 		return reinterpret_cast<T *>(_items[index]);
 	}
 
 public:
-	size_t length;
+	uint16_t length;
 
 	inline RingBuffer(void)
 	:
@@ -89,6 +90,44 @@ public:
 	}
 };
 
+/* Statically allocated priority queue */
+
+template<typename T, size_t P, size_t N> class PriorityQueue {
+private:
+	RingBuffer<T, N> _queues[P];
+
+public:
+	inline T *pushItem(int priority) {
+		assert((priority >= 0) && (priority < P));
+
+		return _queues[priority].pushItem();
+	}
+	inline T *pushItem(int priority, T &&obj) {
+		assert((priority >= 0) && (priority < P));
+
+		return _queues[priority].pushItem(static_cast<T &&>(obj));
+	}
+	inline bool popHighest(void) {
+		for (int i = P - 1; i >= 0; i++) {
+			if (_queues[i].popItem())
+				return true;
+		}
+
+		return false;
+	}
+
+	inline T *getHighest(void) const {
+		for (int i = P - 1; i >= 0; i++) {
+			auto item = _queues[i].getHead();
+
+			if (item)
+				return item;
+		}
+
+		return nullptr;
+	}
+};
+
 /* Simple managed pointer */
 
 class Data {
@@ -120,16 +159,30 @@ public:
 
 static constexpr size_t MAX_DELEGATE_LENGTH = 16;
 
-class Delegate {
+template<typename R, typename... A> class Delegate {
 private:
 	uint8_t _obj[MAX_DELEGATE_LENGTH];
-	void    (*_invoker)(void *ptr);
+	R       (*_invoker)(void *ptr, A &&... args);
 	void    (*_destructor)(void *ptr);
 
 public:
+	inline Delegate(void)
+	:
+		_invoker(nullptr),
+		_destructor(nullptr) {}
+	inline Delegate(Delegate &&source)
+	:
+		_invoker(source._invoker),
+		_destructor(source._destructor) {
+		copy(_obj, source._obj);
+
+		source._invoker    = nullptr;
+		source._destructor = nullptr;
+	}
 	inline ~Delegate(void) {
 		destroy();
 	}
+
 	template<typename T> inline void bind(T &&func) {
 		static_assert(
 			sizeof(T) <= MAX_DELEGATE_LENGTH,
@@ -145,20 +198,30 @@ public:
 
 		new (_obj) T(static_cast<T &&>(func));
 
-		_invoker    = [](void *ptr) {
-			reinterpret_cast<T *>(ptr)();
+		_invoker    = [](void *ptr, A &&... args) {
+			reinterpret_cast<T *>(ptr)(static_cast<A &&>(args)...);
 		};
 		_destructor = [](void *ptr) {
 			reinterpret_cast<T *>(ptr)->~T();
 		};
 	}
+	inline void destroy(void) {
+		_invoker = nullptr;
+
+		if (_destructor) {
+			_destructor(_obj);
+			_destructor = nullptr;
+		}
+	}
+
 	inline bool isBound(void) const {
 		return bool(_invoker);
 	}
+	inline R invoke(A... args) {
+		assert(_invoker);
 
-	Delegate(void);
-	void destroy(void);
-	bool invoke(void);
+		return _invoker(_obj, static_cast<A &&>(args)...);
+	}
 };
 
 }
