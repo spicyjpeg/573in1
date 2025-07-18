@@ -32,8 +32,8 @@ static inline long labs(long value) {
 
 void abort(void);
 
-long strtol(const char *str, char **str_end, int base);
-long long strtoll(const char *str, char **str_end, int base);
+long strtol(const char *str, char **strEnd, int base);
+long long strtoll(const char *str, char **strEnd, int base);
 
 void *sbrk(ptrdiff_t incr);
 

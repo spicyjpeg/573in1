@@ -35,7 +35,7 @@ int strcmp(const char *lhs, const char *rhs);
 int strncmp(const char *lhs, const char *rhs, size_t count);
 char *strchr(const char *str, int ch);
 char *strrchr(const char *str, int ch);
-char *strpbrk(const char *str, const char *breakset);
+char *strpbrk(const char *str, const char *breakSet);
 char *strstr(const char *str, const char *substr);
 
 size_t strlen(const char *str);

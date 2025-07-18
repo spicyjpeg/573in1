@@ -51,28 +51,28 @@ public:
 
 class CriticalSection {
 private:
-	bool _enable;
+	uint32_t _enable;
 
 public:
 	inline CriticalSection(void) {
-		_enable = disableInterrupts();
+		_enable = cop0_disableInterrupts();
 	}
 	inline ~CriticalSection(void) {
 		if (_enable)
-			enableInterrupts();
+			cop0_enableInterrupts();
 	}
 };
 
 class ThreadCriticalSection {
 public:
 	inline ThreadCriticalSection(void) {
-		bool enable = disableInterrupts();
+		auto enable = cop0_disableInterrupts();
 
 		assert(enable);
 		(void) enable;
 	}
 	inline ~ThreadCriticalSection(void) {
-		enableInterrupts();
+		cop0_enableInterrupts();
 	}
 };
 

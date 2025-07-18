@@ -224,7 +224,7 @@ bool ExecutableLoader::formatArgument(const char *format, ...) {
 	int rawArgc, const char *const *rawArgv
 ) {
 #if 0
-	disableInterrupts();
+	cop0_disableInterrupts();
 	flushCache();
 #endif
 

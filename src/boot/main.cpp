@@ -30,7 +30,7 @@ static char _ptrArg[]{ "resource.ptr=xxxxxxxx\0" };
 static char _lengthArg[]{ "resource.length=xxxxxxxx\0" };
 
 int main(int argc, const char **argv) {
-	disableInterrupts();
+	cop0_disableInterrupts();
 	sys573::init();
 
 	auto header = \

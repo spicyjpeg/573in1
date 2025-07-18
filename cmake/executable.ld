@@ -1,5 +1,5 @@
 /*
- * ps1-bare-metal - (C) 2023 spicyjpeg
+ * ps1-bare-metal - (C) 2023-2025 spicyjpeg
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,7 @@ MEMORY {
 SECTIONS {
 	/* Code sections */
 
-	.text : {
+	.text : ALIGN(4) {
 		_textStart = .;
 
 		*(.text .text.* .gnu.linkonce.t.*)
@@ -38,8 +38,7 @@ SECTIONS {
 
 	/* Global constructor/destructor arrays */
 
-	.preinit_array : {
-		. = ALIGN((. != 0) ? 4 : 1);
+	.preinit_array : ALIGN(4) {
 		_preinitArrayStart = .;
 
 		KEEP(*(.preinit_array))
@@ -47,8 +46,7 @@ SECTIONS {
 		_preinitArrayEnd = .;
 	} > APP_RAM
 
-	.init_array : {
-		. = ALIGN((. != 0) ? 4 : 1);
+	.init_array : ALIGN(4) {
 		_initArrayStart = .;
 
 		KEEP(*(SORT(.init_array.*) SORT(.ctors.*)))
@@ -57,8 +55,7 @@ SECTIONS {
 		_initArrayEnd = .;
 	} > APP_RAM
 
-	.fini_array : {
-		. = ALIGN((. != 0) ? 4 : 1);
+	.fini_array : ALIGN(4) {
 		_finiArrayStart = .;
 
 		KEEP(*(.fini_array .dtors))
@@ -70,6 +67,8 @@ SECTIONS {
 	/* Data sections */
 
 	.data : {
+		_dataStart = .;
+
 		*(.data .data.* .gnu.linkonce.d.*)
 	} > APP_RAM
 
@@ -82,10 +81,15 @@ SECTIONS {
 		_gp = ALIGN(16) + 0x7ff0;
 
 		*(.sdata .sdata.* .gnu.linkonce.s.*)
+
+		_dataEnd = .;
 	} > APP_RAM
 
-	.sbss (NOLOAD) : {
-		. = ALIGN((. != 0) ? 4 : 1);
+	/*
+	 * Ensure the entire BSS region is aligned at both ends in order to allow
+	 * for fast clearing.
+	 */
+	.sbss (NOLOAD) : ALIGN(4) {
 		_bssStart = .;
 
 		*(.sbss .sbss.* .gnu.linkonce.sb.*)
@@ -96,7 +100,7 @@ SECTIONS {
 		*(.bss .bss.* .gnu.linkonce.b.*)
 		*(COMMON)
 
-		. = ALIGN((. != 0) ? 4 : 1);
+		.       = ALIGN(4);
 		_bssEnd = .;
 	} > APP_RAM
 

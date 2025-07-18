@@ -184,22 +184,20 @@ void _appInterruptHandler(void *arg0, void *arg1) {
 			switchThread(nullptr);
 	}
 
-#if 0
 	if (acknowledgeInterrupt(IRQ_CDROM))
 		blkdev::cdrom.handleInterrupt();
-#endif
 
 	if (acknowledgeInterrupt(IRQ_SPU))
 		app->_audioStream.handleInterrupt();
 
-#if 0
 	if (acknowledgeInterrupt(IRQ_PIO)) {
+		// FIXME: this is slightly inefficient as it tries to dispatch the IRQ
+		// to all block devices, rather than just IDE drives
 		for (auto &mp : app->_fileIO.mountPoints) {
 			if (mp.dev)
 				mp.dev->handleInterrupt();
 		}
 	}
-#endif
 }
 
 void _workerMain(void *arg0, void *arg1) {
@@ -222,8 +220,10 @@ void App::_setupInterrupts(void) {
 
 	IRQ_MASK = 0
 		| (1 << IRQ_VSYNC)
-		| (1 << IRQ_SPU);
-	enableInterrupts();
+		| (1 << IRQ_CDROM)
+		| (1 << IRQ_SPU)
+		| (1 << IRQ_PIO);
+	cop0_enableInterrupts();
 }
 
 void App::_runWorker(bool (*func)(App &app), bool playSound) {

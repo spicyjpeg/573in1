@@ -93,7 +93,7 @@ void uninstallExceptionHandler(void) {
 }
 
 void setInterruptHandler(ArgFunction func, void *arg0, void *arg1) {
-	disableInterrupts();
+	cop0_disableInterrupts();
 
 	interruptHandler     = func;
 	interruptHandlerArg0 = arg0;

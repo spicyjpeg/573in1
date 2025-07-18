@@ -14,8 +14,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 typedef void (*Function)(void);
 
@@ -24,11 +24,11 @@ typedef void (*Function)(void);
 // These are defined by the linker script. Note that these are not variables,
 // they are virtual symbols whose location matches their value. The simplest way
 // to turn them into pointers is to declare them as arrays.
-extern char _sdataStart[], _bssStart[], _bssEnd[];
+extern char _bssStart[], _bssEnd[];
 
 extern const Function _preinitArrayStart[], _preinitArrayEnd[];
-extern const Function _initArrayStart[], _initArrayEnd[];
-extern const Function _finiArrayStart[], _finiArrayEnd[];
+extern const Function _initArrayStart[],    _initArrayEnd[];
+extern const Function _finiArrayStart[],    _finiArrayEnd[];
 
 /* Heap API (used by malloc) */
 

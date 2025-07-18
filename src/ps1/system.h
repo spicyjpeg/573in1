@@ -49,31 +49,6 @@ extern Thread *nextThread;
 void _exceptionVector(void);
 
 /**
- * @brief Enables all interrupts at the COP0 side (without altering the IRQ_MASK
- * register). If any IRQs occurred and were not acknowledged while interrupts
- * were disabled, any callback set using setInterruptHandler() will be invoked
- * immediately.
- */
-__attribute__((always_inline)) static inline void enableInterrupts(void) {
-	cop0_setReg(COP0_STATUS, cop0_getReg(COP0_STATUS) | COP0_STATUS_IEc);
-}
-
-/**
- * @brief Disables all interrupts at the COP0 side (without altering the
- * IRQ_MASK register). This function is not atomic, but can be used safely as
- * long as no other code is manipulating the COP0 status register while
- * interrupts are enabled.
- *
- * @return True if interrupts were previously enabled, false otherwise
- */
-__attribute__((always_inline)) static inline bool disableInterrupts(void) {
-	uint32_t status = cop0_getReg(COP0_STATUS);
-
-	cop0_setReg(COP0_STATUS, status & ~COP0_STATUS_IEc);
-	return (status & COP0_STATUS_IEc);
-}
-
-/**
  * @brief Forces all pending memory writes to complete and stalls until the
  * write queue is empty. Calling this function is not necessary when accessing
  * memory or hardware registers through KSEG1 as the write queue is only enabled
@@ -158,14 +133,13 @@ void uninstallExceptionHandler(void);
  * will run from within the exception handler, it is subject to several
  * limitations:
  *
- * - it cannot call functions that rely on syscalls such as enableInterrupts(),
- *   forceThreadSwitch() or setInterruptHandler();
+ * - it cannot call functions that rely on syscalls such as forceThreadSwitch();
  * - it cannot wait for other interrupts to occur;
  * - it must return quickly, as IRQs fired while the exception handler is
  *   running may otherwise be missed.
  *
- * Interrupts must be re-enabled manually using enableInterrupts() after setting
- * a new handler.
+ * Interrupts must be re-enabled manually using cop0_enableInterrupts() after
+ * setting a new handler.
  *
  * @param func
  * @param arg Optional first argument to be passed to handler

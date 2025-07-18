@@ -19,8 +19,8 @@ Reverse engineering:
 
 Testing: 
     AndreaM 
-    tensionvex 
     caldenza 
+    tensionvex 
     tweak 
 
 Special thanks: 
@@ -29,6 +29,8 @@ Special thanks:
     Hyphen (YubiParts) 
     Martin Korth (nocash) 
     Nicolas Noble 
+    nosuke 
+    Taro 
     Everyone on the Rhythm Game Cabs and PSX.Dev Discord servers 
 
 [ License ]

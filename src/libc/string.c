@@ -73,7 +73,7 @@ void *memset(void *dest, int ch, size_t count) {
 }
 
 void *memcpy(void *restrict dest, const void *restrict src, size_t count) {
-	uint8_t       *_dest = (uint8_t *) dest;
+	uint8_t       *_dest = (uint8_t *)       dest;
 	const uint8_t *_src  = (const uint8_t *) src;
 
 	for (; count; count--)
@@ -84,7 +84,7 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t count) {
 #endif
 
 void *memccpy(void *restrict dest, const void *restrict src, int ch, size_t count) {
-	uint8_t       *_dest = (uint8_t *) dest;
+	uint8_t       *_dest = (uint8_t *)       dest;
 	const uint8_t *_src  = (const uint8_t *) src;
 
 	for (; count; count--) {
@@ -99,7 +99,7 @@ void *memccpy(void *restrict dest, const void *restrict src, int ch, size_t coun
 }
 
 void *memmove(void *dest, const void *src, size_t count) {
-	uint8_t       *_dest = (uint8_t *) dest;
+	uint8_t       *_dest = (uint8_t *)       dest;
 	const uint8_t *_src  = (const uint8_t *) src;
 
 	if (_dest == _src)
@@ -129,7 +129,7 @@ int memcmp(const void *lhs, const void *rhs, size_t count) {
 		uint8_t a = *(_lhs++), b = *(_rhs++);
 
 		if (a != b)
-			return a - b;
+			return ((int) a) - ((int) b);
 	}
 
 	return 0;
@@ -174,7 +174,7 @@ int strcmp(const char *lhs, const char *rhs) {
 		char a = *(lhs++), b = *(rhs++);
 
 		if (a != b)
-			return a - b;
+			return ((int) a) - ((int) b);
 		if (!a && !b)
 			return 0;
 	}
@@ -185,7 +185,7 @@ int strncmp(const char *lhs, const char *rhs, size_t count) {
 		char a = *(lhs++), b = *(rhs++);
 
 		if (a != b)
-			return a - b;
+			return ((int) a) - ((int) b);
 	}
 
 	return 0;
@@ -212,11 +212,11 @@ char *strrchr(const char *str, int ch) {
 	return 0;
 }
 
-char *strpbrk(const char *str, const char *breakset) {
+char *strpbrk(const char *str, const char *breakSet) {
 	for (; *str; str++) {
 		char a = *str;
 
-		for (const char *ch = breakset; *ch; ch++) {
+		for (const char *ch = breakSet; *ch; ch++) {
 			if (a == *ch)
 				return (char *) str;
 		}
@@ -330,7 +330,7 @@ char *strtok(char *restrict str, const char *restrict delim) {
 
 /* Number parsers */
 
-long long strtoll(const char *restrict str, char **restrict str_end, int base) {
+long long strtoll(const char *restrict str, char **restrict strEnd, int base) {
 	if (!str)
 		return 0;
 	while (isspace(*str))
@@ -416,12 +416,12 @@ long long strtoll(const char *restrict str, char **restrict str_end, int base) {
 	}
 
 _exit:
-	if (str_end)
-		*str_end = (char *) str;
+	if (strEnd)
+		*strEnd = (char *) str;
 
 	return (sign == '-') ? (-value) : value;
 }
 
-long strtol(const char *restrict str, char **restrict str_end, int base) {
-	return (long) strtoll(str, str_end, base);
+long strtol(const char *restrict str, char **restrict strEnd, int base) {
+	return (long) strtoll(str, strEnd, base);
 }
