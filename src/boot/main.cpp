@@ -21,6 +21,7 @@
 #include "common/util/hash.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/string.hpp"
+#include "ps1/cop0.h"
 #include "ps1/system.h"
 
 extern "C" const uint8_t _resourcePackage[];

@@ -1,12 +1,12 @@
 {
 	"AboutScreen": {
-		"title":  "▸ Informazioni su 573in1",
-		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭."
+		"title":  "⏵ Informazioni su 573in1",
+		"prompt": "⏵ Usa ◁▷ per scorrere. Torna indietro con ▭."
 	},
 
 	"AnalogTestScreen": {
-		"title":  "▸ Test input analogici",
-		"prompt": "▸ Tieni premuto ▭ per uscire.",
+		"title":  "⏵ Test input analogici",
+		"prompt": "⏵ Tieni premuto ▭ per uscire.",
 
 		"header": {
 			"singleEnded":  "Modalità asimmetrica:\n",
@@ -135,9 +135,9 @@
 	},
 
 	"AudioTestScreen": {
-		"title":      "▸ Test output audio e amplificatore",
+		"title":      "⏵ Test output audio e amplificatore",
 		"prompt":     "L'amplificatore audio e il passthrough CD-DA/MP3 sono disattivati di default.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"playLeft":    "Riproduci suono sul canale sinistro",
 		"playRight":   "Riproduci suono sul canale destro",
@@ -157,9 +157,9 @@
 	},
 
 	"ButtonMappingScreen": {
-		"title":      "▸ Seleziona configurazione pulsanti",
+		"title":      "⏵ Seleziona configurazione pulsanti",
 		"prompt":     "Usa ▭ o il pulsante Test per selezionare una configurazione adatta al tuo cabinato o setup JAMMA.",
-		"itemPrompt": "▸ Tieni premuto ▭ o Test per confermare",
+		"itemPrompt": "⏵ Tieni premuto ▭ o Test per confermare",
 
 		"joystick":   "Supergun JAMMA o joystick/pulsanti",
 		"ddrCab":     "Cabinato Dance Dance Revolution",
@@ -179,8 +179,8 @@
 	},
 
 	"CartActionsScreen": {
-		"title":      "▸ Opzioni security cart",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"title":      "⏵ Opzioni security cart",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"qrDump": {
 			"name":   "Mostra dump come QR code",
@@ -231,7 +231,7 @@
 	},
 
 	"CartInfoScreen": {
-		"title": "▸ Informazioni security cart",
+		"title": "⏵ Informazioni security cart",
 
 		"digitalIO": {
 			"header":  "PCB digital I/O:\n",
@@ -278,9 +278,9 @@
 			}
 		},
 		"prompt": {
-			"locked":   "▸ ▭ per continuare, ◁▷ + ▭ per tornare indietro.",
-			"unlocked": "▸ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
-			"error":    "▸ Tieni premuto ◁▷ + ▭ per tornare indietro."
+			"locked":   "⏵ ▭ per continuare, ◁▷ + ▭ per tornare indietro.",
+			"unlocked": "⏵ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
+			"error":    "⏵ Tieni premuto ◁▷ + ▭ per tornare indietro."
 		},
 
 		"unlockWarning": {
@@ -291,8 +291,8 @@
 	},
 
 	"ChecksumScreen": {
-		"title":  "▸ Checksum",
-		"prompt": "▸ Torna indietro con ▭.",
+		"title":  "⏵ Checksum",
+		"prompt": "⏵ Torna indietro con ▭.",
 
 		"bios":        "BIOS (512 KB):\t\t\t\t%08X\n",
 		"rtc":         "Memoria RTC (8184 byte):\t\t\t%08X\n",
@@ -302,8 +302,8 @@
 	},
 
 	"ColorIntensityScreen": {
-		"title":  "▸ Test livelli colori monitor",
-		"prompt": "▸ Torna indietro con ▭.",
+		"title":  "⏵ Test livelli colori monitor",
+		"prompt": "⏵ Torna indietro con ▭.",
 
 		"white": "Bianco",
 		"red":   "Rosso",
@@ -318,16 +318,16 @@
 	},
 
 	"FileBrowserScreen": {
-		"title":      "▸ Seleziona file",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"title":      "⏵ Seleziona file",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"parentDir":   "[Directory superiore]",
 		"subdirError": "Impossibile enumerare i file contenuti nella directory selezionata. Il filesystem potrebbe essere danneggiato o altrimenti inaccessibile.\n\nPath: %s\nPremi il pulsante Test per mostrare i log di debug."
 	},
 
 	"FilePickerScreen": {
-		"title":         "▸ Seleziona unità",
-		"itemPrompt":    "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"title":         "⏵ Seleziona unità",
+		"itemPrompt":    "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 		"noDeviceError": "Non è stato rilevato alcun dispositivo sul bus IDE. Assicurati che le unità siano alimentate e abbiano i jumper (primario o secondario) appropriati.\n\nPremi il pulsante Test per mostrare i log di debug.",
 		"noFilesError":  "Il filesystem dell'unità selezionata è vuoto e non contiene file o subdirectory.",
 
@@ -354,18 +354,18 @@
 	},
 
 	"GeometryScreen": {
-		"title":  "▸ Test geometria e overscan monitor",
-		"prompt": "▸ Torna indietro con ▭."
+		"title":  "⏵ Test geometria e overscan monitor",
+		"prompt": "⏵ Torna indietro con ▭."
 	},
 
 	"HexdumpScreen": {
-		"title":  "▸ Dump security cart",
-		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭."
+		"title":  "⏵ Dump security cart",
+		"prompt": "⏵ Usa ◁▷ per scorrere. Torna indietro con ▭."
 	},
 
 	"IDEInfoScreen": {
-		"title":  "▸ Informazioni unità IDE",
-		"prompt": "▸ Usa ◁▷ per scorrere. Torna indietro con ▭.",
+		"title":  "⏵ Informazioni unità IDE",
+		"prompt": "⏵ Usa ◁▷ per scorrere. Torna indietro con ▭.",
 
 		"device": {
 			"header": {
@@ -399,8 +399,8 @@
 	},
 
 	"JAMMATestScreen": {
-		"title":  "▸ Test pulsanti e input JAMMA",
-		"prompt": "▸ Tieni premuto ▭ per uscire.",
+		"title":  "⏵ Test pulsanti e input JAMMA",
+		"prompt": "⏵ Tieni premuto ▭ per uscire.",
 
 		"noInputs":   "Nessun pulsante è attualmente premuto. Se un pulsante non appare qui quando premuto, controlla che il cablaggio sia corretto e il pulsante non sia danneggiato.\n",
 		"inputs":     "I seguenti pulsanti sono attualmente premuti:\n",
@@ -447,17 +447,17 @@
 	},
 
 	"LanguageScreen": {
-		"title":      "▸ Seleziona lingua - Select language",
+		"title":      "⏵ Seleziona lingua - Select language",
 		"prompt":     "Nota che le traduzioni in lingue diverse dall'inglese potrebbero non essere complete o accurate.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"en": "English",
 		"it": "Italiano"
 	},
 
 	"MainMenuScreen": {
-		"title":      "▸ 573in1",
-		"itemPrompt": "▸ Muovi con ◁▷, usa ▭ per confermare",
+		"title":      "⏵ 573in1",
+		"itemPrompt": "⏵ Seleziona con ◁▷, usa ▭ per confermare",
 
 		"cartInfo": {
 			"name":   "Gestisci security cart",
@@ -517,8 +517,8 @@
 	},
 
 	"NVRAMActionsScreen": {
-		"title":      "▸ Opzioni storage",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"title":      "⏵ Opzioni dispositivo",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 		"cardError":  "Lo slot PCMCIA selezionato è vuoto.\n\nSpegni il 573 e inserisci una flash card PCMCIA supportata per procedere. NON INSERIRE FLASH CARD A 573 ACCESO; ciò potrebbe danneggiare sia il 573 che la flash card.",
 
 		"runExecutable": {
@@ -623,8 +623,8 @@
 	},
 
 	"NVRAMInfoScreen": {
-		"title":  "▸ Informazioni storage",
-		"prompt": "▸ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
+		"title":  "⏵ Informazioni flash e NVRAM",
+		"prompt": "⏵ ▭ per altre opzioni, ◁▷ + ▭ per tornare indietro.",
 
 		"bios": {
 			"header":     "BIOS:\n",
@@ -673,20 +673,20 @@
 	},
 
 	"QRCodeScreen": {
-		"title":  "▸ Dump security cart",
+		"title":  "⏵ Dump security cart",
 		"prompt": "Scansiona il codice e usa lo script decodeCartDump.py fornito con 573in1 per decodificare la stringa risultante. Torna indietro con ▭."
 	},
 
 	"ReflashGameScreen": {
-		"title":      "▸ Select game to convert cartridge to",
+		"title":      "⏵ Select game to convert cartridge to",
 		"prompt":     "Assicurati di aver selezionato la regione corretta. Le security cart possono essere convertite solo ad altri giochi che utilizzano lo stesso tipo di EEPROM.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro"
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro"
 	},
 
 	"ResolutionScreen": {
-		"title":      "▸ Seleziona risoluzione schermo",
+		"title":      "⏵ Seleziona risoluzione schermo",
 		"prompt":     "Seleziona una modalità appropriata per il tuo monitor o upscaler. Le modalità interlacciate potrebbero essere soggette a flickering.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"progressive":   "%dx%d, progressivo",
 		"interlaced":    "%dx%d, interlacciato come 480i",
@@ -708,8 +708,8 @@
 	},
 
 	"TestMenuScreen": {
-		"title":      "▸ Strumenti di test hardware",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"title":      "⏵ Strumenti di test hardware",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"jammaTest": {
 			"name":   "Test pulsanti e input JAMMA",
@@ -723,20 +723,24 @@
 			"name":   "Test output audio e amplificatore",
 			"prompt": "Riproduci un suono su uno dei canali di output audio e verifica il funzionamento dell'amplificatore integrato."
 		},
+		"ledMatrixTest": {
+			"name":   "Test display LED Punch Mania",
+			"prompt": "Mostra pattern di test sulla matrice LED presente in alcuni cabinati Punch Mania/Fighting Mania (se connessa)."
+		},
 		"colorIntensity": {
 			"name":   "Test livelli colori monitor",
 			"prompt": "Mostra una serie di barre di colore con e senza dithering in modo da facilitare la regolazione dei livelli del monitor."
 		},
 		"geometry": {
 			"name":   "Test geometria e overscan monitor",
-			"prompt": "Mostra una grlglia in modo da facilitare la calibrazione del monitor. Il rapporto d'aspetto può essere cambiato passando ad un'altra risoluzione dal menu principale."
+			"prompt": "Mostra una griglia in modo da facilitare la calibrazione del monitor. Il rapporto d'aspetto può essere cambiato passando ad un'altra risoluzione dal menu principale."
 		}
 	},
 
 	"UnlockKeyScreen": {
-		"title":      "▸ Seleziona password di sblocco",
+		"title":      "⏵ Seleziona password di sblocco",
 		"prompt":     "Se la cart è stata precedentemente convertita, seleziona il gioco a cui è stata convertita. Se è stata cancellata, seleziona 00-00-00-00-00-00-00-00.",
-		"itemPrompt": "▸ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
+		"itemPrompt": "⏵ ▭ per selezionare, ◁▷ + ▭ per tornare indietro",
 
 		"autoUnlock":   "Seleziona password automaticamente (consigliato)",
 		"useCustomKey": "Inserisci password manualmente...",
@@ -753,6 +757,9 @@
 	},
 
 	"WorkerStatusScreen": {
-		"title": "Attendi..."
+		"title": "Attendi...",
+
+		"ledMatrixWarning":  "Non spegnere.",
+		"ledMatrixProgress": "Completato:"
 	}
 }

@@ -135,6 +135,17 @@ bool MemoryCardIOHandler::_deleteRelocation(uint32_t lba) {
 }
 
 bool MemoryCardIOHandler::init(blkdev::Device &dev) {
+	MemoryCardHeader header;
+
+	if (dev.read(&header, MC_LBA_HEADER, 1)) {
+		LOG_FS("memory card header read failed");
+		return false;
+	}
+	if (!header.validateMagic() || !header.validateChecksum()) {
+		LOG_FS("invalid memory card header");
+		return false;
+	}
+
 	MemoryCardRelocListEntry entries[MC_MAX_RELOC_SECTORS];
 
 	if (dev.read(entries, MC_LBA_RELOC_TABLE, MC_MAX_RELOC_SECTORS)) {
@@ -142,22 +153,20 @@ bool MemoryCardIOHandler::init(blkdev::Device &dev) {
 		return false;
 	}
 
-	{
-		util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
+	util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
 
-		if (!lock.locked) {
-			LOG_FS("relocation mutex timeout");
-			return false;
-		}
+	if (!lock.locked) {
+		LOG_FS("relocation mutex timeout");
+		return false;
+	}
 
-		for (size_t i = 0; i < MC_MAX_RELOC_SECTORS; i++) {
-			auto &entry = entries[i];
+	for (size_t i = 0; i < MC_MAX_RELOC_SECTORS; i++) {
+		auto &entry = entries[i];
 
-			if ((entry.sector >= 0) && entry.validateChecksum())
-				_relocations[i] = entry.sector;
-			else
-				_relocations[i] = 0;
-		}
+		if ((entry.sector >= 0) && entry.validateChecksum())
+			_relocations[i] = entry.sector;
+		else
+			_relocations[i] = 0;
 	}
 
 	_dev = &dev;
@@ -172,23 +181,21 @@ bool MemoryCardIOHandler::readRelocated(void *data, uint32_t lba) {
 	if (error != blkdev::DRIVE_ERROR)
 		return false;
 
-	{
-		util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
+	util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
 
-		if (!lock.locked) {
-			LOG_FS("relocation mutex timeout");
-			return false;
-		}
+	if (!lock.locked) {
+		LOG_FS("relocation mutex timeout");
+		return false;
+	}
 
-		for (size_t i = 0; i < MC_MAX_RELOC_SECTORS; i++) {
-			if (_relocations[i] != lba)
-				continue;
-			if (!_dev->read(data, MC_LBA_RELOC_DATA + i, 1))
-				return true;
+	for (size_t i = 0; i < MC_MAX_RELOC_SECTORS; i++) {
+		if (_relocations[i] != lba)
+			continue;
+		if (!_dev->read(data, MC_LBA_RELOC_DATA + i, 1))
+			return true;
 
-			LOG_FS("read error, lba=0x%x, reloc=%d", lba, i);
-			return false;
-		}
+		LOG_FS("read error, lba=0x%x, reloc=%d", lba, i);
+		return false;
 	}
 
 	LOG_FS("read error lba=0x%x, no reloc", lba);
@@ -208,35 +215,33 @@ bool MemoryCardIOHandler::writeRelocated(const void *data, uint32_t lba) {
 	// If that fails, search for any existing relocation and attempt to
 	// overwrite it. If the write in turn fails, or if no match is found,
 	// relocate the sector to a spare one as a last resort.
-	{
-		util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
+	util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
 
-		if (!lock.locked) {
-			LOG_FS("relocation mutex timeout");
-			return false;
-		}
-
-		for (size_t i = 0; i < MC_MAX_RELOC_SECTORS; i++) {
-			if (_relocations[i] != lba)
-				continue;
-
-			error = _dev->write(data, MC_LBA_RELOC_DATA + i, 1);
-
-			if (!error)
-				return true;
-			if (error != blkdev::DRIVE_ERROR)
-				return false;
-
-			LOG_FS("write error, lba=0x%x, reloc=%d", lba, i);
-
-			if (!_deleteRelocation(lba))
-				return false;
-
-			break;
-		}
-
-		return _relocate(data, lba);
+	if (!lock.locked) {
+		LOG_FS("relocation mutex timeout");
+		return false;
 	}
+
+	for (size_t i = 0; i < MC_MAX_RELOC_SECTORS; i++) {
+		if (_relocations[i] != lba)
+			continue;
+
+		error = _dev->write(data, MC_LBA_RELOC_DATA + i, 1);
+
+		if (!error)
+			return true;
+		if (error != blkdev::DRIVE_ERROR)
+			return false;
+
+		LOG_FS("write error, lba=0x%x, reloc=%d", lba, i);
+
+		if (!_deleteRelocation(lba))
+			return false;
+
+		break;
+	}
+
+	return _relocate(data, lba);
 }
 
 }

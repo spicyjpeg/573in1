@@ -85,20 +85,15 @@ public:
 	size_t     sectorLength;
 	uint64_t   capacity;
 
-	char model[48], revision[12], serialNumber[24];
-
-	inline Device(uint8_t flags = 0)
-	: type(NONE), flags(flags), sectorLength(0), capacity(0) {
-		model       [0] = 0;
-		revision    [0] = 0;
-		serialNumber[0] = 0;
-	}
+	char model[44], revision[12], serialNumber[24];
 
 	inline int getDeviceIndex(void) const {
 		return (flags / IS_SECONDARY) & 1;
 	}
 
+	Device(uint8_t flags = 0);
 	virtual ~Device(void) {}
+
 	virtual DeviceError enumerate(void) { return UNSUPPORTED_OP; }
 	virtual DeviceError poll(void) { return UNSUPPORTED_OP; }
 	virtual void handleInterrupt(void) {}

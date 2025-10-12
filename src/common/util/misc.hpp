@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "ps1/system.h"
+#include "ps1/cop0.h"
 
 namespace util {
 

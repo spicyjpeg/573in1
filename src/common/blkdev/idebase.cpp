@@ -14,12 +14,12 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "common/blkdev/idebase.hpp"
 #include <stddef.h>
 #include <stdint.h>
 #include "common/blkdev/ata.hpp"
 #include "common/blkdev/atapi.hpp"
 #include "common/blkdev/device.hpp"
+#include "common/blkdev/idebase.hpp"
 #include "common/sys573/base.hpp"
 #include "common/util/log.hpp"
 #include "common/util/templates.hpp"
@@ -248,10 +248,9 @@ static constexpr int _SRST_SET_DELAY   = 5000;
 static constexpr int _SRST_CLEAR_DELAY = 50000;
 
 IDEDevice *_newIDEDevice(int index) {
-	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] =
-		CS1_DEVICE_CTRL_IEN | CS1_DEVICE_CTRL_SRST;
+	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] = CS1_DEVICE_CTRL_SRST;
 	delayMicroseconds(_SRST_SET_DELAY);
-	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] = CS1_DEVICE_CTRL_IEN;
+	SYS573_IDE_CS1_BASE[CS1_DEVICE_CTRL] = 0;
 	delayMicroseconds(_SRST_CLEAR_DELAY);
 
 	if (index)

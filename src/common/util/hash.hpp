@@ -37,7 +37,7 @@ template<typename T> static inline const T *getHashTableEntry(
 	Hash    id
 ) {
 #if 0
-	auto index = id % NB;
+	auto index = id % numBuckets;
 #else
 	auto index = id & (numBuckets - 1);
 #endif

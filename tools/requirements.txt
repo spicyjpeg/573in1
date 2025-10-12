@@ -3,7 +3,7 @@
 #
 # - Windows (using PowerShell):
 #     py -m venv env
-#     env\bin\Activate.ps1
+#     env\Scripts\Activate.ps1
 #     py -m pip install -r tools\requirements.txt
 #
 # - Windows (using Cygwin/MSys2), Linux or macOS:

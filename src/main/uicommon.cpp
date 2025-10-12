@@ -157,24 +157,24 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 	int lineHeight = ctx.font.getLineHeight();
 
 	if (_image) {
-		int x      = ctx.gpuCtx.width  / 2;
-		int y      = ctx.gpuCtx.height / 2;
-		int width  = _image->width  * _imageScale / 2;
-		int height = _image->height * _imageScale / 2;
+		int x = ctx.gpuCtx.width  / 2;
+		int y = ctx.gpuCtx.height / 2;
+		int w = _image->width  * _imageScale / 2;
+		int h = _image->height * _imageScale / 2;
 
 		if (_prompt)
 			y -= (SCREEN_PROMPT_HEIGHT - lineHeight) / 2;
 
 		// Backdrop
 		if (_imagePadding) {
-			int _width  = width  + _imagePadding;
-			int _height = height + _imagePadding;
+			int padWidth  = w + _imagePadding;
+			int padHeight = h + _imagePadding;
 
 			ctx.gpuCtx.drawRect(
-				x - _width,
-				y - _height,
-				_width  * 2,
-				_height * 2,
+				x - padWidth,
+				y - padHeight,
+				padWidth  * 2,
+				padHeight * 2,
 				_backdropColor
 			);
 		}
@@ -183,13 +183,13 @@ void ImageScreen::draw(Context &ctx, bool active) const {
 		if (_imageScale > 1)
 			_image->drawScaled(
 				ctx.gpuCtx,
-				x - width - 1,
-				y - height - 1,
-				width * 2,
-				height * 2
+				x - w - 1,
+				y - h - 1,
+				w * 2,
+				h * 2
 			);
 		else
-			_image->draw(ctx.gpuCtx, x - width, y - height);
+			_image->draw(ctx.gpuCtx, x - w, y - h);
 	}
 
 	// Text
@@ -364,7 +364,7 @@ void ListScreen::draw(Context &ctx, bool active) const {
 			iconRect.y = LIST_BOX_PADDING;
 			ctx.font.draw(
 				ctx.gpuCtx,
-				CH_UP_ARROW,
+				CH_UP_POINTER,
 				iconRect,
 				ctx.colors[COLOR_TEXT1]
 			);
@@ -373,7 +373,7 @@ void ListScreen::draw(Context &ctx, bool active) const {
 			iconRect.y = listHeight - (lineHeight + LIST_BOX_PADDING);
 			ctx.font.draw(
 				ctx.gpuCtx,
-				CH_DOWN_ARROW,
+				CH_DOWN_POINTER,
 				iconRect,
 				ctx.colors[COLOR_TEXT1]
 			);

@@ -49,18 +49,18 @@ ChannelMask getFreeChannels(int count = NUM_CHANNELS);
 void stopChannels(ChannelMask mask);
 
 static inline void setMasterVolume(uint16_t master, uint16_t reverb = 0) {
-	SPU_MASTER_VOL_L = master;
-	SPU_MASTER_VOL_R = master;
-	SPU_REVERB_VOL_L = reverb;
-	SPU_REVERB_VOL_R = reverb;
+	SPU_MVOLL = master;
+	SPU_MVOLR = master;
+	SPU_EVOLL = reverb;
+	SPU_EVOLR = reverb;
 }
 
 static inline void setChannelVolume(Channel ch, uint16_t left, uint16_t right) {
 	if ((ch < 0) || (ch >= NUM_CHANNELS))
 		return;
 
-	SPU_CH_VOL_L(ch) = left;
-	SPU_CH_VOL_R(ch) = right;
+	SPU_CH_VOLL(ch) = left;
+	SPU_CH_VOLR(ch) = right;
 }
 
 static inline void stopChannel(Channel ch) {

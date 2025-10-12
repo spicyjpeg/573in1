@@ -244,17 +244,17 @@ public:
 	uint16_t numPlanes, bpp;
 	uint32_t compType, dataLength, ppmX, ppmY, numColors, numColors2;
 
-	inline void init(int _width, int _height, int _bpp) {
+	inline void init(int w, int h, int _bpp) {
 		util::clear(*this);
 
-		size_t length = _width * _height * _bpp / 8;
+		size_t length = w * h * _bpp / 8;
 
 		magic        = "BM"_c;
 		fileLength   = sizeof(BMPHeader) + length;
 		dataOffset   = sizeof(BMPHeader);
 		headerLength = sizeof(BMPHeader) - offsetof(BMPHeader, headerLength);
-		width        = _width;
-		height       = _height;
+		width        = w;
+		height       = h;
 		numPlanes    = 1;
 		bpp          = _bpp;
 		dataLength   = length;

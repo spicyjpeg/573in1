@@ -27,21 +27,21 @@
  * This is a simple driver for a standard character LCD module, wired to the
  * EXT-OUT (CN4) header on the 573 main board as follows:
  *
- * | EXT-OUT pin | LCD pin      |
- * | ----------: | :----------- |
- * |        1, 2 | `VCC`        |
- * |           5 | `E`          |
- * |           6 | `RS`         |
- * |           7 | `D7`         |
- * |           8 | `D6`         |
- * |           9 | `D5`         |
- * |          10 | `D4`         |
- * |      11, 12 | `GND`, `R/W` |
+ * | EXT-OUT pin | EXT-OUT signal | LCD pin | LCD signal   |
+ * | ----------: | :------------- | ------: | :----------- |
+ * |        1, 2 | `5V`           |       2 | `VCC`        |
+ * |           5 | `OUT5`         |       6 | `E`          |
+ * |           6 | `OUT4`         |       4 | `RS`         |
+ * |           7 | `OUT3`         |      14 | `D7`         |
+ * |           8 | `OUT2`         |      13 | `D6`         |
+ * |           9 | `OUT1`         |      12 | `D5`         |
+ * |          10 | `OUT0`         |      11 | `D4`         |
+ * |      11, 12 | `GND`          |    1, 5 | `GND`, `R/W` |
  *
- * The `V0` (bias voltage) pin shall be connected to ground through an
- * appropriate resistor or potentiometer in order to set the display's contrast.
- * The backlight is not controlled by this driver and can be left unconnected or
- * hardwired to power.
+ * Pin 3 of the module (`V0`, bias voltage) shall be connected to ground through
+ * an appropriate resistor or potentiometer in order to set the display's
+ * contrast. The backlight is not controlled by this driver and can be left
+ * unconnected or hardwired to power.
  */
 
 namespace exthw {
@@ -55,7 +55,7 @@ static constexpr int _WRITE_DELAY      = 50;
 static constexpr int _INIT_DELAY       = 5000;
 
 void DebugLCD::_writeNibble(uint8_t value, bool isCmd) const {
-	uint8_t outputs = 0
+	uint16_t outputs = 0
 		| ((value & 15) << LCD_PIN_D0)
 		| ((isCmd ^ 1)  << LCD_PIN_RS);
 
@@ -77,13 +77,13 @@ void DebugLCD::_setCursor(int x, int y) const {
 	_writeByte(LCD_SET_DDRAM_PTR | offset, true);
 }
 
-void DebugLCD::init(int _width, int _height) {
-	width  = _width;
-	height = _height;
+void DebugLCD::init(int w, int h) {
+	width  = w;
+	height = h;
 	clear();
 
 	// See http://elm-chan.org/docs/lcd/hd44780_e.html.
-	for (int i = 3; i; i--) {
+	for (int i = 3; i > 0; i--) {
 		_writeNibble((LCD_FUNCTION_SET | LCD_FUNCTION_SET_BUS_8BIT) >> 4, true);
 		delayMicroseconds(_INIT_DELAY);
 	}
@@ -104,7 +104,7 @@ void DebugLCD::flush(void) const {
 
 		_setCursor(0, y);
 
-		for (int x = width; x; x--)
+		for (int x = width; x > 0; x--)
 			_writeByte(*(ptr++));
 	}
 

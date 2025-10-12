@@ -24,6 +24,7 @@ __all__ = (
 	"cartparser",
 	"decompile",
 	"gamedb",
+	"image",
 	"mips",
 	"util"
 )

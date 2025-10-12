@@ -23,7 +23,7 @@
 				"properties": {
 					"type": {
 						"title":       "Entry type",
-						"description": "Must be one of the following:\n- `empty` (zero-length or zerofilled file)\n- `text` (converted to UTF-8 with LF line endings)\n- `binary`\n- `tim`\n- `metrics`\n- `palette`\n- `strings`\n- `gamedb`",
+						"description": "Must be one of the following:\n- `empty` (zero-length or zerofilled file)\n- `text` (converted to UTF-8 with LF line endings)\n- `binary`\n- `tim`\n- `led`\n- `metrics`\n- `palette`\n- `strings`\n- `gamedb`",
 						"type":        "string",
 
 						"enum": [
@@ -31,6 +31,7 @@
 							"text",
 							"binary",
 							"tim",
+							"led",
 							"metrics",
 							"palette",
 							"strings",
@@ -173,6 +174,24 @@
 								"title":       "Force semitransparency flag",
 								"description": "If true, all opaque pixels in the generated image will have the semitransparency (blending) flag set. Useful when drawing the image using additive or subtractive blending.",
 								"type":        "boolean"
+							}
+						}
+					},
+					{
+						"required":             [ "source" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type":      { "const": "led" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the source image file, relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
+								"type":        "string",
+
+								"format": "uri-reference"
 							}
 						}
 					},

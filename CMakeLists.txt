@@ -86,6 +86,7 @@ set(
 set(
 	exthwSources
 	src/common/exthw/lcd.cpp
+	src/common/exthw/ledmatrix.cpp
 	src/common/exthw/nfc.cpp
 )
 set(

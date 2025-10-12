@@ -20,6 +20,7 @@
 #include "common/util/hash.hpp"
 #include "common/util/misc.hpp"
 #include "common/util/templates.hpp"
+#include "ps1/cop0.h"
 #include "ps1/system.h"
 
 namespace util {
@@ -132,7 +133,6 @@ template<typename T> bool MutexFlags<T>::lock(T flags, int timeout) {
 			if (!(_value & flags)) {
 				_value |= flags;
 				flushWriteQueue();
-
 				return true;
 			}
 		}

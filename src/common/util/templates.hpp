@@ -90,19 +90,27 @@ template<typename T> static constexpr inline T rotateRight(T value, int amount) 
 	return T((value >> amount) | (value << (sizeof(T) * 8 - amount)));
 }
 
-// These shall only be used with unsigned types.
+template<typename T> static constexpr inline T modulo(T num, T den) {
+	T value = num % den;
+
+	if (value < 0)
+		value += den;
+
+	return value;
+}
+
 template<typename T> static constexpr inline T truncateToMultiple(
 	T value,
 	T length
 ) {
-	return value - (value % length);
+	return value - modulo(value, length);
 }
 
 template<typename T> static constexpr inline T roundUpToMultiple(
 	T value,
 	T length
 ) {
-	T diff = value % length;
+	T diff = modulo(value, length);
 
 	if (diff)
 		value += length - diff;

@@ -235,7 +235,7 @@ FlashRegion &flash(void) {
 	static FlashRegion *region = nullptr;
 
 	if (!region)
-		region = _newFlashRegion(SYS573_BANK_FLASH);
+		region = _newFlashRegion(SYS573_BANK_CTRL_DEV_FLASH);
 
 	return *region;
 }
@@ -245,8 +245,8 @@ FlashRegion &pcmcia(int card) {
 
 	if (!regions[card])
 		regions[card] = _newFlashRegion(
-			SYS573_BANK_PCMCIA1 +
-			(SYS573_BANK_PCMCIA2 - SYS573_BANK_PCMCIA1) * card
+			SYS573_BANK_CTRL_DEV_PCMCIA1 +
+			(SYS573_BANK_CTRL_DEV_PCMCIA2 - SYS573_BANK_CTRL_DEV_PCMCIA1) * card
 		);
 
 	return *regions[card];

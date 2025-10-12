@@ -58,6 +58,11 @@
 			"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.json"
 		},
 		{
+			"type":   "led",
+			"name":   "assets/ledmatrix/splash.led",
+			"source": "${PROJECT_SOURCE_DIR}/assets/ledmatrix/splash.png"
+		},
+		{
 			"type":      "binary",
 			"name":      "assets/sounds/startup.vag",
 			"source":    "${PROJECT_SOURCE_DIR}/assets/sounds/startup.vag",

@@ -28,6 +28,9 @@ class MemoryCardDevice : public Device {
 private:
 	uint8_t _lastStatus;
 
+	DeviceError _readSector(uint8_t *data, uint64_t lba);
+	DeviceError _writeSector(const uint8_t *data, uint64_t lba);
+
 public:
 	inline MemoryCardDevice(int index)
 	: Device(index * IS_SECONDARY) {}

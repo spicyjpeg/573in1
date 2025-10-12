@@ -14,6 +14,7 @@
  * 573in1. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include "common/blkdev/device.hpp"
 #include "common/util/templates.hpp"
@@ -54,6 +55,17 @@ uint32_t BCDMSF::toLBA(void) const {
 
 /* Base block device class */
 
+Device::Device(uint8_t flags)
+:
+	type(NONE),
+	flags(flags),
+	sectorLength(0),
+	capacity(0) {
+	model       [0] = 0;
+	revision    [0] = 0;
+	serialNumber[0] = 0;
+}
+
 // This is a fallback implementation of readStream() used if the device class
 // does not provide a more efficient one.
 DeviceError Device::readStream(
@@ -84,6 +96,7 @@ const char *const DEVICE_ERROR_NAMES[]{
 	"NO_DRIVE",
 	"NOT_YET_READY",
 	"STATUS_TIMEOUT",
+	"COMMAND_ERROR",
 	"CHECKSUM_MISMATCH",
 	"DRIVE_ERROR",
 	"DISC_ERROR",

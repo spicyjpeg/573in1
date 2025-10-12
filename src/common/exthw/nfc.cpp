@@ -27,13 +27,13 @@
  * Mifare or FeliCa card. The module can be wired to the cartridge slot, or to
  * the unpopulated CN24 header on main board revisions that have it, as follows:
  *
- * | CN24 pin | Cart slot pin  | Module pin                                   |
- * | -------: |- ------------: | :------------------------------------------- |
- * |          | 21, 22, 41, 42 | `VCC` (via 3.3V regulator, see note)         |
- * |        1 |              5 | `SCL`/`HSU_RX` (via level shifter, see note) |
- * |        2 |              6 | `SDA`/`HSU_TX` (via level shifter, see note) |
- * |     3, 4 |     1, 2, 8, 9 | `GND`, `I0`, `I1`                            |
- * |     5, 6 |         43, 44 | None (short pins together on 573 side)       |
+ * | CN24 pin | Cart slot pin  | 573 signal   | Module signal                              |
+ * | -------: | -------------: | :----------- | :----------------------------------------- |
+ * |          | 21, 22, 41, 42 | `5V`         | `VCC` (via 3.3V regulator, see note)       |
+ * |        1 |              5 | `TX`         | `SCL/HSU_RX` (via level shifter, see note) |
+ * |        2 |              6 | `RX`         | `SDA/HSU_TX` (via level shifter, see note) |
+ * |     3, 4 |     1, 2, 8, 9 | `GND`        | `GND`, `I0`, `I1`                          |
+ * |     5, 6 |         43, 44 | `RTS`, `CTS` | None (short pins together on 573 side)     |
  *
  * The PN532 operates at 3.3V so a voltage regulator and level shifter are
  * required to adapt it to the 573's 5V signals (some modules already include
@@ -44,11 +44,11 @@
  * Alternatively the PN532 module may be connected through an RS-232 level
  * translator to the "network" port on the security cartridge (if any):
  *
- * | "Network" pin | Module pin                              |
- * | ------------: | :-------------------------------------- |
- * |             1 | `SCL`/`HSU_RX` (via RS-232 transceiver) |
- * |             2 | `SDA`/`HSU_TX` (via RS-232 transceiver) |
- * |             5 | `GND`, `I0`, `I1`                       |
+ * | "Network" pin | 573 signal | Module signal                           |
+ * | ------------: | :--------- | :-------------------------------------- |
+ * |             1 | `TX`       | `SCL`/`HSU_RX` (via RS-232 transceiver) |
+ * |             2 | `RX`       | `SDA`/`HSU_TX` (via RS-232 transceiver) |
+ * |             5 | `GND`      | `GND`, `I0`, `I1`                       |
  *
  * The module and transceiver will have to be powered from an external source as
  * the "network" port is galvanically isolated from the rest of the system.

@@ -56,25 +56,25 @@ void init(void) {
 	SPU_CTRL = 0;
 	_waitForStatus(0x3f, 0);
 
-	SPU_MASTER_VOL_L = 0;
-	SPU_MASTER_VOL_R = 0;
-	SPU_REVERB_VOL_L = 0;
-	SPU_REVERB_VOL_R = 0;
-	SPU_REVERB_ADDR  = SPU_RAM_END / 8;
+	SPU_MVOLL = 0;
+	SPU_MVOLR = 0;
+	SPU_EVOLL = 0;
+	SPU_EVOLR = 0;
+	SPU_ESA   = SPU_RAM_END / 8;
 
-	SPU_FLAG_FM1     = 0;
-	SPU_FLAG_FM2     = 0;
-	SPU_FLAG_NOISE1  = 0;
-	SPU_FLAG_NOISE2  = 0;
-	SPU_FLAG_REVERB1 = 0;
-	SPU_FLAG_REVERB2 = 0;
+	SPU_PMON0 = 0;
+	SPU_PMON1 = 0;
+	SPU_NON0  = 0;
+	SPU_NON1  = 0;
+	SPU_EON0  = 0;
+	SPU_EON1  = 0;
 
 	SPU_CTRL = SPU_CTRL_ENABLE;
 	_waitForStatus(0x3f, 0);
 
 	// Place a dummy (silent) looping block at the beginning of SPU RAM.
-	SPU_DMA_CTRL = 4;
-	SPU_ADDR     = DUMMY_BLOCK_OFFSET / 8;
+	SPU_FIFO_CTRL = 4;
+	SPU_TSA       = DUMMY_BLOCK_OFFSET / 8;
 
 	SPU_DATA = 0x0500;
 	for (int i = 7; i > 0; i--)
@@ -84,7 +84,7 @@ void init(void) {
 	_waitForStatus(SPU_STAT_XFER_BITMASK | SPU_STAT_BUSY, SPU_STAT_XFER_WRITE);
 	delayMicroseconds(100);
 
-	SPU_CTRL = SPU_CTRL_UNMUTE | SPU_CTRL_ENABLE;
+	SPU_CTRL = SPU_CTRL_DAC_ENABLE | SPU_CTRL_ENABLE;
 	stopChannels(ALL_CHANNELS);
 }
 
@@ -105,7 +105,7 @@ Channel getFreeChannel(void) {
 	}
 #else
 	for (Channel ch = 0; ch < NUM_CHANNELS; ch++) {
-		if (!SPU_CH_ADSR_VOL(ch))
+		if (!SPU_CH_ENVX(ch))
 			return ch;
 	}
 #endif
@@ -119,7 +119,7 @@ ChannelMask getFreeChannels(int count) {
 	ChannelMask mask = 0;
 
 	for (Channel ch = 0; ch < NUM_CHANNELS; ch++) {
-		if (SPU_CH_ADSR_VOL(ch))
+		if (SPU_CH_ENVX(ch))
 			continue;
 
 		mask |= 1 << ch;
@@ -135,21 +135,21 @@ ChannelMask getFreeChannels(int count) {
 void stopChannels(ChannelMask mask) {
 	mask &= ALL_CHANNELS;
 
-	SPU_FLAG_OFF1 = (mask >>  0) & 0xffff;
-	SPU_FLAG_OFF2 = (mask >> 16) & 0xffff;
+	SPU_KOFF0 = (mask >>  0) & 0xffff;
+	SPU_KOFF1 = (mask >> 16) & 0xffff;
 
 	for (Channel ch = 0; mask; ch++, mask >>= 1) {
 		if (!(mask & 1))
 			continue;
 
-		SPU_CH_VOL_L(ch) = 0;
-		SPU_CH_VOL_R(ch) = 0;
-		SPU_CH_FREQ(ch)  = 1 << 12;
-		SPU_CH_ADDR(ch)  = DUMMY_BLOCK_OFFSET / 8;
+		SPU_CH_VOLL (ch) = 0;
+		SPU_CH_VOLR (ch) = 0;
+		SPU_CH_PITCH(ch) = 1 << 12;
+		SPU_CH_SSA  (ch) = DUMMY_BLOCK_OFFSET / 8;
 	}
 
-	SPU_FLAG_ON1 = (mask >>  0) & 0xffff;
-	SPU_FLAG_ON2 = (mask >> 16) & 0xffff;
+	SPU_KON0 = (mask >>  0) & 0xffff;
+	SPU_KON1 = (mask >> 16) & 0xffff;
 }
 
 size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
@@ -170,9 +170,9 @@ size_t upload(uint32_t offset, const void *data, size_t length, bool wait) {
 	SPU_CTRL = ctrlReg;
 	_waitForStatus(SPU_STAT_XFER_BITMASK, 0);
 
-	SPU_DMA_CTRL = 4;
-	SPU_ADDR     = offset / 8;
-	SPU_CTRL     = ctrlReg | SPU_CTRL_XFER_DMA_WRITE;
+	SPU_FIFO_CTRL = 4;
+	SPU_TSA       = offset / 8;
+	SPU_CTRL      = ctrlReg | SPU_CTRL_XFER_DMA_WRITE;
 	_waitForStatus(SPU_STAT_XFER_BITMASK, SPU_STAT_XFER_DMA_WRITE);
 
 	DMA_MADR(DMA_SPU) = uint32_t(data);
@@ -206,9 +206,9 @@ size_t download(uint32_t offset, void *data, size_t length, bool wait) {
 	SPU_CTRL = ctrlReg;
 	_waitForStatus(SPU_STAT_XFER_BITMASK, 0);
 
-	SPU_DMA_CTRL = 4;
-	SPU_ADDR     = offset / 8;
-	SPU_CTRL     = ctrlReg | SPU_CTRL_XFER_DMA_READ;
+	SPU_FIFO_CTRL = 4;
+	SPU_TSA       = offset / 8;
+	SPU_CTRL      = ctrlReg | SPU_CTRL_XFER_DMA_READ;
 	_waitForStatus(SPU_STAT_XFER_BITMASK, SPU_STAT_XFER_DMA_READ);
 
 	DMA_MADR(DMA_SPU) = uint32_t(data);
@@ -245,17 +245,17 @@ Channel Sound::play(uint16_t left, uint16_t right, Channel ch) const {
 	if (!offset)
 		return -1;
 
-	SPU_CH_VOL_L(ch) = left;
-	SPU_CH_VOL_R(ch) = right;
-	SPU_CH_FREQ (ch) = sampleRate;
-	SPU_CH_ADDR (ch) = offset / 8;
+	SPU_CH_VOLL (ch) = left;
+	SPU_CH_VOLR (ch) = right;
+	SPU_CH_PITCH(ch) = sampleRate;
+	SPU_CH_SSA  (ch) = offset / 8;
 	SPU_CH_ADSR1(ch) = 0x00ff;
 	SPU_CH_ADSR2(ch) = 0x0000;
 
 	if (ch < 16)
-		SPU_FLAG_ON1 = 1 << ch;
+		SPU_KON0 = 1 << ch;
 	else
-		SPU_FLAG_ON2 = 1 << (ch - 16);
+		SPU_KON1 = 1 << (ch - 16);
 
 	return ch;
 }
@@ -299,15 +299,15 @@ void Stream::_configureIRQ(void) const {
 	auto tempMask    = _channelMask;
 	auto chunkOffset = _getChunkOffset(_head);
 
-	SPU_IRQ_ADDR = chunkOffset / 8;
-	SPU_CTRL     = ctrlReg | SPU_CTRL_IRQ_ENABLE;
+	SPU_IRQA = chunkOffset / 8;
+	SPU_CTRL = ctrlReg | SPU_CTRL_IRQ_ENABLE;
 
 	for (Channel ch = 0; tempMask; ch++, tempMask >>= 1) {
 		if (!(tempMask & 1))
 			continue;
 
-		SPU_CH_LOOP_ADDR(ch) = chunkOffset / 8;
-		chunkOffset         += interleave;
+		SPU_CH_LSAX(ch) = chunkOffset / 8;
+		chunkOffset    += interleave;
 	}
 }
 
@@ -359,18 +359,18 @@ ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
 		// Assume each pair of channels is a stereo pair. If the channel count
 		// is odd, assume the last channel is mono.
 		if (isRightCh) {
-			SPU_CH_VOL_L(ch) = 0;
-			SPU_CH_VOL_R(ch) = right;
+			SPU_CH_VOLL(ch) = 0;
+			SPU_CH_VOLR(ch) = right;
 		} else if (tempMask != 1) {
-			SPU_CH_VOL_L(ch) = left;
-			SPU_CH_VOL_R(ch) = 0;
+			SPU_CH_VOLL(ch) = left;
+			SPU_CH_VOLR(ch) = 0;
 		} else {
-			SPU_CH_VOL_L(ch) = left;
-			SPU_CH_VOL_R(ch) = right;
+			SPU_CH_VOLL(ch) = left;
+			SPU_CH_VOLR(ch) = right;
 		}
 
-		SPU_CH_FREQ(ch)  = sampleRate;
-		SPU_CH_ADDR(ch)  = chunkOffset / 8;
+		SPU_CH_PITCH(ch) = sampleRate;
+		SPU_CH_SSA  (ch) = chunkOffset / 8;
 		SPU_CH_ADSR1(ch) = 0x00ff;
 		SPU_CH_ADSR2(ch) = 0x0000;
 
@@ -381,8 +381,8 @@ ChannelMask Stream::start(uint16_t left, uint16_t right, ChannelMask mask) {
 	_channelMask = mask;
 	handleInterrupt();
 
-	SPU_FLAG_ON1 = (mask >>  0) & 0xffff;
-	SPU_FLAG_ON2 = (mask >> 16) & 0xffff;
+	SPU_KON0 = (mask >>  0) & 0xffff;
+	SPU_KON1 = (mask >> 16) & 0xffff;
 	return mask;
 }
 
@@ -396,7 +396,6 @@ void Stream::stop(void) {
 
 	stopChannels(_channelMask);
 	_channelMask = 0;
-
 	flushWriteQueue();
 }
 

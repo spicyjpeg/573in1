@@ -18,9 +18,7 @@ from collections.abc import Generator
 from struct          import Struct
 from typing          import Any, BinaryIO, TextIO
 
-from .mips import \
-	ImmInstruction, Instruction, Opcode, Register, encodeJAL, encodeJR, \
-	parseInstruction
+from .mips import *
 
 ## Executable analyzer
 

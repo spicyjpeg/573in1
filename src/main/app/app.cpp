@@ -31,6 +31,7 @@
 #include "main/app/threads.hpp"
 #include "main/workers/miscworkers.hpp"
 #include "main/uibase.hpp"
+#include "ps1/cop0.h"
 #include "ps1/system.h"
 
 /* App class */
@@ -289,7 +290,11 @@ void App::_runWorker(bool (*func)(App &app), bool playSound) {
 
 	sys573::getRTCTime(date);
 
-	auto &sound = ((date.month == 11) && (date.day == 20))
+	auto &sound = (
+		(date.month == 11) &&
+		(date.day   == 20) &&
+		_ctx.sounds[ui::SOUND_STARTUP_ALT].offset
+	)
 		? _ctx.sounds[ui::SOUND_STARTUP_ALT]
 		: _ctx.sounds[ui::SOUND_STARTUP];
 

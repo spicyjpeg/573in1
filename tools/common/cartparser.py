@@ -15,10 +15,9 @@
 # 573in1. If not, see <https://www.gnu.org/licenses/>.
 
 import logging, re
-from collections.abc import Sequence
-from dataclasses     import dataclass
-from itertools       import product
-from struct          import Struct
+from dataclasses import dataclass
+from itertools   import product
+from struct      import Struct
 
 from .cart   import *
 from .gamedb import *
@@ -300,7 +299,7 @@ def detectHeader(
 
 ## Identifier detection
 
-_TID_WIDTHS: Sequence[int] = 16, 14
+_TID_WIDTHS: tuple[int, ...] = 16, 14
 
 @dataclass
 class DetectedIdentifiers:

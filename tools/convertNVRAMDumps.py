@@ -20,7 +20,7 @@ __author__  = "spicyjpeg"
 
 import os
 from argparse        import ArgumentParser, Namespace
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from pathlib         import Path
 from shutil          import copyfile
 from typing          import BinaryIO, Callable
@@ -66,7 +66,7 @@ def mergeDump(
 
 ## Main
 
-_RENAMED_FILES: Sequence[tuple[str, str]] = (
+_RENAMED_FILES: tuple[tuple[str, str], ...] = (
 	( "bios.bin", "700a01.22g" ),
 	( "rtc.bin",  "m48t58" )
 )

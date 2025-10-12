@@ -28,7 +28,7 @@ namespace gpu {
 
 /* Font metrics class */
 
-static constexpr size_t METRICS_CODE_POINT_BITS = 21;
+static constexpr size_t FONT_CODE_POINT_BITS = 21;
 
 static constexpr util::UTF8CodePoint FONT_INVALID_CHAR = 0xfffd;
 
@@ -48,14 +48,14 @@ public:
 
 class FontMetricsEntry {
 public:
-	uint32_t      codePoint;
-	CharacterSize size;
+	util::UTF8CodePoint codePoint;
+	CharacterSize       size;
 
 	inline util::Hash getHash(void) const {
-		return codePoint & ((1 << METRICS_CODE_POINT_BITS) - 1);
+		return codePoint & ((1 << FONT_CODE_POINT_BITS) - 1);
 	}
 	inline uint32_t getChained(void) const {
-		return codePoint >> METRICS_CODE_POINT_BITS;
+		return codePoint >> FONT_CODE_POINT_BITS;
 	}
 };
 

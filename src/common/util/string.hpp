@@ -27,7 +27,10 @@ extern const char HEX_CHARSET[], BASE41_CHARSET[];
 
 size_t hexValueToString(char *output, uint32_t value, size_t numDigits = 8);
 size_t hexToString(
-	char *output, const uint8_t *input, size_t length, char separator = 0
+	char          *output,
+	const uint8_t *input,
+	size_t        length,
+	char          separator = 0
 );
 size_t serialNumberToString(char *output, const uint8_t *input);
 size_t traceIDToString(char *output, const uint8_t *input);
@@ -64,8 +67,10 @@ static inline size_t getLZ4InPlaceMargin(size_t inputLength) {
 }
 
 void decompressLZ4(
-	uint8_t *output, const uint8_t *input, size_t maxOutputLength,
-	size_t inputLength
+	uint8_t       *output,
+	const uint8_t *input,
+	size_t        maxOutputLength,
+	size_t        inputLength
 );
 
 }

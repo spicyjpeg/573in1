@@ -21,12 +21,12 @@ from pathlib         import Path
 
 from .cart      import *
 from .decompile import AnalysisError, PSEXEAnalyzer
-from .mips      import ImmInstruction, Opcode, Register, encodeADDIU, encodeJR
+from .mips      import *
 from .util      import InterleavedFile
 
 ## MAME NVRAM directory reader
 
-_PCMCIA_CARD_SIZES: Sequence[int] = 8, 16, 32, 64
+_PCMCIA_CARD_SIZES: tuple[int, ...] = 8, 16, 32, 64
 
 def _getPCMCIACardSize(path: Path, card: int) -> int | None:
 	for size in _PCMCIA_CARD_SIZES:

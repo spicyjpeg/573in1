@@ -26,6 +26,7 @@ from typing          import Any
 
 import lz4.block
 from common.assets import *
+from common.image  import TIMImage, generateLEDImage, quantizeImage
 from common.util   import normalizeFileName
 from PIL           import Image
 
@@ -47,7 +48,9 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> bytes | bytearray
 			# The file is read in text mode and then encoded back to binary
 			# manually in order to translate any CRLF line endings to LF only.
 			with open(
-				sourceDir / asset["source"], "rt", encoding = "utf-8"
+				sourceDir / asset["source"],
+				"rt",
+				encoding = "utf-8"
 			) as file:
 				return file.read().encode("utf-8")
 
@@ -70,6 +73,14 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> bytes | bytearray
 			)
 
 			return tim.serialize()
+
+		case "led":
+			image: Image.Image = quantizeImage(
+				Image.open(sourceDir / asset["source"]),
+				4
+			)
+
+			return generateLEDImage(image)
 
 		case "metrics":
 			return generateFontMetrics(

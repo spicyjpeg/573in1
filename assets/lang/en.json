@@ -1,12 +1,12 @@
 {
 	"AboutScreen": {
-		"title":  "▸ About 573in1",
-		"prompt": "▸ Use ◁▷ to scroll. Press ▭ to go back."
+		"title":  "⏵ About 573in1",
+		"prompt": "⏵ Use ◁▷ to scroll. Press ▭ to go back."
 	},
 
 	"AnalogTestScreen": {
-		"title":  "▸ Analog input test",
-		"prompt": "▸ Press and hold ▭ to go back.",
+		"title":  "⏵ Analog input test",
+		"prompt": "⏵ Press and hold ▭ to go back.",
 
 		"header": {
 			"singleEnded":  "Single-ended mode:\n",
@@ -135,9 +135,9 @@
 	},
 
 	"AudioTestScreen": {
-		"title":      "▸ Audio output test",
+		"title":      "⏵ Audio output test",
 		"prompt":     "Note that the speaker amplifier and analog audio passthrough are disabled by default.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"playLeft":    "Play sound on left channel",
 		"playRight":   "Play sound on right channel",
@@ -157,9 +157,9 @@
 	},
 
 	"ButtonMappingScreen": {
-		"title":      "▸ Select button mapping",
+		"title":      "⏵ Select button mapping",
 		"prompt":     "Use ▭ or the Test button to select a mapping preset suitable for your cabinet or JAMMA setup. Other buttons will be enabled once a mapping is selected.",
-		"itemPrompt": "▸ Press and hold ▭ or Test to confirm",
+		"itemPrompt": "⏵ Press and hold ▭ or Test to confirm",
 
 		"joystick":   "JAMMA supergun or joystick/buttons",
 		"ddrCab":     "Dance Dance Revolution (2-player) cabinet",
@@ -179,8 +179,8 @@
 	},
 
 	"CartActionsScreen": {
-		"title":      "▸ Cartridge options",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"title":      "⏵ Cartridge options",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"qrDump": {
 			"name":   "Dump cartridge as QR code",
@@ -231,7 +231,7 @@
 	},
 
 	"CartInfoScreen": {
-		"title": "▸ Cartridge information",
+		"title": "⏵ Cartridge information",
 
 		"digitalIO": {
 			"header":  "Digital I/O board:\n",
@@ -278,9 +278,9 @@
 			}
 		},
 		"prompt": {
-			"locked":   "▸ Press ▭ to unlock, hold ◁▷ + ▭ to go back.",
-			"unlocked": "▸ Press ▭ to continue, hold ◁▷ + ▭ to go back.",
-			"error":    "▸ Hold ◁▷ + ▭ to go back."
+			"locked":   "⏵ Press ▭ to unlock, hold ◁▷ + ▭ to go back.",
+			"unlocked": "⏵ Press ▭ to continue, hold ◁▷ + ▭ to go back.",
+			"error":    "⏵ Hold ◁▷ + ▭ to go back."
 		},
 
 		"unlockWarning": {
@@ -291,8 +291,8 @@
 	},
 
 	"ChecksumScreen": {
-		"title":  "▸ Storage device checksums",
-		"prompt": "▸ Press ▭ to go back.",
+		"title":  "⏵ Storage device checksums",
+		"prompt": "⏵ Press ▭ to go back.",
 
 		"bios":        "BIOS ROM (512 KB):\t\t\t\t%08X\n",
 		"rtc":         "RTC RAM (8184 bytes):\t\t\t%08X\n",
@@ -302,8 +302,8 @@
 	},
 
 	"ColorIntensityScreen": {
-		"title":  "▸ Monitor color intensity test",
-		"prompt": "▸ Press ▭ to go back.",
+		"title":  "⏵ Monitor color intensity test",
+		"prompt": "⏵ Press ▭ to go back.",
 
 		"white": "White",
 		"red":   "Red",
@@ -318,16 +318,16 @@
 	},
 
 	"FileBrowserScreen": {
-		"title":      "▸ Select file",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"title":      "⏵ Select file",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"parentDir":   "[Parent directory]",
 		"subdirError": "An error occurred while enumerating files in the selected subdirectory. The filesystem may be corrupted or otherwise inaccessible.\n\nPath: %s\nPress the Test button to view debug logs."
 	},
 
 	"FilePickerScreen": {
-		"title":         "▸ Select drive",
-		"itemPrompt":    "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"title":         "⏵ Select drive",
+		"itemPrompt":    "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 		"noDeviceError": "No drives have been detected. Make sure the drives are receiving power and appropriately configured as primary or secondary.\n\nPress the Test button to view debug logs.",
 		"noFilesError":  "No files or directories have been found in the root of the selected drive's filesystem.",
 
@@ -354,18 +354,18 @@
 	},
 
 	"GeometryScreen": {
-		"title":  "▸ Monitor geometry test",
-		"prompt": "▸ Press ▭ to go back."
+		"title":  "⏵ Monitor geometry test",
+		"prompt": "⏵ Press ▭ to go back."
 	},
 
 	"HexdumpScreen": {
-		"title":  "▸ Cartridge dump",
-		"prompt": "▸ Use ◁▷ to scroll. Press ▭ to go back."
+		"title":  "⏵ Cartridge dump",
+		"prompt": "⏵ Use ◁▷ to scroll. Press ▭ to go back."
 	},
 
 	"IDEInfoScreen": {
-		"title":  "▸ IDE device information",
-		"prompt": "▸ Use ◁▷ to scroll. Press ▭ to go back.",
+		"title":  "⏵ IDE device information",
+		"prompt": "⏵ Use ◁▷ to scroll. Press ▭ to go back.",
 
 		"device": {
 			"header": {
@@ -399,8 +399,8 @@
 	},
 
 	"JAMMATestScreen": {
-		"title":  "▸ JAMMA input test",
-		"prompt": "▸ Press and hold ▭ to go back.",
+		"title":  "⏵ JAMMA input test",
+		"prompt": "⏵ Press and hold ▭ to go back.",
 
 		"noInputs":   "No button is currently held down. If a button does not appear here when pressed, make sure the JAMMA harness is wired up correctly and the button is not damaged.\n",
 		"inputs":     "The following buttons are currently held down:\n",
@@ -447,17 +447,17 @@
 	},
 
 	"LanguageScreen": {
-		"title":      "▸ Select language",
+		"title":      "⏵ Select language",
 		"prompt":     "Note that translations for languages other than English may not be 100% complete or accurate.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"en": "English",
 		"it": "Italiano"
 	},
 
 	"MainMenuScreen": {
-		"title":      "▸ 573in1",
-		"itemPrompt": "▸ Use ◁▷ to move, select by pressing ▭",
+		"title":      "⏵ 573in1",
+		"itemPrompt": "⏵ Use ◁▷ to move, select by pressing ▭",
 
 		"cartInfo": {
 			"name":   "Manage security cartridge",
@@ -517,8 +517,8 @@
 	},
 
 	"NVRAMActionsScreen": {
-		"title":      "▸ Storage device options",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"title":      "⏵ Device options",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 		"cardError":  "The selected PCMCIA slot is empty.\n\nTurn off the system and insert a supported PCMCIA linear flash card in order to continue. DO NOT HOTPLUG CARDS; hotplugging may damage both the 573 and the card.",
 
 		"runExecutable": {
@@ -623,8 +623,8 @@
 	},
 
 	"NVRAMInfoScreen": {
-		"title":  "▸ Storage device information",
-		"prompt": "▸ Press ▭ for more options, hold ◁▷ + ▭ to go back.",
+		"title":  "⏵ Flash and NVRAM device information",
+		"prompt": "⏵ Press ▭ for more options, hold ◁▷ + ▭ to go back.",
 
 		"bios": {
 			"header":     "BIOS ROM:\n",
@@ -673,20 +673,20 @@
 	},
 
 	"QRCodeScreen": {
-		"title":  "▸ Cartridge dump",
+		"title":  "⏵ Cartridge dump",
 		"prompt": "Scan this code and paste the resulting string into the decodeCartDump.py script provided alongside 573in1 to obtain a dump of the cartridge. Press ▭ to go back."
 	},
 
 	"ReflashGameScreen": {
-		"title":      "▸ Select game to convert cartridge to",
+		"title":      "⏵ Select game to convert cartridge to",
 		"prompt":     "Make sure you select the correct region. Note that cartridges can only be converted for use with games that accept the same cartridge type.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back"
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back"
 	},
 
 	"ResolutionScreen": {
-		"title":      "▸ Select screen resolution",
+		"title":      "⏵ Select screen resolution",
 		"prompt":     "Select a resolution appropriate for your monitor or upscaler setup. Note that interlaced modes may be subject to flickering.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"progressive":   "%dx%d, progressive",
 		"interlaced":    "%dx%d, interlaced as 480i",
@@ -708,8 +708,8 @@
 	},
 
 	"TestMenuScreen": {
-		"title":      "▸ Hardware test suite",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"title":      "⏵ Hardware test suite",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"jammaTest": {
 			"name":   "Test JAMMA inputs",
@@ -723,6 +723,10 @@
 			"name":   "Test audio output and speaker amplifier",
 			"prompt": "Play a sound on either audio output channel and test the system's onboard speaker amplification circuitry."
 		},
+		"ledMatrixTest": {
+			"name":   "Test Punch Mania LED dot matrix",
+			"prompt": "Display test patterns on the LED dot matrix marquee used in some Punch Mania/Fighting Mania cabinets (if connected)."
+		},
 		"colorIntensity": {
 			"name":   "Check monitor color intensity levels",
 			"prompt": "Display a series of undithered and dithered color bars to help with monitor color level adjustment and calibration."
@@ -734,9 +738,9 @@
 	},
 
 	"UnlockKeyScreen": {
-		"title":      "▸ Select unlocking key",
+		"title":      "⏵ Select unlocking key",
 		"prompt":     "If the cartridge has been converted before, select the game it was last converted to. If it is currently blank, select 00-00-00-00-00-00-00-00.",
-		"itemPrompt": "▸ Press ▭ to select, hold ◁▷ + ▭ to go back",
+		"itemPrompt": "⏵ Press ▭ to select, hold ◁▷ + ▭ to go back",
 
 		"autoUnlock":   "Use key from identified game (recommended)",
 		"useCustomKey": "Enter key manually...",
@@ -753,6 +757,9 @@
 	},
 
 	"WorkerStatusScreen": {
-		"title": "Working..."
+		"title": "Working...",
+
+		"ledMatrixWarning":  "Do not turn off.",
+		"ledMatrixProgress": "Progress:"
 	}
 }

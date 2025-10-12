@@ -202,46 +202,46 @@ void Context::_applyResolution(
 
 Context::Context(
 	VideoMode mode,
-	int       width,
-	int       height,
+	int       w,
+	int       h,
 	bool      forceInterlace,
 	bool      sideBySide
 ) : _lastTexpage(0) {
 	_buffers[0].displayList.allocate<uint32_t>(_DISPLAY_LIST_SIZE);
 	_buffers[1].displayList.allocate<uint32_t>(_DISPLAY_LIST_SIZE);
 
-	setResolution(mode, width, height, forceInterlace, sideBySide);
+	setResolution(mode, w, h, forceInterlace, sideBySide);
 }
 
 void Context::setResolution(
 	VideoMode mode,
-	int       _width,
-	int       _height,
+	int       w,
+	int       h,
 	bool      forceInterlace,
 	bool      sideBySide
 ) {
 	util::CriticalSection sec;
 
-	width       = _width;
-	height      = _height;
+	width       = w;
+	height      = h;
 	refreshRate = mode ? 50 : 60;
 
 	for (int fb = 0; fb < 2; fb++) {
 		auto &clip = _buffers[fb].clip;
 
-		if (_height > 256) {
+		if (h > 256) {
 			clip.x1 = 0;
 			clip.y1 = 0;
 		} else if (sideBySide) {
-			clip.x1 = fb ? _width : 0;
+			clip.x1 = fb ? w : 0;
 			clip.y1 = 0;
 		} else {
 			clip.x1 = 0;
-			clip.y1 = fb ? _height : 0;
+			clip.y1 = fb ? h : 0;
 		}
 
-		clip.x2 = clip.x1 + _width  - 1;
-		clip.y2 = clip.y1 + _height - 1;
+		clip.x2 = clip.x1 + w - 1;
+		clip.y2 = clip.y1 + h - 1;
 	}
 
 	for (auto &buffer : _buffers) {
@@ -303,7 +303,7 @@ uint32_t *Context::newPacket(size_t length) {
 	return ptr;
 }
 
-void Context::newLayer(int x, int y, int drawWidth, int drawHeight) {
+void Context::newLayer(int x, int y, int w, int h) {
 	auto &clip = _buffers[_currentBuffer].clip;
 
 	x += clip.x1;
@@ -317,8 +317,8 @@ void Context::newLayer(int x, int y, int drawWidth, int drawHeight) {
 		util::max(int(clip.y1), y)
 	);
 	cmd[2] = gp0_fbOffset2(
-		util::min(int(clip.x2), x + drawWidth  - 1),
-		util::min(int(clip.y2), y + drawHeight - 1)
+		util::min(int(clip.x2), x + w - 1),
+		util::min(int(clip.y2), y + h - 1)
 	);
 }
 
@@ -340,26 +340,19 @@ void Context::setBlendMode(BlendMode blendMode, bool dither) {
 	setTexturePage(page, dither);
 }
 
-void Context::drawRect(
-	int   x,
-	int   y,
-	int   width,
-	int   height,
-	Color color,
-	bool  blend
-) {
+void Context::drawRect(int x, int y, int w, int h, Color color, bool blend) {
 	auto cmd = newPacket(3);
 
 	cmd[0] = color | gp0_rectangle(false, false, blend);
 	cmd[1] = gp0_xy(x, y);
-	cmd[2] = gp0_xy(width, height);
+	cmd[2] = gp0_xy(w, h);
 }
 
 void Context::drawGradientRectH(
 	int   x,
 	int   y,
-	int   width,
-	int   height,
+	int   w,
+	int   h,
 	Color left,
 	Color right,
 	bool  blend
@@ -369,18 +362,18 @@ void Context::drawGradientRectH(
 	cmd[0] = left | gp0_shadedQuad(true, false, blend);
 	cmd[1] = gp0_xy(x, y);
 	cmd[2] = right;
-	cmd[3] = gp0_xy(x + width, y);
+	cmd[3] = gp0_xy(x + w, y);
 	cmd[4] = left;
-	cmd[5] = gp0_xy(x, y + height);
+	cmd[5] = gp0_xy(x, y + h);
 	cmd[6] = right;
-	cmd[7] = gp0_xy(x + width, y + height);
+	cmd[7] = gp0_xy(x + w, y + h);
 }
 
 void Context::drawGradientRectV(
 	int   x,
 	int   y,
-	int   width,
-	int   height,
+	int   w,
+	int   h,
 	Color top,
 	Color bottom,
 	bool  blend
@@ -390,18 +383,18 @@ void Context::drawGradientRectV(
 	cmd[0] = top | gp0_shadedQuad(true, false, blend);
 	cmd[1] = gp0_xy(x, y);
 	cmd[2] = top;
-	cmd[3] = gp0_xy(x + width, y);
+	cmd[3] = gp0_xy(x + w, y);
 	cmd[4] = bottom;
-	cmd[5] = gp0_xy(x, y + height);
+	cmd[5] = gp0_xy(x, y + h);
 	cmd[6] = bottom;
-	cmd[7] = gp0_xy(x + width, y + height);
+	cmd[7] = gp0_xy(x + w, y + h);
 }
 
 void Context::drawGradientRectD(
 	int   x,
 	int   y,
-	int   width,
-	int   height,
+	int   w,
+	int   h,
 	Color top,
 	Color middle,
 	Color bottom,
@@ -412,11 +405,11 @@ void Context::drawGradientRectD(
 	cmd[0] = top | gp0_shadedQuad(true, false, blend);
 	cmd[1] = gp0_xy(x, y);
 	cmd[2] = middle;
-	cmd[3] = gp0_xy(x + width, y);
+	cmd[3] = gp0_xy(x + w, y);
 	cmd[4] = middle;
-	cmd[5] = gp0_xy(x, y + height);
+	cmd[5] = gp0_xy(x, y + h);
 	cmd[6] = bottom;
-	cmd[7] = gp0_xy(x + width, y + height);
+	cmd[7] = gp0_xy(x + w, y + h);
 }
 
 /* Image class */

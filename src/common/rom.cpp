@@ -383,10 +383,10 @@ Driver *FlashRegion::newDriver(void) const {
 
 const BIOSRegion  bios;
 const RTCRegion   rtc;
-const FlashRegion flash(0x1000000, SYS573_BANK_FLASH);
+const FlashRegion flash(0x1000000, SYS573_BANK_CTRL_DEV_FLASH);
 const FlashRegion pcmcia[2]{
-	{ 0x4000000, SYS573_BANK_PCMCIA1, sys573::JAMMA_PCMCIA_CD1 },
-	{ 0x4000000, SYS573_BANK_PCMCIA2, sys573::JAMMA_PCMCIA_CD2 }
+	{ 0x4000000, SYS573_BANK_CTRL_DEV_PCMCIA1, sys573::JAMMA_PCMCIA_CD1 },
+	{ 0x4000000, SYS573_BANK_CTRL_DEV_PCMCIA2, sys573::JAMMA_PCMCIA_CD2 }
 };
 
 }

@@ -90,7 +90,7 @@ public:
 		util::clear(buffer, fillCh);
 	}
 
-	void init(int _width, int _height);
+	void init(int w = NUM_LCD_COLUMNS, int h = NUM_LCD_ROWS);
 	void flush(void) const;
 
 	void put(int x, int y, util::UTF8CodePoint codePoint);

@@ -38,7 +38,10 @@ size_t hexValueToString(char *output, uint32_t value, size_t numDigits) {
 }
 
 size_t hexToString(
-	char *output, const uint8_t *input, size_t length, char separator
+	char          *output,
+	const uint8_t *input,
+	size_t        length,
+	char          separator
 ) {
 	size_t outLength = 0;
 
@@ -170,8 +173,10 @@ size_t getUTF8StringLength(const char *str) {
 /* LZ4 decompressor */
 
 void decompressLZ4(
-	uint8_t *output, const uint8_t *input, size_t maxOutputLength,
-	size_t inputLength
+	uint8_t       *output,
+	const uint8_t *input,
+	size_t        maxOutputLength,
+	size_t        inputLength
 ) {
 	auto outputEnd = &output[maxOutputLength];
 	auto inputEnd  = &input[inputLength];

@@ -309,7 +309,7 @@ bool MemoryCardProvider::init(blkdev::Device &dev) {
 		return false;
 	if (dev.sectorLength != MC_SECTOR_LENGTH)
 		return false;
-	if (!_records.allocate<MemoryCardRecord>(MC_MAX_CLUSTERS))
+	if (!_io.init(dev))
 		return false;
 
 	util::MutexLock lock(_mutex, uint32_t(1), _MUTEX_TIMEOUT);
@@ -319,19 +319,13 @@ bool MemoryCardProvider::init(blkdev::Device &dev) {
 		return 0;
 	}
 
-	MemoryCardHeader header;
-
-	if (dev.read(&header, MC_LBA_HEADER, 1))
+	if (!_records.allocate<MemoryCardRecord>(MC_MAX_CLUSTERS))
 		return false;
-	if (!header.validateMagic() || !header.validateChecksum()) {
-		LOG_FS("invalid memory card header");
+
+	if (dev.read(_records.ptr, MC_LBA_RECORD_TABLE, MC_MAX_CLUSTERS)) {
+		LOG_FS("record table read failed");
 		return false;
 	}
-
-	if (!_io.init(dev))
-		return false;
-	if (dev.read(_records.ptr, MC_LBA_RECORD_TABLE, MC_MAX_CLUSTERS))
-		return false;
 
 	type           = MEMORY_CARD;
 	capacity       = MC_CLUSTER_LENGTH * MC_MAX_CLUSTERS;
@@ -341,7 +335,7 @@ bool MemoryCardProvider::init(blkdev::Device &dev) {
 	// stores them as part of its own configuration sector.
 	MemoryCardNocashConfig config;
 
-	if (!dev.read(&config, MC_LBA_NOCASH_CONFIG, 1)) {
+	if (_io.readDirect(&config, MC_LBA_NOCASH_CONFIG)) {
 		if (config.validateMagic() && config.validateChecksum())
 			__builtin_strncpy(
 				volumeLabel,

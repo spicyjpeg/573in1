@@ -60,7 +60,12 @@ def toPrintableChar(value: int) -> str:
 
 	return chr(value)
 
-def hexdumpToFile(data: Sequence[int], output: TextIO, width: int = 16):
+def hexdumpToFile(
+	data:   Sequence[int],
+	output: TextIO,
+	width:  int = 16,
+	indent: str = ""
+):
 	for i in range(0, len(data), width):
 		hexBytes: map[str] = map(lambda value: f"{value:02x}", data[i:i + width])
 		hexLine:  str      = " ".join(hexBytes).ljust(width * 3 - 1)
@@ -68,7 +73,22 @@ def hexdumpToFile(data: Sequence[int], output: TextIO, width: int = 16):
 		asciiBytes: map[str] = map(toPrintableChar, data[i:i + width])
 		asciiLine:  str      = "".join(asciiBytes).ljust(width)
 
-		output.write(f"  {i:04x}: {hexLine} |{asciiLine}|\n")
+		output.write(f"{indent}{i:04x}: {hexLine} |{asciiLine}|\n")
+
+def arrayDumpToFile(
+	data:   Sequence[int],
+	output: TextIO,
+	width:  int = 12,
+	indent: str = ""
+):
+	for i in range(0, len(data), width):
+		hexBytes: map[str] = map(lambda value: f"{value:#04x}", data[i:i + width])
+		hexLine:  str      = ", ".join(hexBytes)
+
+		if (i + width) < len(data):
+			hexLine += ","
+
+		output.write(f"{indent}{hexLine}\n")
 
 def serialNumberToString(_id: bytes | bytearray) -> str:
 	value: int = int.from_bytes(_id[1:7], "little")

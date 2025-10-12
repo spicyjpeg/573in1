@@ -144,38 +144,31 @@ public:
 
 	Context(
 		VideoMode mode,
-		int       width,
-		int       height,
+		int       w,
+		int       h,
 		bool      forceInterlace = false,
 		bool      sideBySide     = false
 	);
 	void setResolution(
 		VideoMode mode,
-		int       width,
-		int       height,
+		int       w,
+		int       h,
 		bool      forceInterlace = false,
 		bool      sideBySide     = false
 	);
 	void flip(void);
 
 	uint32_t *newPacket(size_t length);
-	void newLayer(int x, int y, int drawWidth, int drawHeight);
+	void newLayer(int x, int y, int w, int h);
 	void setTexturePage(uint16_t page, bool dither = false);
 	void setBlendMode(BlendMode blendMode, bool dither = false);
 
-	void drawRect(
-		int   x,
-		int   y,
-		int   width,
-		int   height,
-		Color color,
-		bool  blend = false
-	);
+	void drawRect(int x, int y, int w, int h, Color color, bool blend = false);
 	void drawGradientRectH(
 		int   x,
 		int   y,
-		int   width,
-		int   height,
+		int   w,
+		int   h,
 		Color left,
 		Color right,
 		bool  blend = false
@@ -183,8 +176,8 @@ public:
 	void drawGradientRectV(
 		int   x,
 		int   y,
-		int   width,
-		int   height,
+		int   w,
+		int   h,
 		Color top,
 		Color bottom,
 		bool  blend = false
@@ -192,8 +185,8 @@ public:
 	void drawGradientRectD(
 		int   x,
 		int   y,
-		int   width,
-		int   height,
+		int   w,
+		int   h,
 		Color top,
 		Color middle,
 		Color bottom,
