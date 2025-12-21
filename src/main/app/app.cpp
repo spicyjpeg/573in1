@@ -119,12 +119,14 @@ static const char *const _UI_SOUND_PATHS[ui::NUM_UI_SOUNDS]{
 };
 
 void App::_loadResources(void) {
-	_fileIO.loadStruct(_ctx.colors,       "res:/assets/palette.dat");
-	_fileIO.loadTIM(_background.tile,     "res:/assets/textures/background.tim");
-	_fileIO.loadTIM(_ctx.font.image,      "res:/assets/textures/font.tim");
-	_fileIO.loadData(_ctx.font.metrics,   "res:/assets/textures/font.metrics");
-	_fileIO.loadTIM(_splashOverlay.image, "res:/assets/textures/splash.tim");
-	_fileIO.loadData(_stringTable,        "res:/assets/lang/en.lang");
+	_fileIO.loadStruct(_ctx.colors,            "res:/assets/palette.dat");
+	_fileIO.loadTIM   (_background.tile,       "res:/assets/textures/background.tim");
+	_fileIO.loadTIM   (_ctx.font.image,        "res:/assets/textures/font.tim");
+	_fileIO.loadData  (_ctx.font.metrics,      "res:/assets/textures/font.metrics");
+	_fileIO.loadTIM   (_ctx.smallFont.image,   "res:/assets/textures/smallfont.tim");
+	_fileIO.loadData  (_ctx.smallFont.metrics, "res:/assets/textures/smallfont.metrics");
+	_fileIO.loadTIM   (_splashOverlay.image,   "res:/assets/textures/splash.tim");
+	_fileIO.loadData  (_stringTable,           "res:/assets/lang/en.lang");
 
 	uint32_t spuOffset = spu::DUMMY_BLOCK_END;
 

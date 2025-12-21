@@ -25,6 +25,7 @@ __all__ = (
 	"decompile",
 	"gamedb",
 	"image",
+	"ledmatrix",
 	"mips",
 	"util"
 )

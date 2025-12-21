@@ -25,21 +25,30 @@ from pathlib         import Path
 from typing          import Any
 
 import lz4.block
-from common.assets import *
-from common.image  import TIMImage, generateLEDImage, quantizeImage
-from common.util   import normalizeFileName
-from PIL           import Image
+from common.assets    import *
+from common.image     import TIMImage, quantizeImage
+from common.ledmatrix import generateLEDFont, generateLEDImage
+from common.util      import normalizeFileName
+from PIL              import Image
 
 ## Asset conversion
 
-def getJSONObject(asset: Mapping[str, Any], sourceDir: Path, key: str) -> dict:
-	if key in asset:
-		return asset[key]
+def getJSONObject(
+	asset:     Mapping[str, Any],
+	sourceDir: Path,
+	inlineKey: str,
+	sourceKey: str = "source"
+) -> dict:
+	if inlineKey in asset:
+		return asset[inlineKey]
 
-	with open(sourceDir / asset["source"], "rt", encoding = "utf-8") as file:
+	with open(sourceDir / asset[sourceKey], "rt", encoding = "utf-8") as file:
 		return json.load(file)
 
-def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> bytes | bytearray:
+def processAsset(
+	asset:     Mapping[str, Any],
+	sourceDir: Path
+) -> bytes | bytearray:
 	match asset.get("type", "file").strip():
 		case "empty":
 			return bytes(int(asset.get("size", 0)))
@@ -74,31 +83,37 @@ def processAsset(asset: Mapping[str, Any], sourceDir: Path) -> bytes | bytearray
 
 			return tim.serialize()
 
-		case "led":
-			image: Image.Image = quantizeImage(
-				Image.open(sourceDir / asset["source"]),
-				4
-			)
+		case "ledImage":
+			image: Image.Image = Image.open(sourceDir / asset["source"])
 
 			return generateLEDImage(image)
 
+		case "ledFont":
+			image:   Image.Image    = Image.open(sourceDir / asset["source"])
+			metrics: dict[str, Any] = \
+				getJSONObject(asset, sourceDir, "metrics", "metricsSource")
+
+			return generateLEDFont(image, metrics)
+
 		case "metrics":
-			return generateFontMetrics(
-				getJSONObject(asset, sourceDir, "metrics")
-			)
+			metrics: dict[str, Any] = getJSONObject(asset, sourceDir, "metrics")
+
+			return generateFontMetrics(metrics)
 
 		case "palette":
-			return generateColorPalette(
-				getJSONObject(asset, sourceDir, "palette")
-			)
+			palette: dict[str, Any] = getJSONObject(asset, sourceDir, "palette")
+
+			return generateColorPalette(palette)
 
 		case "strings":
-			return generateStringTable(
-				getJSONObject(asset, sourceDir, "strings")
-			)
+			strings: dict[str, Any] = getJSONObject(asset, sourceDir, "strings")
 
-		case "gamedb":
-			return generateGameDB(getJSONObject(asset, sourceDir, "gamedb"))
+			return generateStringTable(strings)
+
+		case "gameDB":
+			gameDB: dict[str, Any] = getJSONObject(asset, sourceDir, "gamedb")
+
+			return generateGameDB(gameDB)
 
 		case _type:
 			raise KeyError(f"unsupported asset type '{_type}'")

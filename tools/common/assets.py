@@ -63,8 +63,8 @@ def generateFontMetrics(
 			| (i << 30)
 		)
 
-	metrics: bytearray = bytearray()
-	metrics           += _METRICS_HEADER_STRUCT.pack(
+	data: bytearray = bytearray()
+	data           += _METRICS_HEADER_STRUCT.pack(
 		_METRICS_HEADER_MAGIC,
 		spaceWidth,
 		tabWidth,
@@ -76,14 +76,14 @@ def generateFontMetrics(
 
 	for entry in hashTable.entries:
 		if entry is None:
-			metrics += bytes(_METRICS_ENTRY_STRUCT.size)
+			data += bytes(_METRICS_ENTRY_STRUCT.size)
 		else:
-			metrics += _METRICS_ENTRY_STRUCT.pack(
+			data += _METRICS_ENTRY_STRUCT.pack(
 				entry.fullHash | (entry.chainIndex << 21),
 				entry.data
 			)
 
-	return metrics
+	return data
 
 ## Color palette generator
 
@@ -249,7 +249,7 @@ class PackageIndexEntry:
 def generatePackageIndex(
 	files:      Mapping[str, PackageIndexEntry],
 	alignment:  int = 2048,
-	numBuckets: int = 256
+	numBuckets: int = 64
 ) -> bytearray:
 	hashTable: HashTableBuilder  = HashTableBuilder(numBuckets)
 	blob:      StringBlobBuilder = StringBlobBuilder(_PACKAGE_STRING_ALIGNMENT)

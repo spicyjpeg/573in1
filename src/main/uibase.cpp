@@ -295,7 +295,7 @@ void TiledBackground::draw(Context &ctx, bool active) const {
 }
 
 void TextOverlay::draw(Context &ctx, bool active) const {
-	int lineHeight = ctx.font.getLineHeight();
+	int lineHeight = ctx.smallFont.getLineHeight();
 
 	gpu::RectWH rect;
 
@@ -305,7 +305,7 @@ void TextOverlay::draw(Context &ctx, bool active) const {
 	if (leftText) {
 		rect.x = 8;
 		rect.w = ctx.gpuCtx.width - 16;
-		ctx.font.draw(
+		ctx.smallFont.draw(
 			ctx.gpuCtx,
 			leftText,
 			rect,
@@ -313,11 +313,11 @@ void TextOverlay::draw(Context &ctx, bool active) const {
 		);
 	}
 	if (rightText) {
-		int width = ctx.font.getStringWidth(rightText);
+		int width = ctx.smallFont.getStringWidth(rightText);
 
 		rect.x = ctx.gpuCtx.width - (8 + width);
 		rect.w = width;
-		ctx.font.draw(
+		ctx.smallFont.draw(
 			ctx.gpuCtx,
 			rightText,
 			rect,

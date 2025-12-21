@@ -23,7 +23,7 @@
 				"properties": {
 					"type": {
 						"title":       "Entry type",
-						"description": "Must be one of the following:\n- `empty` (zero-length or zerofilled file)\n- `text` (converted to UTF-8 with LF line endings)\n- `binary`\n- `tim`\n- `led`\n- `metrics`\n- `palette`\n- `strings`\n- `gamedb`",
+						"description": "Must be one of the following:\n- `empty` (zero-length or zerofilled file)\n- `text` (converted to UTF-8 with LF line endings)\n- `binary`\n- `tim`\n- `ledImage`\n- `ledFont`\n- `metrics`\n- `palette`\n- `strings`\n- `gameDB`",
 						"type":        "string",
 
 						"enum": [
@@ -31,11 +31,12 @@
 							"text",
 							"binary",
 							"tim",
-							"led",
+							"ledImage",
+							"ledFont",
 							"metrics",
 							"palette",
 							"strings",
-							"gamedb"
+							"gameDB"
 						]
 					},
 					"name": {
@@ -182,7 +183,7 @@
 						"additionalProperties": false,
 
 						"properties": {
-							"type":      { "const": "led" },
+							"type":      { "const": "ledImage" },
 							"name":      { "type":  "string" },
 							"compLevel": {},
 
@@ -196,11 +197,59 @@
 						}
 					},
 					{
+						"required":             [ "source", "metricsSource" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type":      { "const": "ledFont" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the source image file, relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
+								"type":        "string",
+
+								"format": "uri-reference"
+							},
+							"metricsSource": {
+								"title":       "Path to metrics file",
+								"description": "Path to the JSON file containing metrics for this font (if metrics are not specified as part of the entry object), relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
+								"type":        "string",
+
+								"format": "uri-reference"
+							}
+						}
+					},
+					{
+						"required":             [ "source", "metrics" ],
+						"additionalProperties": false,
+
+						"properties": {
+							"type":      { "const": "ledFont" },
+							"name":      { "type":  "string" },
+							"compLevel": {},
+
+							"source": {
+								"title":       "Path to source file",
+								"description": "Path to the source image file, relative to the base directory specified on the package builder's command line (same directory as the configuration file by default).",
+								"type":        "string",
+
+								"format": "uri-reference"
+							},
+							"metrics": {
+								"title":       "Font metrics",
+								"description": "Font metrics root object. If not specified, the metricsSource attribute must be a path to a JSON file containing this object.",
+								"$ref":        "metrics.json"
+							}
+						}
+					},
+					{
 						"required":             [ "source" ],
 						"additionalProperties": false,
 
 						"properties": {
-							"type":      { "pattern": "^metrics|palette|strings|gamedb$" },
+							"type":      { "pattern": "^metrics|palette|strings|gameDB$" },
 							"name":      { "type":    "string" },
 							"compLevel": {},
 
@@ -262,11 +311,11 @@
 						}
 					},
 					{
-						"required":             [ "gamedb" ],
+						"required":             [ "gameDB" ],
 						"additionalProperties": false,
 
 						"properties": {
-							"type":      { "const": "gamedb" },
+							"type":      { "const": "gameDB" },
 							"name":      { "type":  "string" },
 							"compLevel": {},
 

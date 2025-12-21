@@ -155,7 +155,7 @@ def main():
 		converted = True
 
 	for card, size in enumerate(( args.pcmcia1_size, args.pcmcia2_size ), 1):
-		prefix: str = f"pccard{card}_{size // 0x100000}mb"
+		prefix: str = f"pccard{card}_{size}mb"
 		source: str = f"{prefix}_1l" if args.merge else f"pcmcia{card}.bin"
 
 		if os.path.isfile(args.input / source):
@@ -163,7 +163,7 @@ def main():
 				mergedPath / f"pcmcia{card}.bin",
 				splitPath  / f"{prefix}_{{}}l",
 				splitPath  / f"{prefix}_{{}}u",
-				range(1, (size // _FLASH_BANK_LENGTH) + 1)
+				range(1, (size * 0x100000 // _FLASH_BANK_LENGTH) + 1)
 			)
 			converted = True
 

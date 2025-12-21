@@ -19,9 +19,9 @@ from enum        import IntEnum, IntFlag
 from struct      import Struct
 from typing      import Self
 
-import numpy
-from numpy   import ndarray
-from PIL     import Image
+import numpy as np
+from numpy.typing import NDArray
+from PIL          import Image
 
 ## Input image handling
 
@@ -37,8 +37,8 @@ def quantizeImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 	if imageObj.mode not in ( "RGB", "RGBA" ):
 		imageObj = imageObj.convert("RGBA")
 
-	image: ndarray = numpy.asarray(imageObj, "B")
-	clut, image    = numpy.unique(
+	image: NDArray[np.uint8] = np.asarray(imageObj, "B")
+	clut, image              = np.unique(
 		image.reshape(( -1, image.shape[2] )),
 		return_inverse = True,
 		axis           = 0
@@ -59,22 +59,22 @@ def quantizeImage(imageObj: Image.Image, numColors: int) -> Image.Image:
 	newObj.putpalette(clut.tobytes(), imageObj.mode)
 	return newObj
 
-def _getImagePalette(imageObj: Image.Image) -> ndarray:
-	clut: ndarray = numpy.array(imageObj.getpalette("RGBA"), "B")
-	clut          = clut.reshape(( -1, 4 ))
+def _getImagePalette(imageObj: Image.Image) -> NDArray[np.uint8]:
+	clut: NDArray[np.uint8] = np.array(imageObj.getpalette("RGBA"), "B")
+	clut                    = clut.reshape(( -1, 4 ))
 
 	# Pillow's PNG decoder does not handle indexed color images with alpha
 	# correctly, so a workaround is needed here to manually integrate the
 	# contents of the image's "tRNs" chunk into the palette.
 	if "transparency" in imageObj.info:
 		alpha: bytes = imageObj.info["transparency"]
-		clut[:, 3]   = numpy.frombuffer(alpha.ljust(clut.shape[0], b"\xff"))
+		clut[:, 3]   = np.frombuffer(alpha.ljust(clut.shape[0], b"\xff"))
 
 	return clut
 
 ## RGBA to 16bpp colorspace conversion
 
-_LOWER_ALPHA_BOUND: int = 32
+_LOWER_ALPHA_BOUND: int =  32
 _UPPER_ALPHA_BOUND: int = 224
 
 # Color 0x0000 is interpreted by the PS1 GPU as fully transparent, so black
@@ -82,27 +82,30 @@ _UPPER_ALPHA_BOUND: int = 224
 _TRANSPARENT_COLOR: int = 0x0000
 _BLACK_COLOR:       int = 0x0421
 
-def _to16bpp(inputData: ndarray, forceSTP: bool = False) -> ndarray:
-	source: ndarray = inputData.astype("<H")
-	r:      ndarray = ((source[:, :, 0] * 31) + 127) // 255
-	g:      ndarray = ((source[:, :, 1] * 31) + 127) // 255
-	b:      ndarray = ((source[:, :, 2] * 31) + 127) // 255
+def _to16bpp(
+	inputData: NDArray[np.uint8],
+	forceSTP:  bool = False
+) -> NDArray[np.uint16]:
+	source: NDArray[np.uint16] = inputData.astype("<H")
+	r:      NDArray[np.uint16] = ((source[:, :, 0] * 31) + 127) // 255
+	g:      NDArray[np.uint16] = ((source[:, :, 1] * 31) + 127) // 255
+	b:      NDArray[np.uint16] = ((source[:, :, 2] * 31) + 127) // 255
 
-	solid:           ndarray = r | (g << 5) | (b << 10)
-	semitransparent: ndarray = solid | (1 << 15)
+	solid:           NDArray[np.uint16] = r | (g << 5) | (b << 10)
+	semitransparent: NDArray[np.uint16] = solid | (1 << 15)
 
-	data: ndarray = numpy.full_like(solid, _TRANSPARENT_COLOR)
+	data: NDArray[np.uint16] = np.full_like(solid, _TRANSPARENT_COLOR)
 
-	if source.shape[2] == 4:
-		alpha: ndarray = source[:, :, 3]
+	if inputData.shape[2] == 4:
+		alpha: NDArray[np.uint8] = inputData[:, :, 3]
 	else:
-		alpha: ndarray = numpy.full(source.shape[:-1], 0xff, "B")
+		alpha: NDArray[np.uint8] = np.full(inputData.shape[:-1], 0xff, "B")
 
-	numpy.copyto(data, semitransparent, where = (alpha >= _LOWER_ALPHA_BOUND))
+	np.copyto(data, semitransparent, where = (alpha >= _LOWER_ALPHA_BOUND))
 
 	if not forceSTP:
-		numpy.copyto(data, solid, where = (alpha >= _UPPER_ALPHA_BOUND))
-		numpy.copyto(
+		np.copyto(data, solid, where = (alpha >= _UPPER_ALPHA_BOUND))
+		np.copyto(
 			data,
 			_BLACK_COLOR,
 			where = (
@@ -116,26 +119,26 @@ def _to16bpp(inputData: ndarray, forceSTP: bool = False) -> ndarray:
 def _convertIndexedImage(
 	imageObj: Image.Image,
 	forceSTP: bool = False
-) -> tuple[ndarray, ndarray]:
-	clut:      ndarray = _getImagePalette(imageObj)
-	numColors: int     = clut.shape[0]
-	padAmount: int     = (16 if (numColors <= 16) else 256) - numColors
+) -> tuple[NDArray[np.uint8], NDArray[np.uint16]]:
+	clut:      NDArray[np.uint8] = _getImagePalette(imageObj)
+	numColors: int               = clut.shape[0]
+	padAmount: int               = (16 if (numColors <= 16) else 256) - numColors
 
 	# Pad the palette to 16 or 256 colors after converting it to 16bpp.
 	clut = _to16bpp(clut.reshape(( 1, -1, 4 )), forceSTP)
 
 	if padAmount:
-		clut = numpy.c_[
+		clut = np.c_[
 			clut,
-			numpy.zeros(( 1, padAmount ), "<H")
+			np.zeros(( 1, padAmount ), "<H")
 		]
 
-	image: ndarray = numpy.asarray(imageObj, "B")
+	image: NDArray[np.uint8] = np.asarray(imageObj, "B")
 
 	if image.shape[1] % 2:
-		image = numpy.c_[
+		image = np.c_[
 			image,
-			numpy.zeros(( imageObj.height, 1 ), "B")
+			np.zeros(( imageObj.height, 1 ), "B")
 		]
 
 	# Pack two pixels into each byte for 4bpp images.
@@ -143,9 +146,9 @@ def _convertIndexedImage(
 		image = image[:, 0::2] | (image[:, 1::2] << 4)
 
 		if image.shape[1] % 2:
-			image = numpy.c_[
+			image = np.c_[
 				image,
-				numpy.zeros(( imageObj.height, 1 ), "B")
+				np.zeros(( imageObj.height, 1 ), "B")
 			]
 
 	return image, clut
@@ -171,7 +174,7 @@ _PXL_HEADER_VERSION: int    = 0x12
 class TIMSection:
 	x:    int
 	y:    int
-	data: ndarray = field(repr = False)
+	data: NDArray = field(repr = False)
 
 	@staticmethod
 	def parse(
@@ -193,7 +196,7 @@ class TIMSection:
 		if len(data) != (width * height * 2):
 			raise RuntimeError("section length does not match image size")
 
-		image: ndarray = numpy.frombuffer(
+		image: NDArray = np.frombuffer(
 			data,
 			"<H" if (pixelSize == 2) else "B"
 		).reshape((
@@ -233,8 +236,8 @@ class TIMImage:
 		imageY:   int,
 		forceSTP: bool = False
 	) -> Self:
-		image: ndarray = numpy.asarray(imageObj, "B")
-		image          = _to16bpp(image, forceSTP)
+		image: NDArray[np.uint8] = np.asarray(imageObj, "B")
+		image                    = _to16bpp(image, forceSTP)
 
 		return TIMImage(
 			TIMColorDepth.COLOR_16BPP,
@@ -326,22 +329,3 @@ class TIMImage:
 			data += self.image.serialize()
 
 		return data
-
-## LED matrix image generator
-
-_LED_IMAGE_HEADER_STRUCT: Struct = Struct("< 8s 2H")
-_LED_IMAGE_HEADER_MAGIC:  bytes  = b"573ledim"
-
-_LED_MATRIX_COLORS: ndarray = numpy.array((
-	(   0,   0, 0 ), # LED_BLACK
-	( 255,   0, 0 ), # LED_RED
-	(   0, 255, 0 ), # LED_GREEN
-	( 255, 255, 0 )  # LED_YELLOW
-), numpy.uint8)
-
-def generateLEDImage(imageObj: Image.Image) -> bytearray:
-	# TODO: implement
-
-	data: bytearray = bytearray()
-
-	return data

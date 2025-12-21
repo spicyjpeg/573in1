@@ -68,9 +68,17 @@ static inline void stopChannel(Channel ch) {
 }
 
 size_t upload(
-	uint32_t offset, const void *data, size_t length, bool wait = false
+	uint32_t   offset,
+	const void *data,
+	size_t     length,
+	bool       wait = false
 );
-size_t download(uint32_t offset, void *data, size_t length, bool wait = false);
+size_t download(
+	uint32_t offset,
+	void     *data,
+	size_t   length,
+	bool     wait = false
+);
 
 /* Sound class */
 
@@ -78,8 +86,8 @@ static constexpr size_t INTERLEAVED_VAG_BODY_OFFSET = 2048;
 
 class VAGHeader {
 public:
-	uint32_t magic, version, interleave, length, sampleRate;
-	uint16_t _reserved[5], channels;
+	uint32_t magic, version, interleave, length, sampleRate, loopPoint;
+	uint16_t _reserved[3], channels;
 	char     name[16];
 
 	inline bool validateMagic(void) const {
@@ -94,6 +102,9 @@ public:
 	}
 	inline size_t getSPULength(void) const {
 		return __builtin_bswap32(length);
+	}
+	inline size_t getInterleavedLoopPoint(void) const {
+		return __builtin_bswap32(loopPoint);
 	}
 	inline int getNumChannels(void) const {
 		return channels ? channels : 2;

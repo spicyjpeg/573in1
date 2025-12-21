@@ -23,12 +23,12 @@
 /* Register definitions */
 
 typedef enum {
-	COP0_BPC      =  3, // Breakpoint program counter
-	COP0_BDA      =  5, // Breakpoint data address
-	COP0_DCIC     =  7, // Debug and cache invalidation control
+	COP0_BPC      =  3, // Breakpoint program counter (CW33300)
+	COP0_BDA      =  5, // Breakpoint data address (CW33300)
+	COP0_DCIC     =  7, // Debug and cache invalidation control (CW33300)
 	COP0_BADVADDR =  8, // Bad virtual address
-	COP0_BDAM     =  9, // Breakpoint data address mask
-	COP0_BPCM     = 11, // Breakpoint program counter mask
+	COP0_BDAM     =  9, // Breakpoint data address mask (CW33300)
+	COP0_BPCM     = 11, // Breakpoint program counter mask (CW33300)
 	COP0_STATUS   = 12, // Status register
 	COP0_CAUSE    = 13, // Exception cause
 	COP0_EPC      = 14, // Exception program counter

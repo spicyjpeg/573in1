@@ -181,7 +181,7 @@ public:
 
 	Layer *backgrounds[4], *overlays[4];
 
-	gpu::Font  font;
+	gpu::Font  font, smallFont;
 	gpu::Color colors[NUM_UI_COLORS];
 	spu::Sound sounds[NUM_UI_SOUNDS];
 

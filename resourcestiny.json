@@ -46,11 +46,19 @@
 		},
 		{
 			"type":     "tim",
-			"name":     "assets/textures/splash.tim",
-			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/splash.png",
+			"name":     "assets/textures/smallfont.tim",
+			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/smallfont.png",
 			"quantize": 16,
 			"imagePos": { "x":  984, "y": 0 },
 			"clutPos":  { "x": 1008, "y": 2 }
+		},
+		{
+			"type":     "tim",
+			"name":     "assets/textures/splash.tim",
+			"source":   "${PROJECT_SOURCE_DIR}/assets/textures/splash.png",
+			"quantize": 16,
+			"imagePos": { "x":  984, "y": 50 },
+			"clutPos":  { "x": 1008, "y":  3 }
 		},
 		{
 			"type":   "metrics",
@@ -58,9 +66,20 @@
 			"source": "${PROJECT_SOURCE_DIR}/assets/textures/font.json"
 		},
 		{
-			"type":   "led",
-			"name":   "assets/ledmatrix/splash.led",
+			"type":   "metrics",
+			"name":   "assets/textures/smallfont.metrics",
+			"source": "${PROJECT_SOURCE_DIR}/assets/textures/smallfont.json"
+		},
+		{
+			"type":   "ledImage",
+			"name":   "assets/ledmatrix/splash.dat",
 			"source": "${PROJECT_SOURCE_DIR}/assets/ledmatrix/splash.png"
+		},
+		{
+			"type":          "ledFont",
+			"name":          "assets/ledmatrix/smallfont.dat",
+			"source":        "${PROJECT_SOURCE_DIR}/assets/ledmatrix/smallfont.png",
+			"metricsSource": "${PROJECT_SOURCE_DIR}/assets/ledmatrix/smallfont.json"
 		},
 		{
 			"type":      "binary",
@@ -121,7 +140,7 @@
 			"source": "${PROJECT_SOURCE_DIR}/data/fpga.bit"
 		},
 		{
-			"type":   "gamedb",
+			"type":   "gameDB",
 			"name":   "data/games.db",
 			"source": "${PROJECT_SOURCE_DIR}/data/games.json"
 		},
